@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnwhjf0qt2753"]
+
+[ext_resource type="Texture2D" uid="uid://bjoe68nbi1smd" path="res://assets/furnitures/房间卧室家具导出_0000_蛋糕.png" id="1_ccqri"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
+size = Vector2(121, 96)
+
+[node name="Supplies_A0_cake" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.36, 0.36)
+texture = ExtResource("1_ccqri")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.5, 8)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(-0.5, 8)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(-0.5, 8)
+shape = SubResource("RectangleShape2D_jyvv2")

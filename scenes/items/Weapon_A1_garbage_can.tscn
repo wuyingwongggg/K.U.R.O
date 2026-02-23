@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://3t2nfvvcqc83"]
+
+[ext_resource type="Texture2D" uid="uid://c5thp1rjtgsbv" path="res://assets/furnitures/房间卧室家具导出_0000s_0013_垃圾桶.png" id="1_cts57"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cts57"]
+size = Vector2(59, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
+size = Vector2(16.521742, 20.869566)
+
+[node name="Weapon_A1_garbage_can" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_cts57")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.5, 35)
+shape = SubResource("RectangleShape2D_cts57")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0.49999905, 0.9999998)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(0.49999905, 0.9999998)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_jyvv2")

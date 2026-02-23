@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+所有作为 Godot Resource 使用的 C# 类必须有 [GlobalClass]
+.tres 文件中最好使用 type="Resource" + script = ExtResource(...) 格式，这样不依赖类型名称解析

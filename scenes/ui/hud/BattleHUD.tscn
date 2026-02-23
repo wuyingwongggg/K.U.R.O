@@ -1,0 +1,361 @@
+[gd_scene load_steps=2 format=3 uid="uid://c88kwpwoxtoev"]
+
+[ext_resource type="Script" uid="uid://3vrm8fkuw0da" path="res://scripts/ui/BattleHUD.cs" id="1_battle_hud"]
+
+[node name="BattleHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -18.0
+offset_right = 8.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_battle_hud")
+
+[node name="MinimapPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 210.0
+offset_bottom = 210.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="MinimapTitle" type="Label" parent="MinimapPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = 25.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 14
+text = "小地图"
+horizontal_alignment = 1
+
+[node name="MinimapContainer" type="Control" parent="MinimapPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 30.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MinimapBackground" type="ColorRect" parent="MinimapPanel/MinimapContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.15, 0.8)
+
+[node name="PlayerMarker" type="ColorRect" parent="MinimapPanel/MinimapContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = -5.0
+offset_right = 5.0
+offset_bottom = 5.0
+grow_horizontal = 0
+grow_vertical = 0
+color = Color(1, 0, 0, 1)
+
+[node name="PlayerStats" type="Label" parent="."]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 220.0
+offset_right = 300.0
+offset_bottom = 290.0
+theme_override_font_sizes/font_size = 18
+text = "Player HP: 100/100
+Score: 0"
+
+[node name="HealthBar" type="TextureProgressBar" parent="."]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 300.0
+offset_right = 300.0
+offset_bottom = 330.0
+value = 100.0
+tint_under = Color(0.5, 0, 0, 1)
+tint_progress = Color(1, 0, 0, 1)
+
+[node name="ScoreLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 320.0
+offset_top = 10.0
+offset_right = 500.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 24
+text = "Score: 0"
+horizontal_alignment = 1
+
+[node name="Instructions" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -60.0
+offset_right = 300.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 14
+text = "WASD: Move | Space: Attack | Shift: Run | F: Pick Up | G: Put Down | ESC: Menu"
+horizontal_alignment = 1
+
+[node name="QuickBarPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -350.0
+offset_top = -140.0
+offset_right = 350.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="QuickBarTitle" type="Label" parent="QuickBarPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = 34.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+text = "快捷物品栏"
+horizontal_alignment = 1
+
+[node name="QuickBarContainer" type="HBoxContainer" parent="QuickBarPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="QuickSlot1" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+
+[node name="QuickSlotIcon1" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot1"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel1" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot1"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot2" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+
+[node name="QuickSlotIcon2" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel2" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot2"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot3" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+
+[node name="QuickSlotIcon3" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot3"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel3" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot3"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot4" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+
+[node name="QuickSlotIcon4" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot4"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel4" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot4"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot5" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+
+[node name="QuickSlotIcon5" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot5"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel5" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot5"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GoldLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -180.0
+offset_top = 10.0
+offset_right = -90.0
+offset_bottom = 50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "金币: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PauseButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -80.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 50.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "暂停"

@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://cs6dkspm16vj4"]
+
+[ext_resource type="Texture2D" uid="uid://jvsrkvlnp7c2" path="res://assets/furnitures/房间卧室家具导出_0000s_0008_猫爬架.png" id="1_acoon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_acoon"]
+size = Vector2(147, 95)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
+size = Vector2(41, 46.869568)
+
+[node name="Weapon_A1_perch" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_acoon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-4, 42.5)
+shape = SubResource("RectangleShape2D_acoon")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(-0.5, 8.849998)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(-0.5, 8.849998)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_jyvv2")

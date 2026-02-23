@@ -1,0 +1,40 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+*.import
+*.uid
+
+# IDE files
+.vscode/
+.vs/
+.idea/
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Godot export / build output
+export/
+build/
+
+# User save data
+saves/
+
+# .NET ignores
+obj/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+*.csproj.old
+*.sln.iml
+
+# System/tool-specific ignores
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*~
+Thumbs.db
+export_presets.cfg

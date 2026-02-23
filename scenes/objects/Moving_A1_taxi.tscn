@@ -1,0 +1,122 @@
+[gd_scene load_steps=27 format=3 uid="uid://chway4etqkroy"]
+
+[ext_resource type="Texture2D" uid="uid://c34jnai6l2qir" path="res://assets/objects/taxi/时间轴1_0000.png" id="1_l4djn"]
+[ext_resource type="Texture2D" uid="uid://dttdf8786fpkd" path="res://assets/objects/taxi/时间轴1_0001.png" id="2_rqshq"]
+[ext_resource type="Texture2D" uid="uid://cvbj831wvyfl5" path="res://assets/objects/taxi/时间轴1_0002.png" id="3_d7g0g"]
+[ext_resource type="Texture2D" uid="uid://c58onqltftdi3" path="res://assets/objects/taxi/时间轴1_0003.png" id="4_3td21"]
+[ext_resource type="Texture2D" uid="uid://dmb1qaobgsj02" path="res://assets/objects/taxi/时间轴1_0004.png" id="5_lkpan"]
+[ext_resource type="Texture2D" uid="uid://xtj7xwt72188" path="res://assets/objects/taxi/时间轴1_0005.png" id="6_faxbq"]
+[ext_resource type="Texture2D" uid="uid://dj7wklmp3p5uw" path="res://assets/objects/taxi/时间轴1_0006.png" id="7_lp1pl"]
+[ext_resource type="Texture2D" uid="uid://b71rac57ml3x2" path="res://assets/objects/taxi/时间轴1_0007.png" id="8_njg5h"]
+[ext_resource type="Texture2D" uid="uid://cjythww25lul8" path="res://assets/objects/taxi/时间轴1_0008.png" id="9_bdxcw"]
+[ext_resource type="Texture2D" uid="uid://c27tfjmrhipej" path="res://assets/objects/taxi/时间轴1_0009.png" id="10_aaotp"]
+[ext_resource type="Texture2D" uid="uid://co0bjw2n3qe7d" path="res://assets/objects/taxi/时间轴1_0010.png" id="11_85d1n"]
+[ext_resource type="Texture2D" uid="uid://ctsgfubkoxc4k" path="res://assets/objects/taxi/时间轴1_0011.png" id="12_sbbju"]
+[ext_resource type="Texture2D" uid="uid://c1ir8gsjktvd7" path="res://assets/objects/taxi/时间轴1_0012.png" id="13_8g5jn"]
+[ext_resource type="Texture2D" uid="uid://cgbf1ptlk4mkc" path="res://assets/objects/taxi/时间轴1_0013.png" id="14_trv2a"]
+[ext_resource type="Texture2D" uid="uid://lr3nmu0aq5ff" path="res://assets/objects/taxi/时间轴1_0014.png" id="15_almle"]
+[ext_resource type="Texture2D" uid="uid://darqqr01uf048" path="res://assets/objects/taxi/时间轴1_0015.png" id="16_j7ojp"]
+[ext_resource type="Texture2D" uid="uid://w1pmeegmfhx6" path="res://assets/objects/taxi/时间轴1_0016.png" id="17_d6nrb"]
+[ext_resource type="Texture2D" uid="uid://chaovavvghm18" path="res://assets/objects/taxi/时间轴1_0017.png" id="18_b08jy"]
+[ext_resource type="Texture2D" uid="uid://b05expe0ioumv" path="res://assets/objects/taxi/时间轴1_0018.png" id="19_rv2ht"]
+[ext_resource type="Texture2D" uid="uid://txus3qvunrp2" path="res://assets/objects/taxi/时间轴1_0019.png" id="20_052nk"]
+[ext_resource type="Texture2D" uid="uid://cqvli8wckd1fy" path="res://assets/objects/taxi/时间轴1_0020.png" id="21_llloc"]
+[ext_resource type="Texture2D" uid="uid://0stcpfv4f570" path="res://assets/objects/taxi/时间轴1_0021.png" id="22_4rj1d"]
+[ext_resource type="Texture2D" uid="uid://b5loogtg6btjq" path="res://assets/objects/taxi/时间轴1_0022.png" id="23_em2oj"]
+[ext_resource type="Texture2D" uid="uid://cn8xoplv6fmxq" path="res://assets/objects/taxi/时间轴1_0023.png" id="24_kfupp"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_c03wn"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_l4djn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_rqshq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_d7g0g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_3td21")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_lkpan")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_faxbq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_lp1pl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_njg5h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_bdxcw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_aaotp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_85d1n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_sbbju")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_8g5jn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_trv2a")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_almle")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_j7ojp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_d6nrb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_b08jy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_rv2ht")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_052nk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_llloc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_4rj1d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_em2oj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_kfupp")
+}],
+"loop": true,
+"name": &"default",
+"speed": 24.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c8qn3"]
+size = Vector2(408.8235, 650.0001)
+
+[node name="Moving_A1_taxi" type="AnimatableBody2D"]
+scale = Vector2(0.34, 0.34)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_c03wn")
+autoplay = "default"
+frame_progress = 0.5354809
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(4.4117284, -119.1176)
+scale = Vector2(0.99999964, 0.99999964)
+shape = SubResource("RectangleShape2D_c8qn3")

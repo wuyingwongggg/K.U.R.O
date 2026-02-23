@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3 uid="uid://bbcqflgys8xp2"]
+
+[ext_resource type="Texture2D" uid="uid://du35vjo11p7pn" path="res://textures/environments/wall/25.12.3 厨房大钢门.png" id="1_017rm"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_017rm"]
+size = Vector2(20, 245)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
+size = Vector2(45.02104, 67.611084)
+
+[node name="Weapon_A1_door2" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-987, 7)
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_017rm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-22, 83.5)
+shape = SubResource("RectangleShape2D_017rm")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(1.9945827, 3.8959434)
+rotation = -1.129228
+scale = Vector2(3.8450003, 3.844999)
+skew = 1.1274825
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(1.9945827, 3.8959434)
+rotation = -1.129228
+scale = Vector2(3.8450003, 3.844999)
+skew = 1.1274825
+shape = SubResource("RectangleShape2D_jyvv2")

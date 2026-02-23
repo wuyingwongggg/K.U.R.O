@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bq3m0dmil852a"]
+
+[ext_resource type="Texture2D" uid="uid://ctviecd7obcx8" path="res://assets/furnitures/房间卧室家具导出_0006_洗碗机.png" id="1_i8y8s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_i4mg6"]
+size = Vector2(144, 135)
+
+[node name="Static_A1_dishwasher" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_i8y8s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_i4mg6")

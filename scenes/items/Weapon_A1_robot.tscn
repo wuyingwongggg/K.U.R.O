@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://cb014clwmf2xy"]
+
+[ext_resource type="Texture2D" uid="uid://5ms0y7lqt56x" path="res://assets/furnitures/房间卧室家具导出_0000s_0000_扫地机器人.png" id="1_jyvv2"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jyvv2"]
+radius = 40.04997
+
+[node name="Weapon_A1_robot" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_jyvv2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_jyvv2")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("CircleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+shape = SubResource("CircleShape2D_jyvv2")

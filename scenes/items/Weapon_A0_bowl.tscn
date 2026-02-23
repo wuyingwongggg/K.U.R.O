@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://ccrrtbrue2s7d"]
+
+[ext_resource type="Texture2D" uid="uid://hknkbiylfgiw" path="res://assets/furnitures/房间卧室家具导出_0002_碗.png" id="1_1j7rj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
+size = Vector2(21.38889, 18.055555)
+
+[node name="Weapon_A0_bowl" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.36, 0.36)
+texture = ExtResource("1_1j7rj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1.4999995, -3.4999976)
+scale = Vector2(3.6, 3.6)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(1.4999995, -3.4999976)
+scale = Vector2(3.6, 3.6)
+shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(1.4999995, -3.4999976)
+scale = Vector2(3.6, 3.6)
+shape = SubResource("RectangleShape2D_jyvv2")

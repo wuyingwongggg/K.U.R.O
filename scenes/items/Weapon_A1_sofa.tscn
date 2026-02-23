@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3 uid="uid://jrl3rhlkubaj"]
+
+[ext_resource type="Texture2D" uid="uid://byp4asmcf3ssa" path="res://assets/furnitures/房间卧室家具导出_0000s_0007_沙发.png" id="1_xql1w"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yv3ra"]
+size = Vector2(109.41304, 39.42029)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_q076e"]
+size = Vector2(39.710148, 38)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xql1w"]
+size = Vector2(379, 175)
+
+[node name="Weapon_A1_sofa" type="RigidBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.345, 0.345)
+texture = ExtResource("1_xql1w")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.737499, -45)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_yv3ra")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
+position = Vector2(-121.5, 85.00001)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_q076e")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(-121.5, 85.00001)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_q076e")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(-0.5, -64.5)
+shape = SubResource("RectangleShape2D_xql1w")
+
+[node name="GrabArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(-121.5, 85.00001)
+scale = Vector2(3.45, 3.45)
+shape = SubResource("RectangleShape2D_q076e")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+position = Vector2(-0.5, -64.5)
+shape = SubResource("RectangleShape2D_xql1w")

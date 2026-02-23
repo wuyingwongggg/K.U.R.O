@@ -1,0 +1,455 @@
+using Godot;
+using System;
+using Kuros.Systems.FSM;
+using Kuros.Systems.Loot;
+using Kuros.Core.Effects;
+using Kuros.Utils;
+using Kuros.Core.Stats;
+using Kuros.Core.Events;
+
+namespace Kuros.Core
+{
+	public partial class GameActor : CharacterBody2D
+	{
+		public event Action<int, int>? HealthChanged;
+
+		[ExportCategory("Stats")]
+		[Export] public float Speed = 300.0f;
+		[Export] public float AttackDamage = 25.0f;
+		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
+		[Export] public float AttackCooldown = 0.5f;
+		[Export] public int MaxHealth = 100;
+		[Export] public bool FaceLeftByDefault = false;
+		
+		
+		[ExportCategory("Components")]
+		[Export] public StateMachine StateMachine { get; private set; } = null!;
+		[Export] public EffectController EffectController { get; private set; } = null!;
+		[Export] public CharacterStatProfile? StatProfile { get; private set; }
+
+		[ExportCategory("Loot")]
+		[Export] public LootDropTable? LootTable { get; set; }
+
+		// Exposed state for States to use
+		public int CurrentHealth { get; protected set; }
+		public float AttackTimer { get; set; } = 0.0f;
+		public bool FacingRight { get; protected set; } = true;
+		public event Func<DamageEventArgs, bool>? DamageIntercepted;
+		public AnimationPlayer? AnimPlayer => _animationPlayer;
+		
+		protected Node2D _spineCharacter = null!;
+		protected Sprite2D _sprite = null!;
+		protected AnimationPlayer _animationPlayer = null!;
+		private Color _spineDefaultModulate = Colors.White;
+		private Color _spriteDefaultModulate = Colors.White;
+		
+		// GDScript Helper to bypass C# wrapper issues with GDExtension
+		private Node _spineHelper = null!;
+
+		private bool _deathStarted = false;
+		private bool _deathFinalized = false;
+
+		public bool IsDeathSequenceActive => _deathStarted && !_deathFinalized;
+		public bool IsDead => _deathFinalized;
+
+		public override void _Ready()
+		{
+			CurrentHealth = MaxHealth;
+			
+			
+			
+			// Load Spine helper script
+			var spineScript = GD.Load<GDScript>("res://scripts/utils/SpineWrapper.gd");
+			if (spineScript != null)
+			{
+				_spineHelper = (Node)spineScript.New();
+				AddChild(_spineHelper);
+				
+			
+			}
+			
+			// Node fetching - DO NOT attempt to cast SpineSprite to Node2D or GodotObject directly
+			// checking for existence is fine
+			bool hasSpine = HasNode("SpineCharacter") || HasNode("SpineSprite");
+			
+			// Try to fetch if it's a Node2D wrapper (rare case if GDExtension is missing bindings)
+			if (HasNode("SpineCharacter"))
+			{
+				var variant = Call("get_node", "SpineCharacter");
+				if (variant.VariantType == Variant.Type.Object)
+				{
+					try 
+					{ 
+						// Only assign if it successfully casts, otherwise leave null
+						// Catching generic exception to silence potential wrapper errors if possible
+						var obj = variant.As<GodotObject>();
+						if (obj is Node2D n2d) _spineCharacter = n2d;
+					} 
+					catch { }
+				}
+			}
+			
+			if (_spineCharacter == null && HasNode("SpineSprite"))
+			{
+				 var variant = Call("get_node", "SpineSprite");
+				 try 
+				 { 
+					 var obj = variant.As<GodotObject>();
+					 if (obj is Node2D n2d) _spineCharacter = n2d;
+				 } 
+				 catch { }
+			}
+
+			if (_spineCharacter != null)
+			{
+				_spineDefaultModulate = _spineCharacter.Modulate;
+			}
+			
+			_sprite = GetNodeOrNull<Sprite2D>("Sprite2D");
+			if (_sprite != null)
+			{
+				_spriteDefaultModulate = _sprite.Modulate;
+			}
+			
+			if (_spineCharacter != null)
+			{
+				_animationPlayer = _spineCharacter.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
+			}
+			
+			// Initialize StateMachine if manually assigned or found
+			if (StateMachine == null)
+			{
+				StateMachine = GetNodeOrNull<StateMachine>("StateMachine");
+			}
+
+			if (StateMachine != null)
+			{
+				StateMachine.Initialize(this);
+			}
+
+			EffectController ??= GetNodeOrNull<EffectController>("EffectController");
+			if (EffectController == null)
+			{
+				EffectController = new EffectController
+				{
+					Name = "EffectController"
+				};
+				AddChild(EffectController);
+			}
+
+			ApplyStatProfile();
+			NotifyHealthChanged();
+		}
+
+		// ====================== 新增4：递归同步所有子渲染节点Z层级的工具方法 ======================
+		private void ForceChildRenderNodesZIndex(Node parentNode, int targetZIndex)
+		{
+			foreach (Node child in parentNode.GetChildren())
+			{
+				// 只处理渲染节点（Sprite2D、SpineSprite、ColorRect等）
+				if (child is CanvasItem renderNode)
+				{
+					renderNode.ZIndex = targetZIndex;
+				}
+				// 递归处理子节点的子节点（确保所有层级都覆盖）
+				ForceChildRenderNodesZIndex(child, targetZIndex);
+			}
+		}
+		// ==========================================================================================
+
+		public override void _PhysicsProcess(double delta)
+		{
+			if (AttackTimer > 0) AttackTimer -= (float)delta;
+			
+			// FSM handles logic, but we can keep global helpers here
+			// If using FSM, ensure it is processed either here or by itself (Node process)
+			// StateMachine._PhysicsProcess is called automatically by Godot if it's in the tree
+		}
+
+		public virtual void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null)
+		{
+			if (damage <= 0) return;
+
+			if (DamageIntercepted != null)
+			{
+				var args = new DamageEventArgs(this, damage, attackOrigin);
+				foreach (Func<DamageEventArgs, bool> handler in DamageIntercepted.GetInvocationList())
+				{
+					handler(args);
+					if (args.IsBlocked)
+					{
+						GameLogger.Info(nameof(GameActor), $"{Name} blocked incoming damage.");
+						return;
+					}
+				}
+
+				damage = args.Damage;
+				if (damage <= 0)
+				{
+					return;
+				}
+			}
+
+			CurrentHealth -= damage;
+			CurrentHealth = Mathf.Max(CurrentHealth, 0);
+			NotifyHealthChanged();
+
+			GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");
+			
+			FlashDamageEffect();
+
+			if (CurrentHealth <= 0)
+			{
+				Die();
+			}
+			else
+			{
+				// Force state change to Hit
+				if (StateMachine != null)
+				{
+					StateMachine.ChangeState("Hit");
+				}
+			}
+
+			if (attacker != null)
+			{
+				Events.DamageEventBus.Publish(attacker, this, damage);
+			}
+		}
+
+		public sealed class DamageEventArgs
+		{
+			public GameActor Target { get; }
+			public int Damage { get; set; }
+			public Vector2? AttackOrigin { get; }
+			public Vector2 AttackDirection { get; }
+			public bool IsBlocked { get; set; }
+
+			internal DamageEventArgs(GameActor target, int damage, Vector2? attackOrigin)
+			{
+				Target = target;
+				Damage = damage;
+				AttackOrigin = attackOrigin;
+				if (attackOrigin.HasValue)
+				{
+					var delta = target.GlobalPosition - attackOrigin.Value;
+					AttackDirection = delta.LengthSquared() > Mathf.Epsilon
+						? delta.Normalized()
+						: Vector2.Zero;
+				}
+				else
+				{
+					AttackDirection = Vector2.Zero;
+				}
+			}
+
+			public Vector2 Forward => Target.FacingRight ? Vector2.Right : Vector2.Left;
+		}
+
+		/// <summary>
+		/// 恢复或设置血量（用于加载存档等场景）
+		/// </summary>
+		public void RestoreHealth(int health, int maxHealth = -1)
+		{
+			if (maxHealth > 0)
+			{
+				MaxHealth = maxHealth;
+			}
+			CurrentHealth = Mathf.Clamp(health, 0, MaxHealth);
+			NotifyHealthChanged();
+			GameLogger.Info(nameof(GameActor), $"{Name} health restored to {CurrentHealth}/{MaxHealth}");
+		}
+
+		protected virtual void Die()
+		{
+			if (_deathStarted) return;
+
+			_deathStarted = true;
+
+			if (StateMachine != null && StateMachine.HasState("Dying"))
+			{
+				StateMachine.ChangeState("Dying");
+			}
+			else
+			{
+				FinalizeDeath();
+			}
+		}
+
+		public void FinalizeDeath()
+		{
+			if (_deathFinalized) return;
+
+			_deathFinalized = true;
+			OnDeathFinalized();
+		}
+
+		protected virtual void OnDeathFinalized()
+		{
+			HandleLootDrops();
+			EffectController?.ClearAll();
+			QueueFree();
+		}
+
+		protected virtual void HandleLootDrops()
+		{
+			if (LootTable == null)
+			{
+				return;
+			}
+
+			LootDropSystem.SpawnLootForActor(this, LootTable);
+		}
+
+		public void ApplyEffect(ActorEffect effect)
+		{
+			EffectController?.AddEffect(effect);
+		}
+
+		public void RemoveEffect(string effectId)
+		{
+			var effect = EffectController?.GetEffect(effectId);
+			if (effect != null)
+			{
+				EffectController?.RemoveEffect(effect);
+			}
+		}
+
+		private void ApplyStatProfile()
+		{
+			if (StatProfile == null)
+			{
+				return;
+			}
+
+			foreach (var modifier in StatProfile.GetModifiers())
+			{
+				if (modifier == null || string.IsNullOrWhiteSpace(modifier.StatId)) continue;
+				ApplyStatModifier(modifier);
+			}
+
+			if (EffectController == null)
+			{
+				return;
+			}
+
+			foreach (var effectScene in StatProfile.GetAttachedEffectScenes())
+			{
+				if (effectScene == null) continue;
+				EffectController.AddEffectFromScene(effectScene);
+			}
+		}
+
+		protected virtual void ApplyStatModifier(StatModifier modifier)
+		{
+			switch (modifier.StatId.ToLowerInvariant())
+			{
+				case "max_health":
+					MaxHealth = (int)MathF.Round(ApplyStatOperation(MaxHealth, modifier));
+					CurrentHealth = MaxHealth;
+					NotifyHealthChanged();
+					break;
+				case "attack_damage":
+					AttackDamage = ApplyStatOperation(AttackDamage, modifier);
+					break;
+				case "speed":
+					Speed = ApplyStatOperation(Speed, modifier);
+					break;
+			}
+		}
+
+		private static float ApplyStatOperation(float baseValue, StatModifier modifier)
+		{
+			return modifier.Operation switch
+			{
+				StatOperation.Add => baseValue + modifier.Value,
+				StatOperation.Multiply => baseValue * modifier.Value,
+				_ => baseValue
+			};
+		}
+
+		protected virtual void FlashDamageEffect()
+		{
+			// Use GDScript helper for Spine
+			if (_spineHelper != null)
+			{
+				_spineHelper.Call("flash_damage", this, new Color(1f, 0f, 0f));
+			}
+			// Fallback or legacy handling if wrapper exists
+			else if (_spineCharacter != null)
+			{
+				var visualNode = _spineCharacter;
+				Color baseColor = _spineDefaultModulate;
+				visualNode.Modulate = new Color(1f, 0f, 0f);
+
+				var tween = CreateTween();
+				tween.TweenInterval(0.1);
+				tween.TweenCallback(Callable.From(() =>
+				{
+					if (!GodotObject.IsInstanceValid(visualNode)) return;
+					visualNode.Modulate = baseColor;
+				}));
+			}
+
+			if (_sprite != null)
+			{
+				Color baseColor = _spriteDefaultModulate;
+				_sprite.Modulate = new Color(1f, 0f, 0f);
+
+				var tween = CreateTween();
+				tween.TweenInterval(0.1);
+				Node2D targetNode = _sprite;
+				tween.TweenCallback(Callable.From(() =>
+				{
+					if (!GodotObject.IsInstanceValid(targetNode)) return;
+					targetNode.Modulate = baseColor;
+				}));
+			}
+		}
+
+		public virtual void FlipFacing(bool faceRight)
+		{
+			if (FacingRight == faceRight) return;
+			
+			FacingRight = faceRight;
+			
+			float sign = faceRight ? 1.0f : -1.0f;
+			if (FaceLeftByDefault) sign *= -1.0f;
+			
+			// Use GDScript helper to flip
+			if (_spineHelper != null)
+			{
+				_spineHelper.Call("flip_facing", this, faceRight, FaceLeftByDefault);
+			}
+			// Legacy handling
+			else if (_spineCharacter != null)
+			{
+				var scale = _spineCharacter.Scale;
+				float absX = Mathf.Abs(scale.X);
+				_spineCharacter.Scale = new Vector2(absX * sign, scale.Y);
+			}
+
+			if (_sprite != null)
+			{
+				var scale = _sprite.Scale;
+				float absX = Mathf.Abs(scale.X);
+				_sprite.Scale = new Vector2(absX * sign, scale.Y);
+			}
+		}
+		
+		public void ClampPositionToScreen(float margin = 50f, float bottomOffset = 150f)
+		{
+			//限制角色移动，代码已弃用 OvO
+			// var screenSize = GetViewportRect().Size;
+			 // GlobalPosition = new Vector2(
+			 // Mathf.Clamp(GlobalPosition.X, margin, screenSize.X - margin),
+			 // Mathf.Clamp(GlobalPosition.Y, margin, screenSize.Y - bottomOffset) 
+			// );
+		}
+
+		protected void NotifyHealthChanged()
+		{
+			HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+		}
+	}
+}
