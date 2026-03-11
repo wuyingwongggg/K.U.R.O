@@ -11,7 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://bk5a020vl054x" path="res://assets/environments/影子.png" id="5_8xfgw"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
-[ext_resource type="Script" uid="uid://ptokvvam0xso" path="res://scripts/actors/enemies/attacks/EnemyB1FatAttackController.cs" id="10_h8apo"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="11"]
 [ext_resource type="Script" uid="uid://3vw4k62inr77" path="res://scripts/actors/enemies/attacks/EnemyChargeEscapeAttack.cs" id="11_ie6to"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="12"]
@@ -21,7 +20,8 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18"]
 [ext_resource type="SpineAtlasResource" uid="uid://drxfxp045pwnu" path="res://assets/spine/demo_enemy/Enemy_B1_thin.atlas" id="19_5i0uy"]
 [ext_resource type="SpineSkeletonFileResource" uid="uid://bhmgtouj2yptc" path="res://assets/spine/demo_enemy/Enemy_B1_thin.spine-json" id="20_8xfgw"]
-[ext_resource type="Script" uid="uid://b46a7dixq64qm" path="res://scripts/actors/enemies/animation/EnemyB1FatSpineAnimationController.cs" id="20_l3qmk"]
+[ext_resource type="Script" uid="uid://ba76cd0fmpc2j" path="res://scripts/actors/enemies/animation/EnemyB1ThinSpineAnimationController.cs" id="22_8xfgw"]
+[ext_resource type="Script" uid="uid://cdjlv11ra7aby" path="res://scripts/actors/enemies/attacks/EnemyB1ThinAttackController.cs" id="23_1hw8y"]
 
 [sub_resource type="Resource" id="Resource_ie6to"]
 script = ExtResource("3_h8apo")
@@ -124,8 +124,9 @@ script = ExtResource("4")
 script = ExtResource("5")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
-script = ExtResource("10_h8apo")
+script = ExtResource("23_1hw8y")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
+AttackAreaPath = NodePath("../../../Sprite2D/AttackDetectionArea")
 
 [node name="ChargeEscapeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("11_ie6to")
@@ -141,6 +142,7 @@ metadata/attack_weight = 60.0
 script = ExtResource("12_4a6st")
 WarmupDuration = 1.0
 CooldownDuration = 0.5
+AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
@@ -172,4 +174,6 @@ preview_frame = false
 preview_time = 0.0
 
 [node name="AnimationController" type="Node" parent="."]
-script = ExtResource("20_l3qmk")
+script = ExtResource("22_8xfgw")
+AttackControllerPath = NodePath("../StateMachine/Attack/AttackController")
+SpineSpritePath = NodePath("../SpineSprite")

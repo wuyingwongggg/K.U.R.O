@@ -102,6 +102,7 @@ namespace Kuros.UI
 			_currentLeft = 0;
 			_currentRight = 0;
 			_timeRemaining = 0f;
+			ResetFlashState();
 			SetProcess(false);
 			SetHudVisibility(false);
 		}
@@ -181,9 +182,25 @@ namespace Kuros.UI
 			Visible = show;
 		}
 
+		private void ResetFlashState()
+		{
+			_leftFlashTimer = 0f;
+			_rightFlashTimer = 0f;
+			if (_leftButton != null)
+			{
+				_leftButton.Modulate = _leftBaseColor;
+			}
+
+			if (_rightButton != null)
+			{
+				_rightButton.Modulate = _rightBaseColor;
+			}
+		}
+
 		private void HideSequenceImmediate()
 		{
 			_sequenceActive = false;
+			ResetFlashState();
 			SetHudVisibility(false);
 			SetProcess(false);
 		}

@@ -47,7 +47,7 @@ size = Vector2(723, 1355)
 scale = Vector2(0.16, 0.16)
 script = ExtResource("1_om6pm")
 AttackArea = NodePath("AttackArea")
-AttackArea = NodePath("AttackArea")
+
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 
