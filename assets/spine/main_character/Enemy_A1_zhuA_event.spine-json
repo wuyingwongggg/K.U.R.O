@@ -9,6 +9,10 @@
 	"images": "./images/",
 	"audio": "./audio"
 },
+
+"events": {
+    "hit": { "int": 0 }
+},
 "bones": [
 	{ "name": "root" },
 	{ "name": "bone", "parent": "root", "x": -8.11, "y": 309.73 },
@@ -614,6 +618,12 @@
 				]
 			}
 		},
+
+		"events": [
+        	{ "time": 0.2, "name": "hit", "int": 1 },
+    		{ "time": 0.44, "name": "hit", "int": 2 }
+    	],
+
 		"bones": {
 			"bone": {
 				"rotate": [
@@ -1547,6 +1557,11 @@
 				]
 			}
 		},
+
+		"events": [
+    		{ "time": 0.18, "name": "hit", "int": 1 }
+    	],
+
 		"bones": {
 			"WQ": {
 				"rotate": [
@@ -2390,6 +2405,13 @@
 				]
 			}
 		},
+
+		"events": [
+			{ "time": 0.2, "name": "hit", "int": 1 },
+        	{ "time": 0.4, "name": "hit", "int": 2 },
+    		{ "time": 0.7, "name": "hit", "int": 3 }
+    	],
+
 		"bones": {
 			"WQ": {
 				"rotate": [
