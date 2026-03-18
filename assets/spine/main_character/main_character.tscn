@@ -1,11 +1,11 @@
-[gd_scene load_steps=32 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=30 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="SpineAtlasResource" uid="uid://c4cx1o154rxba" path="res://assets/spine/main_character/Enemy_A1_zhuA.atlas" id="1_kqj82"]
 [ext_resource type="Script" uid="uid://cvdc7xppqnpun" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://3n5fjd2ar6q0" path="res://assets/spine/main_character/Enemy_A1_zhuA.spine-json" id="2_om6pm"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_tdm7a"]
 [ext_resource type="Script" uid="uid://c1otj8df5nwyr" path="res://scripts/controllers/SpineController.gd" id="4_ixg0x"]
-[ext_resource type="SpineSkeletonFileResource" uid="uid://cx605r6mqnu5f" path="res://assets/spine/main_character/Enemy_A1_zhuA_event.spine-json" id="5_tdm7a"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="5_y1hyr"]
 [ext_resource type="Script" uid="uid://0u5whf0qv6i5" path="res://scripts/actors/heroes/states/PlayerIdleState.cs" id="6_r1uv4"]
 [ext_resource type="Script" uid="uid://cue6hp5ws2264" path="res://scripts/actors/heroes/states/PlayerWalkState.cs" id="7_mcamx"]
@@ -32,19 +32,13 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_ixg0x"]
 atlas_res = ExtResource("1_kqj82")
-skeleton_file_res = ExtResource("5_tdm7a")
+skeleton_file_res = ExtResource("2_om6pm")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ixg0x"]
-size = Vector2(1000.00006, 360.79547)
+size = Vector2(1106.0608, 360.79547)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
-size = Vector2(557.5758, 409.09103)
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_tdm7a"]
-radius = 957.5757
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0y2r2"]
-size = Vector2(1236.8182, 290.90912)
+size = Vector2(657, 1236)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_om6pm"]
 size = Vector2(723, 1355)
@@ -54,7 +48,6 @@ scale = Vector2(0.33, 0.33)
 script = ExtResource("1_om6pm")
 AttackArea = NodePath("AttackArea")
 AttackArea = NodePath("AttackArea")
-AttackDamage = 1.0
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 
@@ -68,32 +61,22 @@ texture = ExtResource("3_tdm7a")
 skeleton_data_res = SubResource("SpineSkeletonDataResource_ixg0x")
 bones_thickness = 10.09
 preview_skin = "Default"
-preview_animation = "attack_thrust"
+preview_animation = "attack_swing"
 preview_frame = true
-preview_time = 0.22
+preview_time = 0.03
 script = ExtResource("4_ixg0x")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-39.39393, -174.1477)
+position = Vector2(-19.696936, -174.1477)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_ixg0x")
 
 [node name="AttackArea" type="Area2D" parent="."]
 collision_mask = 3
 
-[node name="Brawl_HitBox" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(366.66663, -589.3937)
-scale = Vector2(0.9999999, 0.9999999)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(300, -638)
 shape = SubResource("RectangleShape2D_kqj82")
-
-[node name="Slash_HitBox" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(493.93936, -681.8181)
-shape = SubResource("CircleShape2D_tdm7a")
-
-[node name="Stab_HitBox" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(830.303, -399.99997)
-scale = Vector2(0.9999999, 0.9999999)
-shape = SubResource("RectangleShape2D_0y2r2")
 
 [node name="GrabArea" type="Area2D" parent="."]
 

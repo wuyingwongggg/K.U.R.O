@@ -4,9 +4,9 @@
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="3"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="4"]
-[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_otg7e"]
+[ext_resource type="Shader" uid="uid://bdu6bfs07ahhw" path="res://shaders/materials/shadow.gdshader" id="4_otg7e"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="5"]
-[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_2sv5o"]
+[ext_resource type="Texture2D" uid="uid://bk5a020vl054x" path="res://assets/environments/影子.png" id="5_2sv5o"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="8"]
@@ -40,7 +40,6 @@ radius = 20.588236
 height = 93.46405
 
 [node name="Enemy_B1_fat" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
-scale = Vector2(1.5, 1.5)
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1")
