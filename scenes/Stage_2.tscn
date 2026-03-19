@@ -56,7 +56,6 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
 [node name="Enemy_B1_fat" parent="World" instance=ExtResource("3_qokfb")]
-visible = false
 position = Vector2(-1325, 415)
 scale = Vector2(1.4999998, 1.4999998)
 

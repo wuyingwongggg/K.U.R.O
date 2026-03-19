@@ -41,10 +41,10 @@ size = Vector2(1000.00006, 360.79547)
 size = Vector2(557.5758, 409.09103)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_tdm7a"]
-radius = 957.5757
+radius = 1024.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0y2r2"]
-size = Vector2(1236.8182, 290.90912)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tdm7a"]
+size = Vector2(1217.9167, 241.51517)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_om6pm"]
 size = Vector2(723, 1355)
@@ -68,12 +68,13 @@ texture = ExtResource("3_tdm7a")
 skeleton_data_res = SubResource("SpineSkeletonDataResource_ixg0x")
 bones_thickness = 10.09
 preview_skin = "Default"
-preview_animation = "attack_thrust"
+preview_animation = "attack_swing"
 preview_frame = true
-preview_time = 0.22
+preview_time = 0.53
 script = ExtResource("4_ixg0x")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
 position = Vector2(-39.39393, -174.1477)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_ixg0x")
@@ -85,17 +86,21 @@ collision_mask = 3
 position = Vector2(366.66663, -589.3937)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
+disabled = true
 
 [node name="Slash_HitBox" type="CollisionShape2D" parent="AttackArea"]
 position = Vector2(493.93936, -681.8181)
 shape = SubResource("CircleShape2D_tdm7a")
+disabled = true
 
 [node name="Stab_HitBox" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(830.303, -399.99997)
+position = Vector2(857.7083, -363.63632)
 scale = Vector2(0.9999999, 0.9999999)
-shape = SubResource("RectangleShape2D_0y2r2")
+shape = SubResource("RectangleShape2D_tdm7a")
+disabled = true
 
 [node name="GrabArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
 position = Vector2(342.5, -656)
