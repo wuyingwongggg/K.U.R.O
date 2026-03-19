@@ -20,6 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
 		[Export(PropertyHint.Range, "0,2000,10")] public float DashDistance = 0f;
         [Export] public bool LockFacingDuringDash = true;
+		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeGrab = 24f;
 
         [ExportCategory("Effects")]
 		[Export(PropertyHint.Range, "0,10,0.1")] public float AppliedFrozenDuration = 5.0f;
@@ -47,6 +48,9 @@ namespace Kuros.Actors.Enemies.Attacks
 		private bool _skipRecoveryGrab;
 		private float _postAttackCooldown;
 		private bool _pendingCooldownExit;
+        private Vector2 _dashPreviousPosition;
+        private float _dashDistanceTraveled;
+        private bool _canAttemptGrab;
 
         protected override void OnInitialized()
         {
@@ -123,6 +127,9 @@ namespace Kuros.Actors.Enemies.Attacks
 			_skipRecoveryGrab = false;
 			_postAttackCooldown = 0f;
 			_pendingCooldownExit = false;
+			_dashPreviousPosition = Enemy?.GlobalPosition ?? Vector2.Zero;
+			_dashDistanceTraveled = 0f;
+			_canAttemptGrab = MinDashDistanceBeforeGrab <= 0f;
 			PrepareDashTowardsPlayer();
 		}
 
@@ -166,6 +173,13 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			if (HasActiveGrab)
 			{
+				return;
+			}
+
+			if (!_canAttemptGrab)
+			{
+				StartPostCooldown();
+				_pendingCooldownExit = true;
 				return;
 			}
 
@@ -485,7 +499,9 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (!_isDashing || Enemy == null) return;
 
-			if (Enemy.PlayerTarget != null && IsPlayerInsideGrabZone(Enemy.PlayerTarget))
+			UpdateDashTravelProgress();
+
+			if (_canAttemptGrab && Enemy.PlayerTarget != null && IsPlayerInsideGrabZone(Enemy.PlayerTarget))
 			{
 				FinishDash(forceGrab: true);
 				return;
@@ -522,11 +538,13 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			Enemy.Velocity = Vector2.Zero;
+			_dashPreviousPosition = Enemy.GlobalPosition;
 			_isDashing = false;
 			if (forceGrab)
 			{
 				_skipRecoveryGrab = true;
 				ForceEnterRecoveryPhase();
+				_canAttemptGrab = true;
 				if (!TryExecuteGrab())
 				{
 					StartPostCooldown();
@@ -537,6 +555,22 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			ForceEnterRecoveryPhase();
         }
+
+		private void UpdateDashTravelProgress()
+		{
+			if (Enemy == null) return;
+			Vector2 currentPosition = Enemy.GlobalPosition;
+			float moved = (_dashPreviousPosition - currentPosition).Length();
+			if (moved > 0f)
+			{
+				_dashDistanceTraveled += moved;
+				_dashPreviousPosition = currentPosition;
+				if (!_canAttemptGrab && _dashDistanceTraveled >= MinDashDistanceBeforeGrab)
+				{
+					_canAttemptGrab = true;
+				}
+			}
+		}
 
         private Area2D? ResolveArea(NodePath path)
         {

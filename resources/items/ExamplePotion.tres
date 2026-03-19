@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=7 format=3 uid="uid://4cn6dlnysx75"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=7 format=3 uid="uid://4cn6dlnysx75"]
 
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="1"]
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_47noo"]
@@ -20,6 +20,6 @@ Description = "用于测试拾取与投掷流程的示例药水。"
 Icon = ExtResource("2")
 Category = "Consumable"
 MaxStackSize = 5
-AttributeEntries = Array[Resource]([SubResource("Attribute_AttackPower")])
+AttributeEntries = Array[ExtResource("1_47noo")]([SubResource("Attribute_AttackPower")])
 WeaponSkillResources = Array[Resource]([ExtResource("3")])
 WorldScenePath = "res://scenes/items/ExampleWorldItem.tscn"

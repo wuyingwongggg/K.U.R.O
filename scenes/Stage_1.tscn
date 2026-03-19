@@ -1,12 +1,11 @@
-[gd_scene load_steps=56 format=3 uid="uid://btqx0751t5bx4"]
+[gd_scene load_steps=54 format=3 uid="uid://btqx0751t5bx4"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_givaq"]
 [ext_resource type="PackedScene" uid="uid://b1ljb2q212v3d" path="res://scenes/environments/floor.tscn" id="2_refik"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://assets/spine/main_character/main_character.tscn" id="4_givaq"]
-[ext_resource type="PackedScene" uid="uid://wqcdwpyo1nji" path="res://scenes/actors/enemies/Enemy_B1_thin.tscn" id="6_oyb1p"]
 [ext_resource type="Script" uid="uid://cn2bsvambjids" path="res://scripts/controllers/EnemySpawnController.cs" id="21_kt4h1"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/enemies/Enemy_B1_fat.tscn" id="22_uvtj7"]
-[ext_resource type="Texture2D" uid="uid://cggx01ms6yloy" path="res://textures/environments/wall/25.12.3 卧室下墙壁.png" id="26_yy663"]
+[ext_resource type="Texture2D" uid="uid://sinhag8w2ijl" path="res://textures/environments/wall/25.12.3 卧室下墙壁.png" id="26_yy663"]
 [ext_resource type="PackedScene" path="res://scenes/actors/npc/SimpleNPC.tscn" id="27_28u5u"]
 [ext_resource type="PackedScene" uid="uid://cwnslqteb78nc" path="res://scenes/objects/Static_A1_sink.tscn" id="28_61adh"]
 [ext_resource type="PackedScene" uid="uid://dh4uaik8ybpc" path="res://scenes/objects/Static_A1_stove.tscn" id="29_223i8"]
@@ -26,7 +25,6 @@
 [ext_resource type="PackedScene" uid="uid://0g621ssvm2cp" path="res://scenes/items/Weapon_A2_table.tscn" id="43_15qi6"]
 [ext_resource type="PackedScene" uid="uid://4cqtahrpuji0" path="res://scenes/items/Weapon_A1_table_lamp.tscn" id="43_kdjwv"]
 [ext_resource type="PackedScene" uid="uid://b781tdbk3jhr6" path="res://scenes/items/Weapon_A1_cabinet.tscn" id="44_cl643"]
-[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/enemies/Enemy_B2_fat02.tscn" id="45_ek0oq"]
 [ext_resource type="PackedScene" uid="uid://o8goa34wkaov" path="res://scenes/items/Weapon_A1_cat.tscn" id="45_wri45"]
 [ext_resource type="PackedScene" uid="uid://b77cre3oyr2eq" path="res://scenes/items/Weapon_A1_dock.tscn" id="46_wx2j4"]
 [ext_resource type="PackedScene" uid="uid://j25a4e8oawlb" path="res://scenes/items/Weapon_A1_chair2.tscn" id="47_lf7i8"]
@@ -110,9 +108,6 @@ script = ExtResource("21_kt4h1")
 [node name="EnemyInstance" parent="World/EnemySpawnController" instance=ExtResource("22_uvtj7")]
 position = Vector2(1369, 456)
 Speed = 50.0
-
-[node name="Enemy_B1_thin" parent="World" instance=ExtResource("6_oyb1p")]
-position = Vector2(993, 851)
 
 [node name="Sprite2D" type="Sprite2D" parent="World"]
 position = Vector2(1915, 487)
@@ -329,9 +324,6 @@ position = Vector2(2409, 471)
 [node name="Weapon_A0_bowl2" parent="World" instance=ExtResource("33_2y4e6")]
 z_as_relative = false
 position = Vector2(2402, 467)
-
-[node name="Enemy_B2_fat02" parent="World" instance=ExtResource("45_ek0oq")]
-position = Vector2(760, 700)
 
 [node name="Surface" type="Node2D" parent="."]
 z_index = 1

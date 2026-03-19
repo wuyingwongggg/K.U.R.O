@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://6ghjqyjkk37w"]
+
+[ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_inoct"]
+[ext_resource type="Texture2D" uid="uid://cp3tj4mexoi30" path="res://assets/weapons/伞.png" id="1_kyvej"]
+[ext_resource type="Resource" uid="uid://c01sltuo7404y" path="res://resources/items/Weapon_Stab_umbrella.tres" id="2_inoct"]
+
+[sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
+size = Vector2(767, 74)
+
+[sub_resource type="RectangleShape2D" id="TriggerShape_yahcm"]
+size = Vector2(767, 70)
+
+[node name="WeaponStabUmbrella" type="CharacterBody2D"]
+scale = Vector2(0.5, 0.5)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_inoct")
+ItemDefinition = ExtResource("2_inoct")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1_kyvej")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(111.5, 5)
+scale = Vector2(0.5, 0.5)
+shape = SubResource("BodyShape_rr6vl")
+
+[node name="TriggerArea" type="Area2D" parent="."]
+scale = Vector2(0.5, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TriggerArea"]
+position = Vector2(108.5, 2)
+scale = Vector2(0.5, 0.5)
+shape = SubResource("TriggerShape_yahcm")

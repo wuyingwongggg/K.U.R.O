@@ -1,6 +1,8 @@
 using Godot;
 using Godot.Collections;
 using Kuros.Actors.Heroes;
+using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Actors.Heroes.Attacks
 {
@@ -44,6 +46,24 @@ namespace Kuros.Actors.Heroes.Attacks
         [Export] public string AnimationName = "animations/attack";
         [Export] public bool RestartAnimationOnLoop = true;
 
+            public enum HitEffectAnchor
+        {
+            Target,
+            Player,
+            AttackArea,
+            CustomNode
+        }
+
+        [ExportCategory("Effects")]
+        [Export] public PackedScene? HitEffectScene;
+        [Export] public NodePath HitEffectParentPath = new();
+        [Export(PropertyHint.Enum, "Target,Player,AttackArea,CustomNode")] public HitEffectAnchor HitEffectAnchorMode = HitEffectAnchor.Target;
+        [Export] public NodePath HitEffectAnchorPath = new();
+        [Export(PropertyHint.Range, "-1024,1024,1")] public int HitEffectZIndex = 100;
+        [Export] public bool HitEffectForceTopLevel = false;
+        [Export] public Vector2 HitEffectLocalOffset = Vector2.Zero;
+        [Export] public bool HitEffectMirrorFacing = true;
+
         [ExportCategory("Requirements")]
         [Export] public bool RequiresTargetInRange = false;
         [Export] public bool RequiresResource = false;
@@ -60,6 +80,10 @@ namespace Kuros.Actors.Heroes.Attacks
         private float _phaseTimer = 0f;
         private float _cooldownTimer = 0f;
         private bool _bufferedInput = false;
+        private bool _hitEffectSubscribed = false;
+        private bool _hitWindowActive = false;
+        private Node? _hitEffectParent;
+        private Node2D? _customAnchor;
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0f;
@@ -78,7 +102,19 @@ namespace Kuros.Actors.Heroes.Attacks
                 AttackArea = Player.AttackArea;
             }
 
+            InitializeHitEffectSupport();
+
             OnInitialized();
+        }
+
+        public override void _ExitTree()
+        {
+            base._ExitTree();
+            if (_hitEffectSubscribed)
+            {
+                DamageEventBus.Unsubscribe(OnDamageResolved);
+                _hitEffectSubscribed = false;
+            }
         }
 
         protected virtual void OnInitialized() { }
@@ -285,7 +321,15 @@ namespace Kuros.Actors.Heroes.Attacks
                     break;
                 case AttackPhase.Active:
                     _phaseTimer = ActiveDuration;
-                    OnActivePhase();
+                    _hitWindowActive = HitEffectScene != null;
+                    try
+                    {
+                        OnActivePhase();
+                    }
+                    finally
+                    {
+                        _hitWindowActive = false;
+                    }
                     break;
                 case AttackPhase.Recovery:
                     _phaseTimer = RecoveryDuration;
@@ -325,6 +369,170 @@ namespace Kuros.Actors.Heroes.Attacks
             Player.PerformAttackCheck();
 
             Player.AttackDamage = originalDamage;
+        }
+
+        private void InitializeHitEffectSupport()
+        {
+            if (HitEffectScene == null || Player == null)
+            {
+                if (_hitEffectSubscribed)
+                {
+                    DamageEventBus.Unsubscribe(OnDamageResolved);
+                    _hitEffectSubscribed = false;
+                }
+                _hitEffectParent = null;
+                return;
+            }
+
+            _hitEffectParent = ResolveHitEffectParent();
+            _customAnchor = ResolveCustomAnchor();
+
+            if (!_hitEffectSubscribed)
+            {
+                DamageEventBus.Subscribe(OnDamageResolved);
+                _hitEffectSubscribed = true;
+            }
+        }
+
+        private Node? ResolveHitEffectParent()
+        {
+            if (!HitEffectParentPath.IsEmpty && Player != null)
+            {
+                return Player.GetNodeOrNull<Node>(HitEffectParentPath);
+            }
+
+            return Player?.GetParent();
+        }
+
+        private Node2D? ResolveCustomAnchor()
+        {
+            if (!HitEffectAnchorPath.IsEmpty && Player != null)
+            {
+                return Player.GetNodeOrNull<Node2D>(HitEffectAnchorPath);
+            }
+
+            return null;
+        }
+
+        private void OnDamageResolved(GameActor attacker, GameActor target, int damage)
+        {
+            if (!_hitWindowActive || HitEffectScene == null)
+            {
+                return;
+            }
+
+            if (attacker != Player || target is not Node2D targetNode)
+            {
+                return;
+            }
+
+            var parent = GetValidHitEffectParent();
+            if (parent == null)
+            {
+                GD.PushWarning($"[{GetType().Name}] 无法生成击打特效，未找到父节点。");
+                return;
+            }
+
+            var instance = HitEffectScene.Instantiate();
+            if (instance is Node2D effectNode)
+            {
+                parent.AddChild(effectNode);
+                if (HitEffectForceTopLevel)
+                {
+                    effectNode.TopLevel = true;
+                }
+                effectNode.ZAsRelative = false;
+                effectNode.ZIndex = HitEffectZIndex;
+                effectNode.GlobalPosition = GetHitEffectPosition(targetNode);
+                ApplyFacingToEffect(effectNode);
+                TriggerHitEffect(effectNode);
+            }
+            else
+            {
+                GD.PushWarning($"[{GetType().Name}] HitEffectScene 需要是 Node2D 场景。");
+                instance.QueueFree();
+            }
+        }
+
+        private Node? GetValidHitEffectParent()
+        {
+            if (_hitEffectParent != null && _hitEffectParent.IsInsideTree())
+            {
+                return _hitEffectParent;
+            }
+
+            _hitEffectParent = ResolveHitEffectParent();
+            return _hitEffectParent;
+        }
+
+        private Node2D? GetValidCustomAnchor()
+        {
+            if (_customAnchor != null && _customAnchor.IsInsideTree())
+            {
+                return _customAnchor;
+            }
+
+            _customAnchor = ResolveCustomAnchor();
+            return _customAnchor;
+        }
+
+        private Vector2 GetHitEffectPosition(Node2D targetNode)
+        {
+            Vector2 basePosition = HitEffectAnchorMode switch
+            {
+                HitEffectAnchor.Player => Player?.GlobalPosition ?? targetNode.GlobalPosition,
+                HitEffectAnchor.AttackArea => AttackArea?.GlobalPosition ?? targetNode.GlobalPosition,
+                HitEffectAnchor.CustomNode => GetValidCustomAnchor()?.GlobalPosition ?? targetNode.GlobalPosition,
+                _ => targetNode.GlobalPosition
+            };
+
+            Vector2 offset = HitEffectLocalOffset;
+            if (HitEffectMirrorFacing && Player != null)
+            {
+                float sign = Player.FacingRight ? 1f : -1f;
+                offset.X *= sign;
+            }
+
+            return basePosition + offset;
+        }
+
+        private void ApplyFacingToEffect(Node2D effectNode)
+        {
+            if (!HitEffectMirrorFacing || Player == null)
+            {
+                return;
+            }
+
+            float sign = Player.FacingRight ? 1f : -1f;
+            Vector2 scale = effectNode.Scale;
+            scale.X = Mathf.Abs(scale.X) * sign;
+            effectNode.Scale = scale;
+        }
+
+        private void TriggerHitEffect(Node2D effectNode)
+        {
+            if (effectNode.HasMethod("restart"))
+            {
+                effectNode.Call("restart");
+            }
+
+            if (effectNode.HasMethod("set_emitting"))
+            {
+                effectNode.Call("set_emitting", true);
+            }
+            else if (effectNode.HasMethod("set_emission_enabled"))
+            {
+                effectNode.Call("set_emission_enabled", true);
+            }
+
+            if (effectNode.HasSignal("finished"))
+            {
+                var callable = Callable.From(() => effectNode.QueueFree());
+                if (!effectNode.IsConnected("finished", callable))
+                {
+                    effectNode.Connect("finished", callable);
+                }
+            }
         }
     }
 }

@@ -1,11 +1,11 @@
-[gd_scene load_steps=32 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=31 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="SpineAtlasResource" uid="uid://c4cx1o154rxba" path="res://assets/spine/main_character/Enemy_A1_zhuA.atlas" id="1_kqj82"]
-[ext_resource type="Script" uid="uid://cvdc7xppqnpun" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
-[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
-[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_tdm7a"]
-[ext_resource type="Script" uid="uid://c1otj8df5nwyr" path="res://scripts/controllers/SpineController.gd" id="4_ixg0x"]
-[ext_resource type="SpineSkeletonFileResource" uid="uid://cx605r6mqnu5f" path="res://assets/spine/main_character/Enemy_A1_zhuA_event.spine-json" id="5_tdm7a"]
+[ext_resource type="Script" uid="uid://befx3l05f0eph" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
+[ext_resource type="Shader" uid="uid://bdu6bfs07ahhw" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://dpgx38fv62p11" path="res://assets/spine/main_character/Enemy_A1_zhuA.spine-json" id="2_om6pm"]
+[ext_resource type="Texture2D" uid="uid://bk5a020vl054x" path="res://assets/environments/影子.png" id="3_tdm7a"]
+[ext_resource type="Script" uid="uid://den5n78y0t6q5" path="res://scripts/controllers/SpineController.gd" id="4_ixg0x"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="5_y1hyr"]
 [ext_resource type="Script" uid="uid://0u5whf0qv6i5" path="res://scripts/actors/heroes/states/PlayerIdleState.cs" id="6_r1uv4"]
 [ext_resource type="Script" uid="uid://cue6hp5ws2264" path="res://scripts/actors/heroes/states/PlayerWalkState.cs" id="7_mcamx"]
@@ -13,11 +13,12 @@
 [ext_resource type="Script" uid="uid://c2pgsls8pb7oh" path="res://scripts/actors/heroes/attacks/PlayerBasicMeleeAttack.cs" id="9_13pt2"]
 [ext_resource type="Script" uid="uid://l40es7irdvdw" path="res://scripts/actors/heroes/states/PlayerHitState.cs" id="10_utqjm"]
 [ext_resource type="Script" uid="uid://d1g4amacs13a3" path="res://scripts/actors/heroes/states/PlayerFrozenState.cs" id="11_t3prk"]
+[ext_resource type="PackedScene" uid="uid://bxgdthwh67px6" path="res://shaders/attack_star.tscn" id="12_0y2r2"]
 [ext_resource type="Script" uid="uid://ba1kd5qgh17ag" path="res://scripts/actors/heroes/states/PlayerRunState.cs" id="12_4ht1x"]
 [ext_resource type="Script" uid="uid://bsa4kolrnan6p" path="res://scripts/actors/heroes/states/PlayerDyingState.cs" id="13_tdm7a"]
 [ext_resource type="Script" uid="uid://cp40kowtn1ho3" path="res://scripts/actors/heroes/states/PlayerDeadState.cs" id="14_0y2r2"]
-[ext_resource type="Script" uid="uid://vr51ymsfyxws" path="res://scripts/actors/heroes/states/PlayerPickUpState.cs" id="15_0y6jy"]
-[ext_resource type="Script" uid="uid://dijk8ngvrs5g0" path="res://scripts/actors/heroes/states/PlayerThrowState.cs" id="16_oc5yk"]
+[ext_resource type="Script" uid="uid://ch33kuwv8bhip" path="res://scripts/actors/heroes/states/PlayerPickUpState.cs" id="15_0y6jy"]
+[ext_resource type="Script" uid="uid://b162xt2i3qc4e" path="res://scripts/actors/heroes/states/PlayerThrowState.cs" id="16_oc5yk"]
 [ext_resource type="Script" uid="uid://b6vgqpdrtg1lh" path="res://scripts/actors/heroes/PlayerInventoryComponent.cs" id="17_13pt2"]
 [ext_resource type="Script" uid="uid://v8exb3wpvh6d" path="res://scripts/actors/heroes/PlayerWeaponSkillController.cs" id="18_utqjm"]
 [ext_resource type="Script" uid="uid://b0t8cfl3khjix" path="res://scripts/actors/heroes/PlayerItemInteractionComponent.cs" id="19_t3prk"]
@@ -50,11 +51,16 @@ size = Vector2(1217.9167, 241.51517)
 size = Vector2(723, 1355)
 
 [node name="MainCharacter" type="CharacterBody2D" node_paths=PackedStringArray("AttackArea", "AttackArea", "StateMachine", "EffectController")]
+z_index = 1
 scale = Vector2(0.33, 0.33)
 script = ExtResource("1_om6pm")
+WalkAnimationSpeed = 2.0
+RunAnimationSpeed = 3.0
 AttackArea = NodePath("AttackArea")
 AttackArea = NodePath("AttackArea")
-AttackDamage = 1.0
+LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
+Speed = 500.0
+AttackDamage = 3.0
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 
@@ -72,6 +78,12 @@ preview_animation = "attack_swing"
 preview_frame = true
 preview_time = 0.53
 script = ExtResource("4_ixg0x")
+
+[node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(-0.011810303, 0.0173645)
+scale = Vector2(1.0000002, 0.99999994)
+bone_name = "WQ"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-39.39393, -174.1477)
@@ -119,6 +131,9 @@ script = ExtResource("8_rfchi")
 
 [node name="BasicMeleeAttack" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_13pt2")
+HitEffectScene = ExtResource("12_0y2r2")
+HitEffectAnchorMode = 2
+HitEffectForceTopLevel = true
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("10_utqjm")
@@ -144,17 +159,22 @@ script = ExtResource("16_oc5yk")
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("17_13pt2")
 
-[node name="WeaponSkillController" type="Node" parent="."]
+[node name="WeaponSkillController" type="Node" parent="." node_paths=PackedStringArray("Inventory")]
 script = ExtResource("18_utqjm")
+Inventory = NodePath("../Inventory")
 
-[node name="ItemInteraction" type="Node" parent="."]
+[node name="ItemInteraction" type="Node" parent="." node_paths=PackedStringArray("InventoryComponent")]
 script = ExtResource("19_t3prk")
+InventoryComponent = NodePath("../Inventory")
+InteractionAreaPath = NodePath("")
 
 [node name="ItemAttachment" type="Node" parent="." node_paths=PackedStringArray("Inventory")]
 script = ExtResource("20_4ht1x")
 Inventory = NodePath("../Inventory")
 AttachmentParentPath = NodePath("../SpineSprite")
-IconOffset = Vector2(0, 0)
+SpineSlotNodePath = NodePath("../SpineSprite/SpineBoneNode")
+SpineBoneNodePaths = Array[NodePath]([NodePath("../SpineSprite/SpineBoneNode")])
+BoneIconOffset = Vector2(21, 0)
 
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("21_utqjm")

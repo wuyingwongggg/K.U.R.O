@@ -35,6 +35,7 @@ namespace Kuros.Actors.Heroes.States
 		public override void Enter()
 		{
 			Player.Velocity = Vector2.Zero;
+			AlignFacingToInput();
 			
 			// Save original speed scale before modifying
 			if (Actor.AnimPlayer != null)
@@ -101,6 +102,15 @@ namespace Kuros.Actors.Heroes.States
 			}
 
 			return false;
+		}
+
+		private void AlignFacingToInput()
+		{
+			Vector2 input = GetMovementInput();
+			if (Mathf.Abs(input.X) > 0.01f)
+			{
+				Player.FlipFacing(input.X > 0f);
+			}
 		}
 	}
 }

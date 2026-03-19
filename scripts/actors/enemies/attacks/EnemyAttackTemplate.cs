@@ -30,6 +30,10 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public string AnimationName = "animations/attack";
         [Export] public NodePath AttackAreaPath = new NodePath();
 
+        [ExportCategory("Animation Sync")]
+        [Export] public bool RequireAnimationHitTrigger = false;
+        [Export] public bool AllowMultipleAnimationHits = false;
+
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
         protected Area2D? AttackArea { get; private set; }
@@ -37,6 +41,7 @@ namespace Kuros.Actors.Enemies.Attacks
         private AttackPhase _phase = AttackPhase.Idle;
         private float _phaseTimer = 0.0f;
         private float _cooldownTimer = 0.0f;
+        private bool _animationHitReady = false;
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0.0f;
@@ -136,12 +141,19 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnActivePhase()
         {
-            Enemy.PerformAttack();
+            if (RequireAnimationHitTrigger)
+            {
+                _animationHitReady = true;
+                return;
+            }
+
+            PerformAttackNow();
         }
 
         protected virtual void OnRecoveryStarted()
         {
             Enemy.Velocity = Enemy.Velocity.MoveToward(Vector2.Zero, Enemy.Speed);
+            _animationHitReady = false;
         }
 
         protected virtual void OnAttackFinished() { }
@@ -191,11 +203,37 @@ namespace Kuros.Actors.Enemies.Attacks
                     SetPhase(AttackPhase.Active);
                     break;
                 case AttackPhase.Active:
+                    _animationHitReady = false;
                     SetPhase(AttackPhase.Recovery);
                     break;
                 case AttackPhase.Recovery:
                     SetPhase(AttackPhase.Idle);
                     break;
+            }
+        }
+
+        protected void PerformAttackNow()
+        {
+            Enemy.PerformAttack();
+        }
+
+        public void TriggerAnimationHit()
+        {
+            if (!RequireAnimationHitTrigger)
+            {
+                return;
+            }
+
+            if (!_animationHitReady)
+            {
+                return;
+            }
+
+            PerformAttackNow();
+
+            if (!AllowMultipleAnimationHits)
+            {
+                _animationHitReady = false;
             }
         }
     }

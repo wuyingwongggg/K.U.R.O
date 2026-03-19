@@ -1,43 +1,42 @@
 [gd_resource type="Resource" script_class="LootDropTable" load_steps=11 format=3 uid="uid://dj2v23mbucftf"]
 
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_a21nw"]
 [ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="1_table"]
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_entry"]
-[ext_resource type="Resource" uid="uid://churedgku5jju" path="res://resources/items/Weapon_A1_nightstand.tres" id="3_weapon_nightstand"]
-[ext_resource type="Resource" uid="uid://c01sltuo7404y" path="res://resources/items/Weapon_A1_umbrella.tres" id="4_weapon_umbrella"]
-[ext_resource type="Resource" uid="uid://y2gp100lkcom" path="res://resources/items/Weapon_A1_tablelamp.tres" id="5_weapon_tablelamp"]
-[ext_resource type="Resource" uid="uid://6h6lii4j1pf7" path="res://resources/items/Weapon_A2_table.tres" id="6_weapon_table"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_r0x7m"]
+[ext_resource type="Texture2D" uid="uid://cp3tj4mexoi30" path="res://assets/weapons/伞.png" id="3_yfhaw"]
+[ext_resource type="Resource" uid="uid://dj2v1hj15vgiv" path="res://resources/items/skills/WeaponBlockSkill_Umbrella.tres" id="4_o1b4u"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_0syin"]
 
-[sub_resource type="Resource" id="Drop_Nightstand"]
-script = ExtResource("2_entry")
-Item = ExtResource("3_weapon_nightstand")
-DropChance = 0.35
-ImpulseStrength = 260.0
-ImpulseSpreadDegrees = 90.0
+[sub_resource type="Resource" id="Resource_yx6va"]
+script = ExtResource("1_a21nw")
+AttributeId = "attack_power"
+Value = 4.0
+Scaling = 2
+metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
-[sub_resource type="Resource" id="Drop_Umbrella"]
-script = ExtResource("2_entry")
-Item = ExtResource("4_weapon_umbrella")
-DropChance = 0.25
-ImpulseStrength = 240.0
-ImpulseSpreadDegrees = 120.0
+[sub_resource type="Resource" id="Resource_hxipi"]
+script = ExtResource("5_0syin")
+ItemId = "Weapon_Stab_umbrella"
+DisplayName = "伞"
+Description = "是一把伞哦"
+Icon = ExtResource("3_yfhaw")
+Category = "Weapon"
+Tags = Array[String](["戳刺类"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_a21nw")]([SubResource("Resource_yx6va")])
+WeaponSkillResources = Array[Resource]([ExtResource("4_o1b4u")])
+WorldScenePath = "res://scenes/weapons/Weapon_Stab_umbrella.tscn"
+metadata/_custom_type_script = "uid://dfgtff7mly02w"
 
-[sub_resource type="Resource" id="Drop_TableLamp"]
+[sub_resource type="Resource" id="Resource_5acox"]
 script = ExtResource("2_entry")
-Item = ExtResource("5_weapon_tablelamp")
-DropChance = 0.2
-ImpulseStrength = 220.0
-ImpulseSpreadDegrees = 140.0
-
-[sub_resource type="Resource" id="Drop_Table"]
-script = ExtResource("2_entry")
-Item = ExtResource("6_weapon_table")
-DropChance = 0.3
-ImpulseStrength = 260.0
-ImpulseSpreadDegrees = 80.0
+Item = SubResource("Resource_hxipi")
+metadata/_custom_type_script = "uid://nd1f744icb05"
 
 [resource]
 script = ExtResource("1_table")
 MaxDrops = 1
 ScatterRadius = 48.0
 DefaultImpulse = 200.0
-Entries = [SubResource("Drop_Nightstand"), SubResource("Drop_Umbrella"), SubResource("Drop_TableLamp"), SubResource("Drop_Table")]
+Entries = [SubResource("Resource_5acox")]
