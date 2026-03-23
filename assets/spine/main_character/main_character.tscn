@@ -41,7 +41,7 @@ height = 530.3031
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y2r2"]
 radius = 284.8485
-height = 1312.1212
+height = 757.5758
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
 size = Vector2(657, 1236)
@@ -94,7 +94,7 @@ shape = SubResource("CapsuleShape2D_0y6jy")
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
-position = Vector2(0, -650)
+position = Vector2(0, -490.90915)
 shape = SubResource("CapsuleShape2D_0y2r2")
 
 [node name="AttackArea" type="Area2D" parent="."]

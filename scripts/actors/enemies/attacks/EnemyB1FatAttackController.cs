@@ -5,7 +5,7 @@ namespace Kuros.Actors.Enemies.Attacks
 {
     public partial class EnemyB1FatAttackController : EnemyAttackController
     {
-        [Export] public string ChargeAttackName { get; set; } = "ChargeEscapeAttack";
+        [Export] public string Skill1AttackName { get; set; } = "ChargeEscapeAttack";
         [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
         [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
 
@@ -33,7 +33,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 return;
             }
 
-            if (IsAttack(attack.Name, ChargeAttackName))
+            if (IsAttack(attack.Name, Skill1AttackName))
             {
                 _meleeCountSinceCharge = 0;
                 ConfigureNextAttack(forceCharge: false);
@@ -50,12 +50,12 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (forceCharge)
             {
-                TrySetAttackWeight(ChargeAttackName, 1f);
+                TrySetAttackWeight(Skill1AttackName, 1f);
                 TrySetAttackWeight(MeleeAttackName, 0f);
                 return;
             }
 
-            TrySetAttackWeight(ChargeAttackName, 0f);
+            TrySetAttackWeight(Skill1AttackName, 0f);
             TrySetAttackWeight(MeleeAttackName, 1f);
         }
 

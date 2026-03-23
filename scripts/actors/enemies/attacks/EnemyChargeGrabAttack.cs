@@ -21,6 +21,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "0,2000,10")] public float DashDistance = 0f;
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeGrab = 24f;
+		[Export(PropertyHint.Range, "0,5,0.1")] public float SnapshotDelaySeconds = 0f; // 冲刺前等待一段时间再记录玩家位置
 
         [ExportCategory("Effects")]
 		[Export(PropertyHint.Range, "0,10,0.1")] public float AppliedFrozenDuration = 5.0f;
@@ -51,6 +52,14 @@ namespace Kuros.Actors.Enemies.Attacks
         private Vector2 _dashPreviousPosition;
         private float _dashDistanceTraveled;
         private bool _canAttemptGrab;
+		private float _snapshotTimer = 0f;
+		private bool _waitingForSnapshot = false;
+
+		public bool IsEvaluatingEscape => _isEvaluatingEscape;
+		public bool IsDashing => _isDashing;
+		public bool IsDashFinished => _dashFinalized;
+		public virtual bool AreEscapeCountersCleared => true;
+		protected float EscapeTimerRemaining => _escapeTimer;
 
         protected override void OnInitialized()
         {
@@ -140,6 +149,18 @@ namespace Kuros.Actors.Enemies.Attacks
 			{
 				Enemy.Velocity = Vector2.Zero;
 			}
+
+			// 有延迟则等待，无延迟直接快照
+			if (SnapshotDelaySeconds > 0f)
+			{
+				_snapshotTimer = SnapshotDelaySeconds;
+				_waitingForSnapshot = true;
+			}
+			else
+			{
+				_waitingForSnapshot = false;
+				PrepareDashTowardsPlayer();
+			}
         }
 
         protected override void OnActivePhase()
@@ -197,6 +218,18 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
+			// 快照延迟计时
+			if (_waitingForSnapshot)
+			{
+				_snapshotTimer -= (float)delta;
+				if (_snapshotTimer <= 0f)
+				{
+					_waitingForSnapshot = false;
+					PrepareDashTowardsPlayer(); // 延迟结束，此时快照玩家位置
+				}
+				return; 
+			}
+
 			if (_isEvaluatingEscape && _grabbedPlayer != null)
 			{
 				_escapeTimer -= (float)delta;
@@ -241,6 +274,11 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected virtual void UpdateEscapeSequence(SamplePlayer player, double delta)
 		{
 			// 子类实现具体逃脱判定逻辑
+		}
+
+		protected override bool ShouldHoldRecoveryPhase()
+		{
+			return HasActiveGrab;
 		}
 
 		protected void ResolveEscape(bool escaped)
@@ -350,7 +388,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			_playerInsideDetection = false;
 
 			_isEvaluatingEscape = true;
-			_escapeTimer = AppliedFrozenDuration;
+			_escapeTimer = EscapeWindowSeconds > 0f ? EscapeWindowSeconds : AppliedFrozenDuration;
 			OnEscapeSequenceStarted(player);
 			return true;
         }

@@ -92,3 +92,64 @@ func set_empty_animation(root: Node, track_index: int, mix_duration: float) -> b
 	
 	state.set_empty_animation(track_index, mix_duration)
 	return true
+
+func play_partial_loop_animation(root: Node, anim_name: String, loop_start: float, loop_end: float, mix_duration: float = 0.1, time_scale: float = 1.0) -> bool:
+	var sprite = find_spine_node(root)
+	if not sprite:
+		return false
+
+	if loop_end <= loop_start:
+		return false
+
+	var state = sprite.get_animation_state()
+	if not state:
+		return false
+
+	# 先整段从头播到 loop_start，再由 update_partial_loop_animation 维持分段循环
+	var entry = state.set_animation(anim_name, false)
+	if not entry:
+		return false
+
+	if entry.has_method("set_mix_duration"):
+		entry.set_mix_duration(mix_duration)
+	if entry.has_method("set_time_scale"):
+		entry.set_time_scale(time_scale)
+
+	return true
+
+func update_partial_loop_animation(root: Node, track_index: int, loop_start: float, loop_end: float) -> bool:
+	var sprite = find_spine_node(root)
+	if not sprite:
+		return false
+
+	if loop_end <= loop_start:
+		return false
+
+	var state = sprite.get_animation_state()
+	if not state or not state.has_method("get_current"):
+		return false
+
+	var entry = state.get_current(track_index)
+	if not entry:
+		return false
+
+	if not entry.has_method("get_track_time"):
+		return false
+
+	var track_time := float(entry.get_track_time())
+
+	if track_time < loop_end:
+		return true
+
+	var loop_len = maxf(loop_end - loop_start, 0.0001)
+	var wrapped_time = loop_start + fmod(maxf(track_time - loop_start, 0.0), loop_len)
+
+	if not entry.has_method("set_track_time"):
+		return false
+
+	entry.set_track_time(wrapped_time)
+
+	if entry.has_method("set_track_last"):
+		entry.set_track_last(wrapped_time)
+
+	return true
