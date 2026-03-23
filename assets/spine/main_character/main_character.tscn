@@ -1,11 +1,11 @@
-[gd_scene load_steps=33 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=32 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="SpineAtlasResource" uid="uid://c4cx1o154rxba" path="res://assets/spine/main_character/Enemy_A1_zhuA.atlas" id="1_kqj82"]
-[ext_resource type="Script" uid="uid://detwc742etw85" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
+[ext_resource type="Script" uid="uid://cvdc7xppqnpun" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
 [ext_resource type="SpineSkeletonFileResource" uid="uid://d2bdv03eh34y4" path="res://assets/spine/main_character/Enemy_A1_zhuA.spine-json" id="2_om6pm"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_tdm7a"]
-[ext_resource type="Script" uid="uid://cr1webb8mtg2i" path="res://scripts/controllers/SpineController.gd" id="4_ixg0x"]
+[ext_resource type="Script" uid="uid://dupspb74b43lq" path="res://scripts/controllers/SpineController.gd" id="4_ixg0x"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="5_y1hyr"]
 [ext_resource type="Script" uid="uid://0u5whf0qv6i5" path="res://scripts/actors/heroes/states/PlayerIdleState.cs" id="6_r1uv4"]
 [ext_resource type="Script" uid="uid://cue6hp5ws2264" path="res://scripts/actors/heroes/states/PlayerWalkState.cs" id="7_mcamx"]
@@ -35,14 +35,19 @@ shader_parameter/alpha = 0.4
 atlas_res = ExtResource("1_kqj82")
 skeleton_file_res = ExtResource("2_om6pm")
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ixg0x"]
-size = Vector2(1106.0608, 360.79547)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y6jy"]
+radius = 121.11756
+height = 530.3031
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y2r2"]
+radius = 284.8485
+height = 757.5758
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
 size = Vector2(657, 1236)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_om6pm"]
-size = Vector2(723, 1355)
+[sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
+radius = 750.0
 
 [node name="MainCharacter" type="CharacterBody2D" node_paths=PackedStringArray("AttackArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 1
@@ -75,15 +80,22 @@ script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(530.6413, -228.04161)
-rotation = 0.14478073
-scale = Vector2(0.99999994, 0.9999998)
+position = Vector2(-0.0007324218, -0.020812988)
+scale = Vector2(0.99999994, 0.99999994)
 bone_name = "WQ"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-19.696936, -174.1477)
+position = Vector2(0, -108.996)
+rotation = 1.5707964
 scale = Vector2(0.9999999, 0.9999999)
-shape = SubResource("RectangleShape2D_ixg0x")
+shape = SubResource("CapsuleShape2D_0y6jy")
+
+[node name="HitArea" type="Area2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
+position = Vector2(0, -490.90915)
+shape = SubResource("CapsuleShape2D_0y2r2")
 
 [node name="AttackArea" type="Area2D" parent="."]
 
@@ -96,8 +108,8 @@ collision_layer = 7
 collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
-position = Vector2(342.5, -656)
-shape = SubResource("RectangleShape2D_om6pm")
+position = Vector2(0, -656)
+shape = SubResource("CircleShape2D_0y2r2")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("5_y1hyr")

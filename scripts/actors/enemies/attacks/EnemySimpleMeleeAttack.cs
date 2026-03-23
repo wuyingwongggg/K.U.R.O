@@ -45,7 +45,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (Player == null) return false;
             if (AttackArea == null) return Enemy.IsPlayerInAttackRange();
-            return AttackArea.OverlapsBody(Player);
+            return Player.IsHitByArea(AttackArea);
         }
     }
 }

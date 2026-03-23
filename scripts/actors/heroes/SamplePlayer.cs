@@ -15,6 +15,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 {
 	[ExportCategory("Combat")]
 	[Export] public Area2D AttackArea { get; private set; } = null!;
+	[Export] public Area2D? HitArea { get; private set; }
 	private CollisionShape2D? _attackCollisionShape;
 	private readonly Godot.Collections.Array<Rid> _attackQueryExclude = new();
 	public PlayerFrozenState? FrozenState { get; private set; }
@@ -91,6 +92,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		
 		// Fallback: Try to find nodes if not assigned in editor (Backward compatibility)
 		if (AttackArea == null) AttackArea = GetNodeOrNull<Area2D>("AttackArea");
+		if (HitArea == null) HitArea = GetNodeOrNull<Area2D>("HitArea");
 		if (FrozenState == null) FrozenState = StateMachine?.GetNodeOrNull<PlayerFrozenState>("Frozen");
 		if (StatsLabel == null) StatsLabel = GetNodeOrNull<Label>("../UI/PlayerStats");
 		if (InventoryComponent == null) InventoryComponent = GetNodeOrNull<PlayerInventoryComponent>("Inventory");
@@ -654,6 +656,21 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 
 		target.TakeDamage(finalDamage, GlobalPosition, this);
+	}
+
+	public bool IsHitByArea(Area2D? attackerArea)
+	{
+		if (attackerArea == null)
+		{
+			return false;
+		}
+
+		if (HitArea != null && HitArea.IsInsideTree())
+		{
+			return attackerArea.OverlapsArea(HitArea);
+		}
+
+		return attackerArea.OverlapsBody(this);
 	}
 	
 	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null)
