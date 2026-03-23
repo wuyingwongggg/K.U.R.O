@@ -5,6 +5,12 @@ using Kuros.Utils;
 
 public partial class SampleEnemy : GameActor
 {
+	[ExportCategory("Debug")]
+	[Export] public bool EnableStateDebugOverlay = false;
+	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);
+	[Export(PropertyHint.Range, "8,48,1")] public int DebugOverlayFontSize = 14;
+	[Export] public Color DebugOverlayColor = new(1f, 0.95f, 0.2f, 1f);
+
 	[ExportCategory("Detection")]
 	[Export] public Area2D? DetectionArea { get; private set; }
 	
@@ -16,6 +22,7 @@ public partial class SampleEnemy : GameActor
 	
 	private SamplePlayer? _player;
 	private bool _scoreGranted;
+	private string _debugOverlayText = string.Empty;
 	
 	public SampleEnemy()
 	{
@@ -45,6 +52,28 @@ public partial class SampleEnemy : GameActor
 			if (DetectionArea == null) GD.PrintErr("DetectionArea not found at Sprite2D/DetectionArea");
 		}
 		RefreshPlayerReference();
+		UpdateDebugOverlayText();
+		QueueRedraw();
+	}
+
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		if (!EnableStateDebugOverlay) return;
+
+		UpdateDebugOverlayText();
+		QueueRedraw();
+	}
+
+	public override void _Draw()
+	{
+		base._Draw();
+		if (!EnableStateDebugOverlay) return;
+
+		var font = ThemeDB.FallbackFont;
+		if (font == null) return;
+
+		DrawString(font, DebugOverlayOffset, _debugOverlayText, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
 	}
 	
 	public SamplePlayer? PlayerTarget => _player;
@@ -66,7 +95,7 @@ public partial class SampleEnemy : GameActor
 	{
 		RefreshPlayerReference();
 		if (_player == null || AttackArea == null) return false;
-		return AttackArea.OverlapsBody(_player);
+		return _player.IsHitByArea(AttackArea);
 	}
 
 	public Vector2 GetDirectionToPlayer()
@@ -83,17 +112,10 @@ public partial class SampleEnemy : GameActor
 		GameLogger.Info(nameof(SampleEnemy), "Enemy PerformAttack");
 		
 		RefreshPlayerReference();
-		if (AttackArea != null)
+		if (_player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
 		{
-			var bodies = AttackArea.GetOverlappingBodies();
-			foreach (var body in bodies)
-			{
-				if (body is SamplePlayer player)
-				{
-					player.TakeDamage((int)AttackDamage, GlobalPosition, this);
-					GameLogger.Info(nameof(SampleEnemy), "Enemy attacked player via Area2D!");
-				}
-			}
+			_player.TakeDamage((int)AttackDamage, GlobalPosition, this);
+			GameLogger.Info(nameof(SampleEnemy), "Enemy attacked player via HitArea.");
 		}
 	}
 	
@@ -132,5 +154,11 @@ public partial class SampleEnemy : GameActor
 		{
 			_player = GetTree().Root.FindChild("Player", true, false) as SamplePlayer;
 		}
+	}
+
+	private void UpdateDebugOverlayText()
+	{
+		string stateName = StateMachine?.CurrentState?.Name ?? "None";
+		_debugOverlayText = $"{Name} | State: {stateName} | HP: {CurrentHealth}/{MaxHealth}";
 	}
 }

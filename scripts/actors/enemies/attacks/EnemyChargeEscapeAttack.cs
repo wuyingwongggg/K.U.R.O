@@ -17,9 +17,11 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private int _leftCount;
 		private int _rightCount;
-		private float _escapeTimer;
 		private bool _escapeResolved;
+		private bool _areEscapeCountersCleared = true;
 		private EscapeHUD? _escapeHud;
+
+		public override bool AreEscapeCountersCleared => _areEscapeCountersCleared;
 
 	public override void _Ready()
         {
@@ -39,8 +41,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
             _leftCount = 0;
             _rightCount = 0;
-			_escapeTimer = EscapeWindowSeconds;
 			_escapeResolved = false;
+			_areEscapeCountersCleared = false;
 			_escapeHud = ResolveEscapeHud(player);
 			_escapeHud?.ShowSequence(RequiredLeftInputs, RequiredRightInputs, EscapeWindowSeconds);
         }
@@ -49,7 +51,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
 			if (_escapeResolved) return;
 
-            _escapeTimer -= (float)delta;
+			GD.Print($"[EscapeSeq] IsEvaluatingEscape={IsEvaluatingEscape} AreEscapeCountersCleared={AreEscapeCountersCleared}  timer={EscapeTimerRemaining:F2}s  L={_leftCount}/{RequiredLeftInputs}  R={_rightCount}/{RequiredRightInputs}");
 
             if (Input.IsActionJustPressed("move_left"))
             {
@@ -61,7 +63,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 _rightCount++;
             }
 
-			_escapeHud?.UpdateSequence(_leftCount, _rightCount, _escapeTimer);
+			_escapeHud?.UpdateSequence(_leftCount, _rightCount, EscapeTimerRemaining);
 
 			if (_leftCount >= RequiredLeftInputs && _rightCount >= RequiredRightInputs)
 			{
@@ -69,16 +71,13 @@ namespace Kuros.Actors.Enemies.Attacks
 				_escapeResolved = true;
 				ResolveEscape(true);
 			}
-			else if (_escapeTimer <= 0f)
-			{
-				GameLogger.Info(nameof(EnemyChargeEscapeAttack), $"{player.Name} failed to escape (inputs L:{_leftCount}/R:{_rightCount}).");
-				_escapeResolved = true;
-				ResolveEscape(false);
-			}
 		}
 
 		protected override void OnEscapeSequenceFinished(SamplePlayer player, bool escaped)
 		{
+			_leftCount = 0;
+			_rightCount = 0;
+			_areEscapeCountersCleared = true;
 			_escapeHud?.HideSequence();
 			_escapeHud = null;
 		}
@@ -86,8 +85,14 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
-			_escapeHud?.HideSequence();
-			_escapeHud = null;
+			if (!IsEvaluatingEscape)
+			{
+				_leftCount = 0;
+				_rightCount = 0;
+				_areEscapeCountersCleared = true;
+				_escapeHud?.HideSequence();
+				_escapeHud = null;
+			}
 		}
 
 		private EscapeHUD? ResolveEscapeHud(SamplePlayer player)

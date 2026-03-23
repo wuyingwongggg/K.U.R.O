@@ -6,7 +6,8 @@ namespace Kuros.Actors.Enemies.Animation
     public enum SpineAnimationPlaybackMode
     {
         Loop,
-        Once
+        Once,
+        PartialLoop
     }
 
     /// <summary>
@@ -116,6 +117,46 @@ namespace Kuros.Actors.Enemies.Animation
             }
             catch
             {
+                return false;
+            }
+        }
+
+        protected bool PlayPartialLoop(string animationName, float loopStart, float loopEnd, float mixDuration = 0.1f, float timeScale = 1f)
+        {
+            if (string.IsNullOrEmpty(animationName) || _spineHelper == null || loopEnd <= loopStart)
+            {
+                return false;
+            }
+
+            Node targetRoot = Owner ?? (Node?)Enemy ?? this;
+            try
+            {
+                var result = _spineHelper.Call("play_partial_loop_animation", targetRoot, animationName, loopStart, loopEnd, mixDuration, timeScale);
+                return result.AsBool();
+            }
+            catch (Exception ex)
+            {
+                GD.PushWarning($"[{Name}] PlayPartialLoop Failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        protected bool UpdatePartialLoop(float loopStart, float loopEnd)
+        {
+            if (_spineHelper == null || loopEnd <= loopStart)
+            {
+                return false;
+            }
+
+            Node targetRoot = Owner ?? (Node?)Enemy ?? this;
+            try
+            {
+                var result = _spineHelper.Call("update_partial_loop_animation", targetRoot, TrackIndex, loopStart, loopEnd);
+                return result.AsBool();
+            }
+            catch (Exception ex)
+            {
+                GD.PushWarning($"[{Name}] UpdatePartialLoop Failed: {ex.Message}");
                 return false;
             }
         }

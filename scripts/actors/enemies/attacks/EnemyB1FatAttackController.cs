@@ -1,26 +1,43 @@
 using Godot;
+using System;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
     public partial class EnemyB1FatAttackController : EnemyAttackController
     {
-        [Export] public string ChargeAttackName { get; set; } = "ChargeEscapeAttack";
+        [Export] public string Skill1AttackName { get; set; } = "ChargeEscapeAttack";
         [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
-        [Export(PropertyHint.Range, "0,100,0.1")] public float ChargeAttackWeight { get; set; } = 60f;
-        [Export(PropertyHint.Range, "0,100,0.1")] public float MeleeAttackWeight { get; set; } = 40f;
+        [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
 
         public string CurrentAttackName { get; private set; } = string.Empty;
+
+        private int _meleeCountSinceCharge;
 
         public override void Initialize(SampleEnemy enemy)
         {
             base.Initialize(enemy);
-            ApplyEnemySpecificWeights();
+            _meleeCountSinceCharge = 0;
+            ConfigureNextAttack(forceCharge: false);
         }
 
         protected override void OnChildAttackStarted(EnemyAttackTemplate attack)
         {
             base.OnChildAttackStarted(attack);
             CurrentAttackName = attack.Name;
+
+            if (IsAttack(attack.Name, MeleeAttackName))
+            {
+                _meleeCountSinceCharge++;
+                int threshold = Mathf.Max(1, MeleeCountBeforeCharge);
+                ConfigureNextAttack(forceCharge: _meleeCountSinceCharge >= threshold);
+                return;
+            }
+
+            if (IsAttack(attack.Name, Skill1AttackName))
+            {
+                _meleeCountSinceCharge = 0;
+                ConfigureNextAttack(forceCharge: false);
+            }
         }
 
         protected override void OnAttackFinished()
@@ -29,10 +46,22 @@ namespace Kuros.Actors.Enemies.Attacks
             CurrentAttackName = string.Empty;
         }
 
-        private void ApplyEnemySpecificWeights()
+        private void ConfigureNextAttack(bool forceCharge)
         {
-            TrySetAttackWeight(ChargeAttackName, ChargeAttackWeight);
-            TrySetAttackWeight(MeleeAttackName, MeleeAttackWeight);
+            if (forceCharge)
+            {
+                TrySetAttackWeight(Skill1AttackName, 1f);
+                TrySetAttackWeight(MeleeAttackName, 0f);
+                return;
+            }
+
+            TrySetAttackWeight(Skill1AttackName, 0f);
+            TrySetAttackWeight(MeleeAttackName, 1f);
+        }
+
+        private static bool IsAttack(string attackName, string expectedName)
+        {
+            return attackName.Equals(expectedName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

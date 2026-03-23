@@ -35,14 +35,19 @@ shader_parameter/alpha = 0.4
 atlas_res = ExtResource("1_kqj82")
 skeleton_file_res = ExtResource("2_om6pm")
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ixg0x"]
-size = Vector2(1106.0608, 360.79547)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y6jy"]
+radius = 121.11756
+height = 530.3031
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y2r2"]
+radius = 284.8485
+height = 757.5758
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
 size = Vector2(657, 1236)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_om6pm"]
-size = Vector2(723, 1355)
+[sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
+radius = 750.0
 
 [node name="MainCharacter" type="CharacterBody2D" node_paths=PackedStringArray("AttackArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 1
@@ -80,9 +85,17 @@ scale = Vector2(0.99999994, 0.99999994)
 bone_name = "WQ"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-19.696936, -174.1477)
+position = Vector2(0, -108.996)
+rotation = 1.5707964
 scale = Vector2(0.9999999, 0.9999999)
-shape = SubResource("RectangleShape2D_ixg0x")
+shape = SubResource("CapsuleShape2D_0y6jy")
+
+[node name="HitArea" type="Area2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
+position = Vector2(0, -490.90915)
+shape = SubResource("CapsuleShape2D_0y2r2")
 
 [node name="AttackArea" type="Area2D" parent="."]
 
@@ -95,8 +108,8 @@ collision_layer = 7
 collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
-position = Vector2(342.5, -656)
-shape = SubResource("RectangleShape2D_om6pm")
+position = Vector2(0, -656)
+shape = SubResource("CircleShape2D_0y2r2")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("5_y1hyr")

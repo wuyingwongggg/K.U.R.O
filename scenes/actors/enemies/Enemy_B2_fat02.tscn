@@ -119,6 +119,7 @@ script = ExtResource("8_aqxxu")
 
 [node name="Attack" type="Node" parent="StateMachine"]
 script = ExtResource("9_rbnx7")
+ExitToWalkWhenOutOfAttackRange = true
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("10_0c01w")

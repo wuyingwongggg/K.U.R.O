@@ -22,7 +22,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (Player == null) return;
 
             bool inRange = AttackArea != null
-                ? AttackArea.OverlapsBody(Player)
+                ? Player.IsHitByArea(AttackArea)
                 : Enemy.IsPlayerInAttackRange();
 
             if (!inRange) return;

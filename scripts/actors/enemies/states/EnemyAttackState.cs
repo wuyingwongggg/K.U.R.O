@@ -6,6 +6,8 @@ namespace Kuros.Actors.Enemies.States
 {
     public partial class EnemyAttackState : EnemyState
     {
+        [Export] public bool ExitToWalkWhenOutOfAttackRange = false;
+
         private readonly List<EnemyAttackTemplate> _attackTemplates = new();
         private EnemyAttackTemplate? _activeTemplate;
 
@@ -37,11 +39,20 @@ namespace Kuros.Actors.Enemies.States
 
         public override void PhysicsUpdate(double delta)
         {
-            // 使用 IsPlayerWithinDetectionRange 检查玩家，这会刷新玩家引用
-            // 如果玩家不存在或不在范围内，切换到 Idle
-            if (!Enemy.IsPlayerWithinDetectionRange() && !Enemy.IsPlayerInAttackRange())
+            bool playerDetected = Enemy.IsPlayerWithinDetectionRange();
+            bool playerInAttackRange = Enemy.IsPlayerInAttackRange();
+
+            //使用 IsPlayerWithinDetectionRange 检查玩家，这会刷新玩家引用
+            // 如果玩家不在检测范围内且不在攻击范围内，直接切换到 Idle 状态
+            if (!playerDetected && !playerInAttackRange)
             {
                 ChangeState("Idle");
+                return;
+            }
+
+            if (ExitToWalkWhenOutOfAttackRange && playerDetected && !playerInAttackRange)
+            {
+                ChangeState("Walk");
                 return;
             }
 

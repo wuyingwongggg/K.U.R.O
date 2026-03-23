@@ -158,6 +158,11 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnAttackFinished() { }
 
+        protected virtual bool ShouldHoldRecoveryPhase()
+        {
+            return false;
+        }
+
         protected void ForceEnterRecoveryPhase()
         {
             if (_phase == AttackPhase.Active)
@@ -207,6 +212,12 @@ namespace Kuros.Actors.Enemies.Attacks
                     SetPhase(AttackPhase.Recovery);
                     break;
                 case AttackPhase.Recovery:
+                    if (ShouldHoldRecoveryPhase())
+                    {
+                        _phaseTimer = 0.05f;
+                        return;
+                    }
+
                     SetPhase(AttackPhase.Idle);
                     break;
             }

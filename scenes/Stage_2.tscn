@@ -69,6 +69,9 @@ position_smoothing_enabled = true
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
+[node name="Enemy_B1_fat" parent="World" instance=ExtResource("6_ctuyy")]
+position = Vector2(-1325, 415)
+
 [node name="FrontWall" type="Node2D" parent="World"]
 
 [node name="GateFrontWall" type="Sprite2D" parent="World/FrontWall"]
