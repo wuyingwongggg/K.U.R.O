@@ -53,6 +53,7 @@ namespace Kuros.Core
 
 		public bool IsDeathSequenceActive => _deathStarted && !_deathFinalized;
 		public bool IsDead => _deathFinalized;
+		public bool IgnoreHitStateOnDamage { get; set; } = false;
 
 		public override void _Ready()
 		{
@@ -243,8 +244,8 @@ namespace Kuros.Core
 			}
 			else
 			{
-				// Force state change to Hit
-				if (StateMachine != null)
+				// Force state change to Hit unless this actor is in super-armor phase.
+				if (!IgnoreHitStateOnDamage && StateMachine != null)
 				{
 					StateMachine.ChangeState("Hit");
 				}

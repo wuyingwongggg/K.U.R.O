@@ -57,7 +57,7 @@ y_sort_enabled = true
 position = Vector2(0, 20)
 
 [node name="MainCharacter" parent="World" instance=ExtResource("2_s0pgc")]
-position = Vector2(-6888.999, 482.00003)
+position = Vector2(6305, 482.00003)
 
 [node name="Camera2D" type="Camera2D" parent="World/MainCharacter"]
 position = Vector2(0, -15.15156)
@@ -128,6 +128,12 @@ shape = SubResource("RectangleShape2D_k0qph")
 [node name="Node2D" type="Node2D" parent="World"]
 script = ExtResource("7_k0qph")
 
+[node name="Enemy_B1_fat" parent="." instance=ExtResource("6_ctuyy")]
+position = Vector2(9810, 0)
+
+[node name="Enemy_B2_fat02" parent="." instance=ExtResource("11_vvtmr")]
+position = Vector2(2906, 196)
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 visible = false
 follow_viewport_scale = 4.18
@@ -194,6 +200,3 @@ shape = SubResource("RectangleShape2D_f0l3g")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TriggerArea"]
 position = Vector2(-924.25, 353.5)
 shape = SubResource("RectangleShape2D_2l4aj")
-
-[node name="Enemy_B2_fat02" parent="." instance=ExtResource("11_vvtmr")]
-position = Vector2(-5712, 311)

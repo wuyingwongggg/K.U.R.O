@@ -54,12 +54,19 @@ namespace Kuros.Actors.Enemies.Attacks
         private bool _canAttemptGrab;
 		private float _snapshotTimer = 0f;
 		private bool _waitingForSnapshot = false;
+		private bool _pendingSkill3Finisher;
 
 		public bool IsEvaluatingEscape => _isEvaluatingEscape;
 		public bool IsDashing => _isDashing;
 		public bool IsDashFinished => _dashFinalized;
 		public virtual bool AreEscapeCountersCleared => true;
+		public bool HasPendingSkill3Finisher => _pendingSkill3Finisher;
 		protected float EscapeTimerRemaining => _escapeTimer;
+
+		public void ConsumeSkill3FinisherRequest()
+		{
+			_pendingSkill3Finisher = false;
+		}
 
         protected override void OnInitialized()
         {
@@ -139,6 +146,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			_dashPreviousPosition = Enemy?.GlobalPosition ?? Vector2.Zero;
 			_dashDistanceTraveled = 0f;
 			_canAttemptGrab = MinDashDistanceBeforeGrab <= 0f;
+			_pendingSkill3Finisher = false;
 			PrepareDashTowardsPlayer();
 		}
 
@@ -199,15 +207,16 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			if (!_canAttemptGrab)
 			{
-				StartPostCooldown();
-				_pendingCooldownExit = true;
+				// 未达到可抓取条件时，等待攻击流程自然结束后再进入冷却。
+				_pendingSkill3Finisher = true;
 				return;
 			}
 
 			if (!TryExecuteGrab())
 			{
-				StartPostCooldown();
-				_pendingCooldownExit = true;
+				// 未抓到玩家时，不立即切冷却状态，避免直接打断攻击收尾动画。
+				_pendingSkill3Finisher = true;
+				return;
 			}
 		}
 
@@ -307,10 +316,10 @@ namespace Kuros.Actors.Enemies.Attacks
 				OnEscapeSequenceFinished(player, escaped);
 			}
 
-			if (IsRunning)
-			{
-				Cancel();
-			}
+			// 抓到后进入挣脱，判定结束（成功/失败）都应进入 skill3 收尾。
+			_pendingSkill3Finisher = true;
+
+			// 挣脱判定结束后不立即取消攻击，让恢复阶段自然收尾，避免瞬切冷却状态。
 		}
 
 		protected virtual void OnEscapeSequenceStarted(SamplePlayer player) { }
@@ -437,8 +446,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			_grabbedPlayer = null;
 
-			StartPostCooldown();
-			_pendingCooldownExit = true;
+			// 交由 OnAttackFinished 统一进入冷却，避免在释放瞬间切状态打断动画。
 		}
 
 		private void StartPostCooldown()
@@ -585,8 +593,8 @@ namespace Kuros.Actors.Enemies.Attacks
 				_canAttemptGrab = true;
 				if (!TryExecuteGrab())
 				{
-					StartPostCooldown();
-					FinishCooldownState();
+					// 强制收尾时若未抓到玩家，保持在攻击流程内，交由 OnAttackFinished 统一进入冷却。
+					_pendingSkill3Finisher = true;
 				}
 				return;
 			}

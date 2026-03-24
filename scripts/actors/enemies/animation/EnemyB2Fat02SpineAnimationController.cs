@@ -17,16 +17,13 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string HitAnimation = "hit";
         [Export] public string DieAnimation = "death";
         [Export(PropertyHint.Range, "0,1,0.01")] public float MixDuration = 0.15f;
-        [Export(PropertyHint.Range, "0,5,0.01")] public float SkillLoopStart = 1.32f;
-        [Export(PropertyHint.Range, "0,5,0.01")] public float SkillLoopEnd = 1.33f;
-
         private EnemyB2Fat02AttackController? _attackController;
         private string _currentKey = string.Empty;
         private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
         private float _activeLoopStart;
         private float _activeLoopEnd;
-        private EnemyChargeGrabAttack? _skill1ChargeGrabAttack;
+        private EnemySmashAttack? _skillChargeSmashAttack;
 
         public override void _Ready()
         {
@@ -105,13 +102,12 @@ namespace Kuros.Actors.Enemies.Animation
                 {
                     var skillAttack = ResolveSkillSmashAttack(controller);
 
-                    if (skillAttack == null || !skillAttack.IsDashFinished)
+                    if (skillAttack == null || !skillAttack.IsDashing || !skillAttack.IsDashFinished)
                     {
-                        PlayPartLoopIfNeeded("Skill", SkillAnimation, SkillLoopStart, SkillLoopEnd);
+                        PlayOnceIfNeeded("Skill", SkillAnimation);
                         return;
                     }
                 }
-
             }
 
             PlayIdle();
@@ -161,38 +157,6 @@ namespace Kuros.Actors.Enemies.Animation
             }
         }
 
-        private void PlayPartLoopIfNeeded(string key, string animationName, float loopStart, float loopEnd)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (loopEnd <= loopStart)
-            {
-                PlayLoopIfNeeded(key, animationName);
-                return;
-            }
-
-            bool samePartialLoop = _currentKey == key
-                && _currentMode == SpineAnimationPlaybackMode.PartialLoop
-                && Mathf.IsEqualApprox(_activeLoopStart, loopStart)
-                && Mathf.IsEqualApprox(_activeLoopEnd, loopEnd);
-
-            if (samePartialLoop)
-            {
-                return;
-            }
-
-            if (PlayPartialLoop(animationName, loopStart, loopEnd, MixDuration))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.PartialLoop;
-                _activeLoopStart = loopStart;
-                _activeLoopEnd = loopEnd;
-            }
-        }
-
         private void TickPartialLoop()
         {
             if (_currentMode != SpineAnimationPlaybackMode.PartialLoop)
@@ -237,15 +201,15 @@ namespace Kuros.Actors.Enemies.Animation
 
             return _attackController;
         }
-        private EnemyChargeGrabAttack? ResolveSkillSmashAttack(EnemyB2Fat02AttackController controller)
+        private EnemySmashAttack? ResolveSkillSmashAttack(EnemyB2Fat02AttackController controller)
         {
-            if (_skill1ChargeGrabAttack != null && IsInstanceValid(_skill1ChargeGrabAttack))
+            if (_skillChargeSmashAttack != null && IsInstanceValid(_skillChargeSmashAttack))
             {
-                return _skill1ChargeGrabAttack;
+                return _skillChargeSmashAttack;
             }
 
-            _skill1ChargeGrabAttack = controller.GetNodeOrNull<EnemyChargeGrabAttack>(controller.SkillAttackName);
-            return _skill1ChargeGrabAttack;
+            _skillChargeSmashAttack = controller.GetNodeOrNull<EnemySmashAttack>(controller.SkillAttackName);
+            return _skillChargeSmashAttack;
         }
 
     }

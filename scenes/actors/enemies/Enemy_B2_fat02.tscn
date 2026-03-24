@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://wrebd662va23"]
+[gd_scene load_steps=29 format=3 uid="uid://wrebd662va23"]
 
 [ext_resource type="Script" uid="uid://1gaxbu38p1qd" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_6yc1u"]
@@ -39,6 +39,9 @@ radius = 1024.0
 radius = 106.0
 height = 308.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gvrrx"]
+size = Vector2(411, 164.5)
+
 [sub_resource type="CapsuleShape2D" id="3"]
 radius = 70.0
 height = 240.0
@@ -47,11 +50,21 @@ height = 240.0
 atlas_res = ExtResource("19_ooggc")
 skeleton_file_res = ExtResource("20_6yc1u")
 
-[node name="Enemy_B2_fat02" type="CharacterBody2D"]
+[node name="Enemy_B2_fat02" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
+z_index = 2
+y_sort_enabled = true
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_gvrrx")
 EnableStateDebugOverlay = true
+DebugOverlayOffset = Vector2(-300, 60)
+DebugOverlayFontSize = 32
+DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
+AttackArea = NodePath("Sprite2D/AttackArea")
+AttackDamage = 0.0
+AttackCooldown = 1.0
+StateMachine = NodePath("StateMachine")
+EffectController = NodePath("EffectController")
 
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("3_6yc1u")
@@ -76,6 +89,7 @@ position = Vector2(270, 0)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -84,6 +98,7 @@ scale = Vector2(1.2, 1.2)
 shape = SubResource("CircleShape2D_gvrrx")
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -95,6 +110,12 @@ shape = SubResource("CircleShape2D_ooggc")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("CapsuleShape2D_gvrrx")
+
+[node name="SmashArea" type="Area2D" parent="Sprite2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/SmashArea"]
+position = Vector2(188.5, 205.25)
+shape = SubResource("RectangleShape2D_gvrrx")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -122)
@@ -112,21 +133,25 @@ script = ExtResource("8_aqxxu")
 
 [node name="Attack" type="Node" parent="StateMachine"]
 script = ExtResource("9_rbnx7")
-ExitToWalkWhenOutOfAttackRange = true
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_ooggc")
+MeleeCountBeforeCharge = 1
+PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
 [node name="SmashAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("10_6yc1u")
-SnapshotDelaySeconds = 0.7
+DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+GrabAreaPath = NodePath("../../../../Sprite2D/SmashArea")
+MinDashDistanceBeforeSmash = 0.0
+SnapshotDelaySeconds = 0.4
+AppliedFrozenDuration = 1.0
 WarmupDuration = 0.6
 metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("12_daw10")
 WarmupDuration = 1.0
-CooldownDuration = 0.5
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
@@ -152,9 +177,9 @@ FreezeDuration = 1.0
 scale = Vector2(0.33, 0.33)
 skeleton_data_res = SubResource("SpineSkeletonDataResource_xrpf5")
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "skill"
 preview_frame = true
-preview_time = 0.0
+preview_time = 2.0
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("20_xrpf5")

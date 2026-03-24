@@ -51,6 +51,8 @@ radius = 750.0
 
 [node name="MainCharacter" type="CharacterBody2D" node_paths=PackedStringArray("AttackArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
+z_as_relative = false
+y_sort_enabled = true
 scale = Vector2(0.33, 0.33)
 script = ExtResource("1_om6pm")
 WalkAnimationSpeed = 2.0
@@ -59,7 +61,7 @@ AttackArea = NodePath("AttackArea")
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 3.0
+AttackDamage = 10.0
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 
@@ -73,16 +75,16 @@ texture = ExtResource("3_tdm7a")
 skeleton_data_res = SubResource("SpineSkeletonDataResource_ixg0x")
 bones_thickness = 10.09
 preview_skin = "Default"
-preview_animation = "attack_thrust"
+preview_animation = "stun"
 preview_frame = true
 preview_time = 1.0
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(315.15915, -163.92198)
-rotation = 0.39357135
-scale = Vector2(0.9999998, 0.99999994)
+position = Vector2(-129.83548, -193.60872)
+rotation = 0.6540922
+scale = Vector2(0.99999994, 0.99999994)
 bone_name = "WQ"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -101,7 +103,7 @@ shape = SubResource("CapsuleShape2D_0y2r2")
 [node name="AttackArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(378.7878, -574.2423)
+position = Vector2(380, -570)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
 

@@ -43,7 +43,8 @@ namespace Kuros.Actors.Enemies.Attacks
         protected override void OnAttackFinished()
         {
             base.OnAttackFinished();
-            CurrentAttackName = string.Empty;
+            // 保留上一次攻击名，供动画控制器在冷却/收尾阶段判定 skill3。
+            // 下一次攻击开始时会在 OnChildAttackStarted 中覆盖。
         }
 
         private void ConfigureNextAttack(bool forceCharge)

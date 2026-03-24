@@ -48,9 +48,14 @@ height = 240.0
 
 [node name="Enemy_B1_fat" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
+z_as_relative = false
+y_sort_enabled = true
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1")
+EnableStateDebugOverlay = true
+DebugOverlayOffset = Vector2(-300, 60)
+DebugOverlayFontSize = 32
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 AttackDamage = 0.0
@@ -74,7 +79,6 @@ modulate = Color(0.8, 0.6, 0.5, 1)
 position = Vector2(0, -340)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
@@ -102,7 +106,6 @@ scale = Vector2(3, 3)
 shape = SubResource("CircleShape2D_2sv5o")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("CapsuleShape2D_otg7e")
@@ -171,7 +174,7 @@ FreezeDuration = 1.0
 scale = Vector2(0.33, 0.33)
 skeleton_data_res = ExtResource("14_xv2am")
 preview_skin = "Default"
-preview_animation = "skill_02"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 0.0
 
