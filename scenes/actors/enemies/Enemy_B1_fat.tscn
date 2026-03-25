@@ -162,6 +162,7 @@ script = ExtResource("14")
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("15")
+DeathDuration = 2.0
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("16")
@@ -180,4 +181,3 @@ preview_time = 0.0
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("17")
-MixDuration = 0.5

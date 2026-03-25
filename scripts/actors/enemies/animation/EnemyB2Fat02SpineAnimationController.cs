@@ -16,7 +16,6 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string SkillAnimation = "skill";
         [Export] public string HitAnimation = "hit";
         [Export] public string DieAnimation = "death";
-        [Export(PropertyHint.Range, "0,1,0.01")] public float MixDuration = 0.15f;
         private EnemyB2Fat02AttackController? _attackController;
         private string _currentKey = string.Empty;
         private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
@@ -43,7 +42,7 @@ namespace Kuros.Actors.Enemies.Animation
 
         protected override float GetPreferredMixDuration()
         {
-            return MixDuration;
+            return AttackMixDuration;
         }
 
         public override void _Process(double delta)
@@ -65,13 +64,13 @@ namespace Kuros.Actors.Enemies.Animation
             switch (stateName)
             {
                 case "Walk":
-                    PlayLoopIfNeeded("Walk", WalkAnimation);
+                    PlayLoopIfNeeded("Walk", WalkAnimation, WalkMixDuration);
                     break;
                 case "Hit":
-                    PlayOnceIfNeeded("Hit", HitAnimation);
+                    PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
                     break;
                 case "Dying":
-                    PlayOnceIfNeeded("Die", DieAnimation, enqueueIdle: false);
+                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
                     break;
                 case "Dead":
                     PlayEmptyIfNeeded();
@@ -99,7 +98,7 @@ namespace Kuros.Actors.Enemies.Animation
             {   
                 if (attackName.Equals(controller.MeleeAttackName, _comparison))
                 {
-                    PlayOnceIfNeeded("Attack", AttackAnimation);
+                    PlayOnceIfNeeded("Attack", AttackAnimation, AttackMixDuration);
                     return;
                 }
 
@@ -109,7 +108,7 @@ namespace Kuros.Actors.Enemies.Animation
 
                     if (skillAttack == null || !skillAttack.IsDashing || !skillAttack.IsDashFinished)// 只有当冲刺攻击存在且冲刺阶段结束时才切换到其他动画，否则继续播放skill动画
                     {
-                        PlayOnceIfNeeded("Skill", SkillAnimation);
+                        PlayOnceIfNeeded("Skill", SkillAnimation, SkillMixDuration);
                         return;
                     }
                 }
@@ -120,10 +119,10 @@ namespace Kuros.Actors.Enemies.Animation
 
         private void PlayIdle()
         {
-            PlayLoopIfNeeded("Idle", IdleAnimation);
+            PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
 
-        private void PlayLoopIfNeeded(string key, string animationName)
+        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -135,14 +134,14 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayLoop(animationName, MixDuration))
+            if (PlayLoop(animationName, mixDuration))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Loop;
             }
         }
 
-        private void PlayOnceIfNeeded(string key, string animationName, bool enqueueIdle = true)
+        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -154,11 +153,15 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            string? followUp = enqueueIdle ? IdleAnimation : null;
-            if (PlayOnce(animationName, MixDuration, 1f, followUp))
+            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Once;
+
+                if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
+                {
+                    QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
+                }
             }
         }
 
@@ -179,7 +182,7 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayEmpty(MixDuration))
+            if (PlayEmpty(DieMixDuration))
             {
                 _currentKey = "Empty";
                 _currentMode = SpineAnimationPlaybackMode.Loop;

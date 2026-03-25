@@ -5,29 +5,26 @@ using Kuros.Actors.Enemies.Attacks;
 namespace Kuros.Actors.Enemies.Animation
 {
     /// <summary>
-    /// Enemy_B1_fat 专用 Spine 动画控制器，将动画与状态机/攻击模板绑定。
+    /// Enemy_Normal_guard1 专用 Spine 动画控制器，将动画与状态机/攻击模板绑定。
     /// </summary>
-    public partial class EnemyB1FatSpineAnimationController : EnemySpineAnimationController
+    public partial class EnemyNormalGuard1SpineAnimationController : EnemySpineAnimationController
     {
         [Export] public NodePath AttackControllerPath { get; set; } = new("StateMachine/Attack/AttackController");
         [Export] public string IdleAnimation = "idle";
         [Export] public string WalkAnimation = "walk";
         [Export] public string AttackAnimation = "attack";
-        [Export] public string SkillAnimation = "skill_01";
-        [Export] public string Skill2Animation = "skill_02";
-        [Export] public string Skill3Animation = "skill_03";
+        [Export] public string SkillAnimation = "skill";
         [Export] public string HitAnimation = "hit";
         [Export] public string DieAnimation = "death";
-        [Export(PropertyHint.Range, "0,5,0.01")] public float Skill1LoopStart = 1.32f;
-        [Export(PropertyHint.Range, "0,5,0.01")] public float Skill1LoopEnd = 1.33f;
-
-        private EnemyB1FatAttackController? _attackController;
+        [Export(PropertyHint.Range, "0,5,0.01")] public float SkillLoopStart = 1.49f;
+        [Export(PropertyHint.Range, "0,5,0.01")] public float SkillLoopEnd = 1.5f;
+        private EnemyNormalGuard1AttackController? _attackController;
         private string _currentKey = string.Empty;
         private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
         private float _activeLoopStart;
         private float _activeLoopEnd;
-        private EnemyChargeGrabAttack? _skill1ChargeGrabAttack;
+        private EnemySmashAttack? _skillChargeSmashAttack;
 
         public override void _Ready()
         {
@@ -83,17 +80,6 @@ namespace Kuros.Actors.Enemies.Animation
                 case "Attack":
                     HandleAttackAnimations();
                     break;
-                case "CooldownFrozen":
-                    if (_currentKey == "Skill3" && _currentMode == SpineAnimationPlaybackMode.Once)
-                    {
-                        // skill3 正在播放，等待其自然结束，不打断
-                        break;
-                    }
-                    if (!TryPlaySkill3Finisher())
-                    {
-                        PlayIdle();
-                    }
-                    break;
                 default:
                     PlayIdle();
                     break;
@@ -118,64 +104,19 @@ namespace Kuros.Actors.Enemies.Animation
                     return;
                 }
 
-                if (attackName.Equals(controller.Skill1AttackName, _comparison))
+                if (attackName.Equals(controller.SkillAttackName, _comparison))
                 {
-                    var skill1Attack = ResolveSkill1ChargeGrabAttack(controller);
+                    var skillAttack = ResolveSkillSmashAttack(controller);
 
-                    if (skill1Attack == null || !skill1Attack.IsDashFinished)
+                    if (skillAttack == null || !skillAttack.IsDashing || !skillAttack.IsDashFinished)// 只有当冲刺攻击存在且冲刺阶段结束时才切换到其他动画，否则继续播放skill动画
                     {
-                        PlayPartLoopIfNeeded("Skill", SkillAnimation, Skill1LoopStart, Skill1LoopEnd, SkillMixDuration);
+                        PlayPartLoopIfNeeded("Skill", SkillAnimation, SkillLoopStart, SkillLoopEnd, SkillMixDuration);
                         return;
                     }
-
-                    if (skill1Attack.IsEvaluatingEscape || !skill1Attack.AreEscapeCountersCleared)
-                    {
-                        PlayLoopIfNeeded("Skill2", Skill2Animation, SkillMixDuration);
-                        return;
-                    }
-
-                    TryPlaySkill3Finisher();
-                    return;
                 }
-
             }
 
             PlayIdle();
-        }
-
-        private bool TryPlaySkill3Finisher()
-        {
-            var controller = ResolveAttackController();
-            if (controller == null)
-            {
-                return false;
-            }
-
-            string attackName = controller.CurrentAttackName;
-            if (string.IsNullOrEmpty(attackName) || !attackName.Equals(controller.Skill1AttackName, _comparison))
-            {
-                return false;
-            }
-
-            var skill1Attack = ResolveSkill1ChargeGrabAttack(controller);
-            if (skill1Attack == null || !skill1Attack.IsDashFinished)
-            {
-                return false;
-            }
-
-            if (skill1Attack.IsEvaluatingEscape || !skill1Attack.AreEscapeCountersCleared)
-            {
-                return false;
-            }
-
-            if (!skill1Attack.HasPendingSkill3Finisher)
-            {
-                return false;
-            }
-
-            PlayOnceIfNeeded("Skill3", Skill3Animation, SkillMixDuration);
-            skill1Attack.ConsumeSkill3FinisherRequest();
-            return true;
         }
 
         private void PlayIdle()
@@ -282,7 +223,7 @@ namespace Kuros.Actors.Enemies.Animation
             }
         }
 
-        private EnemyB1FatAttackController? ResolveAttackController()
+        private EnemyNormalGuard1AttackController? ResolveAttackController()
         {
             if (_attackController != null && IsInstanceValid(_attackController))
             {
@@ -294,23 +235,23 @@ namespace Kuros.Actors.Enemies.Animation
                 return null;
             }
 
-            _attackController = GetNodeOrNull<EnemyB1FatAttackController>(AttackControllerPath);
+            _attackController = GetNodeOrNull<EnemyNormalGuard1AttackController>(AttackControllerPath);
             if (_attackController == null)
             {
-                _attackController = Enemy.GetNodeOrNull<EnemyB1FatAttackController>(AttackControllerPath);
+                _attackController = Enemy.GetNodeOrNull<EnemyNormalGuard1AttackController>(AttackControllerPath);
             }
 
             return _attackController;
         }
-        private EnemyChargeGrabAttack? ResolveSkill1ChargeGrabAttack(EnemyB1FatAttackController controller)
+        private EnemySmashAttack? ResolveSkillSmashAttack(EnemyNormalGuard1AttackController controller)
         {
-            if (_skill1ChargeGrabAttack != null && IsInstanceValid(_skill1ChargeGrabAttack))
+            if (_skillChargeSmashAttack != null && IsInstanceValid(_skillChargeSmashAttack))
             {
-                return _skill1ChargeGrabAttack;
+                return _skillChargeSmashAttack;
             }
 
-            _skill1ChargeGrabAttack = controller.GetNodeOrNull<EnemyChargeGrabAttack>(controller.Skill1AttackName);
-            return _skill1ChargeGrabAttack;
+            _skillChargeSmashAttack = controller.GetNodeOrNull<EnemySmashAttack>(controller.SkillAttackName);
+            return _skillChargeSmashAttack;
         }
 
     }

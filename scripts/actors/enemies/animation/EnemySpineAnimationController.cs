@@ -19,6 +19,12 @@ namespace Kuros.Actors.Enemies.Animation
         [Export(PropertyHint.Range, "0,4,1")] public int TrackIndex { get; set; } = 0;
         [Export(PropertyHint.Range, "0,4,1")] public int QueueTrackIndex { get; set; } = 0;
         [Export] public string DefaultLoopAnimation { get; set; } = string.Empty;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float IdleMixDuration = 0.05f;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float WalkMixDuration = 0.05f;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float HitMixDuration = 0.05f;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float DieMixDuration = 0.05f;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float AttackMixDuration = 0.5f;
+        [Export(PropertyHint.Range, "0,1,0.01")] public float SkillMixDuration = 0.5f;
 
         protected SampleEnemy? Enemy { get; private set; }
         

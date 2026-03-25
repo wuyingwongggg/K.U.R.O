@@ -18,5 +18,5 @@ DisplayName = "闸门攻击"
 AnimationName = "attack_swing"
 CooldownSeconds = 2.5
 Description = "攻击到敌人时使该敌人移动速度减少100%，持续0.5秒"
-Effects = Array[ExtResource("1_a01rw")]([SubResource("Resource_a5flt")])
+Effects = [SubResource("Resource_a5flt")]
 ActivationAction = "weapon_skill_block"
