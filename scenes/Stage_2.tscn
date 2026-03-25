@@ -128,10 +128,10 @@ shape = SubResource("RectangleShape2D_k0qph")
 [node name="Node2D" type="Node2D" parent="World"]
 script = ExtResource("7_k0qph")
 
-[node name="Enemy_B1_fat" parent="." instance=ExtResource("6_ctuyy")]
+[node name="Enemy_B1_fat" parent="World" instance=ExtResource("6_ctuyy")]
 position = Vector2(9810, 0)
 
-[node name="Enemy_B2_fat02" parent="." instance=ExtResource("11_vvtmr")]
+[node name="Enemy_B2_fat02" parent="World" instance=ExtResource("11_vvtmr")]
 position = Vector2(2906, 196)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

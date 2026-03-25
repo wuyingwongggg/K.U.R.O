@@ -107,7 +107,7 @@ namespace Kuros.Actors.Enemies.Animation
                 {
                     var skillAttack = ResolveSkillSmashAttack(controller);
 
-                    if (skillAttack == null || !skillAttack.IsDashing || !skillAttack.IsDashFinished)
+                    if (skillAttack == null || !skillAttack.IsDashing || !skillAttack.IsDashFinished)// 只有当冲刺攻击存在且冲刺阶段结束时才切换到其他动画，否则继续播放skill动画
                     {
                         PlayOnceIfNeeded("Skill", SkillAnimation);
                         return;

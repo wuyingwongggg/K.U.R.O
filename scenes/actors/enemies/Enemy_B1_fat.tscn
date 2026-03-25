@@ -180,5 +180,4 @@ preview_time = 0.0
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("17")
-Skill1LoopStart = 1.33
 MixDuration = 0.5
