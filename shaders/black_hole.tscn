@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://ds87c8d0i4h8a"]
+
+[ext_resource type="Shader" uid="uid://d0oplb02iornn" path="res://shaders/blackhole.gdshader" id="1_a0is8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_50y83"]
+shader = ExtResource("1_a0is8")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/strength = 0.3
+shader_parameter/radius = 0.4
+shader_parameter/swirl = 3.0
+shader_parameter/time_scale = 1.0
+
+[node name="BlackHole" type="Sprite2D"]
+material = SubResource("ShaderMaterial_50y83")
