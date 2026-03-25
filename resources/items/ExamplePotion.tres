@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_47noo"]
 [ext_resource type="Texture2D" uid="uid://dccrl4lpl0t2h" path="res://icon.svg" id="2"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_k6ymq"]
-[ext_resource type="Resource" path="res://resources/items/skills/ExampleSlashSkill.tres" id="3"]
+[ext_resource type="Resource" uid="uid://df06rbvv2fsx1" path="res://resources/items/skills/ExampleSlashSkill.tres" id="3"]
 
 [sub_resource type="Resource" id="Attribute_AttackPower"]
 script = ExtResource("1_47noo")
