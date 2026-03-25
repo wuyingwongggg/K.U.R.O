@@ -19,7 +19,7 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string HitAnimation = "hit";
         [Export] public string DieAnimation = "death";
         [Export(PropertyHint.Range, "0,1,0.01")] public float MixDuration = 0.15f;
-        [Export(PropertyHint.Range, "0,5,0.01")] public float Skill1LoopStart = 1.32f;
+        [Export(PropertyHint.Range, "0,5,0.01")] public float Skill1LoopStart = 1.33f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill1LoopEnd = 1.33f;
 
         private EnemyB1FatAttackController? _attackController;

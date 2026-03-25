@@ -13,7 +13,7 @@ namespace Kuros.Actors.Enemies.Attacks
     {
         [ExportCategory("Areas")]
         [Export] public NodePath DetectionAreaPath = new NodePath();
-        [Export] public NodePath GrabAreaPath = new NodePath();
+        [Export] public NodePath SmashAreaPath = new NodePath();
 
         [ExportCategory("Dash")]
         [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
@@ -64,10 +64,10 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 			else
 			{
-				GD.PushWarning($"[EnemyChargeGrabAttack] DetectionArea not found for {Enemy?.Name ?? Name}, fallback to DetectionRange.");
+				GD.PushWarning($"[EnemySmashAttack] DetectionArea not found for {Enemy?.Name ?? Name}, fallback to DetectionRange.");
             }
 
-            _grabArea = ResolveArea(GrabAreaPath);
+            _grabArea = ResolveArea(SmashAreaPath);
             if (_grabArea == null)
             {
                 _grabArea = AttackArea;
