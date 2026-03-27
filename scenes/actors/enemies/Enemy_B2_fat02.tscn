@@ -59,6 +59,7 @@ DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 AttackDamage = 0.0
 AttackCooldown = 1.0
+MaxHealth = 500
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_ooggc")
@@ -183,3 +184,6 @@ preview_time = 0.7
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("20_xrpf5")
+IdleMixDuration = 0.01
+WalkMixDuration = 0.01
+HitMixDuration = 0.01

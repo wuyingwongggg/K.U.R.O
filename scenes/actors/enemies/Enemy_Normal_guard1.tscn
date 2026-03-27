@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="8_rh8pq"]
 [ext_resource type="Script" uid="uid://cgsoggd2e4ljs" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard1AttackController.cs" id="9_75dbm"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="9_h8efu"]
-[ext_resource type="Script" uid="uid://ccjt7e864l6f6" path="res://scripts/actors/enemies/attacks/EnemySmashAttack.cs" id="11_it0yr"]
+[ext_resource type="Script" uid="uid://codttxa65jj5t" path="res://scripts/actors/enemies/attacks/EnemyOnePunchAttack.cs" id="10_75dbm"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="12_yoq8a"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="13_vr7xr"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="14_e7577"]
@@ -132,16 +132,19 @@ script = ExtResource("9_h8efu")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_75dbm")
-MeleeCountBeforeCharge = 10
+MeleeCountBeforeCharge = 1
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="SmashAttack" type="Node" parent="StateMachine/Attack/AttackController"]
-script = ExtResource("11_it0yr")
+[node name="OnePunchAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("10_75dbm")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 SmashAreaPath = NodePath("../../../../Sprite2D/SmashArea")
-DashSpeed = 1000.0
-SnapshotDelaySeconds = 0.5
-AppliedFrozenDuration = 2.0
+DashSpeed = 1500.0
+DashDistance = 1500.0
+MinDashDistanceBeforeSmash = 0.0
+SnapshotDelaySeconds = 1.0
+OnePunchKnockbackDistance = 500.0
+OnePunchKnockbackDuration = 0.09999999999999999
 WarmupDuration = 1.0
 ActiveDuration = 0.5
 RecoveryDuration = 0.47
@@ -181,11 +184,14 @@ FreezeDuration = 1.0
 scale = Vector2(0.33, 0.33)
 skeleton_data_res = ExtResource("17_s72su")
 preview_skin = "Default"
-preview_animation = "death"
+preview_animation = "hit"
 preview_frame = true
-preview_time = 1.43
+preview_time = 0.33
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("19_lxpom")
-DieMixDuration = 0.0
-AttackMixDuration = 0.35
+IdleMixDuration = 0.01
+WalkMixDuration = 0.01
+HitMixDuration = 0.01
+DieMixDuration = 0.03
+AttackMixDuration = 0.01

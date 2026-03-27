@@ -5,7 +5,7 @@ namespace Kuros.Actors.Enemies.Attacks
 {
     public partial class EnemyNormalGuard1AttackController : EnemyAttackController
     {
-        [Export] public string SkillAttackName { get; set; } = "SmashAttack";
+        [Export] public string SkillAttackName { get; set; } = "OnePunchAttack";
         [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
         [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
 

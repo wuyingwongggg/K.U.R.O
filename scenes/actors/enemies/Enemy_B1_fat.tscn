@@ -181,3 +181,6 @@ preview_time = 0.0
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("17")
+IdleMixDuration = 0.01
+WalkMixDuration = 0.01
+HitMixDuration = 0.01

@@ -1,15 +1,14 @@
 using Godot;
-using Kuros.Actors.Heroes.States;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
     /// <summary>
-    /// 冲刺重击攻击：
-	/// 1. 玩家进入检测区域后触发预热；
-	/// 2. 预热结束直线冲刺至玩家先前位置；
-	/// 3. 冲刺结束若命中，施加冻结并进入后摇冷却。
+    /// 一拳冲刺攻击（极简版）：
+    /// 1. 开始攻击时快照一次玩家方向；
+    /// 2. 在 Active 阶段按该方向持续冲刺；
+    /// 3. Active 结束即停止冲刺，其余逻辑交给基础攻击模板。
     /// </summary>
-    public partial class EnemySmashAttack : EnemyAttackTemplate
+    public partial class EnemyOnePunchAttack : EnemyAttackTemplate
     {
         [ExportCategory("Areas")]
         [Export] public NodePath DetectionAreaPath = new NodePath();
@@ -21,9 +20,11 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeSmash = 24f;
 		[Export(PropertyHint.Range, "0,5,0.1")] public float SnapshotDelaySeconds = 0f; // 冲刺前等待一段时间再记录玩家位置
+		[Export(PropertyHint.Range, "0,9999,1")] public int OnePunchDmg = 25;
 
         [ExportCategory("Effects")]
-		[Export(PropertyHint.Range, "0,10,0.1")] public float AppliedFrozenDuration = 5.0f;
+		[Export(PropertyHint.Range, "0,2000,1")] public float OnePunchKnockbackDistance = 180f;
+		[Export(PropertyHint.Range, "0.01,2,0.01")] public float OnePunchKnockbackDuration = 0.18f;
 		[Export] public StringName CooldownStateName = "CooldownFrozen";
 
 		private const float MinDashDistance = 32f;
@@ -252,33 +253,35 @@ namespace Kuros.Actors.Enemies.Attacks
             if (Enemy == null) return;
 
 			Vector2 dashStart = Enemy.GlobalPosition;
-			Vector2 recordedTarget;
+			Vector2 direction;
 
 			if (Enemy.PlayerTarget != null)
 			{
-				// Snapshot player position only once at dash start; no realtime retargeting during dash.
-				recordedTarget = Enemy.PlayerTarget.GlobalPosition;
+				// 只在冲刺开始时快照玩家方向；冲刺过程中不再追踪玩家位置点。
+				direction = Enemy.PlayerTarget.GlobalPosition - dashStart;
 			}
 			else
-			{	
-				// 没有玩家目标时朝当前朝向的方向冲刺一个固定距离，避免原地。
-				recordedTarget = dashStart + (Enemy.FacingRight ? Vector2.Right : Vector2.Left) * MinDashDistance;
+			{
+				direction = Enemy.FacingRight ? Vector2.Right : Vector2.Left;
 			}
 
-			Vector2 direction = recordedTarget - dashStart;
 			if (direction == Vector2.Zero)
 			{
 				direction = Enemy.FacingRight ? Vector2.Right : Vector2.Left;
             }
 
 			_dashDirection = direction.Normalized();
+			float targetDistance;
 
-			float distanceToRecorded = direction.Length();
-			float targetDistance = distanceToRecorded;
-
-			if (DashDistance > 0)
+			if (DashDistance > 0f)
 			{
-				targetDistance = Mathf.Min(distanceToRecorded, DashDistance);
+				targetDistance = DashDistance;
+			}
+			else
+			{
+				// 未配置 DashDistance 时，沿方向按当前 ActiveDuration 推导冲刺距离。
+				float configuredDuration = Mathf.Max(ActiveDuration, 0.05f);
+				targetDistance = DashSpeed * configuredDuration;
 			}
 
 			if (targetDistance < MinDashDistance)
@@ -308,21 +311,30 @@ namespace Kuros.Actors.Enemies.Attacks
 				return false;
 			}
 
-            if (!IsPlayerInsideGrabZone(player))
+            if (!IsPlayerInsideOnePunchZone(player))
             {
 				_playerInsideDetection = false;
 				return false;
             }
 
-			// 成功命中，施加冻结状态并进入后摇冷却。
-            ApplyFrozenState(player);
+			// 成功命中，施加伤害并击退。
+			ApplyOnePunchDamage(player);
+			ApplyOnePunchKnockback(player);
 			_playerInsideDetection = false;
 
 			// 命中后先保持当前攻击流程，避免动画被立即切到冷却状态。
 			return true;
         }
 
-        private bool IsPlayerInsideGrabZone(SamplePlayer player)
+		private void ApplyOnePunchDamage(SamplePlayer player)
+		{
+			if (Enemy == null) return;
+
+			int damage = Mathf.Max(1, OnePunchDmg);
+			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+		}
+
+        private bool IsPlayerInsideOnePunchZone(SamplePlayer player)
         {
             if (_grabArea != null)
             {
@@ -332,15 +344,22 @@ namespace Kuros.Actors.Enemies.Attacks
 			return player.IsHitByArea(AttackArea);
         }
 
-        private void ApplyFrozenState(SamplePlayer player)
-        {
-            var frozenState = player.StateMachine?.GetNodeOrNull<PlayerFrozenState>("Frozen");
-            if (frozenState != null)
-            {
-                frozenState.FrozenDuration = AppliedFrozenDuration;
-				player.StateMachine?.ChangeState("Frozen");
+		private void ApplyOnePunchKnockback(SamplePlayer player)
+		{
+			if (Enemy == null) return;
+
+			float duration = Mathf.Max(OnePunchKnockbackDuration, 0.01f);
+			float distance = Mathf.Max(0f, OnePunchKnockbackDistance);
+			float speed = distance / duration;
+
+			Vector2 direction = player.GlobalPosition - Enemy.GlobalPosition;
+			if (direction == Vector2.Zero)
+			{
+				direction = _dashDirection;
 			}
-        }
+
+			player.Velocity = direction.Normalized() * speed;
+		}
 
 		private void StartPostCooldown()
         {
@@ -438,7 +457,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			UpdateDashTravelProgress();
 
-			if (_canAttemptGrab && Enemy.PlayerTarget != null && IsPlayerInsideGrabZone(Enemy.PlayerTarget))
+			if (_canAttemptGrab && Enemy.PlayerTarget != null && IsPlayerInsideOnePunchZone(Enemy.PlayerTarget))
 			{
 				FinishDash(forceGrab: true);
 				return;
@@ -484,7 +503,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				_canAttemptGrab = true;
 				if (!TryExecuteGrab())
 				{
-					//StartPostCooldown();
+					StartPostCooldown();
 					FinishCooldownState();
 				}
 				return;

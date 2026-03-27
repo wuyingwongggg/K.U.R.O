@@ -247,7 +247,14 @@ namespace Kuros.Core
 				// Force state change to Hit unless this actor is in super-armor phase.
 				if (!IgnoreHitStateOnDamage && StateMachine != null)
 				{
-					StateMachine.ChangeState("Hit");
+					if (StateMachine.CurrentState?.Name == "Hit")
+					{
+						StateMachine.ReenterState("Hit");
+					}
+					else
+					{
+						StateMachine.ChangeState("Hit");
+					}
 				}
 			}
 

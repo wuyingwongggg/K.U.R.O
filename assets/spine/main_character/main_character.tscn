@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=35 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="SpineAtlasResource" uid="uid://c4cx1o154rxba" path="res://assets/spine/main_character/Enemy_A1_zhuA.atlas" id="1_kqj82"]
 [ext_resource type="Script" uid="uid://12wblt72y8xt" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
@@ -25,7 +25,9 @@
 [ext_resource type="Script" uid="uid://h02ofhsj1qa4" path="res://scripts/actors/heroes/PlayerItemAttachment.cs" id="20_4ht1x"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="21_utqjm"]
 [ext_resource type="Script" uid="uid://ds3oa6iyqi63y" path="res://scripts/actors/heroes/attacks/UmbrellaMeleeAttack.cs" id="22_umbrella_attack"]
+[ext_resource type="Script" uid="uid://d0s68dwj7l31v" path="res://scripts/actors/heroes/attacks/DrillMeleeAttack.cs" id="23_drill_attack"]
 [ext_resource type="PackedScene" uid="uid://ch7507iroiljg" path="res://scenes/ui/hud/EscapeHUD.tscn" id="24_tdm7a"]
+[ext_resource type="Script" uid="uid://cpuryylckx71t" path="res://scripts/actors/heroes/attacks/BarrierGateMeleeAttack.cs" id="25_barrier_attack"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0y2r2"]
 shader = ExtResource("2_4ht1x")
@@ -89,7 +91,7 @@ scale = Vector2(0.99999994, 0.99999994)
 bone_name = "WQ"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -108.996)
+position = Vector2(0, -108.995995)
 rotation = 1.5707964
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("CapsuleShape2D_0y6jy")
@@ -147,6 +149,29 @@ HitEffectScene = ExtResource("12_0y2r2")
 HitEffectAnchorMode = 2
 HitEffectForceTopLevel = true
 RequiredItemId = "Weapon_Stab_umbrella"
+
+[node name="DrillMeleeAttack" type="Node" parent="StateMachine/Attack"]
+script = ExtResource("23_drill_attack")
+AttackId = "drill_melee_attack"
+DisplayName = "Drill Melee Attack"
+Description = "合金钻头专属攻击模板示例"
+ActiveDuration = 0.6
+AnimationName = "animations/attack_thrust"
+HitEffectScene = ExtResource("12_0y2r2")
+HitEffectAnchorMode = 2
+HitEffectForceTopLevel = true
+RequiredItemId = "Weapon_Stab_drill"
+
+[node name="BarrierGateMeleeAttack" type="Node" parent="StateMachine/Attack"]
+script = ExtResource("25_barrier_attack")
+AttackId = "barrier_gate_melee_attack"
+DisplayName = "Barrier Gate Melee Attack"
+Description = "开刃升降杆门专属攻击模板示例"
+AnimationName = "animations/attack_swing"
+HitEffectScene = ExtResource("12_0y2r2")
+HitEffectAnchorMode = 2
+HitEffectForceTopLevel = true
+RequiredItemId = "Weapon_Slash_barrierGate"
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("10_utqjm")

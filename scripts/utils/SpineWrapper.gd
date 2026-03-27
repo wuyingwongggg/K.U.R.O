@@ -117,6 +117,35 @@ func play_partial_loop_animation(root: Node, anim_name: String, loop_start: floa
 
 	return true
 
+func play_partial_once_animation(root: Node, anim_name: String, part_start: float, part_end: float, mix_duration: float = 0.1, time_scale: float = 1.0) -> bool:
+	var sprite = find_spine_node(root)
+	if not sprite:
+		return false
+
+	if part_end <= part_start:
+		return false
+
+	var state = sprite.get_animation_state()
+	if not state:
+		return false
+
+	var entry = state.set_animation(anim_name, false)
+	if not entry:
+		return false
+
+	if entry.has_method("set_mix_duration"):
+		entry.set_mix_duration(mix_duration)
+	if entry.has_method("set_time_scale"):
+		entry.set_time_scale(time_scale)
+	if entry.has_method("set_track_time"):
+		entry.set_track_time(part_start)
+	if entry.has_method("set_track_last"):
+		entry.set_track_last(part_start)
+	if entry.has_method("set_track_end"):
+		entry.set_track_end(part_end)
+
+	return true
+
 func update_partial_loop_animation(root: Node, track_index: int, loop_start: float, loop_end: float) -> bool:
 	var sprite = find_spine_node(root)
 	if not sprite:

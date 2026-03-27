@@ -86,6 +86,26 @@ namespace Kuros.Systems.FSM
             CurrentState.Enter();
         }
 
+        public void ReenterState(string stateName)
+        {
+            if (!_states.ContainsKey(stateName))
+            {
+                GameLogger.Error(nameof(StateMachine), $"State '{stateName}' not found!");
+                return;
+            }
+
+            if (!CanTransitionTo(stateName))
+            {
+                return;
+            }
+
+            State newState = _states[stateName];
+
+            CurrentState?.Exit();
+            CurrentState = newState;
+            CurrentState.Enter();
+        }
+
         private bool CanTransitionTo(string stateName)
         {
             if (_actor is GameActor actor)

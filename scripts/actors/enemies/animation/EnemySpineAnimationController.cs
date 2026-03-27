@@ -7,7 +7,8 @@ namespace Kuros.Actors.Enemies.Animation
     {
         Loop,
         Once,
-        PartialLoop
+        PartialLoop,
+        PartialOnce
     }
 
     /// <summary>
@@ -151,6 +152,26 @@ namespace Kuros.Actors.Enemies.Animation
             catch (Exception ex)
             {
                 GD.PushWarning($"[{Name}] PlayPartialLoop Failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        protected bool PlayPartialOnce(string animationName, float partStart, float partEnd, float mixDuration = 0.5f, float timeScale = 1f)
+        {
+            if (string.IsNullOrEmpty(animationName) || _spineHelper == null || partEnd <= partStart)
+            {
+                return false;
+            }
+
+            Node targetRoot = Owner ?? (Node?)Enemy ?? this;
+            try
+            {
+                var result = _spineHelper.Call("play_partial_once_animation", targetRoot, animationName, partStart, partEnd, mixDuration, timeScale);
+                return result.AsBool();
+            }
+            catch (Exception ex)
+            {
+                GD.PushWarning($"[{Name}] PlayPartialOnce Failed: {ex.Message}");
                 return false;
             }
         }
