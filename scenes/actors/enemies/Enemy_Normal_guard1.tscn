@@ -70,8 +70,7 @@ script = ExtResource("3_it0yr")
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
-position = Vector2(11, 6)
-scale = Vector2(8.021, 1)
+scale = Vector2(5, 1)
 texture = ExtResource("5_fp57c")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -145,7 +144,7 @@ OnePunchAttackAreaPath = NodePath("../../../../Sprite2D/OnePunchAttackArea")
 DashSpeed = 2000.0
 DashDistance = 1500.0
 MinDashDistanceBeforeSmash = 0.0
-SnapshotDelaySeconds = 1.0
+SnapshotDelaySeconds = 0.9
 OnePunchKnockbackDistance = 500.0
 OnePunchKnockbackDuration = 0.1
 OnePunchKnockbackSpeed = 6000.0

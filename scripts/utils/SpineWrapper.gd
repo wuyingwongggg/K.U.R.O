@@ -81,6 +81,10 @@ func add_animation(root: Node, anim_name: String, loop: bool, delay: float, mix_
 			entry.set_mix_duration(mix_duration)
 		if entry.has_method("set_time_scale"):
 			entry.set_time_scale(time_scale)
+		# 让前一个动画（mixingFrom）在整个过渡期间仍能派发事件（如 hit）
+		# eventThreshold=1.0 表示 mix < 1.0 时都允许派发，覆盖整个 mix 阶段
+		if entry.has_method("set_event_threshold"):
+			entry.set_event_threshold(1.0)
 	return true
 
 func set_empty_animation(root: Node, track_index: int, mix_duration: float) -> bool:

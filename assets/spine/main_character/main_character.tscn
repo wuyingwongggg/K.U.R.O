@@ -70,8 +70,7 @@ EffectController = NodePath("EffectController")
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0y2r2")
-position = Vector2(12.499998, -0.18749714)
-scale = Vector2(16.992184, 2.3496096)
+scale = Vector2(15, 2)
 texture = ExtResource("3_tdm7a")
 
 [node name="SpineSprite" type="SpineSprite" parent="."]
@@ -85,7 +84,7 @@ script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(0.5498008, -451.085)
+position = Vector2(0.511323, -450.08)
 rotation = -1.6160004
 scale = Vector2(0.99999994, 0.99999994)
 bone_name = "Upper Body"

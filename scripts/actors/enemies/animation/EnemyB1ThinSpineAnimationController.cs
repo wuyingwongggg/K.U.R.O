@@ -15,13 +15,18 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string AttackAnimation = "attack";
         [Export] public string SkillAnimation = "skill";
         [Export] public string HitAnimation = "hit";
+        [Export] public string StunAnimation = "stun";
         [Export] public string DieAnimation = "death";
-        [Export(PropertyHint.Range, "0,1,0.01")] public float MixDuration = 0.15f;
-
         private EnemyB1ThinAttackController? _attackController;
         private string _currentKey = string.Empty;
         private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
+        private float _activeLoopStart;
+        private float _activeLoopEnd;
+        private EnemyKickAttack? _skillChargeKickAttack;
+        private Node? _spineControllerNode;
+        private Callable _spineHitCallable;
+        private bool _spineHitSubscribed;
 
         public override void _Ready()
         {
@@ -33,21 +38,29 @@ namespace Kuros.Actors.Enemies.Animation
             base._Ready();
         }
 
+        public override void _ExitTree()
+        {
+            UnsubscribeSpineHitSignal();
+            base._ExitTree();
+        }
+
         protected override void OnControllerReady()
         {
             base.OnControllerReady();
             ResolveAttackController();
+            EnsureSpineHitSupport();
         }
 
         protected override float GetPreferredMixDuration()
         {
-            return MixDuration;
+            return AttackMixDuration;
         }
 
         public override void _Process(double delta)
         {
             base._Process(delta);
             UpdateAnimation();
+            TickPartialLoop();
         }
 
         private void UpdateAnimation()
@@ -62,13 +75,16 @@ namespace Kuros.Actors.Enemies.Animation
             switch (stateName)
             {
                 case "Walk":
-                    PlayLoopIfNeeded("Walk", WalkAnimation);
+                    PlayLoopIfNeeded("Walk", WalkAnimation, WalkMixDuration);
                     break;
                 case "Hit":
-                    PlayOnceIfNeeded("Hit", HitAnimation);
+                    PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
                     break;
                 case "Dying":
-                    PlayOnceIfNeeded("Die", DieAnimation, enqueueIdle: false);
+                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
+                    break;
+                case "Frozen":
+                    PlayLoopIfNeeded("Stun", StunAnimation, HitMixDuration);
                     break;
                 case "Dead":
                     PlayEmptyIfNeeded();
@@ -93,16 +109,17 @@ namespace Kuros.Actors.Enemies.Animation
 
             string attackName = controller.CurrentAttackName;
             if (!string.IsNullOrEmpty(attackName))
-            {
+            {   
                 if (attackName.Equals(controller.MeleeAttackName, _comparison))
                 {
-                    PlayOnceIfNeeded("Attack", AttackAnimation);
+                    PlayOnceIfNeeded("Attack", AttackAnimation, AttackMixDuration);
                     return;
                 }
 
-                if (attackName.Equals(controller.ChargeAttackName, _comparison))
+                var skillAttack = ResolveSkillKickAttack(controller);
+                if (skillAttack != null && !skillAttack.IsDashFinished)
                 {
-                    PlayOnceIfNeeded("Skill", SkillAnimation);
+                    PlayLoopIfNeeded("Skill", SkillAnimation, SkillMixDuration);
                     return;
                 }
             }
@@ -112,10 +129,10 @@ namespace Kuros.Actors.Enemies.Animation
 
         private void PlayIdle()
         {
-            PlayLoopIfNeeded("Idle", IdleAnimation);
+            PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
 
-        private void PlayLoopIfNeeded(string key, string animationName)
+        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -127,14 +144,14 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayLoop(animationName, MixDuration))
+            if (PlayLoop(animationName, mixDuration))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Loop;
             }
         }
 
-        private void PlayOnceIfNeeded(string key, string animationName, bool enqueueIdle = true)
+        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -146,12 +163,27 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            string? followUp = enqueueIdle ? IdleAnimation : null;
-            if (PlayOnce(animationName, MixDuration, 1f, followUp))
+            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Once;
+                // 不自动排队 idle，动画完整播放后再由外部切换 idle
+                // if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
+                // {
+                //     QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
+                // }
             }
+        }
+
+
+        private void TickPartialLoop()
+        {
+            if (_currentMode != SpineAnimationPlaybackMode.PartialLoop)
+            {
+                return;
+            }
+
+            UpdatePartialLoop(_activeLoopStart, _activeLoopEnd);
         }
 
         private void PlayEmptyIfNeeded()
@@ -161,7 +193,7 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayEmpty(MixDuration))
+            if (PlayEmpty(DieMixDuration))
             {
                 _currentKey = "Empty";
                 _currentMode = SpineAnimationPlaybackMode.Loop;
@@ -187,6 +219,115 @@ namespace Kuros.Actors.Enemies.Animation
             }
 
             return _attackController;
+        }
+
+        private EnemyKickAttack? ResolveSkillKickAttack(EnemyB1ThinAttackController controller)
+        {
+            if (_skillChargeKickAttack != null && IsInstanceValid(_skillChargeKickAttack))
+            {
+                return _skillChargeKickAttack;
+            }
+
+            _skillChargeKickAttack = controller.GetNodeOrNull<EnemyKickAttack>(controller.SkillAttackName);
+            return _skillChargeKickAttack;
+        }
+
+        private void EnsureSpineHitSupport()
+        {
+            if (_spineHitSubscribed)
+            {
+                return;
+            }
+
+            if (SpineSpritePath.IsEmpty)
+            {
+                return;
+            }
+
+            _spineControllerNode = GetNodeOrNull(SpineSpritePath) ?? Enemy?.GetNodeOrNull(SpineSpritePath);
+            if (_spineControllerNode == null || !_spineControllerNode.HasSignal("hit_received"))
+            {
+                _spineControllerNode = null;
+                return;
+            }
+
+            _spineHitCallable = Callable.From<int, string>(OnSpineHitReceived);
+            _spineControllerNode.Connect("hit_received", _spineHitCallable);
+            _spineHitSubscribed = true;
+        }
+
+        private void UnsubscribeSpineHitSignal()
+        {
+            if (!_spineHitSubscribed || _spineControllerNode == null)
+            {
+                _spineHitSubscribed = false;
+                _spineControllerNode = null;
+                return;
+            }
+
+            if (_spineControllerNode.IsConnected("hit_received", _spineHitCallable))
+            {
+                _spineControllerNode.Disconnect("hit_received", _spineHitCallable);
+            }
+
+            _spineHitSubscribed = false;
+            _spineControllerNode = null;
+        }
+
+        private void OnSpineHitReceived(int hitStep, string animationName)
+        {
+            if (Enemy?.StateMachine?.CurrentState?.Name != "Attack")
+            {
+                return;
+            }
+
+            var controller = ResolveAttackController();
+            if (controller == null || string.IsNullOrEmpty(controller.CurrentAttackName))
+            {
+                return;
+            }
+
+            EnemyAttackTemplate? currentAttack = controller.GetNodeOrNull<EnemyAttackTemplate>(controller.CurrentAttackName);
+            if (currentAttack == null || !currentAttack.IsRunning)
+            {
+                return;
+            }
+
+            if (!IsExpectedHitAnimation(controller, animationName))
+            {
+                return;
+            }
+
+            if (currentAttack is EnemySimpleMeleeAttack simpleMelee && simpleMelee.RequireAnimationHitTrigger)
+            {
+                float originalDamage = Enemy != null ? Enemy.AttackDamage : 0f;
+                if (Enemy != null) Enemy.AttackDamage = simpleMelee.Damage;
+                currentAttack.TriggerAnimationHit();
+                if (Enemy != null) Enemy.AttackDamage = originalDamage;
+                return;
+            }
+
+            currentAttack.TriggerAnimationHit();
+        }
+
+        private bool IsExpectedHitAnimation(EnemyB1ThinAttackController controller, string animationName)
+        {
+            string expectedAnimation = string.Empty;
+            if (controller.CurrentAttackName.Equals(controller.MeleeAttackName, _comparison))
+            {
+                expectedAnimation = AttackAnimation;
+            }
+            else if (controller.CurrentAttackName.Equals(controller.SkillAttackName, _comparison))
+            {
+                expectedAnimation = SkillAnimation;
+            }
+
+            if (string.IsNullOrEmpty(expectedAnimation))
+            {
+                return true;
+            }
+
+            return string.Equals(animationName, expectedAnimation, _comparison);
         }
     }
 }

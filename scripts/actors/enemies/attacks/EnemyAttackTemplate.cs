@@ -258,21 +258,26 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public void TriggerAnimationHit()
         {
+            GD.Print($"[TriggerAnimationHit] RequireAnimationHitTrigger={RequireAnimationHitTrigger}, _animationHitReady={_animationHitReady}, AllowMultipleAnimationHits={AllowMultipleAnimationHits}");
             if (!RequireAnimationHitTrigger)
             {
+                GD.Print("[TriggerAnimationHit] RequireAnimationHitTrigger is false, skip");
                 return;
             }
 
             if (!_animationHitReady)
             {
+                GD.Print("[TriggerAnimationHit] _animationHitReady is false, skip");
                 return;
             }
 
+            GD.Print("[TriggerAnimationHit] Calling OnAnimationHit()");
             OnAnimationHit();
 
             if (!AllowMultipleAnimationHits)
             {
                 _animationHitReady = false;
+                GD.Print("[TriggerAnimationHit] Set _animationHitReady = false");
             }
         }
     }

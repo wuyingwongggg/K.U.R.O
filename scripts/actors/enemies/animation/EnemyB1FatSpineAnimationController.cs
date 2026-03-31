@@ -233,10 +233,10 @@ namespace Kuros.Actors.Enemies.Animation
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Once;
 
-                if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
-                {
-                    QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
-                }
+                // if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
+                // {
+                //     QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
+                // }
             }
         }
 

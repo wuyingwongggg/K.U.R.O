@@ -54,6 +54,7 @@ y_sort_enabled = true
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_gvrrx")
+SimpleAttackWarmupSeconds = 0.8
 EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-300, 60)
 DebugOverlayFontSize = 32
@@ -71,8 +72,7 @@ script = ExtResource("3_6yc1u")
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
-position = Vector2(11, 6)
-scale = Vector2(8.021, 1)
+scale = Vector2(8, 1.5)
 texture = ExtResource("5_bb8mk")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -136,7 +136,7 @@ script = ExtResource("9_rbnx7")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_ooggc")
-MeleeCountBeforeCharge = 1
+MeleeCountBeforeCharge = 10
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
 [node name="SmashAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -146,7 +146,7 @@ SmashAreaPath = NodePath("../../../../Sprite2D/SmashArea")
 DashSpeed = 800.0
 SnapshotDelaySeconds = 0.5
 SmashDmg = 1
-AppliedStunDuration = 10.0
+AppliedStunDuration = 2.0
 SmashAttackKnockbackDistance = 500.0
 SmashAttackKnockbackDuration = 0.2
 SmashAttackKnockbackSpeed = 2500.0
@@ -199,6 +199,3 @@ script = ExtResource("20_ooggc")
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("20_xrpf5")
-IdleMixDuration = 0.01
-WalkMixDuration = 0.01
-HitMixDuration = 0.01

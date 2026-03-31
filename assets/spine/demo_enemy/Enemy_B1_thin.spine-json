@@ -349,6 +349,9 @@
 		}
 	}
 ],
+"events": {
+	"hit": {}
+},
 "animations": {
 	"attack": {
 		"bones": {
@@ -886,7 +889,10 @@
 					{ "time": 0.9333 }
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 0.6, "name": "hit" }
+		]
 	},
 	"death": {
 		"bones": {
@@ -3283,7 +3289,12 @@
 					{ "time": 1.7667 }
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 0.54, "name": "hit" },
+			{ "time": 0.87, "name": "hit" },
+			{ "time": 1.1, "name": "hit" }
+		]
 	},
 	"stun": {
 		"slots": {

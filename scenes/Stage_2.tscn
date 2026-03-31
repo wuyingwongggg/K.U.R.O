@@ -127,9 +127,6 @@ shape = SubResource("RectangleShape2D_k0qph")
 [node name="Node2D" type="Node2D" parent="World"]
 script = ExtResource("7_k0qph")
 
-[node name="Enemy_B1_thin" parent="World" instance=ExtResource("10_sfgmy")]
-position = Vector2(5931, 106)
-
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 visible = false
 follow_viewport_scale = 4.18

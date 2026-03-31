@@ -52,7 +52,7 @@ y_sort_enabled = true
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_wixbd")
-SimpleAttackWarmupSeconds = 0.3
+SimpleAttackWarmupSeconds = 0.4
 EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-300, 50)
 DebugOverlayFontSize = 32
@@ -69,8 +69,7 @@ script = ExtResource("2_gkl6r")
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
-position = Vector2(11, 6)
-scale = Vector2(8.021, 1)
+scale = Vector2(5, 1)
 texture = ExtResource("4_kwxxm")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -200,9 +199,4 @@ script = ExtResource("19_gkl6r")
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("19_d5sdg")
-IdleMixDuration = 0.0
-WalkMixDuration = 0.0
-HitMixDuration = 0.0
-DieMixDuration = 0.0
-AttackMixDuration = 0.3
-SkillMixDuration = 0.1
+AttackMixDuration = 0.2

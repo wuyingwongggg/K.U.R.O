@@ -1,48 +1,68 @@
 using Godot;
+using System;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
     public partial class EnemyB1ThinAttackController : EnemyAttackController
     {
-        [Export] public string FreezeAttackName { get; set; } = "FreezeMeleeAttack";
-        [Export] public string ComboAttackName { get; set; } = "SimpleMeleeAttack";
-        [Export] public string HeavyAttackName { get; set; } = "ChargeEscapeAttack";
+        [Export] public string SkillAttackName { get; set; } = "KickAttack";
+        [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
+        [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
 
-		public string CurrentAttackName { get; private set; } = string.Empty;
-        public string MeleeAttackName => ComboAttackName;
-        public string ChargeAttackName => HeavyAttackName;
+        public string CurrentAttackName { get; private set; } = string.Empty;
 
-        private bool _freezeAttackTriggered;
+        private int _meleeCountSinceCharge;
+
+        public override void Initialize(SampleEnemy enemy)
+        {
+            base.Initialize(enemy);
+            _meleeCountSinceCharge = 0;
+            ConfigureNextAttack(forceCharge: false);
+        }
 
         protected override void OnChildAttackStarted(EnemyAttackTemplate attack)
         {
             base.OnChildAttackStarted(attack);
+            CurrentAttackName = attack.Name;
 
-            if (attack != null)
+            if (IsAttack(attack.Name, MeleeAttackName))
             {
-                CurrentAttackName = attack.Name;
-            }
-
-            if (_freezeAttackTriggered)
-            {
+                _meleeCountSinceCharge++;
+                int threshold = Mathf.Max(1, MeleeCountBeforeCharge);
+                ConfigureNextAttack(forceCharge: _meleeCountSinceCharge >= threshold);
                 return;
             }
 
-            if (attack?.Name != FreezeAttackName)
+            if (IsAttack(attack.Name, SkillAttackName))
             {
-                return;
+                _meleeCountSinceCharge = 0;
+                ConfigureNextAttack(forceCharge: false);
             }
-
-            _freezeAttackTriggered = true;
-            TrySetAttackWeight(FreezeAttackName, 0f);
-            TrySetAttackWeight(ComboAttackName, 1f);
         }
 
-    		protected override void OnAttackFinished()
-    		{
-    			base.OnAttackFinished();
-    			CurrentAttackName = string.Empty;
-    		}
+        protected override void OnAttackFinished()
+        {
+            base.OnAttackFinished();
+            CurrentAttackName = string.Empty;
+        }
+
+        private void ConfigureNextAttack(bool forceCharge)
+        {
+            if (forceCharge)
+            {
+                TrySetAttackWeight(SkillAttackName, 1f);
+                TrySetAttackWeight(MeleeAttackName, 0f);
+                return;
+            }
+
+            TrySetAttackWeight(SkillAttackName, 0f);
+            TrySetAttackWeight(MeleeAttackName, 1f);
+        }
+
+        private static bool IsAttack(string attackName, string expectedName)
+        {
+            return attackName.Equals(expectedName, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
 
