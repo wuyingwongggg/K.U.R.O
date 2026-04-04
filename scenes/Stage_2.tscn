@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://qd5abd4opeob"]
+[gd_scene load_steps=28 format=3 uid="uid://qd5abd4opeob"]
 
 [ext_resource type="PackedScene" uid="uid://dd8xmpgwy0t2o" path="res://scenes/environments/scene2.tscn" id="1_7jsho"]
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctuyy"]
@@ -8,10 +8,14 @@
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="4_vvtmr"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/enemies/Enemy_B1_fat.tscn" id="6_ctuyy"]
 [ext_resource type="Script" uid="uid://b7afb3wjghskq" path="res://scripts/items/world/DropItemDebugger.cs" id="7_k0qph"]
-[ext_resource type="Script" uid="uid://carsh4dnv63qg" path="res://scripts/controllers/EnemySpawnManager.cs" id="8_5klp8"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="8_5klp8"]
+[ext_resource type="PackedScene" uid="uid://2pny8f8vuu3j" path="res://scenes/weapons/Weapon_Slash_barrierGate.tscn" id="10_f0l3g"]
 [ext_resource type="PackedScene" uid="uid://wqcdwpyo1nji" path="res://scenes/actors/enemies/Enemy_B1_thin.tscn" id="10_sfgmy"]
+[ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="11_3yw8j"]
 [ext_resource type="PackedScene" uid="uid://cdnitqquebaw6" path="res://scenes/weapons/Weapon_Stab_drill.tscn" id="11_vvtmr"]
 [ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/enemies/Enemy_Normal_guard2.tscn" id="12_2l4aj"]
+[ext_resource type="Script" uid="uid://dpbc2vm461epg" path="res://scripts/tools/WeaponConfigToolkit.cs" id="14_cwau0"]
+[ext_resource type="Texture2D" uid="uid://dccrl4lpl0t2h" path="res://icon.svg" id="15_cwau0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s0pgc"]
 size = Vector2(16974, 774)
@@ -77,9 +81,9 @@ PlayerDamagedShakeStrength = 4.0
 ShakeOnPlayerAttackHit = true
 PlayerAttackHitShakeStrength = 6.0
 HitStopOnPlayerDamaged = true
-PlayerDamagedHitStopDuration = 0.049999999999999996
+PlayerDamagedHitStopDuration = 0.04999999999999999
 HitStopOnPlayerAttackHit = true
-PlayerAttackHitHitStopDuration = 0.049999999999999996
+PlayerAttackHitHitStopDuration = 0.04999999999999999
 HitStopDelay = 0.1
 
 [node name="FrontWall" type="Node2D" parent="World"]
@@ -148,6 +152,12 @@ position = Vector2(8357, -234)
 y_sort_enabled = true
 position = Vector2(4462, 64)
 
+[node name="WeaponSlashBarrierGate" parent="World" instance=ExtResource("10_f0l3g")]
+position = Vector2(3945, 49)
+
+[node name="WeaponBrawlRiotBracer" parent="World" instance=ExtResource("11_3yw8j")]
+position = Vector2(3323, 64)
+
 [node name="EnemySpawneManager" type="Node2D" parent="World" node_paths=PackedStringArray("TriggerArea")]
 top_level = true
 y_sort_enabled = true
@@ -163,11 +173,12 @@ TriggerSize = Vector2(320, 197.37)
 TriggerCollisionLayer = 1
 TriggerCollisionMask = 1
 SpawnAreaExtents = Vector2(300, 300)
-SpawnBackEffectOffset = Vector2(0, -240)
-SpawnFrontEffectOffset = Vector2(0, -240)
+SpawnBackEffectOffset = Vector2(0, -300)
+SpawnFrontEffectOffset = Vector2(0, -300)
 EnemyAppearDelay = 1.0
 BackEffectZOffset = 1
 FrontEffectZOffset = 3
+AutoLowerFrontEffectAfterEnemySpawn = true
 DebugLineWidth = 2.5
 
 [node name="TriggerArea" type="Area2D" parent="World/EnemySpawneManager"]
@@ -180,16 +191,33 @@ shape = SubResource("RectangleShape2D_2l4aj")
 position = Vector2(3115, 0)
 script = ExtResource("8_5klp8")
 EnemyScene = ExtResource("12_2l4aj")
+SpawnCount = 3
+SpawnInterval = 2.0
 SpawnParentPath = NodePath("..")
 TriggerArea = NodePath("Area2D")
 TriggerCollisionLayer = 1
 TriggerCollisionMask = 1
+EnemySpawnOffset = Vector2(0, 100)
 EnemyAppearDelay = 1.0
-BackEffectZOffset = 1
-FrontEffectZOffset = 3
+EnableYAxisAutoLayering = true
+YAxisZScale = 11.4
+YAxisZMin = 0
+YAxisZMax = 0
 
 [node name="Area2D" type="Area2D" parent="World/EnemySpawneManager2"]
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/EnemySpawneManager2/Area2D"]
 shape = SubResource("RectangleShape2D_f0l3g")
+
+[node name="Node" type="Node" parent="World"]
+script = ExtResource("14_cwau0")
+ItemId = "Weapon_Brawl_RiotBracer"
+ItemDisplayName = "镇暴护腕"
+ItemDescription = "镇暴护腕描述"
+WeaponScenePath = "uid://bhjc0grsl76ep"
+ItemIcon = ExtResource("15_cwau0")
+SkillId = "WeaponSkill_Brawl_RiotBracer"
+SkillDisplayName = "镇暴护腕技能名"
+SkillAnimationName = ""
+SkillActivationAction = "Weapon_Brawl_RiotBracer"

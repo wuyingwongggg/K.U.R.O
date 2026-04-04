@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=3 format=3 uid="uid://0rwr32wy7yud"]
+
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_joilt"]
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hxcpv"]
+
+[resource]
+script = ExtResource("2_hxcpv")
+SkillId = "WeaponSlashSkill_BarrierGate"
+DisplayName = "开刃升降杆技能名"
+AnimationName = "Weapon_Slash_BarrierGate"
+DamageMultiplier = 0.0
+ActivationAction = "weapon_skill_block"

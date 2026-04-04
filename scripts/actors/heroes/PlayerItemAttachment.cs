@@ -23,6 +23,7 @@ namespace Kuros.Actors.Heroes
         [Export(PropertyHint.Range, "-1024,1024,1")] public Vector2 BoneIconOffset { get; set; } = Vector2.Zero;
         [Export] public bool RotateBoneOffsetWithBone { get; set; } = false;
         [Export(PropertyHint.Range, "-512,512,1")] public Vector2 IconOffset { get; set; } = new Vector2(32, -32);
+        [Export(PropertyHint.Range, "-360,360,0.1")] public float IconRotationDegrees { get; set; } = 0f;
         [Export] public bool FlipWithFacing { get; set; } = true;
         [Export] public int ZIndex { get; set; } = 0;
         [Export] public string SpineSlotDefaultSelection { get; set; } = string.Empty;
@@ -718,6 +719,11 @@ namespace Kuros.Actors.Heroes
             return new Transform2D(xUnit, yUnit, transform.Origin);
         }
 
+        private float GetIconRotationRadians()
+        {
+            return Mathf.DegToRad(IconRotationDegrees);
+        }
+
         private Sprite2D CreateIconSprite(string name)
         {
             var sprite = new Sprite2D
@@ -755,6 +761,7 @@ namespace Kuros.Actors.Heroes
                 _iconUsesBoneTracking = false;
                 _activeBoneNode = null;
                 _iconSprite.Position = IconOffset;
+                _iconSprite.Rotation = GetIconRotationRadians();
                 ApplyFacingFlip(applyForBone: false);
             }
         }
@@ -775,7 +782,7 @@ namespace Kuros.Actors.Heroes
             _iconSprite.GlobalPosition = RotateBoneOffsetWithBone
                 ? boneTransform * BoneIconOffset
                 : _activeBoneNode.GlobalPosition + BoneIconOffset;
-            _iconSprite.GlobalRotation = _activeBoneNode.GlobalRotation;
+            _iconSprite.GlobalRotation = _activeBoneNode.GlobalRotation + GetIconRotationRadians();
 
             var scale = _iconSprite.Scale;
             float absX = MathF.Abs(scale.X);
@@ -843,7 +850,7 @@ namespace Kuros.Actors.Heroes
             }
 
             _iconSprite.Position = BoneIconOffset;
-            _iconSprite.Rotation = 0f;
+            _iconSprite.Rotation = GetIconRotationRadians();
 
             var scale = _iconSprite.Scale;
             float absX = MathF.Abs(scale.X);

@@ -42,6 +42,24 @@ namespace Kuros.Actors.Enemies.States
             }
         }
 
+        public override void Exit()
+        {
+            if (Enemy != null && GodotObject.IsInstanceValid(Enemy))
+            {
+                Enemy.Velocity = Vector2.Zero;
+            }
+        }
+
+        public override bool CanExitTo(string nextStateName)
+        {
+            if (_timer <= 0f)
+            {
+                return true;
+            }
+
+            return nextStateName == "Dying" || nextStateName == "Dead";
+        }
+
         public override void PhysicsUpdate(double delta)
         {
             if (Enemy == null || !GodotObject.IsInstanceValid(Enemy))

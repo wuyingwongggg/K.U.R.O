@@ -18,6 +18,12 @@ namespace Kuros.Actors.Enemies.States
                 return;
             }
 
+            if (Enemy.StateMachine.HasState("DashBack") && Enemy.IsPlayerAttacking() && Enemy.IsEnemyInPlayerAttackRange())
+            {
+                ChangeState("DashBack");
+                return;
+            }
+
             if (Enemy.IsPlayerInAttackRange() && Enemy.AttackTimer <= 0)
             {
                 ChangeState("Attack");

@@ -267,9 +267,11 @@ animations = [{
 }]
 
 [node name="SpawnPodBack" type="AnimatedSprite2D"]
-position = Vector2(0, -382)
+z_index = 2
+y_sort_enabled = true
 scale = Vector2(0.3, 0.3)
 sprite_frames = SubResource("SpriteFrames_1w55o")
 animation = &"spawn"
 autoplay = "spawn"
-frame_progress = 0.91853017
+frame_progress = 0.47418422
+offset = Vector2(0, -800)

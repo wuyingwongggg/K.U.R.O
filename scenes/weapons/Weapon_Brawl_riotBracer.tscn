@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://bhjc0grsl76ep"]
+
+[ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_82c6d"]
+[ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="2_82c6d"]
+[ext_resource type="Texture2D" uid="uid://dccrl4lpl0t2h" path="res://icon.svg" id="2_gvtc2"]
+
+[sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
+size = Vector2(488, 476)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
+size = Vector2(800, 500)
+
+[node name="WeaponBrawlRiotBracer" type="CharacterBody2D"]
+scale = Vector2(0.5, 0.5)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_82c6d")
+ItemDefinition = ExtResource("2_82c6d")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_gvtc2")
+region_enabled = true
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="CollisionArea2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea2D"]
+scale = Vector2(0.5, 0.5)
+shape = SubResource("BodyShape_rr6vl")
+
+[node name="AttackArea" type="Area2D" parent="."]
+scale = Vector2(0.5, 0.5)
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(2, 4)
+shape = SubResource("RectangleShape2D_82c6d")

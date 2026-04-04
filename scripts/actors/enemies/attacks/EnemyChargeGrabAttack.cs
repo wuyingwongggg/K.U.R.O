@@ -251,6 +251,12 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
+			if (!IsEnemyAlive())
+			{
+				AbortActiveGrabDueToEnemyDeath();
+				return;
+			}
+
 			// 快照延迟计时
 			if (_waitingForSnapshot)
 			{
@@ -476,7 +482,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		protected override void OnAnimationHit()
 		{
-			if (_grabbedPlayer == null)
+			if (_grabbedPlayer == null || !IsEnemyAlive())
 			{
 				return;
 			}
@@ -686,10 +692,46 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
+		private bool IsEnemyAlive()
+		{
+			return Enemy != null && !Enemy.IsDeathSequenceActive && !Enemy.IsDead;
+		}
+
+		private void AbortActiveGrabDueToEnemyDeath()
+		{
+			if (_grabbedPlayer != null)
+			{
+				var player = _grabbedPlayer;
+				ReleasePlayer();
+				OnEscapeSequenceFinished(player, escaped: false);
+			}
+
+			_isEvaluatingEscape = false;
+			_escapeTimer = 0f;
+			_isDashing = false;
+			_waitingForSnapshot = false;
+			_snapshotTimer = 0f;
+			_playerInsideDetection = false;
+			_pendingSkill3Finisher = false;
+			_skipRecoveryGrab = false;
+			_animationHitReady = false;
+
+			if (IsRunning)
+			{
+				Cancel(clearCooldown: true);
+			}
+		}
+
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
 			_playerInsideDetection = false;
+			if (!IsEnemyAlive())
+			{
+				_skipRecoveryGrab = false;
+				return;
+			}
+
 			if (_grabbedPlayer == null && _postAttackCooldown <= 0f)
 			{
 				StartPostCooldown();

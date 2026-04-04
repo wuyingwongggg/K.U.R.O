@@ -45,6 +45,7 @@ namespace Kuros.Controllers
         [Export] public bool UseExplicitSpawnOffsets { get; set; } = false;
         [Export] public Array<Vector2> SpawnOffsets { get; set; } = new();
         [Export] public Vector2 SpawnAreaExtents { get; set; } = new Vector2(96, 48);
+        [Export] public Vector2 EnemySpawnOffset { get; set; } = Vector2.Zero;
         [Export] public bool AlignEnemyFacingToManager { get; set; } = true;
         [Export] public bool FaceRightOnSpawn { get; set; } = false;
 
@@ -60,9 +61,10 @@ namespace Kuros.Controllers
         [Export] public bool FallbackToDelayWhenGateUnavailable { get; set; } = true;
         [Export(PropertyHint.Range, "-1000,1000,1")] public int BackEffectZOffset { get; set; } = -1;
         [Export(PropertyHint.Range, "-1000,1000,1")] public int FrontEffectZOffset { get; set; } = 1;
-        [Export] public bool AutoLowerFrontEffectAfterEnemySpawn { get; set; } = true;
+        [Export] public bool AutoLowerFrontEffectAfterEnemySpawn { get; set; } = false;
         [Export(PropertyHint.Range, "0,5,0.05")] public float FrontEffectLowerDelay { get; set; } = 0f;
         [Export(PropertyHint.Range, "-1000,1000,1")] public int FrontEffectPostSpawnZOffset { get; set; } = -1;
+        [Export] public bool ForceApplySpawnEffectZOffset { get; set; } = false;
 
         [ExportCategory("Y-Sort")]
         [Export] public bool EnableYAxisAutoLayering { get; set; } = false;
@@ -192,8 +194,9 @@ namespace Kuros.Controllers
             int spawnTotal = Mathf.Max(1, SpawnCount);
             for (int i = 0; i < spawnTotal; i++)
             {
-                Vector2 spawnPosition = ResolveSpawnPosition(i);
-                SpawnEffectRefs effectRefs = PlaySpawnEffects(spawnPosition);
+                Vector2 spawnAnchorPosition = ResolveSpawnPosition(i);
+                Vector2 enemySpawnPosition = spawnAnchorPosition + EnemySpawnOffset;
+                SpawnEffectRefs effectRefs = PlaySpawnEffects(spawnAnchorPosition);
 
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 
@@ -206,12 +209,12 @@ namespace Kuros.Controllers
                     GD.Print($"[{Name}] Spawn index={i + 1}/{spawnTotal}, gateMode={EnemyAppearGateMode}, actualWait={waitedMs}ms");
                 }
 
-                var enemy = SpawnEnemy(spawnPosition, i);
+                var enemy = SpawnEnemy(enemySpawnPosition, i);
                 if (enemy != null)
                 {
                     if (LogSpawnEffectPositions)
                     {
-                        GD.Print($"[{Name}] Enemy spawned index={i + 1}/{spawnTotal}, pos={spawnPosition}, root={DescribeCanvasItem(enemy as CanvasItem)}");
+                        GD.Print($"[{Name}] Enemy spawned index={i + 1}/{spawnTotal}, anchor={spawnAnchorPosition}, enemyPos={enemySpawnPosition}, enemyOffset={EnemySpawnOffset}, root={DescribeCanvasItem(enemy as CanvasItem)}");
                     }
 
                     if (AutoLowerFrontEffectAfterEnemySpawn)
@@ -525,8 +528,11 @@ namespace Kuros.Controllers
             if (instance is Node2D node2D)
             {
                 node2D.GlobalPosition = spawnPosition;
-                int baseZ = node2D.ZIndex;
-                ApplyNodeZIndex(node2D, spawnPosition, baseZ, zOffset);
+                if (ForceApplySpawnEffectZOffset)
+                {
+                    int baseZ = node2D.ZIndex;
+                    ApplyNodeZIndex(node2D, spawnPosition, baseZ, zOffset);
+                }
                 node2D.Visible = true;
             }
 

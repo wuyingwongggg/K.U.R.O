@@ -53,7 +53,6 @@ collision_layer = 2
 collision_mask = 7
 motion_mode = 1
 script = ExtResource("1_wixbd")
-SimpleAttackWarmupSeconds = 0.4
 EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-300, 50)
 DebugOverlayFontSize = 32
@@ -163,7 +162,6 @@ metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("11_vt7ga")
-AttackIntervalSeconds = 0.1
 Damage = 1
 SimpleMeleeAttackKnockbackDistance = 30.0
 SimpleMeleeAttackKnockbackDuration = 0.06999999999999999
@@ -196,6 +194,8 @@ script = ExtResource("16_5x78p")
 script = ExtResource("17_2j78c")
 
 [node name="SpineSprite" type="SpineSprite" parent="."]
+z_index = 2
+y_sort_enabled = true
 scale = Vector2(0.33, 0.33)
 skeleton_data_res = ExtResource("18_wixbd")
 preview_skin = "Default"
