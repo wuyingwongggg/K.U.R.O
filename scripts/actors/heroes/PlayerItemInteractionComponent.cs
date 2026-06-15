@@ -196,31 +196,57 @@ namespace Kuros.Actors.Heroes
                 var tree = GetTree();
                 if (tree != null)
                 {
+                    // 第一遍：收集所有与玩家交互区域重叠的候选
+                    var candidates = new System.Collections.Generic.List<Node2D>();
+                    var rigidCandidates = new System.Collections.Generic.List<RigidBodyWorldItemEntity>();
+                    var worldCandidates = new System.Collections.Generic.List<WorldItemEntity>();
+                    var worldCandidatesAsNode = new System.Collections.Generic.List<Node2D>();
+
                     foreach (var node in tree.GetNodesInGroup("world_items"))
                     {
                         if (node is RigidBodyWorldItemEntity rigidItem && rigidItem.IsHighlightCandidate)
                         {
                             if (rigidItem.GrabArea!.OverlapsArea(_interactionArea))
                             {
-                                float dist = rigidItem.GlobalPosition.DistanceSquaredTo(_interactionArea.GlobalPosition);
-                                if (dist < minDistRigid)
-                                {
-                                    minDistRigid = dist;
-                                    closestRigid = rigidItem;
-                                }
+                                candidates.Add(rigidItem);
+                                rigidCandidates.Add(rigidItem);
                             }
                         }
                         else if (node is WorldItemEntity worldItem && worldItem.IsHighlightCandidate)
                         {
                             if (worldItem.TriggerArea.OverlapsArea(_interactionArea))
                             {
-                                float dist = worldItem.GlobalPosition.DistanceSquaredTo(_interactionArea.GlobalPosition);
-                                if (dist < minDistWorld)
-                                {
-                                    minDistWorld = dist;
-                                    closestWorld = worldItem;
-                                }
+                                candidates.Add(worldItem);
+                                worldCandidates.Add(worldItem);
+                                worldCandidatesAsNode.Add(worldItem);
                             }
+                        }
+                    }
+
+                    // 第二遍：过滤被遮挡的 RigidBody 候选
+                    var highlightOcclusionList = BuildOcclusionCheckList(candidates);
+                    foreach (var rigidItem in rigidCandidates)
+                    {
+                        if (IsBlockedByOtherItem(rigidItem, highlightOcclusionList))
+                            continue;
+                        float dist = rigidItem.GlobalPosition.DistanceSquaredTo(_interactionArea.GlobalPosition);
+                        if (dist < minDistRigid)
+                        {
+                            minDistRigid = dist;
+                            closestRigid = rigidItem;
+                        }
+                    }
+
+                    // 过滤被遮挡的 WorldItem 候选
+                    foreach (var worldItem in worldCandidates)
+                    {
+                        if (IsBlockedByOtherItem(worldItem, highlightOcclusionList))
+                            continue;
+                        float dist = worldItem.GlobalPosition.DistanceSquaredTo(_interactionArea.GlobalPosition);
+                        if (dist < minDistWorld)
+                        {
+                            minDistWorld = dist;
+                            closestWorld = worldItem;
                         }
                     }
 
@@ -536,131 +562,204 @@ namespace Kuros.Actors.Heroes
             return false;
         }
         
+        /// <summary>
+        /// 检查 candidate 是否被列表中的其他物品遮挡。
+        /// 遮挡规则：若 other 的碰撞区域与 candidate 重叠，且 other 的 Y 轴更大（在画面中更靠前），则 candidate 被遮挡。
+        /// </summary>
+        /// <summary>
+        /// 纯几何 AABB 重叠检测（不依赖碰撞层/掩码）。
+        /// 从 Area2D 的第一个 CollisionShape2D 子节点计算全局包围盒。
+        /// </summary>
+        private static bool AreCollisionAreasOverlapping(Area2D areaA, Area2D areaB)
+        {
+            var shapeNodeA = areaA.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            var shapeNodeB = areaB.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            if (shapeNodeA?.Shape == null || shapeNodeB?.Shape == null)
+                return false;
+
+            Vector2 GetHalfExtents(CollisionShape2D node)
+            {
+                if (node.Shape is RectangleShape2D rect)
+                    return rect.Size * 0.5f;
+                if (node.Shape is CircleShape2D circle)
+                {
+                    float r = circle.Radius;
+                    return new Vector2(r, r);
+                }
+                // 回退：使用 Area2D 的全局位置差
+                return new Vector2(32f, 32f);
+            }
+
+            Vector2 extA = GetHalfExtents(shapeNodeA);
+            Vector2 extB = GetHalfExtents(shapeNodeB);
+            Vector2 posA = shapeNodeA.GlobalPosition;
+            Vector2 posB = shapeNodeB.GlobalPosition;
+
+            Rect2 aabbA = new Rect2(posA - extA, extA * 2);
+            Rect2 aabbB = new Rect2(posB - extB, extB * 2);
+            return aabbA.Intersects(aabbB, true);
+        }
+
+        private static bool IsBlockedByOtherItem(Node2D candidate, System.Collections.Generic.List<Node2D> allCandidates)
+        {
+            var candidateArea = GetPickableCollisionArea(candidate);
+            if (candidateArea == null) return false;
+
+            float candidateY = candidate.GlobalPosition.Y;
+
+            foreach (var other in allCandidates)
+            {
+                if (other == candidate) continue;
+                var otherArea = GetPickableCollisionArea(other);
+                if (otherArea == null) continue;
+
+                // 只检查 Y 轴在 candidate 之下的物品（更靠前）
+                if (other.GlobalPosition.Y <= candidateY) continue;
+
+                if (AreCollisionAreasOverlapping(candidateArea, otherArea))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 获取可拾取物品的碰撞检测 Area2D。
+        /// </summary>
+        private static Area2D? GetPickableCollisionArea(Node2D pickable)
+        {
+            if (pickable is RigidBodyWorldItemEntity rigidItem)
+                return rigidItem.GrabArea;
+            if (pickable is WorldItemEntity worldItem)
+                return worldItem.TriggerArea;
+            if (pickable is PickupProperty pickupProp)
+                return pickupProp.GetNodeOrNull<Area2D>("TriggerArea");
+            return null;
+        }
+
         private Node2D? FindNearestPickableFromArea(Area2D area, Vector2 actorPosition, ref float nearestDistanceSq)
         {
             Node2D? nearestPickable = null;
-            
-            // 检查重叠的 Area2D（WorldItemEntity、RigidBodyWorldItemEntity 和 PickupProperty 都使用 TriggerArea/GrabArea）
+            var candidates = new System.Collections.Generic.List<Node2D>();
+
+            // 第一遍：收集所有候选物品
             foreach (var areaNode in area.GetOverlappingAreas())
             {
                 var parent = areaNode.GetParent();
-                
-                // 检查是否是 WorldItemEntity
+
                 if (parent is WorldItemEntity entity)
-                {
-                    float distanceSq = actorPosition.DistanceSquaredTo(entity.GlobalPosition);
-                    if (distanceSq < nearestDistanceSq)
-                    {
-                        nearestDistanceSq = distanceSq;
-                        nearestPickable = entity;
-                    }
-                }
-                // 检查是否是 RigidBodyWorldItemEntity（适配 RigidBody2D 场景）
-                // 注意：GrabArea 可能是 RigidBody2D 的子节点，需要向上查找
+                    candidates.Add(entity);
                 else if (parent is RigidBodyWorldItemEntity rigidEntity)
-                {
-                    float distanceSq = actorPosition.DistanceSquaredTo(rigidEntity.GlobalPosition);
-                    if (distanceSq < nearestDistanceSq)
-                    {
-                        nearestDistanceSq = distanceSq;
-                        nearestPickable = rigidEntity;
-                    }
-                }
-                // 如果父节点是 RigidBody2D，检查其父节点是否是 RigidBodyWorldItemEntity
+                    candidates.Add(rigidEntity);
                 else if (parent is RigidBody2D rigidBody)
                 {
-                    var grandParent = rigidBody.GetParent();
-                    if (grandParent is RigidBodyWorldItemEntity rigidEntityFromBody)
-                    {
-                        float distanceSq = actorPosition.DistanceSquaredTo(rigidEntityFromBody.GlobalPosition);
-                        if (distanceSq < nearestDistanceSq)
-                        {
-                            nearestDistanceSq = distanceSq;
-                            nearestPickable = rigidEntityFromBody;
-                        }
-                    }
+                    if (rigidBody.GetParent() is RigidBodyWorldItemEntity rigidEntityFromBody)
+                        candidates.Add(rigidEntityFromBody);
                 }
-                // 检查是否是 PickupProperty
                 else if (parent is PickupProperty pickup)
+                    candidates.Add(pickup);
+            }
+
+            // 第二遍：过滤被遮挡的物品，从剩余候选中选距离最近的
+            var areaOcclusionList = BuildOcclusionCheckList(candidates);
+            foreach (var candidate in candidates)
+            {
+                if (IsBlockedByOtherItem(candidate, areaOcclusionList))
+                    continue;
+
+                float distanceSq = actorPosition.DistanceSquaredTo(candidate.GlobalPosition);
+                if (distanceSq < nearestDistanceSq)
                 {
-                    float distanceSq = actorPosition.DistanceSquaredTo(pickup.GlobalPosition);
-                    if (distanceSq < nearestDistanceSq)
-                    {
-                        nearestDistanceSq = distanceSq;
-                        nearestPickable = pickup;
-                    }
+                    nearestDistanceSq = distanceSq;
+                    nearestPickable = candidate;
                 }
             }
-            
+
             return nearestPickable;
         }
-        
+
+        /// <summary>
+        /// 合并候选列表与场景中所有可拾取物品，返回用于遮挡检测的扩展列表。
+        /// 确保不直接触碰玩家的遮挡物也能被检测到。
+        /// </summary>
+        private System.Collections.Generic.List<Node2D> BuildOcclusionCheckList(System.Collections.Generic.List<Node2D> candidates)
+        {
+            var tree = GetTree();
+            if (tree == null) return candidates;
+
+            var expanded = new System.Collections.Generic.List<Node2D>(candidates);
+            foreach (var node in tree.GetNodesInGroup("world_items"))
+            {
+                if (node is RigidBodyWorldItemEntity rigidItem && rigidItem.IsHighlightCandidate && !expanded.Contains(rigidItem))
+                    expanded.Add(rigidItem);
+                else if (node is WorldItemEntity worldItem && worldItem.IsHighlightCandidate && !expanded.Contains(worldItem))
+                    expanded.Add(worldItem);
+            }
+            foreach (var node in tree.GetNodesInGroup("pickables"))
+            {
+                if (node is WorldItemEntity worldItem && worldItem.IsHighlightCandidate && !expanded.Contains(worldItem))
+                    expanded.Add(worldItem);
+                else if (node is PickupProperty pickup && !expanded.Contains(pickup))
+                    expanded.Add(pickup);
+            }
+            return expanded;
+        }
+
         private Node2D? FindNearestPickableByDistance(Vector2 actorPosition, ref float nearestDistanceSq)
         {
             Node2D? nearestPickable = null;
             float rangeSq = PickupRange * PickupRange;
-            
-            // 通过场景树查找所有 RigidBodyWorldItemEntity
+            var candidates = new System.Collections.Generic.List<Node2D>();
+
             var sceneTree = GetTree();
             if (sceneTree != null)
             {
+                // 第一遍：收集所有在范围内的候选物品
                 var allRigidItems = sceneTree.GetNodesInGroup("world_items");
-                GD.Print($"[PlayerItemInteractionComponent] 在 'world_items' 组中找到 {allRigidItems.Count} 个节点");
-                
                 foreach (var node in allRigidItems)
                 {
                     if (node is RigidBodyWorldItemEntity rigidItem)
                     {
                         float distanceSq = actorPosition.DistanceSquaredTo(rigidItem.GlobalPosition);
                         bool inRange = rigidItem.IsActorInRange(_actor!);
-                        GD.Print($"[PlayerItemInteractionComponent] 检查物品 {rigidItem.Name}: 距离={Mathf.Sqrt(distanceSq):F2}, 在GrabArea范围内={inRange}, 距离范围内={distanceSq < rangeSq}");
-                        
-                        // 检查玩家是否在物品的 GrabArea 范围内
-                        if (inRange)
-                        {
-                            if (distanceSq < rangeSq && distanceSq < nearestDistanceSq)
-                            {
-                                nearestDistanceSq = distanceSq;
-                                nearestPickable = rigidItem;
-                                GD.Print($"[PlayerItemInteractionComponent] 选择物品 {rigidItem.Name} 作为最近的拾取目标");
-                            }
-                        }
+                        if (inRange && distanceSq < rangeSq)
+                            candidates.Add(rigidItem);
                     }
                 }
-                
-                // 也查找 WorldItemEntity 和 PickupProperty（通过距离）
+
                 var allPickables = sceneTree.GetNodesInGroup("pickables");
-                GD.Print($"[PlayerItemInteractionComponent] 在 'pickables' 组中找到 {allPickables.Count} 个节点");
-                
                 foreach (var node in allPickables)
                 {
                     if (node is WorldItemEntity worldItem)
                     {
                         float distanceSq = actorPosition.DistanceSquaredTo(worldItem.GlobalPosition);
-                        GD.Print($"[PlayerItemInteractionComponent] 检查 WorldItemEntity {worldItem.Name}: 距离={Mathf.Sqrt(distanceSq):F2}");
-                        if (distanceSq < rangeSq && distanceSq < nearestDistanceSq)
-                        {
-                            nearestDistanceSq = distanceSq;
-                            nearestPickable = worldItem;
-                        }
+                        if (distanceSq < rangeSq)
+                            candidates.Add(worldItem);
                     }
                     else if (node is PickupProperty pickup)
                     {
                         float distanceSq = actorPosition.DistanceSquaredTo(pickup.GlobalPosition);
-                        GD.Print($"[PlayerItemInteractionComponent] 检查 PickupProperty {pickup.Name}: 距离={Mathf.Sqrt(distanceSq):F2}");
-                        if (distanceSq < rangeSq && distanceSq < nearestDistanceSq)
-                        {
-                            nearestDistanceSq = distanceSq;
-                            nearestPickable = pickup;
-                        }
+                        if (distanceSq < rangeSq)
+                            candidates.Add(pickup);
                     }
                 }
             }
-            else
+
+            // 第二遍：过滤被遮挡的物品，从剩余候选中选距离最近的
+            var distanceOcclusionList = BuildOcclusionCheckList(candidates);
+            foreach (var candidate in candidates)
             {
-                GD.PrintErr("[PlayerItemInteractionComponent] GetTree() 返回 null");
+                if (IsBlockedByOtherItem(candidate, distanceOcclusionList))
+                    continue;
+
+                float distanceSq = actorPosition.DistanceSquaredTo(candidate.GlobalPosition);
+                if (distanceSq < nearestDistanceSq)
+                {
+                    nearestDistanceSq = distanceSq;
+                    nearestPickable = candidate;
+                }
             }
-            
+
             return nearestPickable;
         }
 

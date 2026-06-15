@@ -62,26 +62,28 @@ texture = ExtResource("4_ryo6w")
 material = SubResource("ShaderMaterial_5sin4")
 scale = Vector2(0.33, 0.33)
 texture = ExtResource("6_57wx4")
+offset = Vector2(0, 390)
 
 [node name="Sprite2D" type="Sprite2D" parent="RigidBody2D/Outline"]
 texture = ExtResource("6_57wx4")
+offset = Vector2(0, 390)
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, 70)
+position = Vector2(0, 220)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 200)
+position = Vector2(0, 360)
 shape = SubResource("RectangleShape2D_2jhlq")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, 90)
+position = Vector2(0, 230)
 shape = SubResource("RectangleShape2D_jyvv2")
