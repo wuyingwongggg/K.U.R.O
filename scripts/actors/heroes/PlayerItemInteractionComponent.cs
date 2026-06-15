@@ -567,17 +567,14 @@ namespace Kuros.Actors.Heroes
         /// 遮挡规则：若 other 的碰撞区域与 candidate 重叠，且 other 的 Y 轴更大（在画面中更靠前），则 candidate 被遮挡。
         /// </summary>
         /// <summary>
-        /// 纯几何 AABB 重叠检测（不依赖碰撞层/掩码）。
-        /// 从 Area2D 的第一个 CollisionShape2D 子节点计算全局包围盒。
+        /// 纯几何 AABB 重叠检测。从两个 CollisionShape2D 计算全局包围盒并做相交测试。
         /// </summary>
-        private static bool AreCollisionAreasOverlapping(Area2D areaA, Area2D areaB)
+        private static bool AreCollisionShapesOverlapping(CollisionShape2D shapeA, CollisionShape2D shapeB)
         {
-            var shapeNodeA = areaA.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-            var shapeNodeB = areaB.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-            if (shapeNodeA?.Shape == null || shapeNodeB?.Shape == null)
+            if (shapeA.Shape == null || shapeB.Shape == null)
                 return false;
 
-            Vector2 GetHalfExtents(CollisionShape2D node)
+            static Vector2 GetHalfExtents(CollisionShape2D node)
             {
                 if (node.Shape is RectangleShape2D rect)
                     return rect.Size * 0.5f;
@@ -586,14 +583,13 @@ namespace Kuros.Actors.Heroes
                     float r = circle.Radius;
                     return new Vector2(r, r);
                 }
-                // 回退：使用 Area2D 的全局位置差
                 return new Vector2(32f, 32f);
             }
 
-            Vector2 extA = GetHalfExtents(shapeNodeA);
-            Vector2 extB = GetHalfExtents(shapeNodeB);
-            Vector2 posA = shapeNodeA.GlobalPosition;
-            Vector2 posB = shapeNodeB.GlobalPosition;
+            Vector2 extA = GetHalfExtents(shapeA);
+            Vector2 extB = GetHalfExtents(shapeB);
+            Vector2 posA = shapeA.GlobalPosition;
+            Vector2 posB = shapeB.GlobalPosition;
 
             Rect2 aabbA = new Rect2(posA - extA, extA * 2);
             Rect2 aabbB = new Rect2(posB - extB, extB * 2);
@@ -602,21 +598,21 @@ namespace Kuros.Actors.Heroes
 
         private static bool IsBlockedByOtherItem(Node2D candidate, System.Collections.Generic.List<Node2D> allCandidates)
         {
-            var candidateArea = GetPickableCollisionArea(candidate);
-            if (candidateArea == null) return false;
+            var candidateShape = GetPickableCollisionShape(candidate);
+            if (candidateShape == null) return false;
 
             float candidateY = candidate.GlobalPosition.Y;
 
             foreach (var other in allCandidates)
             {
                 if (other == candidate) continue;
-                var otherArea = GetPickableCollisionArea(other);
-                if (otherArea == null) continue;
+                var otherShape = GetPickableCollisionShape(other);
+                if (otherShape == null) continue;
 
                 // 只检查 Y 轴在 candidate 之下的物品（更靠前）
                 if (other.GlobalPosition.Y <= candidateY) continue;
 
-                if (AreCollisionAreasOverlapping(candidateArea, otherArea))
+                if (AreCollisionShapesOverlapping(candidateShape, otherShape))
                     return true;
             }
 
@@ -624,16 +620,26 @@ namespace Kuros.Actors.Heroes
         }
 
         /// <summary>
-        /// 获取可拾取物品的碰撞检测 Area2D。
+        /// 获取可拾取物品的物理碰撞形状（用于遮挡检测）。
+        /// RigidBodyWorldItemEntity 使用 StaticBody2D 的碰撞形状，
+        /// WorldItemEntity/PickupProperty 使用 TriggerArea 的碰撞形状。
         /// </summary>
-        private static Area2D? GetPickableCollisionArea(Node2D pickable)
+        private static CollisionShape2D? GetPickableCollisionShape(Node2D pickable)
         {
             if (pickable is RigidBodyWorldItemEntity rigidItem)
-                return rigidItem.GrabArea;
+            {
+                var grabArea = rigidItem.GrabArea;
+                if (grabArea == null) return null;
+                // 从 GrabArea 路径推导 StaticBody2D 的位置：同级 StaticBody2D
+                var parent = grabArea.GetParent();
+                if (parent != null)
+                    return parent.GetNodeOrNull<CollisionShape2D>("StaticBody2D/CollisionShape2D");
+                return null;
+            }
             if (pickable is WorldItemEntity worldItem)
-                return worldItem.TriggerArea;
+                return worldItem.TriggerArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             if (pickable is PickupProperty pickupProp)
-                return pickupProp.GetNodeOrNull<Area2D>("TriggerArea");
+                return pickupProp.GetNodeOrNull<Area2D>("TriggerArea")?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             return null;
         }
 

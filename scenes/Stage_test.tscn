@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=41 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -31,6 +31,8 @@
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="30_m86xd"]
+[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="32_dhx6f"]
+[ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="33_0ipan"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_m86xd"]
 size = Vector2(5800, 800)
@@ -232,3 +234,9 @@ LoadDistance = 2000.0
 z_index = 10
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("30_m86xd")
+
+[node name="FurnitureTableRoundC" parent="." instance=ExtResource("32_dhx6f")]
+position = Vector2(-3689, -25)
+
+[node name="FurnitureFoodCartA" parent="." instance=ExtResource("33_0ipan")]
+position = Vector2(-3674, -22)
