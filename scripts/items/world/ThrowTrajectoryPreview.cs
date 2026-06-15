@@ -39,7 +39,7 @@ namespace Kuros.Items.World
         /// <summary>落点圆内填充颜色（透明度较低）</summary>
         [Export] public Color LandingFillColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.25f);
         /// <summary>落点指示圆半径（像素）</summary>
-        [Export(PropertyHint.Range, "4,40,1")] public float LandingRadius { get; set; } = 12f;
+        [Export(PropertyHint.Range, "4,1000,1")] public float LandingRadius { get; set; } = 12f;
         /// <summary>落点圆外圈线宽（像素）</summary>
         [Export(PropertyHint.Range, "1,6,0.5")] public float LandingLineWidth { get; set; } = 2f;
 

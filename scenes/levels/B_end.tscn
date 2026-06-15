@@ -162,8 +162,10 @@ region_enabled = true
 region_rect = Rect2(0, 1, 4250, 854)
 
 [node name="Wall" type="Sprite2D" parent="Environments"]
-position = Vector2(0, -1530)
+position = Vector2(44, -1530)
 texture = ExtResource("3_le30p")
+region_enabled = true
+region_rect = Rect2(0, 0, 5679.6816, 688)
 
 [node name="ElevatorGate" parent="Environments" instance=ExtResource("9_6oh11")]
 position = Vector2(2609, 197)

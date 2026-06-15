@@ -5,8 +5,8 @@
 [ext_resource type="Script" uid="uid://l1558pct4220" path="res://scripts/managers/StageGeneratorManager.cs" id="3_fohb2"]
 [ext_resource type="PackedScene" uid="uid://cg2o6k0etyc25" path="res://scenes/levels/C_begin.tscn" id="4_ehms5"]
 [ext_resource type="PackedScene" uid="uid://bco3niswcahcc" path="res://scenes/levels/B_end.tscn" id="5_fhce4"]
-[ext_resource type="PackedScene" uid="uid://cqdtru26cvd8g" path="res://scenes/levels/C1.tscn" id="6_57jea"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="6_gk4vp"]
+[ext_resource type="PackedScene" uid="uid://dhpq7nfmc0ou" path="res://scenes/levels/C2.tscn" id="7_ehms5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="9_tperv"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="10_l20m2"]
 [ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/heroes/P2.tscn" id="11_phqoj"]
@@ -14,7 +14,7 @@
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_ehms5")
 Player = NodePath("World/MainCharacter")
-LevelName = "关卡 2"
+LevelName = "关卡2"
 
 [node name="CameraZoneManager" type="Node" parent="." node_paths=PackedStringArray("TargetCamera", "Player")]
 script = ExtResource("2_4xv61")
@@ -25,7 +25,7 @@ Player = NodePath("../World/MainCharacter")
 script = ExtResource("3_fohb2")
 BeginScene = ExtResource("4_ehms5")
 EndScene = ExtResource("5_fhce4")
-MiddleScenePool = Array[PackedScene]([ExtResource("6_57jea")])
+MiddleScenePool = Array[PackedScene]([ExtResource("7_ehms5")])
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("6_gk4vp")]
 
