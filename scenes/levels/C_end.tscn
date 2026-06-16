@@ -1,29 +1,29 @@
-[gd_scene load_steps=34 format=3 uid="uid://cg2o6k0etyc25"]
+[gd_scene load_steps=34 format=3 uid="uid://dboywwkmaxr72"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_4duw5"]
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
-[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_7mqiy"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_ainwx"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_t2fey"]
-[ext_resource type="Resource" uid="uid://curpr4n4v2tuh" path="res://resources/cutscene/C_begin_intro.tres" id="3_7mqiy"]
-[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="4_1mlw7"]
-[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="5_lxqj5"]
-[ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="6_mxkb7"]
-[ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="7_wg0jq"]
-[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="8_t2fey"]
-[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="9_1620r"]
-[ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="11_1mlw7"]
-[ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="11_4duw5"]
-[ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="13_1620r"]
-[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="14_0wqg8"]
-[ext_resource type="PackedScene" uid="uid://dnq70gu3rymcb" path="res://scenes/items/Furniture_C_chairB_fwd.tscn" id="15_4gcw4"]
-[ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="16_ainwx"]
-[ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="17_4duw5"]
-[ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="18_0wqg8"]
-[ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="19_4gcw4"]
-[ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="20_ainwx"]
-[ext_resource type="PackedScene" uid="uid://df51wgv346jhn" path="res://scenes/environments/elevatorGate_C_flip.tscn" id="21_4duw5"]
-[ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="24_qm83g"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
+[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
+[ext_resource type="Resource" uid="uid://curpr4n4v2tuh" path="res://resources/cutscene/C_begin_intro.tres" id="3_wbiwt"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_iqss4"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_f0bsw"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_m4til"]
+[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="7_wkchn"]
+[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="8_q4u6b"]
+[ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="9_4qdgg"]
+[ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="10_wl4bh"]
+[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="11_rko23"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="12_6ldfc"]
+[ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="13_hlghd"]
+[ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="14_bf4xp"]
+[ext_resource type="PackedScene" uid="uid://df51wgv346jhn" path="res://scenes/environments/elevatorGate_C_flip.tscn" id="15_eyusj"]
+[ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="16_4vmbn"]
+[ext_resource type="PackedScene" uid="uid://dnq70gu3rymcb" path="res://scenes/items/Furniture_C_chairB_fwd.tscn" id="17_246ku"]
+[ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="18_w4f7f"]
+[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="19_p18vl"]
+[ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="20_g63yr"]
+[ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="21_3dx1x"]
+[ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="22_7bhkg"]
+[ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="23_ug6xy"]
+[ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="24_k6jwd"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(5220, 3050)
@@ -74,7 +74,7 @@ debug_color = Color(0.6428762, 0.52304673, 0.06685588, 0.41960785)
 visible = false
 collision_layer = 0
 collision_mask = 4
-script = ExtResource("1_4duw5")
+script = ExtResource("1_qp7fd")
 ZoneName = "Room_Zone_C_Begin"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
@@ -87,8 +87,8 @@ visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
-script = ExtResource("2_7mqiy")
-Sequence = ExtResource("3_7mqiy")
+script = ExtResource("2_bo0js")
+Sequence = ExtResource("3_wbiwt")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 position = Vector2(-2070, 488)
@@ -98,7 +98,7 @@ debug_color = Color(1, 0, 1, 0.41960785)
 [node name="BattleArena" type="Area2D" parent="."]
 visible = false
 z_index = 10
-script = ExtResource("1_lxqj5")
+script = ExtResource("4_iqss4")
 ArenaSize = Vector2(4800, 3000)
 BoundaryCollisionLayer = 6
 BoundaryCollisionMask = 6
@@ -111,7 +111,7 @@ shape = SubResource("RectangleShape2D_mxkb7")
 
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 visible = false
-script = ExtResource("2_ainwx")
+script = ExtResource("5_f0bsw")
 WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2")])
 WaveClearDelay = 0.0
 PollInterval = 0.30000000000000004
@@ -131,8 +131,8 @@ debug_color = Color(1, 0, 0, 0.19607843)
 [node name="EnemySpawneManager" type="Node2D" parent="."]
 top_level = true
 position = Vector2(0, 356)
-script = ExtResource("2_t2fey")
-EnemyScenes = Array[PackedScene]([ExtResource("4_1mlw7"), ExtResource("5_lxqj5"), ExtResource("6_mxkb7")])
+script = ExtResource("6_m4til")
+EnemyScenes = Array[PackedScene]([ExtResource("7_wkchn"), ExtResource("8_q4u6b"), ExtResource("9_4qdgg")])
 MultiEnemySelectionMode = 1
 SpawnCount = 0
 SpawnInterval = 0.0
@@ -152,8 +152,8 @@ DebugLineWidth = 8.0
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
 top_level = true
 position = Vector2(0, 356)
-script = ExtResource("2_t2fey")
-EnemyScenes = Array[PackedScene]([ExtResource("6_mxkb7"), ExtResource("7_wg0jq"), ExtResource("8_t2fey"), ExtResource("9_1620r")])
+script = ExtResource("6_m4til")
+EnemyScenes = Array[PackedScene]([ExtResource("9_4qdgg"), ExtResource("10_wl4bh"), ExtResource("11_rko23"), ExtResource("12_6ldfc")])
 MultiEnemySelectionMode = 1
 SpawnCount = 0
 SpawnInterval = 0.0
@@ -176,14 +176,14 @@ position = Vector2(0, 340)
 
 [node name="Floor" type="Sprite2D" parent="Environments"]
 position = Vector2(71, 25.5)
-texture = ExtResource("11_4duw5")
+texture = ExtResource("13_hlghd")
 
 [node name="Wall" type="Sprite2D" parent="Environments"]
 position = Vector2(71, -1471.5)
 scale = Vector2(0.974, 1)
-texture = ExtResource("11_1mlw7")
+texture = ExtResource("14_bf4xp")
 
-[node name="ElevatorGateC_filp" parent="Environments" instance=ExtResource("21_4duw5")]
+[node name="ElevatorGateC_filp" parent="Environments" instance=ExtResource("15_eyusj")]
 position = Vector2(-2483, 155)
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
@@ -210,67 +210,67 @@ visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 
-[node name="FurnitureChairB" parent="." instance=ExtResource("13_1620r")]
+[node name="FurnitureChairB" parent="." instance=ExtResource("16_4vmbn")]
 position = Vector2(-680, -648)
 
-[node name="FurnitureChairB2" parent="." instance=ExtResource("13_1620r")]
+[node name="FurnitureChairB2" parent="." instance=ExtResource("16_4vmbn")]
 position = Vector2(-622, 1092)
 
-[node name="FurnitureChairB3" parent="." instance=ExtResource("13_1620r")]
+[node name="FurnitureChairB3" parent="." instance=ExtResource("16_4vmbn")]
 position = Vector2(1582, -567)
 
-[node name="FurnitureChairB4" parent="." instance=ExtResource("13_1620r")]
+[node name="FurnitureChairB4" parent="." instance=ExtResource("16_4vmbn")]
 position = Vector2(1626, 1205)
 
-[node name="FurnitureChairB_fwd" parent="." instance=ExtResource("15_4gcw4")]
+[node name="FurnitureChairB_fwd" parent="." instance=ExtResource("17_246ku")]
 position = Vector2(-1383, -593)
 
-[node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("15_4gcw4")]
+[node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("17_246ku")]
 position = Vector2(-1366, 1112)
 
-[node name="FurnitureChairB_fwd3" parent="." instance=ExtResource("15_4gcw4")]
+[node name="FurnitureChairB_fwd3" parent="." instance=ExtResource("17_246ku")]
 position = Vector2(788, -594)
 
-[node name="FurnitureChairB_fwd4" parent="." instance=ExtResource("15_4gcw4")]
+[node name="FurnitureChairB_fwd4" parent="." instance=ExtResource("17_246ku")]
 position = Vector2(857, 1135)
 
-[node name="FurnitureTableSquareA" parent="." instance=ExtResource("17_4duw5")]
+[node name="FurnitureTableSquareA" parent="." instance=ExtResource("18_w4f7f")]
 position = Vector2(-1035, -573)
 
-[node name="FurnitureTableSquareA2" parent="." instance=ExtResource("17_4duw5")]
+[node name="FurnitureTableSquareA2" parent="." instance=ExtResource("18_w4f7f")]
 position = Vector2(-994, 1262)
 
-[node name="FurnitureTableSquareA3" parent="." instance=ExtResource("17_4duw5")]
+[node name="FurnitureTableSquareA3" parent="." instance=ExtResource("18_w4f7f")]
 position = Vector2(1188, -589)
 
-[node name="FurnitureTableSquareA4" parent="." instance=ExtResource("17_4duw5")]
+[node name="FurnitureTableSquareA4" parent="." instance=ExtResource("18_w4f7f")]
 position = Vector2(1240, 1249)
 
-[node name="FurnitureTableRoundC" parent="." instance=ExtResource("14_0wqg8")]
+[node name="FurnitureTableRoundC" parent="." instance=ExtResource("19_p18vl")]
 position = Vector2(17, 131)
 
-[node name="FurnitureFoodCartA" parent="." instance=ExtResource("16_ainwx")]
+[node name="FurnitureFoodCartA" parent="." instance=ExtResource("20_g63yr")]
 position = Vector2(-643, -244)
 
-[node name="FurniturePlantA" parent="." instance=ExtResource("18_0wqg8")]
+[node name="FurniturePlantA" parent="." instance=ExtResource("21_3dx1x")]
 position = Vector2(254, -682)
 
-[node name="FurniturePlantA2" parent="." instance=ExtResource("18_0wqg8")]
+[node name="FurniturePlantA2" parent="." instance=ExtResource("21_3dx1x")]
 position = Vector2(263, 1305)
 
-[node name="FurnitureGarbageCanA" parent="." instance=ExtResource("19_4gcw4")]
+[node name="FurnitureGarbageCanA" parent="." instance=ExtResource("22_7bhkg")]
 position = Vector2(-1124, -344)
 
-[node name="FurnitureGarbageCanA2" parent="." instance=ExtResource("19_4gcw4")]
+[node name="FurnitureGarbageCanA2" parent="." instance=ExtResource("22_7bhkg")]
 position = Vector2(1140, -381)
 
-[node name="FurnitureGarbageCanA3" parent="." instance=ExtResource("19_4gcw4")]
+[node name="FurnitureGarbageCanA3" parent="." instance=ExtResource("22_7bhkg")]
 position = Vector2(-833, 908)
 
-[node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("19_4gcw4")]
+[node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("22_7bhkg")]
 position = Vector2(1392, 923)
 
-[node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("20_ainwx")]
+[node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("23_ug6xy")]
 position = Vector2(153, 813)
 
-[node name="AnimationCharacter" parent="." instance=ExtResource("24_qm83g")]
+[node name="AnimationCharacter" parent="." instance=ExtResource("24_k6jwd")]

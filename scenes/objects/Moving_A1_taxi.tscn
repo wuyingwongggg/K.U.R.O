@@ -1,8 +1,8 @@
 [gd_scene load_steps=35 format=3 uid="uid://chway4etqkroy"]
 
+[ext_resource type="Script" uid="uid://8nvrmacmjqhf" path="res://scripts/systems/cutscene/CutsceneAnimationController.cs" id="1_3td21"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="1_d7g0g"]
 [ext_resource type="Texture2D" uid="uid://038kjb47rgc5" path="res://assets/objects/taxi/时间轴1_0000.png" id="1_l4djn"]
-[ext_resource type="Script" uid="uid://dryx2p6xtxsn" path="res://scripts/objects/TaxiController.cs" id="1_taxictrl"]
 [ext_resource type="Texture2D" uid="uid://cfmqwo6h7h3sj" path="res://assets/objects/taxi/时间轴1_0001.png" id="2_rqshq"]
 [ext_resource type="Texture2D" uid="uid://og2gq2qj138m" path="res://assets/objects/taxi/时间轴1_0002.png" id="3_d7g0g"]
 [ext_resource type="Texture2D" uid="uid://rurwkln2flnh" path="res://assets/objects/taxi/时间轴1_0003.png" id="4_3td21"]
@@ -398,7 +398,9 @@ _data = {
 
 [node name="Taxi" type="CharacterBody2D"]
 z_index = 10
-script = ExtResource("1_taxictrl")
+script = ExtResource("1_3td21")
+LoopAnimation = "taxi_idle"
+SkipAnimation = "taxi_idle"
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_3td21")
@@ -425,4 +427,3 @@ autoplay = "taxi_action"
 libraries = {
 &"": SubResource("AnimationLibrary_3td21")
 }
-autoplay = "taxi_intro"

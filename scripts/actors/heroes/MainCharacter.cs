@@ -66,6 +66,11 @@ namespace Kuros.Actors.Heroes
 
 	public override void _Ready()
 	{
+		// 必须在 base._Ready() 之前初始化 SpineController，
+		// 否则 StateMachine 进入 Idle 状态时 _spineController 仍为 null，
+		// 导致默认动画无法播放，角色显示 "--Empty--"
+		InitializeSpine();
+
 		base._Ready();
 		AddToGroup("player");
 
@@ -74,11 +79,6 @@ namespace Kuros.Actors.Heroes
 		{
 			AttackArea = GetNodeOrNull<Area2D>("AttackArea");
 		}
-
-		// 初始化 SpineSprite 和 AnimationState
-		// 注意：SamplePlayer._Ready() 已经会尝试查找 InventoryComponent 和 WeaponSkillController
-		// 如果场景中没有这些组件，会有警告但不会影响基本功能
-		InitializeSpine();
 		_defaultSpineAlpha = _spineCharacter != null ? _spineCharacter.Modulate.A : 1.0f;
 		_defaultSpriteAlpha = _sprite != null ? _sprite.Modulate.A : 1.0f;
 		SyncOutlineFacing(FacingRight);

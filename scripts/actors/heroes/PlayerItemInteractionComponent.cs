@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using Kuros.Core;
+using Kuros.Items;
 using Kuros.Items.World;
 using Kuros.Systems.Inventory;
 using Kuros.Utils;
@@ -598,6 +599,11 @@ namespace Kuros.Actors.Heroes
 
         private static bool IsBlockedByOtherItem(Node2D candidate, System.Collections.Generic.List<Node2D> allCandidates)
         {
+            // 只有家具类物品（IsThrowable && !IsThrowWeapon）参与遮挡过滤，
+            // 武器类道具没有 StaticBody2D，会导致拾取异常
+            if (!IsFurnitureItem(candidate))
+                return false;
+
             var candidateShape = GetPickableCollisionShape(candidate);
             if (candidateShape == null) return false;
 
@@ -606,6 +612,8 @@ namespace Kuros.Actors.Heroes
             foreach (var other in allCandidates)
             {
                 if (other == candidate) continue;
+                if (!IsFurnitureItem(other)) continue;
+
                 var otherShape = GetPickableCollisionShape(other);
                 if (otherShape == null) continue;
 
@@ -617,6 +625,21 @@ namespace Kuros.Actors.Heroes
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 判断是否为家具类物品（一次性的投掷物，非投掷武器）。
+        /// 只有家具有 StaticBody2D 碰撞体，武器没有，需要区分处理。
+        /// </summary>
+        private static bool IsFurnitureItem(Node2D pickable)
+        {
+            ItemDefinition? def = null;
+            if (pickable is WorldItemEntity worldItem)
+                def = worldItem.ItemDefinition;
+            else if (pickable is RigidBodyWorldItemEntity rigidItem)
+                def = rigidItem.ItemDefinition;
+
+            return def != null && def.IsThrowable && !def.IsThrowWeapon;
         }
 
         /// <summary>
