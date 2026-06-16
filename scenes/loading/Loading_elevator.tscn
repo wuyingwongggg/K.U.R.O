@@ -445,6 +445,8 @@ texture = ExtResource("3_5rppg")
 texture = ExtResource("3_5rppg")
 
 [node name="AirWall" type="StaticBody2D" parent="."]
+visible = false
+z_index = 10
 
 [node name="Gate" type="CollisionShape2D" parent="AirWall"]
 position = Vector2(-950, 0)

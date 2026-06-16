@@ -122,7 +122,7 @@ region_rect = Rect2(0, 0, 352, 1612)
 
 [node name="ElevatorBackWall" type="Sprite2D" parent="."]
 z_index = 1
-position = Vector2(-8, -1001)
+position = Vector2(-8, -1000)
 texture = ExtResource("3_yteml")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_ehms5"]
 [ext_resource type="Script" uid="uid://l1558pct4220" path="res://scripts/managers/StageGeneratorManager.cs" id="3_fohb2"]
 [ext_resource type="PackedScene" uid="uid://cg2o6k0etyc25" path="res://scenes/levels/C_begin.tscn" id="4_ehms5"]
-[ext_resource type="PackedScene" uid="uid://bco3niswcahcc" path="res://scenes/levels/B_end.tscn" id="5_fhce4"]
+[ext_resource type="PackedScene" uid="uid://dboywwkmaxr72" path="res://scenes/levels/C_end.tscn" id="6_4xv61"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="6_gk4vp"]
 [ext_resource type="PackedScene" uid="uid://cqdtru26cvd8g" path="res://scenes/levels/C1.tscn" id="7_4xv61"]
 [ext_resource type="PackedScene" uid="uid://dhpq7nfmc0ou" path="res://scenes/levels/C2.tscn" id="7_ehms5"]
@@ -35,8 +35,10 @@ BattleSceneManagerPath = NodePath("..")
 [node name="StageGeneratorManager" type="Node" parent="."]
 script = ExtResource("3_fohb2")
 BeginScene = ExtResource("4_ehms5")
-EndScene = ExtResource("5_fhce4")
+EndScene = ExtResource("6_4xv61")
 MiddleScenePool = Array[PackedScene]([ExtResource("7_4xv61"), ExtResource("7_ehms5")])
+MinMiddleRooms = 0
+MaxMiddleRooms = 0
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("6_gk4vp")]
 

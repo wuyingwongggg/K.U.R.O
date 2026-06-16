@@ -278,18 +278,19 @@ region_rect = Rect2(0, 0, 336, 1000)
 
 [node name="Elevatorwall2" type="Sprite2D" parent="."]
 z_index = 1
-position = Vector2(15, -102.5)
+position = Vector2(12, -1000)
 texture = ExtResource("3_m241u")
 
 [node name="ElevatorFrontWall" type="Sprite2D" parent="."]
 z_index = 4
-position = Vector2(1, 334.5)
+position = Vector2(50.5, 94.5)
 texture = ExtResource("4_m241u")
-region_enabled = true
 region_rect = Rect2(0, 0, 352, 2235)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-26, 246)
+visible = false
+z_index = 10
+position = Vector2(-26, 172)
 shape = SubResource("RectangleShape2D_4jbtd")
 
 [node name="right" type="Sprite2D" parent="."]
@@ -306,6 +307,7 @@ position = Vector2(52, 29)
 rotation = 0.18325958
 scale = Vector2(0.33, 0.5)
 texture = ExtResource("7_3qo3r")
+offset = Vector2(132, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="light1"]
 modulate = Color(1, 1, 1, 0.78431374)
