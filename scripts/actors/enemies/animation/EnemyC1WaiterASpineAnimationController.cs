@@ -18,6 +18,7 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string HitAnimation = "hit";
         [Export] public string StunAnimation = "stun";
         [Export] public string DieAnimation = "death";
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
         private EnemyC1WaiterAAttackController? _attackController;
         private string _currentKey = string.Empty;
         private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
@@ -87,6 +88,9 @@ namespace Kuros.Actors.Enemies.Animation
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
                     break;
+                case "KeepDistance":
+                    PlayLoopIfNeeded("KeepDistance", WalkAnimation, WalkMixDuration, KeepDistanceTimeScale);
+                    break;
                 case "Dead":
                     PlayEmptyIfNeeded();
                     break;
@@ -136,7 +140,7 @@ namespace Kuros.Actors.Enemies.Animation
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
 
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
+        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration, float timeScale = 1f)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -148,7 +152,7 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayLoop(animationName, mixDuration))
+            if (PlayLoop(animationName, mixDuration, timeScale))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Loop;

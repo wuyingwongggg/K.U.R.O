@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://dboywwkmaxr72"]
+[gd_scene load_steps=29 format=3 uid="uid://dboywwkmaxr72"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
@@ -15,7 +15,6 @@
 [ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="20_g63yr"]
 [ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="21_3dx1x"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="22_7bhkg"]
-[ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="24_k6jwd"]
 [ext_resource type="PackedScene" uid="uid://gy0sjt6vkju5" path="res://scenes/environments/elevatorGate_C.tscn" id="24_qp7fd"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -58,7 +57,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-2769, -1183, 2486, -12
 source_geometry_mode = 2
 agent_radius = 80.0
 
-[node name="CBegin" type="Node2D"]
+[node name="CEnd" type="Node2D"]
 y_sort_enabled = true
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
@@ -87,17 +86,18 @@ shape = SubResource("RectangleShape2D_y44ha")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CameraZone2" type="Area2D" parent="."]
+visible = false
 z_index = 10
-position = Vector2(3970, 325)
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_qp7fd")
 ZoneName = "Room_Zone_C_End_2"
-CameraLimitTop = -500
-CameraLimitBottom = 900
+CameraLimitTop = -300
+CameraLimitBottom = 860
 ZoomLevel = 0.95
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone2"]
+position = Vector2(3970, 325)
 shape = SubResource("RectangleShape2D_qp7fd")
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
@@ -280,5 +280,3 @@ position = Vector2(-833, 908)
 
 [node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("22_7bhkg")]
 position = Vector2(1392, 923)
-
-[node name="AnimationCharacter" parent="." instance=ExtResource("24_k6jwd")]

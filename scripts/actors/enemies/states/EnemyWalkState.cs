@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies;
 
 namespace Kuros.Actors.Enemies.States
 {
@@ -11,11 +12,25 @@ namespace Kuros.Actors.Enemies.States
 
         public override void PhysicsUpdate(double delta)
         {
-            // IsPlayerWithinDetectionRange 会刷新玩家引用，同时检查玩家是否在范围内
             if (!Enemy.IsPlayerWithinDetectionRange())
             {
                 ChangeState("Idle");
                 return;
+            }
+
+            var config = Enemy.BehaviorConfig;
+
+            // 远程/保持距离型敌人：玩家靠太近时触发后撤
+            if (config != null && config.Positioning != EnemyBehaviorConfig.PositioningStrategy.CloseIn)
+            {
+                float dist = Enemy.GlobalPosition.DistanceTo(Player!.GlobalPosition);
+                GD.Print($"[{Enemy.Name}] Walk: dist={dist:F0} minComfort={config.MinComfortDistance}");
+                if (dist <= config.MinComfortDistance && Enemy.StateMachine.HasState("KeepDistance"))
+                {
+                    GD.Print($"[{Enemy.Name}] Walk → KeepDistance");
+                    ChangeState("KeepDistance");
+                    return;
+                }
             }
 
             if (Enemy.CanStartAttack())
@@ -24,13 +39,12 @@ namespace Kuros.Actors.Enemies.States
                 return;
             }
 
-            // 若有外部移动组件（EnemyChaseMovement）负责速度与 MoveAndSlide，此处仅处理状态转换
+            // 若有外部移动组件，跳过自身移动
             if (Enemy.HasMeta("__movement_component_registered"))
                 return;
 
             Vector2 direction = Enemy.GetDirectionToPlayer();
-            Vector2 velocity = Enemy.Velocity;
-            velocity = direction * Enemy.Speed;
+            Vector2 velocity = direction * Enemy.Speed;
 
             Enemy.Velocity = velocity;
 
@@ -44,4 +58,3 @@ namespace Kuros.Actors.Enemies.States
         }
     }
 }
-

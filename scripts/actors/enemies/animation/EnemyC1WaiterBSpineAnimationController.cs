@@ -23,7 +23,7 @@ namespace Kuros.Actors.Enemies.Animation
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3LoopEnd = 2.13f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3PartStart = 2.14f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3PartEnd = 3.33f;
-
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
         private EnemyC1WaiterBAttackController? _attackController;
         private EnemyUltimateBeamAttack? _ultimateBeamAttack;
         private string _currentKey = string.Empty;
@@ -92,6 +92,9 @@ namespace Kuros.Actors.Enemies.Animation
                     break;
                 case "Dying":
                     PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
+                    break;
+                case "KeepDistance":
+                    PlayLoopIfNeeded("KeepDistance", SkillAnimation, SkillMixDuration, KeepDistanceTimeScale);
                     break;
                 case "Dead":
                     PlayEmptyIfNeeded();
@@ -173,7 +176,7 @@ namespace Kuros.Actors.Enemies.Animation
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
 
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
+        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration, float timeScale = 1f)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -185,7 +188,7 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayLoop(animationName, mixDuration))
+            if (PlayLoop(animationName, mixDuration, timeScale))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Loop;

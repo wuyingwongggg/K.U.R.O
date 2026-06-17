@@ -70,7 +70,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-2619, -1235, 2420, -12
 source_geometry_mode = 2
 agent_radius = 80.0
 
-[node name="C1" type="Node2D"]
+[node name="C2" type="Node2D"]
 y_sort_enabled = true
 
 [node name="AreaSize" type="Area2D" parent="."]

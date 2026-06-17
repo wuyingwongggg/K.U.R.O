@@ -64,7 +64,7 @@ radius = 275.7576
 height = 709.09094
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
-size = Vector2(762.42444, 548.4848)
+size = Vector2(650, 400)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
 radius = 660.0
@@ -85,8 +85,8 @@ DebugOverlayFontSize = 128
 DebugOverlayColor = Color(0, 1, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
-Speed = 1000.0
-AttackDamage = 1000.0
+Speed = 500.0
+AttackDamage = 1.0
 MaxHealth = 1200
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -148,24 +148,22 @@ script = ExtResource("4_ixg0x")
 skeleton_data_res = ExtResource("4_o4xwm")
 bones_thickness = 10.09
 preview_skin = "Default"
-preview_animation = "-- Empty --"
+preview_animation = "attack"
 preview_frame = true
-preview_time = 0.8
+preview_time = 0.31
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
 z_index = -1
-position = Vector2(0.81878656, -473.96185)
-rotation = -1.6159917
-scale = Vector2(0.9999998, 0.9999998)
+position = Vector2(23.650015, -444.16843)
+rotation = -1.4750756
 bone_name = "Upper Body"
 
 [node name="SpineHoldingBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(0.81878656, -473.96185)
-rotation = -1.6159917
-scale = Vector2(0.9999998, 0.9999998)
+position = Vector2(23.650015, -444.16843)
+rotation = -1.4750756
 bone_name = "Upper Body"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -185,7 +183,7 @@ shape = SubResource("CapsuleShape2D_0y2r2")
 position = Vector2(0, 100)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(464.24234, -569.99994)
+position = Vector2(325, -600)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
 

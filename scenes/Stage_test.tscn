@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=40 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -31,8 +31,7 @@
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="30_m86xd"]
-[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="32_dhx6f"]
-[ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="33_0ipan"]
+[ext_resource type="PackedScene" uid="uid://bkxqiwlgdq03s" path="res://scenes/items/Furniture_B_sofaA_fwd.tscn" id="31_v4xrh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_m86xd"]
 size = Vector2(5800, 800)
@@ -230,13 +229,10 @@ ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
 
+[node name="FurnitureSofaA_fwd" parent="World" instance=ExtResource("31_v4xrh")]
+position = Vector2(1023, -380)
+
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("30_m86xd")
-
-[node name="FurnitureTableRoundC" parent="." instance=ExtResource("32_dhx6f")]
-position = Vector2(-3689, -25)
-
-[node name="FurnitureFoodCartA" parent="." instance=ExtResource("33_0ipan")]
-position = Vector2(-3674, -22)

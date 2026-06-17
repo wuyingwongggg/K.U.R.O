@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EnemyBehaviorConfig" load_steps=2 format=3 uid="uid://05yoqk7rf6ax"]
+
+[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="1_wlbyc"]
+
+[resource]
+script = ExtResource("1_wlbyc")
+Positioning = 1
+FleeTargetDistance = 300.0
+metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
