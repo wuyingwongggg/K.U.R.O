@@ -32,9 +32,10 @@
 [sub_resource type="Resource" id="Resource_r5hc0"]
 script = ExtResource("2_m8hjw")
 Positioning = 1
-MinComfortDistance = 200.0
+MinComfortDistance = 300.0
 FleeTargetDistance = 1000.0
-FleeSpeedMultiplier = 6.5
+FleeSpeedMultiplier = 3.0
+FleeDamageImmune = true
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="Resource" id="Resource_f4qnp"]
@@ -82,6 +83,8 @@ DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 80
+Speed = 600.0
+AttackDamage = 50.0
 MaxHealth = 800
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -235,7 +238,7 @@ script = ExtResource("11_5drfe")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 DashStopAreaPath = NodePath("../../../../Sprite2D/DashStopArea")
 DashSlashAreaPath = NodePath("../../../../Sprite2D/DashSlashArea")
-DashSpeed = 800.0
+DashSpeed = 1000.0
 AttackName = "DashSlashAttack"
 WarmupDuration = 1.0
 ActiveDuration = 0.5
@@ -317,6 +320,8 @@ script = ExtResource("18_uohhx")
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("19_uohhx")
 Skill3LoopStart = 1.6
+KeepDistanceTimeScale = 1.0
+SlashTimeScale = 1.5
 AttackMixDuration = 0.1
 SkillMixDuration = 0.2
 
