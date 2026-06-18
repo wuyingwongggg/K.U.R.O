@@ -4,9 +4,13 @@ using Kuros.Core;
 using Kuros.Utils;
 using Kuros.Actors.Enemies.States;
 using Kuros.Actors.Enemies.Attacks;
+using Kuros.Actors.Enemies;
 
 public partial class SampleEnemy : GameActor
 {
+	[ExportCategory("Behavior")]
+	[Export] public EnemyBehaviorConfig? BehaviorConfig { get; set; }
+
 	[ExportCategory("Debug")]
 	[Export] public bool EnableStateDebugOverlay = false;
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);

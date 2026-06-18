@@ -371,6 +371,8 @@ position = Vector2(1259, -54)
 
 [node name="Enemy_Normal_guard2" parent="." instance=ExtResource("3_gvdxe")]
 position = Vector2(-3115, 321)
+Speed = 300.0
+AttackDamage = 5.0
 AttackCooldown = 1.0
 MaxHealth = 4
 InitialFacingRight = false

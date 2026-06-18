@@ -113,6 +113,9 @@ public partial class EnemyChaseMovement : Node
 		if (Engine.IsEditorHint() || Enemy == null) return;
 		if (Enemy.StateMachine == null) return;
 
+		// 保持距离状态活跃时，不干预移动（由 KeepDistanceState 自行控制）
+		if (Enemy.HasMeta("__keep_distance_active")) return;
+
 		string currentState = Enemy.StateMachine.CurrentState?.Name ?? string.Empty;
 		if (IsBlocked(currentState))
 		{

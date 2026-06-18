@@ -8,4 +8,4 @@ Enemy_C2_waiterA02,350,20,,120
 Enemy_Normal_guard1,350,20,1,180
 Enemy_Normal_guard2,350,20,1,150
 Enemy_Normal_guard3,350,30,,120
-main_character,500.0,10.0,,120
+main_character,500.0,1000.0,,1200

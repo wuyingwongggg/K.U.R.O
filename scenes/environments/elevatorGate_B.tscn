@@ -262,7 +262,7 @@ _data = {
 &"open": SubResource("Animation_vcby0")
 }
 
-[node name="ElevatorGate" type="RigidBody2D"]
+[node name="ElevatorGateB" type="RigidBody2D"]
 gravity_scale = 0.0
 can_sleep = false
 freeze = true
@@ -286,7 +286,8 @@ texture = ExtResource("4_y3mbp")
 region_rect = Rect2(0, 0, 352, 1612)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
+z_index = 10
+position = Vector2(0, 66)
 shape = SubResource("RectangleShape2D_4jbtd")
 
 [node name="right" type="Sprite2D" parent="."]
@@ -303,6 +304,7 @@ position = Vector2(47, 58)
 rotation = 0.18325958
 scale = Vector2(0.33, 0.5)
 texture = ExtResource("7_um4yj")
+offset = Vector2(132, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="light1"]
 modulate = Color(1, 1, 1, 0.78431374)

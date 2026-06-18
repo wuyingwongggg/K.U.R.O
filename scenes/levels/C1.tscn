@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://cqdtru26cvd8g"]
+[gd_scene load_steps=31 format=3 uid="uid://cqdtru26cvd8g"]
 
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_65ofg"]
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_v2w3b"]
@@ -11,8 +11,11 @@
 [ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="7_51aoc"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="7_y8smn"]
 [ext_resource type="Texture2D" uid="uid://dltdv5y6eqawb" path="res://assets/environments/scene_3_hotel/地面A.png" id="8_0xlrd"]
-[ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="11_k7rdm"]
+[ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="11_51aoc"]
+[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="12_ihbuc"]
 [ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="12_jgb2w"]
+[ext_resource type="Texture2D" uid="uid://brk1t88wdisc" path="res://assets/environments/scene_3_hotel/窗户玻璃反射.png" id="12_k7rdm"]
+[ext_resource type="Texture2D" uid="uid://b5ugc8esuokxg" path="res://assets/environments/scene_3_hotel/墙壁A.png" id="12_v2w3b"]
 [ext_resource type="PackedScene" uid="uid://dnq70gu3rymcb" path="res://scenes/items/Furniture_C_chairB_fwd.tscn" id="13_ihbuc"]
 [ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="14_42tlm"]
 [ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="15_wx5h1"]
@@ -34,10 +37,10 @@ size = Vector2(5000, 3000)
 size = Vector2(400, 2500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tv4bm"]
-size = Vector2(5500, 700)
+size = Vector2(5100, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cqx0k"]
-size = Vector2(5500, 700)
+size = Vector2(5100, 700)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_qym5g"]
 vertices = PackedVector2Array(1693, -96, 1693, -438, 2336.5781, -438, 2327.9297, 1616, 1737, 1213, -1752, -122, -1425, -122, -1425, 7, -1735, 1120, -1189, 7, -1189, 206, -1255, 1120, -341, -202, -569, -202, -569, -438, -26, -438, -26, -324, 298, -324, 298, -438, 419, -438, 419, -123, 839, -123, 839, -30, 452.5, 238, 1200, -30, 1200, -191.5, 1213, -191.5, 1213, -96, 1737, 1616, 1452, 1213, 1452, 1010, 1091, 1010, 452.5, 934, 968, 1143, 488, 1143, 1091, 1203.5, 968, 1203.5, 488, 1606, 823.5, 1606, 823.5, 1616, 307, 1616, 307, 1401, 143, 1401, 143, 934, -135, 1536, -17, 1536, -17, 1616, -821.5, 1616, -511, 1563, -821.5, 1563, -511, 1100, -135, 934, -656.5, 934, -773, 1100, -773, 995, -1134, 995, -1134, 1216.5, -1255, 1216.5, -1735, 1583, -1410.5, 1583, -1410.5, 1616, -2545.5, 1616, -2540.8125, -438, -1752, -438, -656.5, 238, -341, 206)
@@ -141,19 +144,32 @@ DebugLineWidth = 8.0
 [node name="Environments" type="Node2D" parent="."]
 position = Vector2(0, 340)
 
-[node name="Floor" type="Sprite2D" parent="Environments"]
+[node name="background" type="Sprite2D" parent="Environments"]
+position = Vector2(0, -1288)
+texture = ExtResource("11_51aoc")
+script = ExtResource("12_ihbuc")
+AreaPath = NodePath("../../AreaSize")
+
+[node name="window" type="Sprite2D" parent="Environments"]
+position = Vector2(0, -1450)
+texture = ExtResource("12_k7rdm")
+
+[node name="floor" type="Sprite2D" parent="Environments"]
 position = Vector2(0, 25.5)
 texture = ExtResource("8_0xlrd")
 
-[node name="Wall" type="Sprite2D" parent="Environments"]
-position = Vector2(0, -1471.5)
-texture = ExtResource("11_k7rdm")
+[node name="wall" type="Sprite2D" parent="Environments"]
+position = Vector2(0, -1470)
+scale = Vector2(0.98, 1)
+texture = ExtResource("12_v2w3b")
+region_enabled = true
+region_rect = Rect2(53.69226, 0, 5205.487, 812)
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(0, -1064)
+position = Vector2(0, -1120)
 shape = SubResource("RectangleShape2D_tv4bm")
 debug_color = Color(0, 0, 0, 0.21568628)
 

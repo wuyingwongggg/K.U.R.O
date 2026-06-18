@@ -52,8 +52,16 @@ namespace Kuros.Items.World
 		[Export] public bool StopOnHit { get; set; } = false; // 命中敌人后是否停止（false = 穿过敌人）
 
 		[ExportGroup("Durability")]
-		[Export] public bool IsThrowWeapon { get; set; } = false; // 是否为投掷武器（true=不从背包销毁，进入CD；false=投掷后在LandingHideDelay后销毁）
-		[Export(PropertyHint.Range, "0.1,60,0.1")] public float ThrowWeaponCooldown { get; set; } = 2.0f; // 投掷武器的使用冷却时间
+		/// <summary>
+		/// 投掷后是否回收（冷却归还背包）。false=投掷后落地销毁。
+		/// 从 ItemDefinition.IsThrowWeapon 读取。
+		/// </summary>
+		private bool IsThrowWeapon => ItemDefinition?.IsThrowWeapon ?? false;
+		/// <summary>
+		/// 投掷武器冷却时间（秒）。仅在 IsThrowWeapon=true 时生效。
+		/// 从 ItemDefinition.ThrowWeaponCooldown 读取，null 时回退默认 2.0s。
+		/// </summary>
+		private float ThrowWeaponCooldown => ItemDefinition?.ThrowWeaponCooldown ?? 2.0f;
 		[Export] public NodePath DestructionAnimationPlayerPath { get; set; } = new NodePath(""); // 销毁动画播放器路径
 		[Export] public string DestructionAnimationName { get; set; } = "destroy"; // 销毁动画名称
 		[Export] public float DestructionAnimationDuration { get; set; } = 0.5f; // 销毁动画时长（如果动画播放器不存在，使用固定时长）

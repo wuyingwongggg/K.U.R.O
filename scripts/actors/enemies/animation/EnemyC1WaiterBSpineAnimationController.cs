@@ -23,7 +23,8 @@ namespace Kuros.Actors.Enemies.Animation
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3LoopEnd = 2.13f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3PartStart = 2.14f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float Skill3PartEnd = 3.33f;
-
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float SlashTimeScale = 2f;
         private EnemyC1WaiterBAttackController? _attackController;
         private EnemyUltimateBeamAttack? _ultimateBeamAttack;
         private string _currentKey = string.Empty;
@@ -93,6 +94,9 @@ namespace Kuros.Actors.Enemies.Animation
                 case "Dying":
                     PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
                     break;
+                case "KeepDistance":
+                    PlayLoopIfNeeded("KeepDistance", SkillAnimation, SkillMixDuration, KeepDistanceTimeScale);
+                    break;
                 case "Dead":
                     PlayEmptyIfNeeded();
                     break;
@@ -141,7 +145,7 @@ namespace Kuros.Actors.Enemies.Animation
                     }
 
                     // 冲刺完成，播放 slash 收招动画
-                    PlayOnceIfNeeded("skill_slash", Skill2Animation, SkillMixDuration);
+                    PlayOnceIfNeeded("skill_slash", Skill2Animation, SkillMixDuration, timeScale: SlashTimeScale);
                     return;
                 }
 
@@ -173,7 +177,7 @@ namespace Kuros.Actors.Enemies.Animation
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
 
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
+        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration, float timeScale = 1f)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -185,14 +189,14 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayLoop(animationName, mixDuration))
+            if (PlayLoop(animationName, mixDuration, timeScale))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Loop;
             }
         }
 
-        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
+        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true, float timeScale = 1f)
         {
             if (string.IsNullOrEmpty(animationName))
             {
@@ -204,7 +208,7 @@ namespace Kuros.Actors.Enemies.Animation
                 return;
             }
 
-            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
+            if (PlayOnce(animationName, mixDuration, timeScale, string.Empty))
             {
                 _currentKey = key;
                 _currentMode = SpineAnimationPlaybackMode.Once;

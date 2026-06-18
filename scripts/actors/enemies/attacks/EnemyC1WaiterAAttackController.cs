@@ -5,10 +5,10 @@ namespace Kuros.Actors.Enemies.Attacks
 {
     /// <summary>
     /// C1 服务员 A 的攻击控制器。
-    /// 
+    ///
     /// 攻击切换逻辑（每帧轮询）：
-    ///   - 玩家在近战 AttackArea 内 → SimpleMeleeAttack（权重 100），打断当前 ThrowAttack
-    ///   - 玩家不在近战 AttackArea 内 → ThrowAttack（权重 100），当前近战自然结束后生效
+    ///   - 玩家在近战 AttackArea 内 → SimpleMeleeAttack（权重 100），等待当前攻击自然结束后切换
+    ///   - 玩家不在近战 AttackArea 内 → ThrowAttack（权重 100），等待当前攻击自然结束后切换
     /// </summary>
     public partial class EnemyC1WaiterAAttackController : EnemyAttackController
     {
@@ -40,9 +40,6 @@ namespace Kuros.Actors.Enemies.Attacks
             TrySetAttackWeight(MeleeAttackName, inMelee ? 100f : 0f);
             TrySetAttackWeight(ThrowAttackName, inMelee ? 0f : 100f);
 
-            // 玩家进入近战范围时，若正在投掷则打断立即切换
-            if (inMelee && IsAttack(CurrentAttackName, ThrowAttackName))
-                ForceQueueNextAttack("PlayerEnteredMeleeRange");
         }
 
         protected override void OnChildAttackStarted(EnemyAttackTemplate attack)

@@ -1,7 +1,8 @@
-[gd_scene load_steps=31 format=3 uid="uid://bj81vpm6lg1b8"]
+[gd_scene load_steps=34 format=3 uid="uid://bj81vpm6lg1b8"]
 
 [ext_resource type="Script" uid="uid://5imf5agux4ch" path="res://scripts/actors/enemies/EnemyNormalGuard2.cs" id="1_wjvmm"]
 [ext_resource type="Resource" uid="uid://xsa2wlasoj6i" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_e1554"]
+[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ulog8"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_10g4w"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c0t06u0ancnf8" path="res://animations/spine/Enemy_Normal_guard3.tres" id="5_wjvmm"]
@@ -23,7 +24,16 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18_wd41p"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="19_47cbq"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="20_u500j"]
+[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
 [ext_resource type="Script" uid="uid://c8xkf4trw871r" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
+
+[sub_resource type="Resource" id="Resource_3kv8y"]
+script = ExtResource("2_ofcms")
+Positioning = 1
+MinComfortDistance = 200.0
+FleeTargetDistance = 1000.0
+FleeSpeedMultiplier = 2.0
+metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("3_ulog8")
@@ -54,13 +64,12 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_wjvmm")
+BehaviorConfig = SubResource("Resource_3kv8y")
 EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 30
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -133,7 +142,6 @@ modulate = Color(0.8, 0.6, 0.5, 1)
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
@@ -232,6 +240,10 @@ script = ExtResource("15_m8cja")
 
 [node name="CooldownFrozen" type="Node" parent="StateMachine"]
 script = ExtResource("16_md8ck")
+
+[node name="KeepDistance" type="Node" parent="StateMachine"]
+script = ExtResource("21_06rhn")
+AllowAttackDuringFlee = false
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("17_pg1qr")

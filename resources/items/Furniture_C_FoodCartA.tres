@@ -52,7 +52,6 @@ AttributeEntries = Array[ExtResource("1_oqybt")]([SubResource("Resource_oqybt")]
 EffectEntries = Array[ExtResource("2_tcx5p")]([SubResource("Resource_sg2nw"), SubResource("Resource_4k75e"), SubResource("Resource_sgnlr")])
 LevelCount = 0
 IsThrowable = true
-IsFurniture = true
 ThrowStartOffset = Vector2(0, -350)
 ThrowParabolicDuration = 0.30000000000000004
 ThrowHorizontalDistance = 500.0

@@ -94,6 +94,7 @@ debug_color = Color(1, 0, 1, 0.41960785)
 [node name="Environments" type="Node2D" parent="."]
 
 [node name="background" type="Sprite2D" parent="Environments"]
+z_index = -10
 position = Vector2(-518, -886)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_556c4")

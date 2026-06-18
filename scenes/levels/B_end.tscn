@@ -1,11 +1,10 @@
-[gd_scene load_steps=36 format=3 uid="uid://bco3niswcahcc"]
+[gd_scene load_steps=35 format=3 uid="uid://bco3niswcahcc"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_b2kum"]
 [ext_resource type="Texture2D" uid="uid://behye8vdgemoq" path="res://assets/environments/scene_2_hotel/地板.png" id="1_fjfxm"]
 [ext_resource type="Texture2D" uid="uid://dw2alagwosewh" path="res://assets/environments/scene_2_hotel/地毯.png" id="2_qtmhi"]
 [ext_resource type="Texture2D" uid="uid://k45cthgn2dgq" path="res://assets/environments/scene_2_hotel/墙面.png" id="3_le30p"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="3_rvxy7"]
-[ext_resource type="PackedScene" uid="uid://8ce54l6083nt" path="res://scenes/actors/characters/Enemy_C1_waiterB.tscn" id="5_b2kum"]
 [ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="5_le30p"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="6_b2kum"]
 [ext_resource type="Texture2D" uid="uid://dtmefhuw7vvci" path="res://assets/environments/scene_2_hotel/酒吧吧台.png" id="6_le30p"]
@@ -75,19 +74,22 @@ shape = SubResource("RectangleShape2D_oqqdb")
 debug_color = Color(0.6428762, 0.52304673, 0.06685588, 0.41960785)
 
 [node name="CameraZone" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_b2kum")
 ZoneName = "Room_Zone_B_End_1"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
+z_index = 10
 position = Vector2(46, 0)
 shape = SubResource("RectangleShape2D_3a114")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CameraZone2" type="Area2D" parent="."]
+visible = false
 z_index = 10
-position = Vector2(3939, 362)
+position = Vector2(3940, 360)
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_b2kum")
@@ -119,7 +121,7 @@ shape = SubResource("RectangleShape2D_jopov")
 top_level = true
 position = Vector2(1058, 350)
 script = ExtResource("5_le30p")
-EnemyScenes = Array[PackedScene]([ExtResource("5_b2kum"), ExtResource("6_qcu5f")])
+EnemyScenes = Array[PackedScene]([ExtResource("6_qcu5f")])
 MultiEnemySelectionMode = 1
 SpawnInterval = 2.0
 SpawnParentPath = NodePath("..")
@@ -162,10 +164,12 @@ region_enabled = true
 region_rect = Rect2(0, 1, 4250, 854)
 
 [node name="Wall" type="Sprite2D" parent="Environments"]
-position = Vector2(0, -1530)
+position = Vector2(44, -1530)
 texture = ExtResource("3_le30p")
+region_enabled = true
+region_rect = Rect2(0, 0, 5679.6816, 688)
 
-[node name="ElevatorGate" parent="Environments" instance=ExtResource("9_6oh11")]
+[node name="ElevatorGateB" parent="Environments" instance=ExtResource("9_6oh11")]
 position = Vector2(2609, 197)
 BattleArenaPath = NodePath("../../BattleArena")
 
@@ -174,7 +178,6 @@ position = Vector2(1100, -1510)
 texture = ExtResource("6_le30p")
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
@@ -204,6 +207,7 @@ shape = SubResource("RectangleShape2D_b2kum")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+visible = false
 navigation_polygon = SubResource("NavigationPolygon_rvxy7")
 
 [node name="columnsB" parent="." instance=ExtResource("10_gxcvl")]

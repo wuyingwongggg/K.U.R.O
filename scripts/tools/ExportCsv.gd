@@ -49,7 +49,7 @@ func _export_items() -> void:
 
 	var headers := [
 		"file", "ItemId", "DisplayName", "Description", "Category", "Tags",
-		"MaxStackSize", "BuildClass", "LevelCount", "IsThrowable", "IsFurniture",
+		"MaxStackSize", "BuildClass", "LevelCount", "IsThrowable", "IsThrowWeapon", "ThrowWeaponCooldown",
 		"attack_power", "SkillRefs"
 	]
 	var rows: Array = [headers]
@@ -92,7 +92,8 @@ func _export_items() -> void:
 			_str(str(r.get("BuildClass", ""))),
 			str(r.get("LevelCount", "1")),
 			str(r.get("IsThrowable", "false")),
-			str(r.get("IsFurniture", "false")),
+				str(r.get("IsThrowWeapon", "false")),
+			str(r.get("ThrowWeaponCooldown", "2.0")),
 			atk, skill_refs
 		])
 

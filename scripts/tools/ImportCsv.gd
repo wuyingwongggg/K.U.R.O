@@ -83,7 +83,8 @@ func import_items_from_csv() -> void:
 		_s_int(res,   "LevelCount",   row, hm, "LevelCount")
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
-		_s_bool(res,  "IsFurniture",  row, hm, "IsFurniture")
+		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")
+		_s_float(res, "ThrowWeaponCooldown", row, hm, "ThrowWeaponCooldown")
 		# attack_power 存于 AttributeEntries 子资源
 		var atk = _col(row, hm, "attack_power")
 		if atk != "": _set_attribute(res, "attack_power", float(atk))
