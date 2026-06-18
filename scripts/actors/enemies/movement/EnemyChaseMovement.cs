@@ -27,14 +27,8 @@ public partial class EnemyChaseMovement : Node
 
 	protected SampleEnemy? Enemy;
 
-	/// <summary>
-	/// 可选的导航代理节点，存在时使用寻路避障，否则退回直线追踪。
-	/// </summary>
 	protected NavigationAgent2D? NavAgent;
 
-	/// <summary>
-	/// avoidance 计算出的安全速度（由 velocity_computed 信号写入）
-	/// </summary>
 	private Vector2 _safeVelocity = Vector2.Zero;
 	private bool _hasSafeVelocity = false;
 
@@ -60,21 +54,14 @@ public partial class EnemyChaseMovement : Node
 
 		Enemy.SetMeta(MovementMetaKey, this);
 
-		// 尝试从敌人节点获取 NavigationAgent2D（可选）
 		NavAgent = Enemy.GetNodeOrNull<NavigationAgent2D>("NavigationAgent2D");
 		if (NavAgent != null)
 		{
-			// 连接 velocity_computed 信号以接收 avoidance 计算后的安全速度
 			NavAgent.VelocityComputed += OnVelocityComputed;
-
-			// 覆盖 tscn 中的 path_max_distance，确保大场景中寻路不会因距离限制而失效
 			NavAgent.PathMaxDistance = 99999f;
 		}
 	}
 
-	/// <summary>
-	/// 接收 NavigationAgent2D avoidance 计算完毕后的安全速度
-	/// </summary>
 	private void OnVelocityComputed(Vector2 safeVelocity)
 	{
 		_safeVelocity = safeVelocity;
@@ -113,8 +100,8 @@ public partial class EnemyChaseMovement : Node
 		if (Engine.IsEditorHint() || Enemy == null) return;
 		if (Enemy.StateMachine == null) return;
 
-		// 保持距离状态活跃时，不干预移动（由 KeepDistanceState 自行控制）
 		if (Enemy.HasMeta("__keep_distance_active")) return;
+			if (Enemy.HasMeta("__close_in_active")) return;
 
 		string currentState = Enemy.StateMachine.CurrentState?.Name ?? string.Empty;
 		if (IsBlocked(currentState))
@@ -126,34 +113,32 @@ public partial class EnemyChaseMovement : Node
 
 		if (Enemy.IsPlayerWithinDetectionRange())
 		{
-			EnsureState(WalkStateName, currentState);
-			Vector2 direction = GetMoveDirection();
-			Vector2 desiredVelocity = direction * Enemy.Speed;
-
-			if (NavAgent != null && NavAgent.AvoidanceEnabled)
+			if (!Enemy.IsPlayerInAttackRange())
 			{
-				// 将期望速度提交给 avoidance 系统，等待 velocity_computed 回调
-				NavAgent.SetVelocity(desiredVelocity);
+				EnsureState(WalkStateName, currentState);
+				Vector2 direction = GetMoveDirection();
+				Vector2 desiredVelocity = direction * Enemy.Speed;
 
-				// 取 avoidance 计算出的安全方向，但保持 Enemy.Speed 大小
-				if (_hasSafeVelocity && _safeVelocity.LengthSquared() > 0.01f)
+				if (NavAgent != null && NavAgent.AvoidanceEnabled)
 				{
-					Enemy.Velocity = _safeVelocity.Normalized() * Enemy.Speed;
+					NavAgent.SetVelocity(desiredVelocity);
+					if (_hasSafeVelocity && _safeVelocity.LengthSquared() > 0.01f)
+						Enemy.Velocity = _safeVelocity.Normalized() * Enemy.Speed;
+					else
+						Enemy.Velocity = desiredVelocity;
+					_hasSafeVelocity = false;
 				}
 				else
 				{
 					Enemy.Velocity = desiredVelocity;
 				}
-				_hasSafeVelocity = false;
+
+				if (Mathf.Abs(desiredVelocity.X) > 0.1f)
+					Enemy.FlipFacing(desiredVelocity.X > 0);
 			}
 			else
 			{
-				Enemy.Velocity = desiredVelocity;
-			}
-
-			if (desiredVelocity.X != 0)
-			{
-				Enemy.FlipFacing(desiredVelocity.X > 0);
+				Enemy.Velocity = Enemy.Velocity.MoveToward(Vector2.Zero, Enemy.Speed * 2 * (float)delta);
 			}
 		}
 		else
@@ -166,23 +151,17 @@ public partial class EnemyChaseMovement : Node
 		Enemy.ClampPositionToScreen();
 	}
 
-	/// <summary>
-	/// 获取本帧移动方向：有 NavigationAgent2D 时使用寻路，否则直线朝向玩家。
-	/// </summary>
 	protected virtual Vector2 GetMoveDirection()
 	{
-		if (NavAgent != null && Enemy != null)
-		{
-			var player = Enemy.PlayerTarget;
-			if (player != null)
-			{
-				// 仅在目标发生明显变化时才更新，避免每帧重置路径
-				if (NavAgent.TargetPosition.DistanceSquaredTo(player.GlobalPosition) > 100f)
-					NavAgent.TargetPosition = player.GlobalPosition;
-			}
+		var player = Enemy?.PlayerTarget;
+		bool hasNav = NavAgent != null;
 
-			// GetNextPathPosition() 仅在路径已计算完成后才返回有效路点
-			// IsNavigationFinished() 在路径有效且 agent 未到达终点时返回 false
+		if (hasNav && Enemy != null && player != null)
+		{
+			Vector2 approachTarget = Enemy.GetApproachTarget();
+			if (NavAgent.TargetPosition.DistanceSquaredTo(approachTarget) > 100f)
+				NavAgent.TargetPosition = approachTarget;
+
 			if (!NavAgent.IsNavigationFinished())
 			{
 				Vector2 nextPoint = NavAgent.GetNextPathPosition();
@@ -192,8 +171,14 @@ public partial class EnemyChaseMovement : Node
 			}
 		}
 
-		// 回退：直线追踪（路径未就绪或无导航网格时）
-		return Enemy?.GetDirectionToPlayer() ?? Vector2.Zero;
+		if (Enemy != null)
+		{
+			Vector2 approachTarget = Enemy.GetApproachTarget();
+			Vector2 toTarget = approachTarget - Enemy.GlobalPosition;
+			if (!toTarget.IsZeroApprox())
+				return toTarget.Normalized();
+		}
+		return Vector2.Zero;
 	}
 
 	private bool IsBlocked(string stateName)

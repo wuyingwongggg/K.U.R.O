@@ -55,13 +55,11 @@ shader = ExtResource("2_4ht1x")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y6jy"]
-radius = 121.11756
-height = 530.3031
+[sub_resource type="CircleShape2D" id="CircleShape2D_vj0fg"]
+radius = 180.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0y2r2"]
-radius = 275.7576
-height = 709.09094
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vj0fg"]
+size = Vector2(400, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
 size = Vector2(650, 400)
@@ -148,7 +146,7 @@ script = ExtResource("4_ixg0x")
 skeleton_data_res = ExtResource("4_o4xwm")
 bones_thickness = 10.09
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 0.31
 script = ExtResource("4_ixg0x")
@@ -156,28 +154,28 @@ script = ExtResource("4_ixg0x")
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
 z_index = -1
-position = Vector2(23.650015, -444.16843)
-rotation = -1.4750756
+position = Vector2(0.81878656, -473.96185)
+rotation = -1.6159917
+scale = Vector2(0.9999998, 0.9999998)
 bone_name = "Upper Body"
 
 [node name="SpineHoldingBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(23.650015, -444.16843)
-rotation = -1.4750756
+position = Vector2(0.81878656, -473.96185)
+rotation = -1.6159917
+scale = Vector2(0.9999998, 0.9999998)
 bone_name = "Upper Body"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -108.995995)
-rotation = 1.5707964
 scale = Vector2(0.9999999, 0.9999999)
-shape = SubResource("CapsuleShape2D_0y6jy")
+shape = SubResource("CircleShape2D_vj0fg")
 
 [node name="HitArea" type="Area2D" parent="."]
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
 position = Vector2(6.0606065, -515.15155)
-shape = SubResource("CapsuleShape2D_0y2r2")
+shape = SubResource("RectangleShape2D_vj0fg")
 
 [node name="AttackArea" type="Area2D" parent="."]
 position = Vector2(0, 100)

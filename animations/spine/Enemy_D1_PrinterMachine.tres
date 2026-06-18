@@ -1,0 +1,8 @@
+[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 uid="uid://crsmt4wcnw7oo"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://0lu84jtokhpt" path="res://assets/spine/demo_enemy/Enemy_D1_PrinterMachine.atlas" id="1_1p8rk"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://dumhwiaghiobi" path="res://assets/spine/demo_enemy/Enemy_D1_PrinterMachine.spine-json" id="2_kthbp"]
+
+[resource]
+atlas_res = ExtResource("1_1p8rk")
+skeleton_file_res = ExtResource("2_kthbp")

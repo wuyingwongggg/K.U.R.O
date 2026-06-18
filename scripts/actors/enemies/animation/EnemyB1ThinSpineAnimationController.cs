@@ -19,12 +19,9 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string HitAnimation = "hit";
         [Export] public string StunAnimation = "stun";
         [Export] public string DieAnimation = "death";
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float CloseInTimeScale = 1f;
         private EnemyB1ThinAttackController? _attackController;
-        private string _currentKey = string.Empty;
-        private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
-        private float _activeLoopStart;
-        private float _activeLoopEnd;
         private EnemyKickAttack? _skillChargeKickAttack;
         private Node? _spineControllerNode;
         private Callable _spineHitCallable;
@@ -83,11 +80,14 @@ namespace Kuros.Actors.Enemies.Animation
                     PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
                     break;
                 case "Dying":
-                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
+                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);
                     break;
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
                     break;
+                    case "CloseIn":
+				PlayLoopIfNeeded("CloseIn", WalkAnimation, WalkMixDuration, CloseInTimeScale);
+					break;
                 case "Dead":
                     PlayEmptyIfNeeded();
                     break;
@@ -139,75 +139,6 @@ namespace Kuros.Actors.Enemies.Animation
         {
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
-
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Loop)
-            {
-                return;
-            }
-
-            if (PlayLoop(animationName, mixDuration))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
-        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Once)
-            {
-                return;
-            }
-
-            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Once;
-                // 不自动排队 idle，动画完整播放后再由外部切换 idle
-                // if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
-                // {
-                //     QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
-                // }
-            }
-        }
-
-
-        private void TickPartialLoop()
-        {
-            if (_currentMode != SpineAnimationPlaybackMode.PartialLoop)
-            {
-                return;
-            }
-
-            UpdatePartialLoop(_activeLoopStart, _activeLoopEnd);
-        }
-
-        private void PlayEmptyIfNeeded()
-        {
-            if (_currentKey == "Empty")
-            {
-                return;
-            }
-
-            if (PlayEmpty(DieMixDuration))
-            {
-                _currentKey = "Empty";
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
         private EnemyB1ThinAttackController? ResolveAttackController()
         {
             if (_attackController != null && IsInstanceValid(_attackController))

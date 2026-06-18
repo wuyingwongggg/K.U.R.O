@@ -29,8 +29,7 @@
 script = ExtResource("2_thw4a")
 Positioning = 1
 MinComfortDistance = 200.0
-FleeTargetDistance = 1000.0
-FleeSpeedMultiplier = 2.0
+BurstSpeedMultiplier = 2.0
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sycgy"]
@@ -47,9 +46,8 @@ radius = 1024.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_7t51a"]
 radius = 1024.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dx6wd"]
-radius = 150.0
-height = 800.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_thw4a"]
+size = Vector2(300, 800)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_yski7"]
 radius = 180.0
@@ -174,7 +172,7 @@ z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, -120)
-shape = SubResource("CapsuleShape2D_dx6wd")
+shape = SubResource("RectangleShape2D_thw4a")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_yski7")
@@ -216,7 +214,7 @@ ActiveDuration = 0.3
 RecoveryDuration = 0.4
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 500.0
-KnockbackDuration = 0.09999999999999999
+KnockbackDuration = 0.1
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
 metadata/attack_weight = 0.0
@@ -237,7 +235,6 @@ script = ExtResource("16_rwl2c")
 
 [node name="KeepDistance" type="Node" parent="StateMachine"]
 script = ExtResource("19_gih36")
-AllowAttackDuringFlee = false
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("17_5ioks")

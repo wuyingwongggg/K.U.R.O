@@ -20,18 +20,20 @@ public partial class SampleEnemy : GameActor
 	[ExportCategory("Detection")]
 	[Export] public Area2D? DetectionArea { get; private set; }
 	[Export(PropertyHint.Range, "200,1000,10")] public float AttackRangeCheckDistance = 500f;
-	
+
 	[ExportCategory("Attack")]
 	[Export] public Area2D? AttackArea { get; private set; }
-	
+
 	[ExportCategory("Score")]
 	[Export] public int ScoreValue = 10;
-	
+
 	private SamplePlayer? _player;
 	private bool _scoreGranted;
 	private string _debugOverlayText = string.Empty;
 	private EnemyAttackController? _cachedAttackController;
-	
+	public float KeepDistanceCooldownRemaining;
+		public float CloseInCooldownRemaining;
+
 	// public SampleEnemy()
 	// {
 	// 	Speed = 150.0f;
@@ -39,7 +41,7 @@ public partial class SampleEnemy : GameActor
 	// 	AttackCooldown = 1.5f;
 	// 	MaxHealth = 50;
 	// }
-	
+
 	public override void _Ready()
 	{
 		base._Ready();
@@ -47,14 +49,14 @@ public partial class SampleEnemy : GameActor
 		{
 			AddToGroup("enemies");
 		}
-		
+
 		// Try to find areas if not assigned (they are nested under Sprite2D in the scene)
-		if (AttackArea == null) 
+		if (AttackArea == null)
 		{
 			AttackArea = GetNodeOrNull<Area2D>("Sprite2D/AttackArea");
 			if (AttackArea == null) GD.PrintErr("AttackArea not found at Sprite2D/AttackArea");
 		}
-		if (DetectionArea == null) 
+		if (DetectionArea == null)
 		{
 			DetectionArea = GetNodeOrNull<Area2D>("Sprite2D/ControllerDetectionArea");
 			if (DetectionArea == null) GD.PrintErr("DetectionArea not found at Sprite2D/ControllerDetectionArea");
@@ -67,7 +69,11 @@ public partial class SampleEnemy : GameActor
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
-		if (!EnableStateDebugOverlay) return;
+		if (KeepDistanceCooldownRemaining > 0f)
+				KeepDistanceCooldownRemaining -= (float)delta;
+			if (CloseInCooldownRemaining > 0f)
+				CloseInCooldownRemaining -= (float)delta;
+			if (!EnableStateDebugOverlay) return;
 
 		UpdateDebugOverlayText();
 		QueueRedraw();
@@ -83,9 +89,9 @@ public partial class SampleEnemy : GameActor
 
 		DrawString(font, DebugOverlayOffset, _debugOverlayText, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
 	}
-	
+
 	public SamplePlayer? PlayerTarget => _player;
-	
+
 	/// <summary>
 	/// 检查玩家是否在检测范围内。使用 DetectionArea 碰撞检测。
 	/// </summary>
@@ -95,7 +101,7 @@ public partial class SampleEnemy : GameActor
 		if (_player == null || DetectionArea == null) return false;
 		return DetectionArea.OverlapsBody(_player);
 	}
-	
+
 	/// <summary>
 	/// 检查玩家是否在攻击范围内。使用 AttackArea 碰撞检测。
 	/// </summary>
@@ -138,10 +144,39 @@ public partial class SampleEnemy : GameActor
 	{
 		RefreshPlayerReference();
 		if (_player == null) return false;
-		
+
 		float distanceToPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
 		return distanceToPlayer <= AttackRangeCheckDistance;
 	}
+
+	public Vector2 GetApproachTarget()
+	{
+		RefreshPlayerReference();
+		if (_player == null) return GlobalPosition;
+
+		float dx = GlobalPosition.X - _player.GlobalPosition.X;
+		float sideSign = Mathf.Abs(dx) < 1f
+			? (FacingRight ? 1f : -1f)
+			: (dx > 0 ? 1f : -1f);
+
+		float offset = GetHitAreaHalfWidth();
+		return _player.GlobalPosition + new Vector2(offset * sideSign, 0);
+	}
+
+	private float GetHitAreaHalfWidth()
+	{
+		var hitArea = _player?.HitArea;
+		if (hitArea == null) return 300f;
+		var shapeNode = hitArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+		if (shapeNode?.Shape == null) return 300f;
+		return shapeNode.Shape switch
+		{
+			CircleShape2D circle => circle.Radius * Mathf.Abs(shapeNode.Scale.X),
+			RectangleShape2D rect => rect.Size.X * 0.5f * Mathf.Abs(shapeNode.Scale.X),
+			_ => 300f
+		};
+	}
+
 
 	public Vector2 GetDirectionToPlayer()
 	{
@@ -150,7 +185,7 @@ public partial class SampleEnemy : GameActor
 		Vector2 direction = (_player.GlobalPosition - GlobalPosition);
 		return direction == Vector2.Zero ? Vector2.Zero : direction.Normalized();
 	}
-	
+
 	/// <summary>
 	/// 判断敌人是否可以进入 Attack 状态。
 	/// 优先委托给 AttackController.CanStart()，不存在时回退到 IsPlayerInAttackRange()。
@@ -175,9 +210,9 @@ public partial class SampleEnemy : GameActor
 
 	public void PerformAttack()
 	{
-		//AttackTimer = AttackCooldown; 
+		//AttackTimer = AttackCooldown;
 		GameLogger.Info(nameof(SampleEnemy), "Enemy PerformAttack");
-		
+
 		RefreshPlayerReference();
 		if (_player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
 		{
@@ -185,7 +220,7 @@ public partial class SampleEnemy : GameActor
 			GameLogger.Info(nameof(SampleEnemy), "Enemy attacked player via HitArea.");
 		}
 	}
-	
+
 	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)
 	{
 		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
@@ -195,7 +230,7 @@ public partial class SampleEnemy : GameActor
 			 _animationPlayer.Play("animations/hit");
 		}
 	}
-	
+
 	protected override void Die()
 	{
 		GameLogger.Info(nameof(SampleEnemy), "Enemy died!");
@@ -229,7 +264,7 @@ public partial class SampleEnemy : GameActor
 		string frozenInfo = "";
 		string attackInfo = "";
 		string cooldownInfo = "";
-		
+
 		// 如果在Frozen状态，显示倒计时
 		if (stateName == "Frozen" && StateMachine?.CurrentState is EnemyFrozenState frozenState)
 		{
@@ -262,7 +297,7 @@ public partial class SampleEnemy : GameActor
 				cooldownInfo = $" | CD: {cdRemaining:F2}s/{cdDuration:F1}s {nameHint}";
 			}
 		}
-		
+
 		_debugOverlayText = $"{Name} | State: {stateName}{attackInfo} | HP: {CurrentHealth}/{MaxHealth}{frozenInfo}{cooldownInfo}";
 	}
 

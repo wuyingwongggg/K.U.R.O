@@ -1,9 +1,8 @@
 using Godot;
-using Kuros.Core;
 
 namespace Kuros.Actors.Enemies.States
 {
-	public partial class EnemyKeepDistanceState : EnemyState
+	public partial class EnemyCloseInState : EnemyState
 	{
 		[ExportCategory("Obstacle Avoidance")]
 		[Export(PropertyHint.Range, "10,500,10")]
@@ -11,26 +10,17 @@ namespace Kuros.Actors.Enemies.States
 
 		private EnemyBehaviorConfig? _config;
 		private float _timer;
-		private float _immuneTimer;
-		private Vector2 _fleeDirection;
-		private bool _damageImmuneActive;
+		private Vector2 _rushDirection;
 
-		private const string MovementSuppressMeta = "__keep_distance_active";
+		private const string MovementSuppressMeta = "__close_in_active";
 
 		public override void Enter()
 		{
 			Enemy.SetMeta(MovementSuppressMeta, true);
 
 			_config = Enemy.BehaviorConfig;
-			_timer = _config?.BurstDuration ?? 3f;
-			_immuneTimer = _config?.BurstDamageImmuneDuration ?? 0f;
+			_timer = _config?.BurstDuration ?? 1f;
 			Enemy.Velocity = Vector2.Zero;
-
-			if (_immuneTimer > 0f)
-			{
-				Enemy.DamageIntercepted += BlockDamage;
-				_damageImmuneActive = true;
-			}
 
 			Enemy.AnimPlayer?.Play("animations/walk");
 		}
@@ -39,8 +29,7 @@ namespace Kuros.Actors.Enemies.States
 		{
 			Enemy.RemoveMeta(MovementSuppressMeta);
 			Enemy.Velocity = Vector2.Zero;
-			RemoveDamageImmunity();
-			Enemy.KeepDistanceCooldownRemaining = _config?.BurstCooldown ?? 2f;
+			Enemy.CloseInCooldownRemaining = _config?.BurstCooldown ?? 3f;
 		}
 
 		public override void PhysicsUpdate(double delta)
@@ -50,7 +39,7 @@ namespace Kuros.Actors.Enemies.States
 
 			if (Player == null) return;
 
-			// 仅计时结束退出，Hit/Dying 由 GameActor 自动处理
+			// 计时结束退出
 			_timer -= (float)delta;
 			if (_timer <= 0f)
 			{
@@ -58,40 +47,26 @@ namespace Kuros.Actors.Enemies.States
 				return;
 			}
 
-			// 无敌计时
-			if (_damageImmuneActive)
-			{
-				_immuneTimer -= (float)delta;
-				if (_immuneTimer <= 0f)
-					RemoveDamageImmunity();
-			}
+			// 冲向玩家侧方偏移点，避免与玩家重叠
+			Vector2 target = Enemy.GetApproachTarget();
+			Vector2 toTarget = target - Enemy.GlobalPosition;
+			if (Mathf.Abs(toTarget.X) > 0.1f)
+				Enemy.FlipFacing(toTarget.X > 0);
 
-			// 始终背对玩家，避免墙角速度突变导致翻转抽搐
-			Vector2 toPlayer = Player.GlobalPosition - Enemy.GlobalPosition;
-			if (Mathf.Abs(toPlayer.X) > 0.1f)
-				Enemy.FlipFacing(toPlayer.X < 0);
+			Vector2 preferredDirection = toTarget.LengthSquared() > 0.01f
+				? toTarget.Normalized()
+				: (Enemy.FacingRight ? Vector2.Right : Vector2.Left);
 
-			Vector2 preferredDirection = toPlayer.LengthSquared() > 0.01f
-				? -toPlayer.Normalized()
-				: (Enemy.FacingRight ? Vector2.Left : Vector2.Right);
-
-			_fleeDirection = FindClearDirection(preferredDirection);
+			_rushDirection = FindClearDirection(preferredDirection);
 
 			float speed = Enemy.Speed;
 			if (_config != null)
 				speed *= _config.BurstSpeedMultiplier;
 
-			Enemy.Velocity = _fleeDirection * speed;
+			Enemy.Velocity = _rushDirection * speed;
 
 			Enemy.MoveAndSlide();
 			Enemy.ClampPositionToScreen();
-		}
-
-		private void RemoveDamageImmunity()
-		{
-			if (!_damageImmuneActive) return;
-			Enemy.DamageIntercepted -= BlockDamage;
-			_damageImmuneActive = false;
 		}
 
 		/// <summary>
@@ -131,12 +106,6 @@ namespace Kuros.Actors.Enemies.States
 
 			var result = Enemy.GetWorld2D().DirectSpaceState.IntersectRay(query);
 			return result.Count == 0;
-		}
-
-		private bool BlockDamage(GameActor.DamageEventArgs args)
-		{
-			args.IsBlocked = true;
-			return true;
 		}
 	}
 }

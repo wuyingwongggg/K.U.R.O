@@ -30,9 +30,9 @@
 [sub_resource type="Resource" id="Resource_3kv8y"]
 script = ExtResource("2_ofcms")
 Positioning = 1
-MinComfortDistance = 200.0
-FleeTargetDistance = 1000.0
-FleeSpeedMultiplier = 2.0
+MinComfortDistance = 400.0
+BurstSpeedMultiplier = 2.0
+BurstDamageImmuneDuration = 0.5
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
@@ -49,9 +49,8 @@ radius = 1024.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
 radius = 1024.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gvrrx"]
-radius = 150.0
-height = 600.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ofcms"]
+size = Vector2(300, 600)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
 radius = 180.0
@@ -175,7 +174,7 @@ visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 130)
-shape = SubResource("CapsuleShape2D_gvrrx")
+shape = SubResource("RectangleShape2D_ofcms")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 visible = false
@@ -243,7 +242,6 @@ script = ExtResource("16_md8ck")
 
 [node name="KeepDistance" type="Node" parent="StateMachine"]
 script = ExtResource("21_06rhn")
-AllowAttackDuringFlee = false
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("17_pg1qr")

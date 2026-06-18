@@ -36,9 +36,8 @@ radius = 1024.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
 radius = 1024.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gvrrx"]
-radius = 150.0
-height = 600.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mpilq"]
+size = Vector2(300, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gvrrx"]
 size = Vector2(709, 313)
@@ -66,7 +65,6 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_0ugu3")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AttackCooldown = 1
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -130,6 +128,7 @@ script = ExtResource("20_0ugu3")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
+z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
@@ -165,7 +164,7 @@ shape = SubResource("CircleShape2D_ooggc")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 130)
-shape = SubResource("CapsuleShape2D_gvrrx")
+shape = SubResource("RectangleShape2D_mpilq")
 
 [node name="OnePunchAttackArea" type="Area2D" parent="Sprite2D"]
 visible = false

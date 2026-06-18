@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://8ce54l6083nt"]
+[gd_scene load_steps=40 format=3 uid="uid://8ce54l6083nt"]
 
 [ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
@@ -28,14 +28,15 @@
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_uohhx"]
 [ext_resource type="Script" uid="uid://dvu6xk56lp65v" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
 [ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="23_eyt4q"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="24_afterimage"]
 
 [sub_resource type="Resource" id="Resource_r5hc0"]
 script = ExtResource("2_m8hjw")
 Positioning = 1
-MinComfortDistance = 300.0
-FleeTargetDistance = 1000.0
-FleeSpeedMultiplier = 3.0
-FleeDamageImmune = true
+MinComfortDistance = 400.0
+BurstSpeedMultiplier = 2.5
+BurstDuration = 0.5
+BurstDamageImmuneDuration = 0.1
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="Resource" id="Resource_f4qnp"]
@@ -56,15 +57,14 @@ radius = 1033.9792
 [sub_resource type="CircleShape2D" id="CircleShape2D_uohhx"]
 radius = 1024.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5drfe"]
-radius = 150.0
-height = 600.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eyt4q"]
+size = Vector2(300, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_st2e3"]
-size = Vector2(400, 400)
+size = Vector2(800, 800)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_evlou"]
-radius = 1024.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m8hjw"]
+size = Vector2(1500, 2000)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_st2e3"]
 radius = 180.0
@@ -78,6 +78,7 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_enemy_script")
 BehaviorConfig = SubResource("Resource_r5hc0")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -151,7 +152,7 @@ skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 2.3667
 script = ExtResource("5_muxhp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -190,26 +191,21 @@ z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 80)
-shape = SubResource("CapsuleShape2D_5drfe")
+shape = SubResource("RectangleShape2D_eyt4q")
 
 [node name="DashStopArea" type="Area2D" parent="Sprite2D"]
-visible = false
-scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashStopArea"]
-position = Vector2(500, 100)
+position = Vector2(400, 0)
 shape = SubResource("RectangleShape2D_st2e3")
 
 [node name="DashSlashArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
-collision_mask = 7
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashSlashArea"]
 position = Vector2(800, 0)
-scale = Vector2(1.2, 0.9)
-shape = SubResource("CircleShape2D_evlou")
+shape = SubResource("RectangleShape2D_m8hjw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 visible = false
@@ -239,10 +235,12 @@ DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 DashStopAreaPath = NodePath("../../../../Sprite2D/DashStopArea")
 DashSlashAreaPath = NodePath("../../../../Sprite2D/DashSlashArea")
 DashSpeed = 1000.0
+MinDashTimeBeforeAttack = 0.5
+DashMaxDuration = 2.0
 AttackName = "DashSlashAttack"
-WarmupDuration = 1.0
-ActiveDuration = 0.5
-RecoveryDuration = 0.87
+WarmupDuration = 0.67
+ActiveDuration = 0.33
+RecoveryDuration = 0.78
 AttackAreaPath = NodePath("../../../../Sprite2D/DashSlashArea")
 KnockbackDistance = 500.0
 KnockbackSpeed = 1000.0
@@ -259,14 +257,13 @@ AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.4
 ActiveDuration = 1.4
 RecoveryDuration = 0.3
-CooldownDurationMultiplier = 1.5
+CooldownDurationMultiplier = 0.5
 DamageMultiplier = 0.2
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 50.0
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
 EffectScene = ExtResource("14_evlou")
 EffectOffset = Vector2(0, -200)
 metadata/attack_weight = 40.0
@@ -302,7 +299,6 @@ script = ExtResource("10_cooldown_state")
 
 [node name="KeepDistance" type="Node" parent="StateMachine"]
 script = ExtResource("23_eyt4q")
-AllowAttackDuringFlee = false
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("11_dying_state")
@@ -313,6 +309,9 @@ script = ExtResource("12_dead_state")
 
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("3_effect_controller")
+
+[node name="AfterimageController" type="Node" parent="."]
+script = ExtResource("24_afterimage")
 
 [node name="FreezeOnTurnMovement" type="Node" parent="."]
 script = ExtResource("18_uohhx")

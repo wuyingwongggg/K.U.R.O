@@ -316,7 +316,7 @@ namespace Kuros.Actors.Enemies.States
             if (dir.IsZeroApprox()) return;
 
             Enemy.Velocity = dir * speed;
-            if (dir.X != 0)
+            if (Mathf.Abs(dir.X) > 0.1f)
                 Enemy.FlipFacing(dir.X > 0);
             Enemy.MoveAndSlide();
             Enemy.ClampPositionToScreen();
