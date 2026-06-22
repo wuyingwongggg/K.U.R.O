@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=49 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -21,17 +21,26 @@
 [ext_resource type="PackedScene" uid="uid://cdnitqquebaw6" path="res://scenes/weapons/Weapon_Stab_drill.tscn" id="9_ngl7c"]
 [ext_resource type="PackedScene" uid="uid://6ghjqyjkk37w" path="res://scenes/weapons/Weapon_Stab_umbrella.tscn" id="10_dxexl"]
 [ext_resource type="PackedScene" uid="uid://bvvyo3wubh12j" path="res://scenes/weapons/Weapon_Throw_gravityGrenade.tscn" id="11_5dr7i"]
+[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="12_cgkyf"]
 [ext_resource type="PackedScene" uid="uid://dfmke56wtqt2x" path="res://scenes/weapons/Weapon_Throw_metalSpike.tscn" id="12_mkebo"]
 [ext_resource type="PackedScene" uid="uid://3d7hnjx31f45" path="res://scenes/weapons/Weapon_Slash_violinBow.tscn" id="12_ngl7c"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="13_0hc4h"]
 [ext_resource type="PackedScene" uid="uid://cipwjj7xx121y" path="res://scenes/weapons/Weapon_Throw_smokeGrenade.tscn" id="13_pxy7y"]
+[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="14_nviv8"]
+[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="15_8rv4v"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="16_28ted"]
+[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="16_rf3xq"]
 [ext_resource type="PackedScene" uid="uid://dmqi6co8gtn0l" path="res://scenes/weapons/Weapon_Brawl_discoBall.tscn" id="17_pja2j"]
 [ext_resource type="PackedScene" uid="uid://caapdem6qh6k8" path="res://scenes/weapons/Weapon_Slash_baguette.tscn" id="17_w0p8f"]
+[ext_resource type="PackedScene" uid="uid://wqcdwpyo1nji" path="res://scenes/actors/characters/Enemy_B1_thin.tscn" id="17_w0sof"]
+[ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="18_ve5oi"]
+[ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="19_4yi35"]
 [ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="19_dxexl"]
+[ext_resource type="PackedScene" uid="uid://8ce54l6083nt" path="res://scenes/actors/characters/Enemy_C1_waiterB.tscn" id="20_aiwtm"]
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
+[ext_resource type="PackedScene" uid="uid://cpcvmvf2n5ahe" path="res://scenes/actors/characters/Enemy_D1_printerMachine.tscn" id="21_xrpkh"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="30_m86xd"]
-[ext_resource type="PackedScene" uid="uid://bkxqiwlgdq03s" path="res://scenes/items/Furniture_B_sofaA_fwd.tscn" id="31_v4xrh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_m86xd"]
 size = Vector2(5800, 800)
@@ -150,6 +159,7 @@ navigation_polygon = SubResource("NavigationPolygon_6eerp")
 position = Vector2(-1972, 3)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
+EnemyScenes = Array[PackedScene]([ExtResource("12_cgkyf"), ExtResource("13_0hc4h"), ExtResource("14_nviv8"), ExtResource("15_8rv4v"), ExtResource("16_rf3xq"), ExtResource("17_w0sof"), ExtResource("18_ve5oi"), ExtResource("19_4yi35"), ExtResource("20_aiwtm"), ExtResource("21_xrpkh")])
 
 [node name="MainCharacter" parent="World" instance=ExtResource("1_tv6fd")]
 position = Vector2(-1086.9999, -70.99999)
@@ -228,9 +238,6 @@ script = ExtResource("16_28ted")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
-
-[node name="FurnitureSofaA_fwd" parent="World" instance=ExtResource("31_v4xrh")]
-position = Vector2(1023, -380)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

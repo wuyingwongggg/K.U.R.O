@@ -137,7 +137,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(9, 9)
+scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_2sv5o")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -147,7 +147,6 @@ collision_mask = 4
 monitorable = false
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-visible = false
 scale = Vector2(3.6, 3.6)
 shape = SubResource("CircleShape2D_otg7e")
 

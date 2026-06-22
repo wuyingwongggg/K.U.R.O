@@ -47,10 +47,10 @@ shader = ExtResource("4_5i0uy")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_8xfgw"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_h8apo"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_h8apo"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_8xfgw"]
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xj5bf"]
@@ -158,23 +158,24 @@ modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 position = Vector2(0, -600)
 
-[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
-collision_layer = 0
-collision_mask = 4
-
-[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(9, 9)
-shape = SubResource("CircleShape2D_8xfgw")
-
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
 collision_mask = 4
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
 scale = Vector2(3, 3)
 shape = SubResource("CircleShape2D_h8apo")
+
+[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+collision_layer = 0
+collision_mask = 4
+
+[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
+scale = Vector2(20, 20)
+shape = SubResource("CircleShape2D_8xfgw")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 

@@ -14,7 +14,7 @@ namespace Kuros.Fx
     ///   垂直方向仅在 ±<see cref="MaxVerticalTiltDegrees"/> 范围内跟随玩家高度微调。
     /// 也可调用 <see cref="LookAtGlobal"/> 手动指定精确朝向。
     /// </summary>
-    public partial class LaserBeam : Node2D
+    public partial class LaserBeam : Node2D, IFacingDirectional
     {
         // ── 导出参数 ──────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ namespace Kuros.Fx
         /// 通过 EnemyAttackTemplate.SpawnEffectAtEnemy 生成时自动由敌人朝向设置，
         /// 无需手动配置。
         /// </summary>
-        [Export] public bool FacingRight = true;
+        [Export] public bool FacingRight { get; set; } = true;
 
         // ── 子节点引用 ────────────────────────────────────────────
 

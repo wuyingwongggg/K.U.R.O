@@ -31,7 +31,6 @@
 script = ExtResource("2_ofcms")
 Positioning = 1
 MinComfortDistance = 400.0
-BurstSpeedMultiplier = 2.0
 BurstDamageImmuneDuration = 0.5
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
@@ -69,6 +68,7 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+AttackDamage = 0.0
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -138,9 +138,11 @@ script = ExtResource("6_ks25x")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
+z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -156,7 +158,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-scale = Vector2(3.6, 3.6)
+scale = Vector2(5, 5)
 shape = SubResource("CircleShape2D_gvrrx")
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -166,7 +168,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(9, 9)
+scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
@@ -205,7 +207,6 @@ AttackName = "ThrowAttack"
 WarmupDuration = 1.16
 ActiveDuration = 0.34
 RecoveryDuration = 0.33
-DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 EffectScene = ExtResource("13_10g4w")

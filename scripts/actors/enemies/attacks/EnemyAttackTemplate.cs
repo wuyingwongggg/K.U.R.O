@@ -89,8 +89,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public int GetDamage()
         {
-            if (Enemy == null) return 1;
-            return Mathf.Max(1, Mathf.RoundToInt(Enemy.AttackDamage * DamageMultiplier));
+            if (Enemy == null) return 0;
+            return Mathf.RoundToInt(Enemy.AttackDamage * DamageMultiplier);
         }
 
         public float GetCooldown()
@@ -542,13 +542,10 @@ namespace Kuros.Actors.Enemies.Attacks
                 {		    
 		            // 先设朝向，再AddChild，确保_Ready执行时值已正确
                     // 将敌人朝向传递给方向性特效（如激光束）
-                    if (node2D is LaserBeam laserBeam)
+                    // 将敌人朝向传递给方向性特效（激光束、飞弹等）
+                    if (node2D is Kuros.Fx.IFacingDirectional facing)
                     {
-                        laserBeam.FacingRight = Enemy.FacingRight;
-                    }
-                    else if (node2D is Kuros.Fx.EnemyBullet bullet)
-                    {
-                        bullet.FacingRight = Enemy.FacingRight;
+                        facing.FacingRight = Enemy.FacingRight;
                     }
                     // 世界坐标生成（如烟雾、粒子等视觉效果）
                     Enemy.GetParent()?.AddChild(node2D);

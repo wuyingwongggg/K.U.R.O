@@ -1,9 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://dixwca6u7ayek"]
+[gd_scene load_steps=14 format=3 uid="uid://dixwca6u7ayek"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_jpdnd"]
 [ext_resource type="Resource" uid="uid://u16qxn0w84mh" path="res://resources/items/Furniture_D_PrinterMachineA.tres" id="2_jpdnd"]
+[ext_resource type="Script" uid="uid://diphg7447eqi" path="res://scripts/controllers/EnemyDelayedSpawner.cs" id="3_3rrea"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_u3qi6"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_3rrea"]
+[ext_resource type="PackedScene" uid="uid://co3v8arpy4d2" path="res://scenes/objects/Transforming_PrinterMachine.tscn" id="4_h03tv"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_h03tv"]
 [ext_resource type="Texture2D" uid="uid://ciqgfdqwxs36h" path="res://assets/furnitures/hotel_scene4/PrinterMachineA.png" id="6_jpdnd"]
 
@@ -67,7 +69,7 @@ texture = ExtResource("6_jpdnd")
 texture = ExtResource("6_jpdnd")
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
-visible = false
+collision_mask = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
 position = Vector2(0, -50)
@@ -84,3 +86,11 @@ shape = SubResource("RectangleShape2D_ec4n8")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
 position = Vector2(0, 60)
 shape = SubResource("RectangleShape2D_jyvv2")
+
+[node name="Transform" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
+script = ExtResource("3_3rrea")
+EnemyScene = ExtResource("4_h03tv")
+DelayEnemySpawn = 0.1
+DelayDestroySelf = 0.1
+DestroyTargetPath = NodePath("..")
+TriggerArea = NodePath("../RigidBody2D/CollisionArea")

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="LootDropTable" load_steps=9 format=3 uid="uid://du23e2y3pp37m"]
+
+[ext_resource type="Resource" uid="uid://dknruw00xelvv" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="1_6tyej"]
+[ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_kw3jo"]
+[ext_resource type="Resource" uid="uid://bgd8dah8wugey" path="res://resources/items/Weapon_Brawl_RiotGlove.tres" id="3_0wv13"]
+[ext_resource type="Resource" uid="uid://bfijfbb5m32i6" path="res://resources/items/Weapon_Slash_ExpandBaton.tres" id="4_n4eix"]
+[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="5_0vvb6"]
+
+[sub_resource type="Resource" id="Drop_Rare"]
+script = ExtResource("2_kw3jo")
+Item = ExtResource("1_6tyej")
+DropChance = 0.33
+ImpulseStrength = 220.0
+ImpulseSpreadDegrees = 90.0
+
+[sub_resource type="Resource" id="Resource_4af4i"]
+script = ExtResource("2_kw3jo")
+Item = ExtResource("3_0wv13")
+DropChance = 0.33
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_m34i8"]
+script = ExtResource("2_kw3jo")
+Item = ExtResource("4_n4eix")
+DropChance = 0.33
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[resource]
+script = ExtResource("5_0vvb6")
+MaxDrops = 1
+ScatterRadius = 48.0
+DefaultImpulse = 400.0
+Entries = [SubResource("Drop_Rare"), SubResource("Resource_4af4i"), SubResource("Resource_m34i8")]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bvvyo3wubh12j"]
+[gd_scene load_steps=18 format=3 uid="uid://bvvyo3wubh12j"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_eecfu"]
 [ext_resource type="Resource" uid="uid://b8vf1obgnfb2y" path="res://resources/items/Weapon_Throw_GravityGrenade.tres" id="2_v5ky2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cbs8s6snkb78b" path="res://assets/weapons/引力手雷.png" id="4_q0htg"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="6_uxlca"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_630y6"]
+[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="8_swc0d"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_swc0d"]
 shader = ExtResource("3_eecfu")
@@ -27,6 +28,39 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aeqdd"]
+shader = ExtResource("8_swc0d")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 1.00000004680148
+shader_parameter/shney_speed = 2.000000095
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_uxlca"]
+load_path = "res://.godot/imported/icon.svg-8de3bad85f457dc91c0dddc7b2368220.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_n53n5"]
+shader = ExtResource("8_swc0d")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 1.00000004680148
+shader_parameter/shney_speed = 1.0000000475
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_w5uvq"]
+shader = ExtResource("8_swc0d")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 0.50000002305148
+shader_parameter/shney_speed = 1.50000007125
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_630y6"]
 size = Vector2(300, 300)
@@ -72,6 +106,24 @@ region_rect = Rect2(-100, -100, 700, 700)
 material = SubResource("ShaderMaterial_q0htg")
 texture = ExtResource("4_q0htg")
 region_rect = Rect2(-100, -100, 700, 700)
+
+[node name="star1" type="Sprite2D" parent="RigidBody2D/Outline"]
+material = SubResource("ShaderMaterial_aeqdd")
+position = Vector2(224.24239, -81.81817)
+scale = Vector2(5, 5)
+texture = SubResource("CompressedTexture2D_uxlca")
+
+[node name="star2" type="Sprite2D" parent="RigidBody2D/Outline/star1"]
+material = SubResource("ShaderMaterial_n53n5")
+position = Vector2(4.848486, 22.424242)
+scale = Vector2(0.7, 0.7)
+texture = SubResource("CompressedTexture2D_uxlca")
+
+[node name="star3" type="Sprite2D" parent="RigidBody2D/Outline/star1"]
+material = SubResource("ShaderMaterial_w5uvq")
+position = Vector2(-15.151514, 26.060604)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("CompressedTexture2D_uxlca")
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 

@@ -1,0 +1,365 @@
+[gd_scene load_steps=52 format=3 uid="uid://co3v8arpy4d2"]
+
+[ext_resource type="Texture2D" uid="uid://bpvs2ualderkt" path="res://assets/objects/printer/时间轴 1_0000.png" id="1_ob74g"]
+[ext_resource type="Script" uid="uid://diphg7447eqi" path="res://scripts/controllers/EnemyDelayedSpawner.cs" id="1_rjbcx"]
+[ext_resource type="Texture2D" uid="uid://24y8kx8hrh8f" path="res://assets/objects/printer/时间轴 1_0001.png" id="2_52dki"]
+[ext_resource type="PackedScene" uid="uid://cpcvmvf2n5ahe" path="res://scenes/actors/characters/Enemy_D1_printerMachine.tscn" id="2_yqgam"]
+[ext_resource type="Texture2D" uid="uid://bjfrbf0f2t4d7" path="res://assets/objects/printer/时间轴 1_0002.png" id="3_rjbcx"]
+[ext_resource type="Shader" uid="uid://dm7c4s67g3dhw" path="res://shaders/materials/outline_scanline.gdshader" id="3_yqgam"]
+[ext_resource type="Texture2D" uid="uid://d4rehiwh6bqm" path="res://assets/objects/printer/时间轴 1_0003.png" id="4_yqgam"]
+[ext_resource type="Texture2D" uid="uid://v301v3qxacr5" path="res://assets/objects/printer/时间轴 1_0004.png" id="5_n5f45"]
+[ext_resource type="Texture2D" uid="uid://63ijwy4ktjdq" path="res://assets/objects/printer/时间轴 1_0005.png" id="6_lrq36"]
+[ext_resource type="Texture2D" uid="uid://mbko1g0rwa55" path="res://assets/objects/printer/时间轴 1_0006.png" id="7_1jqev"]
+[ext_resource type="Texture2D" uid="uid://56mfnj27lyy3" path="res://assets/objects/printer/时间轴 1_0007.png" id="8_868kw"]
+[ext_resource type="Texture2D" uid="uid://c2cahswsf8dh5" path="res://assets/objects/printer/时间轴 1_0008.png" id="9_6l2if"]
+[ext_resource type="Texture2D" uid="uid://btg6bhcv8l4p8" path="res://assets/objects/printer/时间轴 1_0009.png" id="10_n1uwl"]
+[ext_resource type="Texture2D" uid="uid://dsgn08pfxrvfp" path="res://assets/objects/printer/时间轴 1_0010.png" id="11_ppjdn"]
+[ext_resource type="Texture2D" uid="uid://brat5yfvauy7n" path="res://assets/objects/printer/时间轴 1_0011.png" id="12_ja11i"]
+[ext_resource type="Texture2D" uid="uid://c7iu3wdwu60g7" path="res://assets/objects/printer/时间轴 1_0012.png" id="13_0j7g4"]
+[ext_resource type="Texture2D" uid="uid://chql3wy1ne01p" path="res://assets/objects/printer/时间轴 1_0013.png" id="14_ah2if"]
+[ext_resource type="Texture2D" uid="uid://cqiecgglsmcg8" path="res://assets/objects/printer/时间轴 1_0014.png" id="15_5pnp1"]
+[ext_resource type="Texture2D" uid="uid://cfwlu3myalacn" path="res://assets/objects/printer/时间轴 1_0015.png" id="16_u2yjn"]
+[ext_resource type="Texture2D" uid="uid://q8bket1mqto4" path="res://assets/objects/printer/时间轴 1_0016.png" id="17_ia5xq"]
+[ext_resource type="Texture2D" uid="uid://dti044ejq71wr" path="res://assets/objects/printer/时间轴 1_0017.png" id="18_ss0sk"]
+[ext_resource type="Texture2D" uid="uid://bp82vyiyggj1s" path="res://assets/objects/printer/时间轴 1_0018.png" id="19_fa313"]
+[ext_resource type="Texture2D" uid="uid://b5afn2aluud5" path="res://assets/objects/printer/时间轴 1_0019.png" id="20_lcqut"]
+[ext_resource type="Texture2D" uid="uid://if6k0aaoj8xj" path="res://assets/objects/printer/时间轴 1_0020.png" id="21_skusg"]
+[ext_resource type="Texture2D" uid="uid://cvg2ypc42touc" path="res://assets/objects/printer/时间轴 1_0021.png" id="22_mu5c6"]
+[ext_resource type="Texture2D" uid="uid://8lgdmkir4ldq" path="res://assets/objects/printer/时间轴 1_0022.png" id="23_7ts4b"]
+[ext_resource type="Texture2D" uid="uid://dqiw7s2dtdu63" path="res://assets/objects/printer/时间轴 1_0023.png" id="24_3gg68"]
+[ext_resource type="Texture2D" uid="uid://cux7148uj3bmd" path="res://assets/objects/printer/时间轴 1_0024.png" id="25_dtybb"]
+[ext_resource type="Texture2D" uid="uid://bdgv6y5vqb4m1" path="res://assets/objects/printer/时间轴 1_0025.png" id="26_1xkn1"]
+[ext_resource type="Texture2D" uid="uid://cf8uqqu2xwcre" path="res://assets/objects/printer/时间轴 1_0026.png" id="27_p3n3q"]
+[ext_resource type="Texture2D" uid="uid://cbicewciq1crn" path="res://assets/objects/printer/时间轴 1_0027.png" id="28_w5105"]
+[ext_resource type="Texture2D" uid="uid://bo08jgila74kp" path="res://assets/objects/printer/时间轴 1_0028.png" id="29_7abvm"]
+[ext_resource type="Texture2D" uid="uid://c6ppemb1tw1wa" path="res://assets/objects/printer/时间轴 1_0029.png" id="30_oewjx"]
+[ext_resource type="Texture2D" uid="uid://bxfhehissp2q5" path="res://assets/objects/printer/时间轴 1_0030.png" id="31_1f1x0"]
+[ext_resource type="Texture2D" uid="uid://b686a3a6msqxa" path="res://assets/objects/printer/时间轴 1_0031.png" id="32_161ok"]
+[ext_resource type="Texture2D" uid="uid://dk1a5wftawx7y" path="res://assets/objects/printer/时间轴 1_0032.png" id="33_lqoli"]
+[ext_resource type="Texture2D" uid="uid://bk44l2an4gjgu" path="res://assets/objects/printer/时间轴 1_0033.png" id="34_svxnb"]
+[ext_resource type="Texture2D" uid="uid://cfo8n1tr2kqrq" path="res://assets/objects/printer/时间轴 1_0034.png" id="35_tjsxb"]
+[ext_resource type="Texture2D" uid="uid://civ7o3a5utbam" path="res://assets/objects/printer/时间轴 1_0035.png" id="36_88awu"]
+[ext_resource type="Texture2D" uid="uid://blitjv8e8ouea" path="res://assets/objects/printer/时间轴 1_0036.png" id="37_ye84p"]
+[ext_resource type="Texture2D" uid="uid://bfldo60362lro" path="res://assets/objects/printer/时间轴 1_0037.png" id="38_4lctc"]
+[ext_resource type="Texture2D" uid="uid://bkskxadbkh1us" path="res://assets/objects/printer/时间轴 1_0038.png" id="39_4msys"]
+[ext_resource type="Texture2D" uid="uid://bq7jsycc8kn1b" path="res://assets/objects/printer/时间轴 1_0039.png" id="40_nlto0"]
+[ext_resource type="Texture2D" uid="uid://dk8pj8m87vqme" path="res://assets/objects/printer/时间轴 1_0040.png" id="41_o31us"]
+[ext_resource type="Texture2D" uid="uid://bit4po6xj0xo" path="res://assets/objects/printer/时间轴 1_0041.png" id="42_hjuvp"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="46_lrq36"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="47_1jqev"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_868kw"]
+shader = ExtResource("46_lrq36")
+shader_parameter/softness = 0.5
+shader_parameter/alpha = 0.4
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_n5f45"]
+shader = ExtResource("3_yqgam")
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_size = 8.0000001192096
+shader_parameter/alpha_threshold = 0.5
+shader_parameter/edge_softness = 0.12
+shader_parameter/preserve_fill = true
+shader_parameter/scanline_pos = -1.0
+shader_parameter/scanline_width = 0.04
+shader_parameter/scanline_color = Color(0.3, 0.8, 1, 1)
+shader_parameter/reverse_scan = false
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_47amy"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ob74g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_52dki")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_rjbcx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_yqgam")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_n5f45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_lrq36")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_1jqev")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_868kw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_6l2if")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_n1uwl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_ppjdn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_ja11i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_0j7g4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_ah2if")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_5pnp1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_u2yjn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_ia5xq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_ss0sk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_fa313")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_lcqut")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_skusg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_mu5c6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_7ts4b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_3gg68")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_dtybb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_1xkn1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_p3n3q")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_w5105")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_7abvm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_oewjx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_1f1x0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_161ok")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_lqoli")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_svxnb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_tjsxb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_88awu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("37_ye84p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_4lctc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_4msys")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_nlto0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_o31us")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_hjuvp")
+}],
+"loop": false,
+"name": &"transform",
+"speed": 30.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lrq36"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ob74g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_52dki")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_rjbcx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_yqgam")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_n5f45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_lrq36")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_1jqev")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_868kw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_6l2if")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_n1uwl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_ppjdn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_ja11i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_0j7g4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_ah2if")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_5pnp1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_u2yjn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_ia5xq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_ss0sk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_fa313")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_lcqut")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_skusg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_mu5c6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_7ts4b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_3gg68")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_dtybb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_1xkn1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_p3n3q")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_w5105")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_7abvm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_oewjx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_1f1x0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_161ok")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_lqoli")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_svxnb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_tjsxb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_88awu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("37_ye84p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_4lctc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_4msys")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_nlto0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_o31us")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_hjuvp")
+}],
+"loop": false,
+"name": &"default",
+"speed": 30.0
+}]
+
+[node name="TransformingPrinterMachine" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+script = ExtResource("1_rjbcx")
+EnemyScene = ExtResource("2_yqgam")
+DelayEnemySpawn = 1.4
+DelayDestroySelf = 0.01
+SpawnOffset = Vector2(-20, 100)
+FaceRight = true
+
+[node name="Shadow" type="Sprite2D" parent="."]
+show_behind_parent = true
+z_index = 1
+z_as_relative = false
+material = SubResource("ShaderMaterial_868kw")
+position = Vector2(-22, 119.00001)
+scale = Vector2(7.5000005, 3.5)
+texture = ExtResource("47_1jqev")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_n5f45")
+position = Vector2(95, -300)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_47amy")
+animation = &"transform"
+autoplay = "transform"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_lrq36")
+autoplay = "default"

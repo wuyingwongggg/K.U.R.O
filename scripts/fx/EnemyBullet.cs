@@ -15,7 +15,7 @@ namespace Kuros.Fx
     ///   - BeamLine / GlowLine 实时渲染飞行拖尾（存储最近 N 个世界坐标）。
     ///   - 超过 Duration 后自动销毁。
     /// </summary>
-    public partial class EnemyBullet : Node2D
+    public partial class EnemyBullet : Node2D, IFacingDirectional
     {
         // ── 导出参数 ──────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ namespace Kuros.Fx
         /// 激光水平朝向：true = 向右，false = 向左。
         /// 由 EnemyAttackTemplate.SpawnEffectAtEnemy 生成时自动由敌人朝向设置。
         /// </summary>
-        [Export] public bool FacingRight = true;
+        [Export] public bool FacingRight { get; set; } = true;
         /// <summary>垂直倾斜最大角度（度）。水平基础方向固定，此值限制上下偏转幅度。</summary>
         [Export(PropertyHint.Range, "0,45,0.5")] public float MaxVerticalTiltDegrees = 15f;
 

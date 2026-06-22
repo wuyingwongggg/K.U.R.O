@@ -122,7 +122,7 @@ namespace Kuros.Actors.Enemies.Animation
 
                 if (attackName.Equals(controller.ThrowAttackName, _comparison))
                 {
-                    PlayOnceIfNeeded("Stun", SkillAnimation, AttackMixDuration);
+                    PlayOnceIfNeeded("Skill1", SkillAnimation, AttackMixDuration);
                     return;
                 }
 

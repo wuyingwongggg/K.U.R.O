@@ -157,7 +157,6 @@ namespace Kuros.Actors.Enemies.Animation
 					HandleAttackAnimations();
 					break;
 				case "CooldownFrozen":
-					// 刺击攻击无冻结逻辑，直接播放 idle
 					PlayIdle();
 					break;
 				default:
