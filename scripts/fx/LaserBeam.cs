@@ -43,6 +43,9 @@ namespace Kuros.Fx
 
         [ExportCategory("Damage")]
         /// <summary>激光命中玩家造成的伤害（0 = 不造成伤害）。</summary>
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 0;
 
         [ExportCategory("Knockback")]

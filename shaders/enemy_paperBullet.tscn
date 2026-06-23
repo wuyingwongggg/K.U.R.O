@@ -18,6 +18,7 @@ BeamColor = Color(1, 1, 1, 0.5882353)
 GlowColor = Color(1, 0.23137255, 0, 0)
 BeamWidth = 100.0
 GlowWidth = 100.0
+TargetableFactions = 1
 Pseudo3DTargetPath = NodePath("Sprite2D")
 Pseudo3DXAngle = 60.0
 Pseudo3DZSpeed = 1080.0

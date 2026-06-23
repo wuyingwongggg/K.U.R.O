@@ -42,6 +42,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,180,1")] public float MaxAllowedAngleToPlayer = 135.0f;
         [Export] public string AnimationName = "animations/attack";
         [Export] public NodePath AttackAreaPath = new NodePath();
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
 
         [ExportCategory("Knockback")]
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
@@ -64,6 +66,11 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool IgnoreEnemyCollisionDuringAttack = false;
         [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayerIndex = 2;
 
+        [ExportCategory("Faction Collision Layers")]
+        [Export(PropertyHint.Range, "1,32,1")] public int PlayerCollisionLayer = 3;
+        [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayer = 2;
+        [Export(PropertyHint.Range, "1,32,1")] public int WorldItemCollisionLayer = 1;
+
         [ExportCategory("Effect")]
         [Export] public PackedScene? EffectScene = null;
         [Export] public Vector2 EffectOffset = Vector2.Zero;
@@ -82,6 +89,9 @@ namespace Kuros.Actors.Enemies.Attacks
         private ImmunityFlags? _previousImmunities;
         private uint _cachedCollisionMask;
         private bool _hasCollisionMaskOverride;
+        private uint _cachedAttackAreaMask;
+        private bool _hasAttackAreaMaskOverride;
+        private readonly System.Collections.Generic.HashSet<Area2D> _customAreaOverrides = new();
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0.0f;
@@ -182,12 +192,14 @@ namespace Kuros.Actors.Enemies.Attacks
         public override void _ExitTree()
         {
             RestoreEnemyCollisionMask();
+            RestoreAttackAreaMask();
             base._ExitTree();
         }
 
         protected virtual void OnAttackStarted()
         {
             ApplyEnemyCollisionMaskOverride();
+            ApplyAttackAreaMaskOverride();
 
             if (GrantedImmunities.HasFlag(ImmunityFlags.SuperArmor) && Enemy != null)
             {
@@ -244,6 +256,7 @@ namespace Kuros.Actors.Enemies.Attacks
             _cooldownTimer = GetCooldown();
 
             RestoreEnemyCollisionMask();
+            RestoreAttackAreaMask();
 
             if (Enemy != null && _previousIgnoreHitStateOnDamage.HasValue)
             {
@@ -282,6 +295,62 @@ namespace Kuros.Actors.Enemies.Attacks
 
             Enemy.CollisionMask = _cachedCollisionMask;
             _hasCollisionMaskOverride = false;
+        }
+
+        private uint BuildFactionMask()
+        {
+            uint mask = 0;
+            if (TargetableFactions.HasFlag(TargetableFactions.Player))
+                mask |= 1u << (PlayerCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
+                mask |= 1u << (EnemyCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+                mask |= 1u << (WorldItemCollisionLayer - 1);
+            return mask;
+        }
+
+        private void ApplyAttackAreaMaskOverride()
+        {
+            if (AttackArea == null) return;
+            uint factionMask = BuildFactionMask();
+            if (factionMask == 0) return;
+
+            _cachedAttackAreaMask = AttackArea.CollisionMask;
+            AttackArea.CollisionMask |= factionMask;
+            _hasAttackAreaMaskOverride = true;
+        }
+
+        private void RestoreAttackAreaMask()
+        {
+            foreach (var area in _customAreaOverrides)
+            {
+                if (!GodotObject.IsInstanceValid(area)) continue;
+                area.CollisionMask = _cachedAttackAreaMask;
+            }
+            _customAreaOverrides.Clear();
+
+            if (!_hasAttackAreaMaskOverride || AttackArea == null)
+                return;
+
+            AttackArea.CollisionMask = _cachedAttackAreaMask;
+            _hasAttackAreaMaskOverride = false;
+        }
+
+        /// <summary>
+        /// 对自定义 Area2D 也根据 TargetableFactions 自动覆写 CollisionMask。
+        /// 在子类 OnAnimationHit 中调用 DealDamageFromArea 前使用。
+        /// </summary>
+        protected void ApplyAttackAreaMaskOverride(Area2D? area)
+        {
+            if (area == null) return;
+            uint factionMask = BuildFactionMask();
+            if (factionMask == 0) return;
+
+            if (!_hasAttackAreaMaskOverride && _customAreaOverrides.Count == 0)
+                _cachedAttackAreaMask = AttackArea?.CollisionMask ?? area.CollisionMask;
+
+            area.CollisionMask |= factionMask;
+            _customAreaOverrides.Add(area);
         }
 
         protected virtual bool ShouldHoldWarmupPhase()
@@ -375,7 +444,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             float originalDamage = Enemy.AttackDamage;
             Enemy.AttackDamage = GetDamage();
-            Enemy.PerformAttack();
+            Enemy.PerformAttack(TargetableFactions);
             Enemy.AttackDamage = originalDamage;
         }
 

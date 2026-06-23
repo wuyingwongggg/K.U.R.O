@@ -48,6 +48,13 @@ namespace Kuros.Actors.Heroes.Attacks
         [Export(PropertyHint.Range, "0,500,1")] public float DamageOverride = 25.0f;
         [Export(PropertyHint.Range, "0,1000,1")] public float AttackRange = 120.0f;
         [Export] public NodePath AttackAreaPath = new NodePath();
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Enemy | TargetableFactions.WorldItem;
+
+        [ExportCategory("Faction Collision Layers")]
+        [Export(PropertyHint.Range, "1,32,1")] public int PlayerCollisionLayer = 3;
+        [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayer = 2;
+        [Export(PropertyHint.Range, "1,32,1")] public int WorldItemCollisionLayer = 1;
 
         [ExportCategory("Animation")]
         [Export] public string AnimationName = "animations/attack";
@@ -112,6 +119,8 @@ namespace Kuros.Actors.Heroes.Attacks
         private AttackHitboxDebugDrawer? _hitboxDebugDrawer;
         private int _currentHitStep = 1;  // 记录当前 Spine 动画段数（1-based）
         private PlayerInventoryComponent? _inventoryComponent;
+        private uint _cachedAttackAreaMask;
+        private bool _hasAttackAreaMaskOverride;
         // 本轮攻击的有效 timing（可能被武器技能定义覆盖）
         private float _effectiveWarmup = 0.15f;
         private float _effectiveActive = 0.1f;
@@ -162,8 +171,9 @@ namespace Kuros.Actors.Heroes.Attacks
 
         public override void _ExitTree()
         {
+            RestoreAttackAreaMask();
             base._ExitTree();
-            
+
             // 移除已应用的装备效果
             RemoveAllEquipEffects();
             
@@ -454,6 +464,7 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnAttackStarted()
         {
+            ApplyAttackAreaMaskOverride();
             // _activeWeaponSkill 已在 TryStart() 中解析，此处无需重复赋值
             ShowCurrentHitboxDebug(_activeWeaponSkill);
             _resolvedAnimationName = ResolveAnimationName(_activeWeaponSkill);
@@ -637,7 +648,41 @@ namespace Kuros.Actors.Heroes.Attacks
             Player.Velocity = Player.Velocity.MoveToward(Vector2.Zero, Player.Speed);
         }
 
-        protected virtual void OnAttackFinished() { }
+        protected virtual void OnAttackFinished()
+        {
+            RestoreAttackAreaMask();
+        }
+
+        private uint BuildFactionMask()
+        {
+            uint mask = 0;
+            if (TargetableFactions.HasFlag(TargetableFactions.Player))
+                mask |= 1u << (PlayerCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
+                mask |= 1u << (EnemyCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+                mask |= 1u << (WorldItemCollisionLayer - 1);
+            return mask;
+        }
+
+        private void ApplyAttackAreaMaskOverride()
+        {
+            if (AttackArea == null) return;
+            uint factionMask = BuildFactionMask();
+            if (factionMask == 0) return;
+
+            _cachedAttackAreaMask = AttackArea.CollisionMask;
+            AttackArea.CollisionMask |= factionMask;
+            _hasAttackAreaMaskOverride = true;
+        }
+
+        private void RestoreAttackAreaMask()
+        {
+            if (!_hasAttackAreaMaskOverride || AttackArea == null) return;
+
+            AttackArea.CollisionMask = _cachedAttackAreaMask;
+            _hasAttackAreaMaskOverride = false;
+        }
 
         private void SetPhase(AttackPhase phase)
         {
@@ -711,6 +756,7 @@ namespace Kuros.Actors.Heroes.Attacks
 
             float originalDamage = Player.AttackDamage;
             Player.AttackDamage = DamageOverride;
+            Player.CurrentAttackTargetableFactions = TargetableFactions;
             Player.PerformAttackCheck();
             Player.AttackDamage = originalDamage;
         }

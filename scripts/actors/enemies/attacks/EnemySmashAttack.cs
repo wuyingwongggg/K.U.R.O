@@ -298,7 +298,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
 		private void ApplySmashEffects(SamplePlayer player)
@@ -473,7 +474,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptSmash) return;
 
-			DamageDispatcher.DealDamageFromArea(_smashArea, GetDamage(), Enemy);
+			ApplyAttackAreaMaskOverride(_smashArea);
+			DamageDispatcher.DealDamageFromArea(_smashArea!, GetDamage(), Enemy, TargetableFactions);
 
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 			{

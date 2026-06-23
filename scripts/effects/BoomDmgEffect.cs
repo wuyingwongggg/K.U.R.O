@@ -25,15 +25,11 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed { get; set; } = 2000f;
 
         [ExportCategory("Targets")]
-        /// <summary>爆炸是否作用于玩家。</summary>
-        [Export] public bool AffectPlayer { get; set; } = true;
-        /// <summary>爆炸是否作用于敌人。</summary>
-        [Export] public bool AffectEnemies { get; set; } = false;
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
 
         public override void _Ready()
         {
-            // GlobalPosition 由生成方在 AddChild 之后赋值；
-            // 用 CallDeferred 将爆炸逻辑推迟到同帧末尾，确保此时位置已正确设置。
             Callable.From(Execute).CallDeferred();
         }
 
@@ -47,7 +43,7 @@ namespace Kuros.Fx
         {
             Vector2 origin = GlobalPosition;
 
-            if (AffectPlayer)
+            if (TargetableFactions.HasFlag(TargetableFactions.Player))
             {
                 if (GetTree().GetFirstNodeInGroup("player") is GameActor playerActor
                     && IsWithinRadius(playerActor, origin))
@@ -56,18 +52,21 @@ namespace Kuros.Fx
                 }
             }
 
-            if (AffectEnemies)
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
             {
                 foreach (var node in GetTree().GetNodesInGroup("enemies"))
                 {
                     if (node is GameActor enemyActor && IsWithinRadius(enemyActor, origin))
                         ApplyDamageAndKnockback(enemyActor, origin);
                 }
+            }
 
+            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+            {
                 foreach (var node in GetTree().GetNodesInGroup("world_items"))
                 {
                     if (node is Node2D item && IsWithinRadius(item, origin))
-                        DamageDispatcher.DealDamage(item, Damage, origin, null, DamageSource.AreaEffect);
+                        DamageDispatcher.DealDamage(item, Damage, origin, null, DamageSource.AreaEffect, TargetableFactions.WorldItem);
                 }
             }
         }

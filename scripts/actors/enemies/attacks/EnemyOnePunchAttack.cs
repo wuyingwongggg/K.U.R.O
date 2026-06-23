@@ -314,7 +314,8 @@ namespace Kuros.Actors.Enemies.Attacks
 				return false;
 			}
 
-            DamageDispatcher.DealDamageFromArea(_onePunchArea, GetDamage(), Enemy);
+            ApplyAttackAreaMaskOverride(_onePunchArea);
+            DamageDispatcher.DealDamageFromArea(_onePunchArea!, GetDamage(), Enemy, TargetableFactions);
 
             if (!IsPlayerInsideOnePunchZone(player))
             {
@@ -336,7 +337,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
         private bool IsPlayerInsideOnePunchZone(SamplePlayer player)

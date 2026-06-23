@@ -345,7 +345,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
 		private void ApplyMoveAttackKnockback(SamplePlayer player)
@@ -517,7 +518,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptMoveAttack) return;
 
-			DamageDispatcher.DealDamageFromArea(_moveArea, GetDamage(), Enemy);
+			ApplyAttackAreaMaskOverride(_moveArea);
+			DamageDispatcher.DealDamageFromArea(_moveArea!, GetDamage(), Enemy, TargetableFactions);
 
 			if (IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
 			{

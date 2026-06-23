@@ -53,12 +53,13 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_75dbm")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 20
+Speed = 350.0
+AttackDamage = 20.0
 MaxHealth = 180
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -132,7 +133,6 @@ z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 

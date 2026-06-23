@@ -1070,6 +1070,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 	}
 	
+	public TargetableFactions CurrentAttackTargetableFactions { get; set; } =
+		TargetableFactions.Enemy | TargetableFactions.WorldItem;
+
 	public void PerformAttackCheck()
 	{
 		AttackTimer = AttackCooldown;
@@ -1607,7 +1610,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		target.TakeDamage(finalDamage, GlobalPosition, this);
 	}
 
-	private static void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)
+	private void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)
 	{
 		var shapeNode = attackArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 		if (shapeNode?.Shape == null) return;
@@ -1627,14 +1630,18 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 
 		var attacker = attackArea.GetParent() as GameActor;
 
+		var damaged = new System.Collections.Generic.HashSet<ulong>();
 		foreach (var result in results)
 		{
 			var collider = result["collider"].As<Node>();
 			if (collider == null) continue;
 
-			if (DamageDispatcher.DealDamage(collider, damageAmount,
-				attackArea.GlobalPosition, attacker, DamageSource.DirectAttack))
-				return;
+			var factions = CurrentAttackTargetableFactions;
+			var root = DamageDispatcher.ResolveDamageReceiver(collider, factions);
+			if (root == null || !damaged.Add(root.GetInstanceId())) continue;
+
+			DamageDispatcher.DealDamage(collider, damageAmount,
+				attackArea.GlobalPosition, attacker, DamageSource.DirectAttack, factions);
 		}
 	}
 

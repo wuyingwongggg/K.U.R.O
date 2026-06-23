@@ -3,16 +3,28 @@ using Kuros.Core.Events;
 
 namespace Kuros.Core
 {
+    [System.Flags]
+    public enum TargetableFactions
+    {
+        None = 0,
+        Player = 1 << 0,
+        Enemy = 1 << 1,
+        WorldItem = 1 << 2,
+        All = Player | Enemy | WorldItem
+    }
+
     public static class DamageDispatcher
     {
         public static bool DealDamage(Node target, float damage,
             Vector2? origin = null, GameActor? attacker = null,
-            DamageSource source = DamageSource.DirectAttack)
+            DamageSource source = DamageSource.DirectAttack,
+            TargetableFactions allowedFactions = TargetableFactions.All)
         {
             Node? current = target;
             while (current != null)
             {
-                if (current.IsInGroup("player"))
+                var faction = GetFaction(current);
+                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction))
                 {
                     current = current.GetParentOrNull<Node>();
                     continue;
@@ -21,7 +33,6 @@ namespace Kuros.Core
                 if (current is GameActor actor)
                 {
                     if (attacker == null) { current = current.GetParentOrNull<Node>(); continue; }
-                    if (IsSameFaction(attacker, actor)) { current = current.GetParentOrNull<Node>(); continue; }
                     DealToGameActor(actor, damage, origin, attacker, source);
                     return true;
                 }
@@ -54,7 +65,8 @@ namespace Kuros.Core
             GameActor.BroadcastDamage(null, attacker, intDamage);
         }
 
-        public static void DealDamageFromArea(Area2D area, float damage, GameActor? attacker)
+        public static void DealDamageFromArea(Area2D area, float damage, GameActor? attacker,
+            TargetableFactions allowedFactions = TargetableFactions.All)
         {
             var shapeNode = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             if (shapeNode?.Shape == null) return;
@@ -72,6 +84,7 @@ namespace Kuros.Core
             };
             var results = spaceState.IntersectShape(query, 32);
 
+            var damaged = new System.Collections.Generic.HashSet<ulong>();
             foreach (var result in results)
             {
                 var collider = result["collider"].As<Node>();
@@ -79,9 +92,32 @@ namespace Kuros.Core
 
                 if (BelongsToActor(collider, attacker)) continue;
 
-                if (DealDamage(collider, damage, area.GlobalPosition, attacker, DamageSource.DirectAttack))
-                    return;
+                var root = ResolveDamageReceiver(collider, allowedFactions);
+                if (root == null || !damaged.Add(root.GetInstanceId())) continue;
+
+                DealDamage(collider, damage, area.GlobalPosition, attacker,
+                    DamageSource.DirectAttack, allowedFactions);
             }
+        }
+
+        public static Node? ResolveDamageReceiver(Node target, TargetableFactions allowedFactions)
+        {
+            Node? current = target;
+            while (current != null)
+            {
+                var faction = GetFaction(current);
+                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction))
+                {
+                    current = current.GetParentOrNull<Node>();
+                    continue;
+                }
+
+                if (current is GameActor) return current;
+                if (current.HasMethod("TakeDamage")) return current;
+
+                current = current.GetParentOrNull<Node>();
+            }
+            return null;
         }
 
         private static bool BelongsToActor(Node node, GameActor? actor)
@@ -97,13 +133,12 @@ namespace Kuros.Core
             return false;
         }
 
-        private static bool IsSameFaction(GameActor a, GameActor b)
+        private static TargetableFactions GetFaction(Node node)
         {
-            bool aIsEnemy = a.IsInGroup("enemies");
-            bool bIsEnemy = b.IsInGroup("enemies");
-            bool aIsPlayer = a.IsInGroup("player");
-            bool bIsPlayer = b.IsInGroup("player");
-            return (aIsEnemy && bIsEnemy) || (aIsPlayer && bIsPlayer);
+            if (node.IsInGroup("player")) return TargetableFactions.Player;
+            if (node.IsInGroup("enemies")) return TargetableFactions.Enemy;
+            if (node.IsInGroup("world_items")) return TargetableFactions.WorldItem;
+            return TargetableFactions.None;
         }
     }
 }

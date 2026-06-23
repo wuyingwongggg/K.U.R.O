@@ -46,6 +46,9 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "1,100,1")] public float GlowWidth = 24f;
 
         [ExportCategory("Damage")]
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
 
         [ExportCategory("Knockback")]
@@ -196,8 +199,8 @@ namespace Kuros.Fx
 
             bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
-            if (Damage > 0)
-                actor.TakeDamage(Damage, GlobalPosition);
+            if (Damage > 0 && TargetableFactions.HasFlag(TargetableFactions.Player))
+                if (TargetableFactions.HasFlag(TargetableFactions.Player)) actor.TakeDamage(Damage, GlobalPosition);
 
             if (!alreadyInvincible)
             {

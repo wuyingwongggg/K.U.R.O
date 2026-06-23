@@ -384,7 +384,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy == null || Enemy.IsDead || Enemy.IsDeathSequenceActive) return;
 			if (Enemy.PlayerTarget == null) return;
-			DamageDispatcher.DealDamageFromArea(_dashSlashArea ?? AttackArea, GetDamage(), Enemy);
+			if (_dashSlashArea != null) ApplyAttackAreaMaskOverride(_dashSlashArea);
+			DamageDispatcher.DealDamageFromArea((_dashSlashArea ?? AttackArea)!, GetDamage(), Enemy, TargetableFactions);
 			if (!IsPlayerInsideDashSlashArea(Enemy.PlayerTarget)) return;
 			ExecuteStrike();
 		}
@@ -393,7 +394,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy == null || Enemy.PlayerTarget == null) return;
 
-			Enemy.PlayerTarget.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				Enemy.PlayerTarget.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
 
 			float distance = Mathf.Max(0f, KnockbackDistance);
 			if (distance > 0f || KnockbackSpeed > 0f)

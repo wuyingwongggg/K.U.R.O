@@ -295,7 +295,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
 		private void ApplyKickKnockback(SamplePlayer player)
@@ -435,7 +436,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptKickAttack) return;
 
-			DamageDispatcher.DealDamageFromArea(_kickArea, GetDamage(), Enemy);
+			ApplyAttackAreaMaskOverride(_kickArea);
+			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
 
 			if (IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{

@@ -509,7 +509,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		protected override void OnAnimationHit()
 		{
-			DamageDispatcher.DealDamageFromArea(_grabArea ?? AttackArea, GetDamage(), Enemy);
+			if (_grabArea != null) ApplyAttackAreaMaskOverride(_grabArea);
+			DamageDispatcher.DealDamageFromArea((_grabArea ?? AttackArea)!, GetDamage(), Enemy, TargetableFactions);
 
 			if (_grabbedPlayer == null || !IsEnemyAlive())
 			{
@@ -518,7 +519,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			// 伤害来源为敌人当前坐标，若敌人在攻击过程中被击退或位移，伤害仍以当前坐标为准。
 			// IsEnemyAlive() 已确保 Enemy 不为 null，因此此时 Enemy 必定有效
-			_grabbedPlayer.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
+			if (TargetableFactions.HasFlag(TargetableFactions.Player))
+				_grabbedPlayer.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
 		}
 
 		private void StartPostCooldown()

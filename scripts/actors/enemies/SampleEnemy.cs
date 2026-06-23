@@ -208,15 +208,15 @@ public partial class SampleEnemy : GameActor
 		return IsPlayerInAttackRange();
 	}
 
-	public void PerformAttack()
+	public void PerformAttack(TargetableFactions targetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem)
 	{
 		//AttackTimer = AttackCooldown;
 		GameLogger.Info(nameof(SampleEnemy), "Enemy PerformAttack");
 
 		RefreshPlayerReference();
-		DamageDispatcher.DealDamageFromArea(AttackArea, AttackDamage, this);
+		DamageDispatcher.DealDamageFromArea(AttackArea!, AttackDamage, this, targetableFactions);
 
-		if (_player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
+		if (targetableFactions.HasFlag(TargetableFactions.Player) && _player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
 		{
 			_player.TakeDamage((int)AttackDamage, GlobalPosition, this);
 			GameLogger.Info(nameof(SampleEnemy), "Enemy attacked player via HitArea.");

@@ -31,6 +31,9 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>飞行途中每秒旋转角度（度）。正值顺时针，负值逆时针，0 不旋转。</summary>
         [Export] public float RotationDegreesPerSecond { get; set; } = 360f;
 
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+
         /// <summary>击中玩家时造成的伤害。</summary>
         [Export] public int Damage { get; set; } = 1;
 
@@ -145,7 +148,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (_hasHit) return;
 
-            DamageDispatcher.DealDamageFromArea(_hitbox, Damage, null);
+            DamageDispatcher.DealDamageFromArea(_hitbox!, Damage, null, TargetableFactions);
 
             // 通过 Body 检测玩家
             if (body is SamplePlayer player)
@@ -161,7 +164,7 @@ namespace Kuros.Actors.Enemies.Attacks
             _hasHit = true;
 
             // 造成伤害
-            victim.TakeDamage(Damage);
+            if (TargetableFactions.HasFlag(TargetableFactions.Player)) victim.TakeDamage(Damage);
 
             // 尝试应用击退（仅对玩家）
             if (victim is SamplePlayer player)

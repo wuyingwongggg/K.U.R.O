@@ -13,6 +13,7 @@ Speed = 6000.0
 MaxVerticalTiltDegrees = 5.0
 Duration = 3.0
 TrailPoints = 2
+TargetableFactions = 1
 Damage = 30
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

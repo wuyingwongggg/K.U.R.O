@@ -6,4 +6,4 @@
 script = ExtResource("1_tgq3f")
 Damage = 60
 KnockbackDistance = 200.0
-AffectEnemies = true
+TargetableFactions = 7

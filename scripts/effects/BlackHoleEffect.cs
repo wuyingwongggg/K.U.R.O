@@ -24,6 +24,9 @@ namespace Kuros.Effects
         public Vector2? WorldSpawnPosition { get; set; }
 
         [ExportGroup("Damage")]
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Enemy | TargetableFactions.WorldItem;
+
         /// <summary>每次造成的伤害量。</summary>
         [Export(PropertyHint.Range, "1,999,1")]
         public int DamagePerTick { get; set; } = 10;
@@ -110,7 +113,8 @@ namespace Kuros.Effects
 
             // 更新伤害计时
             _damageTickTimer += delta;
-            if (_elapsed >= PullOnlyDuration && _damageTimers.Count > 0)
+            if (_elapsed >= PullOnlyDuration && _damageTimers.Count > 0
+                && TargetableFactions.HasFlag(TargetableFactions.Enemy))
             {
                 var toRemove = new List<GameActor>();
                 foreach (var kvp in _damageTimers)
@@ -131,7 +135,8 @@ namespace Kuros.Effects
                 foreach (var e in toRemove) RemoveEnemy(e);
             }
 
-            if (_elapsed >= PullOnlyDuration && _furnitureDamageTimers.Count > 0)
+            if (_elapsed >= PullOnlyDuration && _furnitureDamageTimers.Count > 0
+                && TargetableFactions.HasFlag(TargetableFactions.WorldItem))
             {
                 var toRemoveF = new List<Node>();
                 foreach (var kvp in _furnitureDamageTimers)
@@ -146,7 +151,7 @@ namespace Kuros.Effects
                     if (_furnitureDamageTimers[furn] >= DamageInterval)
                     {
                         _furnitureDamageTimers[furn] = 0f;
-                        DamageDispatcher.DealDamage(furn, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect);
+                        DamageDispatcher.DealDamage(furn, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
                     }
                 }
                 foreach (var f in toRemoveF) _furnitureDamageTimers.Remove(f);
@@ -173,7 +178,8 @@ namespace Kuros.Effects
 
         private void OnBodyEntered(Node2D body)
         {
-            if (body is GameActor enemy)
+            if (body is GameActor enemy
+                && TargetableFactions.HasFlag(TargetableFactions.Enemy))
             {
                 if (_damageTimers.ContainsKey(enemy)) return;
                 _damageTimers[enemy] = 0f;
@@ -181,13 +187,13 @@ namespace Kuros.Effects
                 if (_elapsed >= PullOnlyDuration && !enemy.IsDead)
                     enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
             }
-            else
+            else if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
             {
                 if (_furnitureDamageTimers.ContainsKey(body)) return;
                 _furnitureDamageTimers[body] = 0f;
 
                 if (_elapsed >= PullOnlyDuration)
-                    DamageDispatcher.DealDamage(body, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect);
+                    DamageDispatcher.DealDamage(body, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
             }
         }
 
