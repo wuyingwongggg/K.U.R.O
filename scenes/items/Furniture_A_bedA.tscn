@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dqb7hct2obgg5"]
+[gd_scene load_steps=13 format=3 uid="uid://dqb7hct2obgg5"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_31t47"]
 [ext_resource type="Resource" uid="uid://dbpy5yjy8gluw" path="res://resources/items/Furniture_A_BedA.tres" id="2_31t47"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_etmhp"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_ayus4"]
 [ext_resource type="Texture2D" uid="uid://vtyxgh8jhdyx" path="res://assets/furnitures/home_scene1/BedA.png" id="6_31t47"]
+[ext_resource type="Script" uid="uid://rosh7dku66ob" path="res://scripts/items/world/DestructibleWorldItem.cs" id="7_destruct"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_xtxhf")
@@ -21,7 +22,7 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(450, 700)
+size = Vector2(420, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_or1aa"]
 size = Vector2(450, 600)
@@ -45,6 +46,12 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
+
+[node name="FurnitureDestructible" type="Node2D" parent="."]
+script = ExtResource("7_destruct")
+MaxHP = 60.0
+DestructionDelay = 0.1
+HitFlashSpritePath = NodePath("../RigidBody2D/Outline/Sprite2D")
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -73,6 +80,7 @@ position = Vector2(0, 80)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 position = Vector2(0, 200)

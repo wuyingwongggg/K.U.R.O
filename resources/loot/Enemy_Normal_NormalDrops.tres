@@ -5,14 +5,13 @@
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_3hqkn"]
 [ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="4_dlggc"]
 
-[sub_resource type="Resource" id="Drop_Rare"]
+[sub_resource type="Resource" id="Resource_4af4i"]
 script = ExtResource("2_3hqkn")
 Item = ExtResource("1_3hqkn")
 DropChance = 0.5
-ImpulseStrength = 220.0
-ImpulseSpreadDegrees = 90.0
+metadata/_custom_type_script = "uid://nd1f744icb05"
 
-[sub_resource type="Resource" id="Resource_4af4i"]
+[sub_resource type="Resource" id="Resource_m34i8"]
 script = ExtResource("2_3hqkn")
 Item = ExtResource("1_f534h")
 DropChance = 0.5
@@ -23,4 +22,4 @@ script = ExtResource("4_dlggc")
 MaxDrops = 1
 ScatterRadius = 48.0
 DefaultImpulse = 400.0
-Entries = [SubResource("Drop_Rare"), SubResource("Resource_4af4i")]
+Entries = [SubResource("Resource_4af4i"), SubResource("Resource_m34i8")]

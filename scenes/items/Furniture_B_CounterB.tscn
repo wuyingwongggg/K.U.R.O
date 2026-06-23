@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bkbhucnxqiys2"]
+[gd_scene load_steps=13 format=3 uid="uid://bkbhucnxqiys2"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_bqitj"]
 [ext_resource type="Resource" uid="uid://cbb56n2xt45k6" path="res://resources/items/Furniture_B_CounterB.tres" id="2_k7rl8"]
@@ -6,6 +6,8 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="6_2if1i"]
 [ext_resource type="Texture2D" uid="uid://c0ao8pdrenk5f" path="res://assets/furnitures/hotel_scene2/CounterB.png" id="6_l3q27"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="7_uemcc"]
+[ext_resource type="Script" uid="uid://rosh7dku66ob" path="res://scripts/items/world/DestructibleWorldItem.cs" id="99_destruct"]
+
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k7rl8"]
 shader = ExtResource("6_2if1i")
@@ -46,6 +48,13 @@ LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 ShadowPath = NodePath("RigidBody2D/Shadow")
+
+[node name="FurnitureDestructible" type="Node2D" parent="."]
+script = ExtResource("99_destruct")
+MaxHP = 100
+DestructionDelay = 0.1
+HitFlashSpritePath = NodePath("../RigidBody2D/Outline/Sprite2D")
+HitShakeIntensity = 100.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0

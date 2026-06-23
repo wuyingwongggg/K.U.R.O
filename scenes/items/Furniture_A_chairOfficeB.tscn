@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dugfq8qy1okf1"]
+[gd_scene load_steps=13 format=3 uid="uid://dugfq8qy1okf1"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ra6er"]
 [ext_resource type="Resource" uid="uid://dnaqmb5wt472u" path="res://resources/items/Furniture_A_ChairOfficeB.tres" id="2_ra6er"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_kvtrl"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_lhvv2"]
 [ext_resource type="Texture2D" uid="uid://xkeffr06drcu" path="res://assets/furnitures/home_scene1/ChairOfficeB.png" id="6_ra6er"]
+[ext_resource type="Script" uid="uid://rosh7dku66ob" path="res://scripts/items/world/DestructibleWorldItem.cs" id="99_destruct"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_0y6iv")
@@ -28,7 +29,7 @@ size = Vector2(360, 360)
 size = Vector2(320.5, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(350, 180)
+size = Vector2(350, 250)
 
 [node name="FurnitureChairOfficeB" type="Node2D"]
 z_index = 2
@@ -45,6 +46,12 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
+
+[node name="FurnitureDestructible" type="Node2D" parent="."]
+script = ExtResource("99_destruct")
+MaxHP = 20
+DestructionDelay = 0.1
+HitFlashSpritePath = NodePath("../RigidBody2D/Outline/Sprite2D")
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -73,6 +80,7 @@ position = Vector2(0, -20)
 shape = SubResource("RectangleShape2D_2omr6")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 position = Vector2(0, 200)
@@ -81,5 +89,5 @@ shape = SubResource("RectangleShape2D_gy46y")
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, 80)
+position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_jyvv2")

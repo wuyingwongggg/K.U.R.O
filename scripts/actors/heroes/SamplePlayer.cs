@@ -1238,6 +1238,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			LogNoHitDiagnostics(attackArea);
 		}
 
+		DealDamageToDestructiblesViaShape(attackArea, damageAmount);
+
 		return hitCount;
 	}
 
@@ -1602,6 +1604,60 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 
 		target.TakeDamage(finalDamage, GlobalPosition, this);
+	}
+
+	private static void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)
+	{
+		var shapeNode = attackArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+		if (shapeNode?.Shape == null) return;
+
+		var spaceState = attackArea.GetWorld2D()?.DirectSpaceState;
+		if (spaceState == null) return;
+
+		var query = new PhysicsShapeQueryParameters2D
+		{
+			Shape = shapeNode.Shape,
+			Transform = shapeNode.GlobalTransform,
+			CollisionMask = attackArea.CollisionMask == 0 ? uint.MaxValue : attackArea.CollisionMask,
+			CollideWithAreas = true,
+			CollideWithBodies = true
+		};
+		var results = spaceState.IntersectShape(query, 32);
+
+		foreach (var result in results)
+		{
+			var collider = result["collider"].As<Node>();
+			if (collider == null) continue;
+
+			Node? current = collider;
+			while (current != null)
+			{
+				if (current.HasMethod("TakeDamage") && !current.IsInGroup("player"))
+				{
+					current.Call("TakeDamage", damageAmount);
+					var attacker = attackArea.GetParent() as GameActor;
+					GameActor.BroadcastDamage(null, attacker, Mathf.RoundToInt(damageAmount));
+					return;
+				}
+
+				var parent = current.GetParentOrNull<Node>();
+				if (parent != null)
+				{
+					foreach (Node child in parent.GetChildren())
+					{
+						if (child.HasMethod("TakeDamage") && !child.IsInGroup("player"))
+						{
+							child.Call("TakeDamage", damageAmount);
+							var attacker2 = attackArea.GetParent() as GameActor;
+							GameActor.BroadcastDamage(null, attacker2, Mathf.RoundToInt(damageAmount));
+							return;
+						}
+					}
+				}
+
+				current = parent;
+			}
+		}
 	}
 
 	public override bool IsHitByArea(Area2D? attackerArea)
