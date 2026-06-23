@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
@@ -383,6 +384,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy == null || Enemy.IsDead || Enemy.IsDeathSequenceActive) return;
 			if (Enemy.PlayerTarget == null) return;
+			DamageDispatcher.DealDamageFromArea(_dashSlashArea ?? AttackArea, GetDamage(), Enemy);
 			if (!IsPlayerInsideDashSlashArea(Enemy.PlayerTarget)) return;
 			ExecuteStrike();
 		}

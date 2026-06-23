@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Actors.Heroes.States;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -508,6 +509,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		protected override void OnAnimationHit()
 		{
+			DamageDispatcher.DealDamageFromArea(_grabArea ?? AttackArea, GetDamage(), Enemy);
+
 			if (_grabbedPlayer == null || !IsEnemyAlive())
 			{
 				return;

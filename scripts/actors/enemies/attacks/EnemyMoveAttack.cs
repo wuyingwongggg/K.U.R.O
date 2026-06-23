@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Actors.Enemies.States;
 using Kuros.Actors.Heroes.States;
 
@@ -515,6 +516,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptMoveAttack) return;
+
+			DamageDispatcher.DealDamageFromArea(_moveArea, GetDamage(), Enemy);
 
 			if (IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
 			{

@@ -1,4 +1,5 @@
 ﻿using Godot;
+using Kuros.Core;
 using Kuros.Actors.Heroes.States;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -312,6 +313,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			{
 				return false;
 			}
+
+            DamageDispatcher.DealDamageFromArea(_onePunchArea, GetDamage(), Enemy);
 
             if (!IsPlayerInsideOnePunchZone(player))
             {

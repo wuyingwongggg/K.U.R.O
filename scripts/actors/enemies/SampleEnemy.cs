@@ -214,6 +214,8 @@ public partial class SampleEnemy : GameActor
 		GameLogger.Info(nameof(SampleEnemy), "Enemy PerformAttack");
 
 		RefreshPlayerReference();
+		DamageDispatcher.DealDamageFromArea(AttackArea, AttackDamage, this);
+
 		if (_player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
 		{
 			_player.TakeDamage((int)AttackDamage, GlobalPosition, this);

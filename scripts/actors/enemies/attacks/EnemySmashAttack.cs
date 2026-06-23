@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Actors.Heroes.States;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -471,6 +472,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptSmash) return;
+
+			DamageDispatcher.DealDamageFromArea(_smashArea, GetDamage(), Enemy);
 
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 			{

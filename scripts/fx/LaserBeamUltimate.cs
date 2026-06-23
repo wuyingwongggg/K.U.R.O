@@ -173,6 +173,8 @@ namespace Kuros.Fx
 
             _hit = true;
 
+            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, null);
+
             bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             if (Damage > 0)

@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
@@ -61,6 +62,12 @@ namespace Kuros.Fx
                 {
                     if (node is GameActor enemyActor && IsWithinRadius(enemyActor, origin))
                         ApplyDamageAndKnockback(enemyActor, origin);
+                }
+
+                foreach (var node in GetTree().GetNodesInGroup("world_items"))
+                {
+                    if (node is Node2D item && IsWithinRadius(item, origin))
+                        DamageDispatcher.DealDamage(item, Damage, origin, null, DamageSource.AreaEffect);
                 }
             }
         }

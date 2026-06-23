@@ -1,7 +1,7 @@
 [gd_scene load_steps=29 format=3 uid="uid://byi2utn347fwu"]
 
 [ext_resource type="Script" uid="uid://dk2iwmam78oa5" path="res://scripts/actors/enemies/EnemyNormalGuard1.cs" id="1_75dbm"]
-[ext_resource type="Resource" uid="uid://xsa2wlasoj6i" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_0ugu3"]
+[ext_resource type="Resource" uid="uid://2txgxwswls2l" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_0ugu3"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_it0yr"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_f6qhq"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_fp57c"]

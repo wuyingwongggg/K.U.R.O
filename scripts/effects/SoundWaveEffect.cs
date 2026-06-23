@@ -126,6 +126,20 @@ namespace Kuros.Effects
                 if (Damage > 0)
                     enemy.TakeDamage(Damage, _coneOrigin);
             }
+
+            foreach (var node in tree.GetNodesInGroup("world_items"))
+            {
+                if (node is not Node2D item || !IsInstanceValid(item)) continue;
+
+                var toTarget = item.GlobalPosition - _coneOrigin;
+                float dist = toTarget.Length();
+                if (dist > ConeRange) continue;
+                float angle = _coneDir.AngleTo(toTarget);
+                if (Mathf.Abs(angle) > halfAngleRad) continue;
+
+                if (Damage > 0)
+                    DamageDispatcher.DealDamage(item, Damage, _coneOrigin, Actor, DamageSource.AreaEffect);
+            }
         }
 
         private void ApplyConeSlow(Vector2 coneOrigin, Vector2 coneDir)

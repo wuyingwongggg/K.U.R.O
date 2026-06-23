@@ -145,6 +145,8 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (_hasHit) return;
 
+            DamageDispatcher.DealDamageFromArea(_hitbox, Damage, null);
+
             // 通过 Body 检测玩家
             if (body is SamplePlayer player)
             {

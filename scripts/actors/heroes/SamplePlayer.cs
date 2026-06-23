@@ -11,6 +11,7 @@ using Kuros.Managers;
 using Kuros.Systems.AI;
 using Kuros.UI;
 using Kuros.Utils;
+using Kuros.Core.Events;
 
 public partial class SamplePlayer : GameActor, IPlayerStatsSource
 {	
@@ -1624,39 +1625,16 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		};
 		var results = spaceState.IntersectShape(query, 32);
 
+		var attacker = attackArea.GetParent() as GameActor;
+
 		foreach (var result in results)
 		{
 			var collider = result["collider"].As<Node>();
 			if (collider == null) continue;
 
-			Node? current = collider;
-			while (current != null)
-			{
-				if (current.HasMethod("TakeDamage") && !current.IsInGroup("player"))
-				{
-					current.Call("TakeDamage", damageAmount);
-					var attacker = attackArea.GetParent() as GameActor;
-					GameActor.BroadcastDamage(null, attacker, Mathf.RoundToInt(damageAmount));
-					return;
-				}
-
-				var parent = current.GetParentOrNull<Node>();
-				if (parent != null)
-				{
-					foreach (Node child in parent.GetChildren())
-					{
-						if (child.HasMethod("TakeDamage") && !child.IsInGroup("player"))
-						{
-							child.Call("TakeDamage", damageAmount);
-							var attacker2 = attackArea.GetParent() as GameActor;
-							GameActor.BroadcastDamage(null, attacker2, Mathf.RoundToInt(damageAmount));
-							return;
-						}
-					}
-				}
-
-				current = parent;
-			}
+			if (DamageDispatcher.DealDamage(collider, damageAmount,
+				attackArea.GlobalPosition, attacker, DamageSource.DirectAttack))
+				return;
 		}
 	}
 
