@@ -56,7 +56,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vj0fg"]
-radius = 180.0
+radius = 120.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vj0fg"]
 size = Vector2(400, 600)

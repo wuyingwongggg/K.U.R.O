@@ -20,9 +20,10 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "0.5,10,0.1")] public float StartScale { get; set; } = 2.5f;
         [Export(PropertyHint.Range, "0.1,2,0.05")] public float EndScale { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "0,1,0.05")] public float FadeStartRatio { get; set; } = 0.7f;
-        [Export] public Color IndicatorColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.85f);
+        [Export(PropertyHint.Range, "0,1,0.05")] public float SpriteAlpha { get; set; } = 0.85f;
 
         [ExportCategory("Procedural Mode")]
+        [Export] public Color IndicatorColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.85f);
         [Export] public Color FillColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.2f);
         [Export(PropertyHint.Range, "4,500,1")] public float StartRadius { get; set; } = 80f;
         [Export(PropertyHint.Range, "4,200,1")] public float EndRadius { get; set; } = 12f;
@@ -54,9 +55,6 @@ namespace Kuros.Effects
             }
 
             _animatedSprite = _visualNode as AnimatedSprite2D;
-
-            if (_visualNode != null)
-                _visualNode.Modulate = IndicatorColor;
         }
 
         public void Start()
@@ -81,13 +79,15 @@ namespace Kuros.Effects
             {
                 _visualNode.Scale = Vector2.One * Mathf.Lerp(StartScale, EndScale, t);
 
-                float alpha = IndicatorColor.A;
+                float alpha = SpriteAlpha;
                 if (t >= FadeStartRatio)
                 {
                     float fadeT = (t - FadeStartRatio) / Mathf.Max(1f - FadeStartRatio, 0.001f);
-                    alpha = Mathf.Lerp(IndicatorColor.A, 0f, fadeT);
+                    alpha = Mathf.Lerp(SpriteAlpha, 0f, fadeT);
                 }
-                _visualNode.Modulate = new Color(IndicatorColor.R, IndicatorColor.G, IndicatorColor.B, alpha);
+                Color c = _visualNode.Modulate;
+                c.A = alpha;
+                _visualNode.Modulate = c;
             }
             else
             {

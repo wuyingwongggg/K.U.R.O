@@ -36,6 +36,7 @@ namespace Kuros.Actors.Enemies.Attacks
         private Vector2 _targetPos;
         private bool _launched;
         private Sprite2D? _sprite;
+        private Node? _landingIndicator;
 
         private enum Phase { Rise, Fall, Done }
         private Phase _phase;
@@ -138,7 +139,14 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
+            _landingIndicator?.QueueFree();
             QueueFree();
+        }
+
+        public override void _ExitTree()
+        {
+            _landingIndicator?.QueueFree();
+            base._ExitTree();
         }
 
         private void SpawnLandingIndicator()
@@ -146,6 +154,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (LandingIndicatorPrefab == null) return;
 
             var indicator = LandingIndicatorPrefab.Instantiate<Node>();
+            _landingIndicator = indicator;
             GetParent()?.AddChild(indicator);
             if (indicator is Node2D indicator2D)
                 indicator2D.GlobalPosition = _targetPos;

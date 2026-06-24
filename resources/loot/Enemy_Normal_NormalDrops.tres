@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="LootDropTable" load_steps=9 format=3 uid="uid://2txgxwswls2l"]
 
 [ext_resource type="Resource" uid="uid://dknruw00xelvv" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="1_3hqkn"]
-[ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="1_f534h"]
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_3hqkn"]
-[ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="3_3hqkn"]
+[ext_resource type="Resource" uid="uid://bfijfbb5m32i6" path="res://resources/items/Weapon_Slash_ExpandBaton.tres" id="3_3hqkn"]
+[ext_resource type="Resource" uid="uid://bgd8dah8wugey" path="res://resources/items/Weapon_Brawl_RiotGlove.tres" id="4_3hqkn"]
 [ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="4_dlggc"]
 
 [sub_resource type="Resource" id="Drop_Rare"]
@@ -16,13 +16,13 @@ ImpulseSpreadDegrees = 90.0
 [sub_resource type="Resource" id="Resource_4af4i"]
 script = ExtResource("2_3hqkn")
 Item = ExtResource("3_3hqkn")
-DropChance = 0.5
+DropChance = 0.33
 metadata/_custom_type_script = "uid://nd1f744icb05"
 
 [sub_resource type="Resource" id="Resource_m34i8"]
 script = ExtResource("2_3hqkn")
-Item = ExtResource("1_f534h")
-DropChance = 0.5
+Item = ExtResource("4_3hqkn")
+DropChance = 0.33
 metadata/_custom_type_script = "uid://nd1f744icb05"
 
 [resource]

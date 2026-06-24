@@ -59,11 +59,9 @@ z_as_relative = false
 script = ExtResource("1_51b1s")
 SpritePath = NodePath("AnimatedSprite2D")
 WarningDuration = 5.0
-StartScale = 1.5
+StartScale = 1.0
 EndScale = 1.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_xpmmc")
 autoplay = "default"
-frame = 8
-frame_progress = 0.83148205

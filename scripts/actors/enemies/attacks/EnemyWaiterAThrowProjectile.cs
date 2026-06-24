@@ -38,7 +38,8 @@ namespace Kuros.Actors.Enemies.Attacks
         private Vector2 _startPos;
         private Vector2 _targetPos;
         private float _elapsed;
-        private bool _launched;   // 第一帧后才开始移动，确保 _startPos 已正确记录
+        private bool _launched;
+        private Node? _landingIndicator;
 
         public override void _Ready()
         {
@@ -56,6 +57,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (LandingIndicatorPrefab == null) return;
 
             var indicator = LandingIndicatorPrefab.Instantiate<Node>();
+            _landingIndicator = indicator;
             GetParent()?.AddChild(indicator);
 
             if (indicator is Node2D indicator2D)
@@ -130,7 +132,14 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
+            _landingIndicator?.QueueFree();
             QueueFree();
+        }
+
+        public override void _ExitTree()
+        {
+            _landingIndicator?.QueueFree();
+            base._ExitTree();
         }
     }
 }
