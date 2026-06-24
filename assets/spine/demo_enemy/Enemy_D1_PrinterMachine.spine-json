@@ -2966,7 +2966,10 @@
 			}
 		},
 		"events": [
-			{ "time": 1.0333333, "name": "hit" }
+			{ "time": 1.0333333, "name": "hit" },
+			{ "time": 1.1333333, "name": "hit" },
+			{ "time": 1.2333333, "name": "hit" },
+			{ "time": 1.3333333, "name": "hit" }
 		]
 	},
 	"walk": {

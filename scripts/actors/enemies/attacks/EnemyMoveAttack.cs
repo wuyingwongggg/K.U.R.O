@@ -345,8 +345,6 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			if (TargetableFactions.HasFlag(TargetableFactions.Player))
-				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
 		private void ApplyMoveAttackKnockback(SamplePlayer player)

@@ -1,6 +1,7 @@
 extends Node
 
-@export var sprite_path: NodePath = "SpineSprite"
+@export var sprite_path: NodePath = "../SpineSprite"
+@export var is_spine: bool = true
 @export_range(0.02, 0.5, 0.01) var interval: float = 0.05
 @export_range(0.1, 2.0, 0.05) var lifetime: float = 0.3
 @export_range(0.0, 1.0, 0.05) var start_alpha: float = 0.5
@@ -12,9 +13,7 @@ var _active: bool = false
 var _ghosts: Array = []
 
 func _ready():
-	var enemy = get_parent()
-	if enemy:
-		_source = enemy.get_node_or_null(sprite_path)
+	_source = get_node_or_null(sprite_path)
 
 func start():
 	_active = true
@@ -38,17 +37,18 @@ func _spawn_ghost():
 	if world == null:
 		return
 
-	# 捕获当前动画状态
+	# 捕获当前动画状态（仅 Spine）
 	var current_anim := ""
 	var track_time := 0.0
-	var anim_state = _source.get_animation_state()
-	if anim_state:
-		var entry = anim_state.get_current(0)
-		if entry:
-			var anim = entry.get_animation()
-			if anim:
-				current_anim = anim.get_name()
-			track_time = entry.get_track_time()
+	if is_spine:
+		var anim_state = _source.get_animation_state()
+		if anim_state:
+			var entry = anim_state.get_current(0)
+			if entry:
+				var anim = entry.get_animation()
+				if anim:
+					current_anim = anim.get_name()
+				track_time = entry.get_track_time()
 
 	var ghost = _source.duplicate()
 	ghost.top_level = true
@@ -62,8 +62,8 @@ func _spawn_ghost():
 
 	world.add_child(ghost)
 
-	# 在 ghost 上恢复动画并冻结
-	if current_anim != "":
+	# 在 ghost 上恢复动画并冻结（仅 Spine）
+	if is_spine and current_anim != "":
 		ghost.play(current_anim, true, 0.0, 0.0)
 		var ghost_state = ghost.get_animation_state()
 		if ghost_state:

@@ -394,9 +394,6 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy == null || Enemy.PlayerTarget == null) return;
 
-			if (TargetableFactions.HasFlag(TargetableFactions.Player))
-				Enemy.PlayerTarget.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
-
 			float distance = Mathf.Max(0f, KnockbackDistance);
 			if (distance > 0f || KnockbackSpeed > 0f)
 			{

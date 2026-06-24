@@ -75,6 +75,11 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public PackedScene? EffectScene = null;
         [Export] public Vector2 EffectOffset = Vector2.Zero;
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
+        /// <summary>
+        /// 特效生成锚点（Marker2D 必须放在 Node2D 派生节点下，如敌人根节点）。
+        /// 不为空时按数组顺序依次使用 Marker2D.GlobalPosition + EffectOffset，否则用敌人原点。
+        /// </summary>
+        [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
 
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
@@ -91,6 +96,7 @@ namespace Kuros.Actors.Enemies.Attacks
         private bool _hasCollisionMaskOverride;
         private uint _cachedAttackAreaMask;
         private bool _hasAttackAreaMaskOverride;
+        private int _spawnMarkerIndex;
         private readonly System.Collections.Generic.HashSet<Area2D> _customAreaOverrides = new();
 
         public bool IsRunning => _phase != AttackPhase.Idle;
@@ -153,6 +159,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
             _animationHitReady = false;
             _pendingAnimationHitFromWarmup = false;
+            _spawnMarkerIndex = 0;
 
             OnAttackStarted();
             SetPhase(AttackPhase.Warmup);
@@ -604,8 +611,32 @@ namespace Kuros.Actors.Enemies.Attacks
                 {
                     adjustedOffset.X = -EffectOffset.X;
                 }
-                
-                Vector2 spawnPos = Enemy.GlobalPosition + adjustedOffset;
+
+                // 有 Markers 则依次使用锚点，否则以敌人原点为基准
+                Vector2 basePos;
+                if (SpawnMarkers.Length > 0)
+                {
+                    int idx = _spawnMarkerIndex % SpawnMarkers.Length;
+                    var marker = SpawnMarkers[idx];
+                    if (marker != null && GodotObject.IsInstanceValid(marker))
+                    {
+                        Vector2 rel = marker.GlobalPosition - Enemy.GlobalPosition;
+                        if (!Enemy.FacingRight)
+                            rel.X = -rel.X;
+                        basePos = Enemy.GlobalPosition + rel;
+                    }
+                    else
+                    {
+                        basePos = Enemy.GlobalPosition;
+                    }
+                    _spawnMarkerIndex++;
+                }
+                else
+                {
+                    basePos = Enemy.GlobalPosition;
+                }
+
+                Vector2 spawnPos = basePos + adjustedOffset;
 
                 if (effect is Node2D node2D)
                 {		    

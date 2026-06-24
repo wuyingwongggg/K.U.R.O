@@ -127,10 +127,6 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 SpawnProjectile(direction);
             }
-            else if (Player != null)
-            {
-                Player.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
-            }
         }
 
         private void SpawnProjectile(Vector2 direction)

@@ -241,7 +241,7 @@ NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
 
 [node name="FurnitureBedA" parent="World" instance=ExtResource("41_cgkyf")]
-position = Vector2(-299, -82)
+position = Vector2(-11, -627)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

@@ -216,11 +216,6 @@ public partial class SampleEnemy : GameActor
 		RefreshPlayerReference();
 		DamageDispatcher.DealDamageFromArea(AttackArea!, AttackDamage, this, targetableFactions);
 
-		if (targetableFactions.HasFlag(TargetableFactions.Player) && _player != null && AttackArea != null && _player.IsHitByArea(AttackArea))
-		{
-			_player.TakeDamage((int)AttackDamage, GlobalPosition, this);
-			GameLogger.Info(nameof(SampleEnemy), "Enemy attacked player via HitArea.");
-		}
 	}
 
 	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)

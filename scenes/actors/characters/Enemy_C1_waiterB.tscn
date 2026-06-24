@@ -20,10 +20,10 @@
 [ext_resource type="Script" uid="uid://c8dl2dxj817c1" path="res://scripts/actors/enemies/attacks/EnemyDashSlashAttack.cs" id="11_5drfe"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="11_dying_state"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="12_dead_state"]
-[ext_resource type="Script" uid="uid://c427wppd4y7w7" path="res://scripts/actors/enemies/attacks/EnemyC1WaiterBMeleeAttack.cs" id="13_st2e3"]
 [ext_resource type="PackedScene" uid="uid://bbh4qpwwrrpna" path="res://shaders/laser_beam.tscn" id="14_evlou"]
 [ext_resource type="PackedScene" uid="uid://bso7mhhjbapey" path="res://shaders/laser_beam_ultimate.tscn" id="15_evlou"]
 [ext_resource type="Script" uid="uid://pq441lqdfxhh" path="res://scripts/actors/enemies/attacks/EnemyUltimateBeamAttack.cs" id="15_ultbeam"]
+[ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="16_eyt4q"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c8ikhh4fs46ba" path="res://animations/spine/Enemy_C1_waiterB.tres" id="18_t4d47"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_uohhx"]
 [ext_resource type="Script" uid="uid://dvu6xk56lp65v" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
@@ -152,7 +152,7 @@ skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 2.3667
+preview_time = 0.76
 script = ExtResource("5_muxhp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -194,12 +194,14 @@ position = Vector2(0, 80)
 shape = SubResource("RectangleShape2D_eyt4q")
 
 [node name="DashStopArea" type="Area2D" parent="Sprite2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashStopArea"]
 position = Vector2(400, 0)
 shape = SubResource("RectangleShape2D_st2e3")
 
 [node name="DashSlashArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -210,6 +212,15 @@ shape = SubResource("RectangleShape2D_m8hjw")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 visible = false
 shape = SubResource("CircleShape2D_st2e3")
+
+[node name="Node2D" type="Node2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(-96.9697, -621.21216)
+
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(784.8485, -1021.2122)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("4_state_machine")
@@ -249,11 +260,8 @@ GrantedImmunities = 8
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
-script = ExtResource("13_st2e3")
-SecondEffectScene = ExtResource("14_evlou")
-SecondEffectOffset = Vector2(280, -330)
-AttackName = "SimpleMeleeAttack"
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+script = ExtResource("16_eyt4q")
 WarmupDuration = 0.4
 ActiveDuration = 1.4
 RecoveryDuration = 0.3
@@ -266,7 +274,8 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
 EffectScene = ExtResource("14_evlou")
-EffectOffset = Vector2(0, -200)
+SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
 metadata/attack_weight = 40.0
 
 [node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController"]

@@ -12,8 +12,8 @@
 [ext_resource type="Script" uid="uid://ca6my22csxkmt" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_walk"]
 [ext_resource type="Script" uid="uid://bniicdf3jtich" path="res://scripts/actors/enemies/states/EnemyWaiterAAttackState.cs" id="11_attack_state"]
 [ext_resource type="Script" uid="uid://6waciqsaulrs" path="res://scripts/actors/enemies/attacks/EnemyD1PrinterMachineAttackController.cs" id="12_attack_ctrl"]
+[ext_resource type="PackedScene" uid="uid://ciwdkf08qw7ao" path="res://resources/effects/EnemyPrinterMachineMissile01AttackEffect.tscn" id="13_6yk7q"]
 [ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="13_throw"]
-[ext_resource type="PackedScene" uid="uid://btu15dulpf6bd" path="res://resources/effects/EnemyWaiterAThrowEffect.tscn" id="14_throw_effect"]
 [ext_resource type="PackedScene" uid="uid://b0s34oo0gj8op" path="res://shaders/enemy_paperBullet.tscn" id="15_6yk7q"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="15_melee"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_hit"]
@@ -130,9 +130,9 @@ script = ExtResource("7_spine_ctrl")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
-preview_animation = "death"
+preview_animation = "skill"
 preview_frame = true
-preview_time = 0.0
+preview_time = 1.7
 script = ExtResource("7_spine_ctrl")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -181,6 +181,20 @@ shape = SubResource("RectangleShape2D_hit")
 visible = false
 shape = SubResource("CircleShape2D_collision")
 
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(-38.333332, -1475)
+
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(-41.666637, -1400.0001)
+
+[node name="Marker2D3" type="Marker2D" parent="Node2D"]
+position = Vector2(-226.66664, -1405)
+
+[node name="Marker2D4" type="Marker2D" parent="Node2D"]
+position = Vector2(-246.66666, -1473.3334)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("8_fsm")
 InitialState = NodePath("Idle")
@@ -198,7 +212,7 @@ script = ExtResource("11_attack_state")
 script = ExtResource("12_attack_ctrl")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="Missile01Attack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="Missile01Attack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("13_throw")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AttackName = "Missile01Attack"
@@ -209,9 +223,9 @@ CooldownDurationMultiplier = 2.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
-EffectScene = ExtResource("14_throw_effect")
-EffectOffset = Vector2(0, -500)
+EffectScene = ExtResource("13_6yk7q")
 SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3"), NodePath("../../../../Node2D/Marker2D4")]
 metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]

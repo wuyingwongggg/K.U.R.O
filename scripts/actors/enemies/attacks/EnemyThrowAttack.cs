@@ -85,11 +85,21 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnActivePhase()
         {
-            // 只生成投掷物 effect，不调用 PerformAttackNow（基类默认行为）
-            // 设置 SpawnTiming = OnActive，基类会自动调用 SpawnEffectAtEnemy()
-            // 伤害判定完全由投掷物自身实现
+            // 如果由动画帧事件控制生成时机，交由 OnAnimationHit 逐帧触发
+            if (RequireAnimationHitTrigger && SpawnTiming == EffectSpawnTiming.OnAnimationHit)
+            {
+                _animationHitReady = true;
+                return;
+            }
+
             SpawnEffectAtEnemy();
-            // 不调用 base.OnActivePhase()，避免触发 PerformAttackNow
+        }
+
+        protected override void OnAnimationHit()
+        {
+            // 仅生成投掷物，不调用 PerformAttackNow（伤害由投掷物自身实现）
+            if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
+                SpawnEffectAtEnemy();
         }
 
         private void OnDetectionAreaBodyEntered(Node body)

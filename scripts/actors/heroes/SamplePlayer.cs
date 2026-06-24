@@ -1638,7 +1638,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 
 			var factions = CurrentAttackTargetableFactions;
 			var root = DamageDispatcher.ResolveDamageReceiver(collider, factions);
-			if (root == null || !damaged.Add(root.GetInstanceId())) continue;
+			if (root == null || root is GameActor || !damaged.Add(root.GetInstanceId())) continue;
 
 			DamageDispatcher.DealDamage(collider, damageAmount,
 				attackArea.GlobalPosition, attacker, DamageSource.DirectAttack, factions);

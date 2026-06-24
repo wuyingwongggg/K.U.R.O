@@ -56,6 +56,10 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,2000,1")]  public float KnockbackDistance = 0f;
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
+        [ExportCategory("Afterimage")]
+        [Export] public bool EnableAfterimage = false;
+        [Export] public NodePath AfterimageControllerPath = new("AfterimageController");
+
         [ExportCategory("Pseudo3D")]
         /// <summary>Shader 作用的目标节点。留空则自动取第一个 Sprite2D 子节点。</summary>
         [Export] public NodePath Pseudo3DTargetPath { get; set; } = new();
@@ -82,6 +86,7 @@ namespace Kuros.Fx
         private ShaderMaterial? _pseudo3DMaterial;
         private Node2D? _pseudo3DTarget;
         private float _pseudo3DZAccum;
+        private Node? _afterimage;
 
         /// <summary>拖尾历史世界坐标（队列头 = 最旧）。</summary>
         private readonly Queue<Vector2> _trail = new();
@@ -111,6 +116,15 @@ namespace Kuros.Fx
             }
 
             SetupPseudo3D();
+
+            if (EnableAfterimage && !AfterimageControllerPath.IsEmpty)
+                _afterimage = GetNodeOrNull<Node>(AfterimageControllerPath);
+        }
+
+        public override void _ExitTree()
+        {
+            _afterimage?.Call("stop");
+            base._ExitTree();
         }
 
         public override void _Process(double delta)
@@ -125,6 +139,7 @@ namespace Kuros.Fx
             if (!_initialized)
             {
                 _initialized = true;
+                _afterimage?.Call("start");
 
                 // 用 LaserBeam 的水平锁定朝向规则计算初始方向
                 float initAngle = ResolveHorizontalTiltAngle(_player);
@@ -242,6 +257,7 @@ namespace Kuros.Fx
             if (!actor.IsHitByArea(_attackArea)) return;
 
             _hit = true;
+            _afterimage?.Call("stop");
 
             bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 

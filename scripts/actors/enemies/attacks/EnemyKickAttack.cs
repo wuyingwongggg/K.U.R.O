@@ -272,10 +272,6 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
 			// 成功命中：伤害 + 击退。
-			ApplyKickDamage(player);
-	            ApplyKickKnockback(player);
-			_playerInsideDetection = false;
-
 			// 命中后先保持当前攻击流程，避免动画被立即切到冷却状态。
 			return true;
         }
@@ -289,15 +285,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			return player.IsHitByArea(AttackArea);
         }
-
-		private void ApplyKickDamage(SamplePlayer player)
-		{
-			if (Enemy == null) return;
-
-			int damage = GetDamage();
-			if (TargetableFactions.HasFlag(TargetableFactions.Player))
-				player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
-		}
 
 		private void ApplyKickKnockback(SamplePlayer player)
 		{
@@ -441,7 +428,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			if (IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{
-				ApplyKickDamage(Enemy.PlayerTarget);
 				ApplyKickKnockback(Enemy.PlayerTarget);
 			}
 		}
