@@ -137,10 +137,15 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (_hasHit) return;
 
-            // 检测是否击中玩家（玩家的 Area2D）
             if (area.IsInGroup("player_hitbox") || area.Owner is SamplePlayer)
             {
-                DealDamageAndKnockback(area.Owner as GameActor);
+                DamageDispatcher.DealDamageFromArea(_hitbox!, Damage, null, TargetableFactions);
+
+                if (area.Owner is SamplePlayer player)
+                    TryApplyPlayerKnockback(player);
+
+                _hasHit = true;
+                QueueFree();
             }
         }
 
@@ -150,29 +155,10 @@ namespace Kuros.Actors.Enemies.Attacks
 
             DamageDispatcher.DealDamageFromArea(_hitbox!, Damage, null, TargetableFactions);
 
-            // 通过 Body 检测玩家
             if (body is SamplePlayer player)
-            {
-                DealDamageAndKnockback(player);
-            }
-        }
-
-        private void DealDamageAndKnockback(GameActor? victim)
-        {
-            if (victim == null || _hasHit) return;
+                TryApplyPlayerKnockback(player);
 
             _hasHit = true;
-
-            // 造成伤害
-            if (TargetableFactions.HasFlag(TargetableFactions.Player)) victim.TakeDamage(Damage);
-
-            // 尝试应用击退（仅对玩家）
-            if (victim is SamplePlayer player)
-            {
-                TryApplyPlayerKnockback(player);
-            }
-
-            // 碟子击中后立即销毁
             QueueFree();
         }
 

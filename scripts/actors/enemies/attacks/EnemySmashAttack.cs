@@ -295,9 +295,11 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private void ApplySmashDamage(SamplePlayer player)
 		{
-			if (Enemy == null) return;
+			var area = _smashArea ?? AttackArea;
+			if (area == null || Enemy == null) return;
 
-			int damage = GetDamage();
+			ApplyAttackAreaMaskOverride(area);
+			DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions);
 		}
 
 		private void ApplySmashEffects(SamplePlayer player)
@@ -463,22 +465,14 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		protected override void OnAnimationHit()
 		{
-			// 生成指定时機的特效（OnAnimationHit 阯段3）
 			if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
-			{
 				SpawnEffectAtEnemy();
-			}
-			
+
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptSmash) return;
 
-			ApplyAttackAreaMaskOverride(_smashArea);
-			DamageDispatcher.DealDamageFromArea(_smashArea!, GetDamage(), Enemy, TargetableFactions);
-
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
-			{
 				ApplySmashEffects(Enemy.PlayerTarget);
-			}
 		}
 
         private Area2D? ResolveArea(NodePath path)

@@ -755,10 +755,18 @@ namespace Kuros.Actors.Heroes.Attacks
             if (Player == null) return;
 
             float originalDamage = Player.AttackDamage;
-            Player.AttackDamage = DamageOverride;
-            Player.CurrentAttackTargetableFactions = TargetableFactions;
-            Player.PerformAttackCheck();
-            Player.AttackDamage = originalDamage;
+            TargetableFactions originalFactions = Player.CurrentAttackTargetableFactions;
+            try
+            {
+                Player.AttackDamage = DamageOverride;
+                Player.CurrentAttackTargetableFactions = TargetableFactions;
+                Player.PerformAttackCheck();
+            }
+            finally
+            {
+                Player.AttackDamage = originalDamage;
+                Player.CurrentAttackTargetableFactions = originalFactions;
+            }
         }
 
         private void InitializeSpineHitSupport()

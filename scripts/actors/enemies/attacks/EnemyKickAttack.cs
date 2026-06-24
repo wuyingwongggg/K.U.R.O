@@ -255,26 +255,25 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-		private bool TryExecuteKickAttack()
-        {
+			private bool TryExecuteKickAttack()
+	        {
 			if (Enemy == null) return false;
 
-            var player = Enemy.PlayerTarget;
+	            var player = Enemy.PlayerTarget;
 			if (player == null)
-			{
 				return false;
-			}
 
-	            if (!IsPlayerInsideKickAttackZone(player))
-            {
+		            if (!IsPlayerInsideKickAttackZone(player))
+	            {
 				_playerInsideDetection = false;
 				return false;
-            }
+	            }
 
-			// 成功命中：伤害 + 击退。
-			// 命中后先保持当前攻击流程，避免动画被立即切到冷却状态。
+			ApplyAttackAreaMaskOverride(_kickArea);
+			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
+			ApplyKickKnockback(player);
 			return true;
-        }
+	        }
 
 		private bool IsPlayerInsideKickAttackZone(SamplePlayer player)
         {

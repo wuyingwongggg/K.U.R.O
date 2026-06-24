@@ -342,9 +342,11 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private void ApplyMoveAttackDamage(SamplePlayer player)
 		{
-			if (Enemy == null) return;
+			var area = _moveArea ?? AttackArea;
+			if (area == null || Enemy == null) return;
 
-			int damage = GetDamage();
+			ApplyAttackAreaMaskOverride(area);
+			DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions);
 		}
 
 		private void ApplyMoveAttackKnockback(SamplePlayer player)
@@ -515,9 +517,6 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptMoveAttack) return;
-
-			ApplyAttackAreaMaskOverride(_moveArea);
-			DamageDispatcher.DealDamageFromArea(_moveArea!, GetDamage(), Enemy, TargetableFactions);
 
 			if (IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
 			{
