@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://cnh6afaayr0iy"]
+[gd_scene load_steps=18 format=3 uid="uid://cnh6afaayr0iy"]
 
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_0inps"]
 [ext_resource type="Resource" uid="uid://cc5nnn2mscj2d" path="res://resources/items/Weapon_Slash_BunnySword.tres" id="2_0inps"]
@@ -6,6 +6,7 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="4_mvfc7"]
 [ext_resource type="Texture2D" uid="uid://s6eufjdhipuu" path="res://assets/weapons/光剑.png" id="5_8iife"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="5_t8lja"]
+[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="7_e5tjt"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_e5tjt")
@@ -29,6 +30,39 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mvfc7"]
+shader = ExtResource("7_e5tjt")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 1.00000004680148
+shader_parameter/shney_speed = 1.50000007125
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_t8lja"]
+load_path = "res://.godot/imported/icon.svg-8de3bad85f457dc91c0dddc7b2368220.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x2sqt"]
+shader = ExtResource("7_e5tjt")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 1.00000004680148
+shader_parameter/shney_speed = 1.0000000475
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xplpf"]
+shader = ExtResource("7_e5tjt")
+shader_parameter/color = Color(18.892157, 18.892157, 18.892157, 1)
+shader_parameter/alpha = -0.1999999145
+shader_parameter/shney_disperse = 0.50000002305148
+shader_parameter/shney_speed = 1.70000008075
+shader_parameter/twist_speed = 0.5000001187500001
+shader_parameter/rota_speed = 1.0000005225000006
+shader_parameter/curve_ci = 0.2000000095
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o1fls"]
 size = Vector2(400, 300)
@@ -59,6 +93,23 @@ texture = ExtResource("5_8iife")
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]
 material = SubResource("ShaderMaterial_o1fls")
 texture = ExtResource("5_8iife")
+
+[node name="star1" type="Sprite2D" parent="Outline"]
+material = SubResource("ShaderMaterial_mvfc7")
+position = Vector2(118, -14)
+scale = Vector2(3, 3)
+texture = SubResource("CompressedTexture2D_t8lja")
+
+[node name="star2" type="Sprite2D" parent="Outline/star1"]
+material = SubResource("ShaderMaterial_x2sqt")
+position = Vector2(-10.000002, 13)
+scale = Vector2(0.7, 0.7)
+texture = SubResource("CompressedTexture2D_t8lja")
+
+[node name="star3" type="Sprite2D" parent="Outline/star1"]
+material = SubResource("ShaderMaterial_xplpf")
+position = Vector2(-27.999998, 0)
+texture = SubResource("CompressedTexture2D_t8lja")
 
 [node name="CollisionArea" type="Area2D" parent="."]
 

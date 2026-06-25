@@ -7,6 +7,7 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_v5u8k"]
 [ext_resource type="Texture2D" uid="uid://bix6nbba2r1c7" path="res://assets/furnitures/hotel_scene4/WhiteBoardA.png" id="6_tkaii"]
 
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_s8jg2")
 shader_parameter/softness = 0.5
@@ -45,6 +46,9 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
+Destructible = true
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
+MaxHP = 60.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0

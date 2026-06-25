@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3 uid="uid://b0s34oo0gj8op"]
+
+[ext_resource type="Script" uid="uid://cykf8v4ywrlkb" path="res://scripts/fx/EnemyPaperBullet.cs" id="1_g1yeh"]
+[ext_resource type="Texture2D" uid="uid://bubb6ox7d6mfc" path="res://assets/effect/PrinterMachine/paper.png" id="2_otowl"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="3_afterimage"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hgsvh"]
+radius = 60.0
+
+[node name="EnemyPaperBullet" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+script = ExtResource("1_g1yeh")
+Speed = 1800.0
+MaxVerticalTiltDegrees = 20.0
+Duration = 2.0
+TrailPoints = 10
+BeamColor = Color(1, 1, 1, 0)
+GlowColor = Color(1, 0.23137255, 0, 0)
+BeamWidth = 100.0
+GlowWidth = 100.0
+TargetableFactions = 1
+EnableAfterimage = true
+Pseudo3DTargetPath = NodePath("Sprite2D")
+Pseudo3DXAngle = 60.0
+Pseudo3DZSpeed = 1800.0
+
+[node name="AfterimageController" type="Node" parent="."]
+script = ExtResource("3_afterimage")
+sprite_path = NodePath("../Sprite2D")
+is_spine = false
+lifetime = 0.1
+
+[node name="BeamLine" type="Line2D" parent="."]
+skew = 1.0471976
+antialiased = true
+
+[node name="GlowLine" type="Line2D" parent="."]
+skew = 1.0471976
+antialiased = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_otowl")
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="AttackArea" type="Area2D" parent="."]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("CircleShape2D_hgsvh")

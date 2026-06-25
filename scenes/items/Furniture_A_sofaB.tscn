@@ -27,7 +27,7 @@ size = Vector2(1050, 400)
 size = Vector2(600, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(1050, 300)
+size = Vector2(1050, 333)
 
 [node name="FurnitureSofaB" type="Node2D"]
 z_index = 2
@@ -43,6 +43,9 @@ KnockbackForce = 800.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 100.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 
@@ -81,4 +84,5 @@ shape = SubResource("RectangleShape2D_or1aa")
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
+position = Vector2(0, -16.5)
 shape = SubResource("RectangleShape2D_jyvv2")

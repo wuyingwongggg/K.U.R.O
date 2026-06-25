@@ -38,7 +38,8 @@ public partial class EnemyFreezeOnTurnMovement : EnemyChaseMovement
 
         if (Enemy.FacingRight != _wasFacingRight)
         {
-            if (ShouldApplyFreeze(Enemy))
+            // KeepDistance 状态自行控制朝向（后撤），不应触发转身冻结
+            if (!Enemy.HasMeta("__keep_distance_active") && ShouldApplyFreeze(Enemy))
             {
                 ApplyFreezeEffect(Enemy);
             }

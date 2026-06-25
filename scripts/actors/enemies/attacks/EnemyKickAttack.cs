@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Actors.Enemies.States;
 using Kuros.Actors.Heroes.States;
 
@@ -254,30 +255,25 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-		private bool TryExecuteKickAttack()
-        {
+			private bool TryExecuteKickAttack()
+	        {
 			if (Enemy == null) return false;
 
-            var player = Enemy.PlayerTarget;
+	            var player = Enemy.PlayerTarget;
 			if (player == null)
-			{
 				return false;
-			}
 
-	            if (!IsPlayerInsideKickAttackZone(player))
-            {
+		            if (!IsPlayerInsideKickAttackZone(player))
+	            {
 				_playerInsideDetection = false;
 				return false;
-            }
+	            }
 
-			// 成功命中：伤害 + 击退。
-			ApplyKickDamage(player);
-	            ApplyKickKnockback(player);
-			_playerInsideDetection = false;
-
-			// 命中后先保持当前攻击流程，避免动画被立即切到冷却状态。
+			ApplyAttackAreaMaskOverride(_kickArea);
+			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
+			ApplyKickKnockback(player);
 			return true;
-        }
+	        }
 
 		private bool IsPlayerInsideKickAttackZone(SamplePlayer player)
         {
@@ -288,14 +284,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			return player.IsHitByArea(AttackArea);
         }
-
-		private void ApplyKickDamage(SamplePlayer player)
-		{
-			if (Enemy == null) return;
-
-			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
-		}
 
 		private void ApplyKickKnockback(SamplePlayer player)
 		{
@@ -434,9 +422,11 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptKickAttack) return;
 
+			ApplyAttackAreaMaskOverride(_kickArea);
+			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
+
 			if (IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{
-				ApplyKickDamage(Enemy.PlayerTarget);
 				ApplyKickKnockback(Enemy.PlayerTarget);
 			}
 		}

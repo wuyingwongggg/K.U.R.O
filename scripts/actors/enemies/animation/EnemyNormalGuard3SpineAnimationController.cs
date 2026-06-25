@@ -19,11 +19,7 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string DieAnimation = "death";
         [Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
         private EnemyNormalGuard3AttackController? _attackController;
-        private string _currentKey = string.Empty;
-        private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
-        private float _activeLoopStart;
-        private float _activeLoopEnd;
         private Node? _spineControllerNode;
         private Callable _spineHitCallable;
         private bool _spineHitSubscribed;
@@ -81,7 +77,7 @@ namespace Kuros.Actors.Enemies.Animation
                     PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
                     break;
                 case "Dying":
-                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
+                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);
                     break;
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
@@ -133,74 +129,6 @@ namespace Kuros.Actors.Enemies.Animation
         {
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
-
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration, float timeScale = 1f)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Loop)
-            {
-                return;
-            }
-
-            if (PlayLoop(animationName, mixDuration, timeScale))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
-        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Once)
-            {
-                return;
-            }
-
-            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Once;
-
-                // if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
-                // {
-                //     QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
-                // }
-            }
-        }
-
-        private void TickPartialLoop()
-        {
-            if (_currentMode != SpineAnimationPlaybackMode.PartialLoop)
-            {
-                return;
-            }
-
-            UpdatePartialLoop(_activeLoopStart, _activeLoopEnd);
-        }
-
-        private void PlayEmptyIfNeeded()
-        {
-            if (_currentKey == "Empty")
-            {
-                return;
-            }
-
-            if (PlayEmpty(DieMixDuration))
-            {
-                _currentKey = "Empty";
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
         private EnemyNormalGuard3AttackController? ResolveAttackController()
         {
             if (_attackController != null && IsInstanceValid(_attackController))

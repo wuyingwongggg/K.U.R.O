@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using Kuros.Core;
+using Kuros.Core.Events;
 using Kuros.Core.Effects;
 
 namespace Kuros.Effects
@@ -23,6 +24,9 @@ namespace Kuros.Effects
         public Vector2? WorldSpawnPosition { get; set; }
 
         [ExportGroup("Damage")]
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Enemy | TargetableFactions.WorldItem;
+
         /// <summary>每次造成的伤害量。</summary>
         [Export(PropertyHint.Range, "1,999,1")]
         public int DamagePerTick { get; set; } = 10;
@@ -69,6 +73,7 @@ namespace Kuros.Effects
         private double _elapsed = 0.0;
         // 区域内的敌人 → 独立计时器
         private readonly Dictionary<GameActor, float> _damageTimers = new();
+        private readonly Dictionary<Node, float> _furnitureDamageTimers = new();
         private bool _isWorldSpawned = false;
         private Vector2 _blackHoleCenter = Vector2.Zero;
 
@@ -89,7 +94,7 @@ namespace Kuros.Effects
             if (_isWorldSpawned)
                 _damageArea.GlobalPosition = _blackHoleCenter;
 
-            _damageArea.CollisionMask = EnemiesLayerMask;
+            _damageArea.CollisionMask = EnemiesLayerMask | 1u;
             _damageArea.Monitoring = true;
             _damageArea.BodyEntered += OnBodyEntered;
             _damageArea.BodyExited += OnBodyExited;
@@ -108,7 +113,8 @@ namespace Kuros.Effects
 
             // 更新伤害计时
             _damageTickTimer += delta;
-            if (_elapsed >= PullOnlyDuration && _damageTimers.Count > 0)
+            if (_elapsed >= PullOnlyDuration && _damageTimers.Count > 0
+                && TargetableFactions.HasFlag(TargetableFactions.Enemy))
             {
                 var toRemove = new List<GameActor>();
                 foreach (var kvp in _damageTimers)
@@ -127,6 +133,28 @@ namespace Kuros.Effects
                     }
                 }
                 foreach (var e in toRemove) RemoveEnemy(e);
+            }
+
+            if (_elapsed >= PullOnlyDuration && _furnitureDamageTimers.Count > 0
+                && TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+            {
+                var toRemoveF = new List<Node>();
+                foreach (var kvp in _furnitureDamageTimers)
+                {
+                    var furn = kvp.Key;
+                    if (!IsInstanceValid(furn))
+                    {
+                        toRemoveF.Add(furn);
+                        continue;
+                    }
+                    _furnitureDamageTimers[furn] = kvp.Value + (float)delta;
+                    if (_furnitureDamageTimers[furn] >= DamageInterval)
+                    {
+                        _furnitureDamageTimers[furn] = 0f;
+                        DamageDispatcher.DealDamage(furn, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
+                    }
+                }
+                foreach (var f in toRemoveF) _furnitureDamageTimers.Remove(f);
             }
         }
 
@@ -150,19 +178,35 @@ namespace Kuros.Effects
 
         private void OnBodyEntered(Node2D body)
         {
-            if (body is not GameActor enemy) return;
-            if (_damageTimers.ContainsKey(enemy)) return;
-            _damageTimers[enemy] = 0f;
+            if (body is GameActor enemy
+                && TargetableFactions.HasFlag(TargetableFactions.Enemy))
+            {
+                if (_damageTimers.ContainsKey(enemy)) return;
+                _damageTimers[enemy] = 0f;
 
-            // 立刻造成首次伤害（跳过纯吸附阶段）
-            if (_elapsed >= PullOnlyDuration && !enemy.IsDead)
-                enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
+                if (_elapsed >= PullOnlyDuration && !enemy.IsDead)
+                    enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
+            }
+            else if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+            {
+                if (_furnitureDamageTimers.ContainsKey(body)) return;
+                _furnitureDamageTimers[body] = 0f;
+
+                if (_elapsed >= PullOnlyDuration)
+                    DamageDispatcher.DealDamage(body, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
+            }
         }
 
         private void OnBodyExited(Node2D body)
         {
-            if (body is not GameActor enemy) return;
-            RemoveEnemy(enemy);
+            if (body is GameActor enemy)
+            {
+                RemoveEnemy(enemy);
+            }
+            else
+            {
+                _furnitureDamageTimers.Remove(body);
+            }
         }
 
         private void RemoveEnemy(GameActor enemy)
@@ -272,6 +316,7 @@ namespace Kuros.Effects
                 _damageArea.BodyExited -= OnBodyExited;
             }
             _damageTimers.Clear();
+            _furnitureDamageTimers.Clear();
         }
     }
 }

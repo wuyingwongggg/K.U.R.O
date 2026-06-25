@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="7_ii2vh"]
 [ext_resource type="Texture2D" uid="uid://j5yfe8op7l0j" path="res://assets/furnitures/hotel_scene2/LuggageCartA.png" id="7_qa1uh"]
 
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ukya5"]
 shader = ExtResource("6_kbhgj")
 shader_parameter/softness = 0.5
@@ -45,6 +46,9 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
+Destructible = true
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
+MaxHP = 60.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0

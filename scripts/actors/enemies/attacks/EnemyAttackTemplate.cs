@@ -42,6 +42,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,180,1")] public float MaxAllowedAngleToPlayer = 135.0f;
         [Export] public string AnimationName = "animations/attack";
         [Export] public NodePath AttackAreaPath = new NodePath();
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
 
         [ExportCategory("Knockback")]
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
@@ -64,10 +66,20 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool IgnoreEnemyCollisionDuringAttack = false;
         [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayerIndex = 2;
 
+        [ExportCategory("Faction Collision Layers")]
+        [Export(PropertyHint.Range, "1,32,1")] public int PlayerCollisionLayer = 3;
+        [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayer = 2;
+        [Export(PropertyHint.Range, "1,32,1")] public int WorldItemCollisionLayer = 1;
+
         [ExportCategory("Effect")]
         [Export] public PackedScene? EffectScene = null;
         [Export] public Vector2 EffectOffset = Vector2.Zero;
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
+        /// <summary>
+        /// 特效生成锚点（Marker2D 必须放在 Node2D 派生节点下，如敌人根节点）。
+        /// 不为空时按数组顺序依次使用 Marker2D.GlobalPosition + EffectOffset，否则用敌人原点。
+        /// </summary>
+        [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
 
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
@@ -82,6 +94,10 @@ namespace Kuros.Actors.Enemies.Attacks
         private ImmunityFlags? _previousImmunities;
         private uint _cachedCollisionMask;
         private bool _hasCollisionMaskOverride;
+        private uint _cachedAttackAreaMask;
+        private bool _hasAttackAreaMaskOverride;
+        private int _spawnMarkerIndex;
+        private readonly System.Collections.Generic.HashSet<Area2D> _customAreaOverrides = new();
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0.0f;
@@ -89,8 +105,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public int GetDamage()
         {
-            if (Enemy == null) return 1;
-            return Mathf.Max(1, Mathf.RoundToInt(Enemy.AttackDamage * DamageMultiplier));
+            if (Enemy == null) return 0;
+            return Mathf.RoundToInt(Enemy.AttackDamage * DamageMultiplier);
         }
 
         public float GetCooldown()
@@ -143,6 +159,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
             _animationHitReady = false;
             _pendingAnimationHitFromWarmup = false;
+            _spawnMarkerIndex = 0;
 
             OnAttackStarted();
             SetPhase(AttackPhase.Warmup);
@@ -182,12 +199,14 @@ namespace Kuros.Actors.Enemies.Attacks
         public override void _ExitTree()
         {
             RestoreEnemyCollisionMask();
+            RestoreAttackAreaMask();
             base._ExitTree();
         }
 
         protected virtual void OnAttackStarted()
         {
             ApplyEnemyCollisionMaskOverride();
+            ApplyAttackAreaMaskOverride();
 
             if (GrantedImmunities.HasFlag(ImmunityFlags.SuperArmor) && Enemy != null)
             {
@@ -244,6 +263,7 @@ namespace Kuros.Actors.Enemies.Attacks
             _cooldownTimer = GetCooldown();
 
             RestoreEnemyCollisionMask();
+            RestoreAttackAreaMask();
 
             if (Enemy != null && _previousIgnoreHitStateOnDamage.HasValue)
             {
@@ -282,6 +302,62 @@ namespace Kuros.Actors.Enemies.Attacks
 
             Enemy.CollisionMask = _cachedCollisionMask;
             _hasCollisionMaskOverride = false;
+        }
+
+        private uint BuildFactionMask()
+        {
+            uint mask = 0;
+            if (TargetableFactions.HasFlag(TargetableFactions.Player))
+                mask |= 1u << (PlayerCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
+                mask |= 1u << (EnemyCollisionLayer - 1);
+            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+                mask |= 1u << (WorldItemCollisionLayer - 1);
+            return mask;
+        }
+
+        private void ApplyAttackAreaMaskOverride()
+        {
+            if (AttackArea == null) return;
+            uint factionMask = BuildFactionMask();
+            if (factionMask == 0) return;
+
+            _cachedAttackAreaMask = AttackArea.CollisionMask;
+            AttackArea.CollisionMask |= factionMask;
+            _hasAttackAreaMaskOverride = true;
+        }
+
+        private void RestoreAttackAreaMask()
+        {
+            foreach (var area in _customAreaOverrides)
+            {
+                if (!GodotObject.IsInstanceValid(area)) continue;
+                area.CollisionMask = _cachedAttackAreaMask;
+            }
+            _customAreaOverrides.Clear();
+
+            if (!_hasAttackAreaMaskOverride || AttackArea == null)
+                return;
+
+            AttackArea.CollisionMask = _cachedAttackAreaMask;
+            _hasAttackAreaMaskOverride = false;
+        }
+
+        /// <summary>
+        /// 对自定义 Area2D 也根据 TargetableFactions 自动覆写 CollisionMask。
+        /// 在子类 OnAnimationHit 中调用 DealDamageFromArea 前使用。
+        /// </summary>
+        protected void ApplyAttackAreaMaskOverride(Area2D? area)
+        {
+            if (area == null) return;
+            uint factionMask = BuildFactionMask();
+            if (factionMask == 0) return;
+
+            if (!_hasAttackAreaMaskOverride && _customAreaOverrides.Count == 0)
+                _cachedAttackAreaMask = AttackArea?.CollisionMask ?? area.CollisionMask;
+
+            area.CollisionMask |= factionMask;
+            _customAreaOverrides.Add(area);
         }
 
         protected virtual bool ShouldHoldWarmupPhase()
@@ -375,7 +451,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             float originalDamage = Enemy.AttackDamage;
             Enemy.AttackDamage = GetDamage();
-            Enemy.PerformAttack();
+            Enemy.PerformAttack(TargetableFactions);
             Enemy.AttackDamage = originalDamage;
         }
 
@@ -535,20 +611,41 @@ namespace Kuros.Actors.Enemies.Attacks
                 {
                     adjustedOffset.X = -EffectOffset.X;
                 }
-                
-                Vector2 spawnPos = Enemy.GlobalPosition + adjustedOffset;
+
+                // 有 Markers 则依次使用锚点，否则以敌人原点为基准
+                Vector2 basePos;
+                if (SpawnMarkers.Length > 0)
+                {
+                    int idx = _spawnMarkerIndex % SpawnMarkers.Length;
+                    var marker = SpawnMarkers[idx];
+                    if (marker != null && GodotObject.IsInstanceValid(marker))
+                    {
+                        Vector2 rel = marker.GlobalPosition - Enemy.GlobalPosition;
+                        if (!Enemy.FacingRight)
+                            rel.X = -rel.X;
+                        basePos = Enemy.GlobalPosition + rel;
+                    }
+                    else
+                    {
+                        basePos = Enemy.GlobalPosition;
+                    }
+                    _spawnMarkerIndex++;
+                }
+                else
+                {
+                    basePos = Enemy.GlobalPosition;
+                }
+
+                Vector2 spawnPos = basePos + adjustedOffset;
 
                 if (effect is Node2D node2D)
                 {		    
 		            // 先设朝向，再AddChild，确保_Ready执行时值已正确
                     // 将敌人朝向传递给方向性特效（如激光束）
-                    if (node2D is LaserBeam laserBeam)
+                    // 将敌人朝向传递给方向性特效（激光束、飞弹等）
+                    if (node2D is Kuros.Fx.IFacingDirectional facing)
                     {
-                        laserBeam.FacingRight = Enemy.FacingRight;
-                    }
-                    else if (node2D is Kuros.Fx.EnemyBullet bullet)
-                    {
-                        bullet.FacingRight = Enemy.FacingRight;
+                        facing.FacingRight = Enemy.FacingRight;
                     }
                     // 世界坐标生成（如烟雾、粒子等视觉效果）
                     Enemy.GetParent()?.AddChild(node2D);

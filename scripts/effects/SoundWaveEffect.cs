@@ -18,6 +18,8 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "100,2000,10")] public float ConeRange { get; set; } = 500f;
 
         [ExportGroup("Damage")]
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Enemy | TargetableFactions.WorldItem;
         [Export(PropertyHint.Range, "0,500,1")] public int Damage { get; set; } = 20;
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float DamageInterval { get; set; } = 1f;
 
@@ -115,16 +117,36 @@ namespace Kuros.Effects
 
             float halfAngleRad = Mathf.DegToRad(ConeAngle * 0.5f);
 
-            foreach (var node in tree.GetNodesInGroup("enemies"))
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
             {
-                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
-                    continue;
+                foreach (var node in tree.GetNodesInGroup("enemies"))
+                {
+                    if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
+                        continue;
 
-                if (!IsEnemyInCone(enemy, _coneOrigin, _coneDir, halfAngleRad))
-                    continue;
+                    if (!IsEnemyInCone(enemy, _coneOrigin, _coneDir, halfAngleRad))
+                        continue;
 
-                if (Damage > 0)
-                    enemy.TakeDamage(Damage, _coneOrigin);
+                    if (Damage > 0)
+                        enemy.TakeDamage(Damage, _coneOrigin);
+                }
+            }
+
+            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
+            {
+                foreach (var node in tree.GetNodesInGroup("world_items"))
+                {
+                    if (node is not Node2D item || !IsInstanceValid(item)) continue;
+
+                    var toTarget = item.GlobalPosition - _coneOrigin;
+                    float dist = toTarget.Length();
+                    if (dist > ConeRange) continue;
+                    float angle = _coneDir.AngleTo(toTarget);
+                    if (Mathf.Abs(angle) > halfAngleRad) continue;
+
+                    if (Damage > 0)
+                        DamageDispatcher.DealDamage(item, Damage, _coneOrigin, Actor, DamageSource.AreaEffect, TargetableFactions);
+                }
             }
         }
 

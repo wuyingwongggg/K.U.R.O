@@ -28,7 +28,7 @@ size = Vector2(150, 250)
 size = Vector2(150, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(150, 100)
+size = Vector2(150, 116)
 
 [node name="FurnitureLampFloorA" type="Node2D"]
 z_index = 2
@@ -43,6 +43,9 @@ MinDamageVelocity = 0.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 20.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 
@@ -74,14 +77,14 @@ position = Vector2(0, -50)
 shape = SubResource("RectangleShape2D_mbxt0")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 position = Vector2(0, 200)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, 15)
+position = Vector2(0, 5)
 shape = SubResource("RectangleShape2D_jyvv2")

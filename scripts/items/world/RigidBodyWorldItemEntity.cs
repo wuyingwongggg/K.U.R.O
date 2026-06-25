@@ -67,6 +67,19 @@ namespace Kuros.Items.World
 		[Export] public float DestructionAnimationDuration { get; set; } = 0.5f; // 销毁动画时长（如果动画播放器不存在，使用固定时长）
 		[Export(PropertyHint.Range, "0.01,10,0.01")] public float LandingHideDelay { get; set; } = 2.0f; // 落点处隐藏延迟（秒）：投掷武器落地后隐藏视觉的等待时间；到达 ThrowWeaponCooldown 后才归还背包并销毁节点
 
+		[ExportCategory("Health")]
+		[Export] public bool Destructible { get; set; } = false;
+		[Export(PropertyHint.Range, "1,9999,1")] public float MaxHP = 60f;
+		[Export(PropertyHint.Range, "0.1,5,0.05")] public float DamageCooldown = 0.2f;
+		public float CurrentHP { get; private set; }
+
+		[ExportCategory("Hit Flash")]
+		[Export] public NodePath HitFlashSpritePath { get; set; } = new();
+		[Export(PropertyHint.Range, "0.01,2,0.01")] public float HitFlashDuration = 0.15f;
+		[Export(PropertyHint.Range, "1,120,1")] public float HitFlashSpeed = 30f;
+		[Export(PropertyHint.Range, "0,500,0.1")] public float HitShakeIntensity = 100f;
+		[Export] public Color HitFlashColor = new Color(1f, 1f, 1f, 1f);
+
 		[ExportGroup("Physics")]
 		[Export] public NodePath RigidBodyPath { get; set; } = new NodePath(".");
 		[Export] public NodePath HitboxAreaPath { get; set; } = new NodePath("Rigidbody2D/Hitbox");
@@ -121,6 +134,15 @@ namespace Kuros.Items.World
 		private double _landingHideTimer = 0.0; // 落点隐藏计时器（LandingHideDelay：到期后隐藏视觉，不销毁节点）
 		private double _inventoryReturnTimer = 0.0; // 落地后归还背包的计时器（由 ThrowWeaponCooldown 决定，到期后真正销毁节点）
 		private int _reservedQuickBarSlotIndex = -1; // 投掷武器飞行期间预留的快捷栏槽位索引
+
+		// Hit flash
+		private Sprite2D? _hitFlashSprite;
+		private ShaderMaterial? _hitFlashMaterial;
+		private Material? _hitFlashOriginalMaterial;
+		private float _hitFlashTimer;
+		private bool _hitFlashActive;
+
+		private float _damageCooldownRemaining;
 
 		public GameActor? LastDroppedBy { get; set; }
 
@@ -201,6 +223,10 @@ namespace Kuros.Items.World
 			ResolveOutlineHighlight();
 			ResolveShadowNode();
 			UpdateOutlineHighlight(force: true);
+
+			CurrentHP = MaxHP;
+			SetupHitFlash();
+
 			SetProcess(true);
 
 			// 如果该物品包含导航源几何子节点，进入场景树后延迟烘焙，使障碍区域生效
@@ -262,7 +288,19 @@ namespace Kuros.Items.World
 			base._Process(delta);
 
 			UpdateOutlineHighlight();
-			
+
+			if (_hitFlashActive)
+			{
+				_hitFlashTimer -= (float)delta;
+				if (_hitFlashTimer <= 0f)
+					EndHitFlash();
+				else
+					_hitFlashMaterial?.SetShaderParameter("hit_effect", _hitFlashTimer / HitFlashDuration);
+			}
+
+			if (_damageCooldownRemaining > 0f)
+				_damageCooldownRemaining -= (float)delta;
+
 			if (_isPicked || _focusedActor == null)
 			{
 				return;
@@ -962,28 +1000,17 @@ namespace Kuros.Items.World
 			// 检查碰撞的是否是 GameActor（敌人或NPC）
 			if (body is GameActor actor)
 			{
-				// 防止对投掷者造成伤害
 				if (actor == LastDroppedBy)
-				{
 					return;
-				}
 
-				// 防止重复伤害同一个 Actor
 				if (_hitActors.Contains(actor))
-				{
 					return;
-				}
 
-				// 检查速度是否达到造成伤害的阈值
 				if (_rigidBody != null)
 				{
 					var velocity = _rigidBody.LinearVelocity;
-					float speed = velocity.Length();
-
-					if (speed >= MinDamageVelocity)
-					{
+					if (velocity.Length() >= MinDamageVelocity)
 						TryDealImpactDamage(actor, velocity);
-					}
 				}
 			}
 		}
@@ -1036,28 +1063,17 @@ namespace Kuros.Items.World
 			// 检查碰撞的是否是 GameActor（敌人或NPC）
 			if (body is GameActor actor)
 			{
-				// 防止对投掷者造成伤害
 				if (actor == LastDroppedBy)
-				{
 					return;
-				}
 
-				// 防止重复伤害同一个 Actor
 				if (_hitActors.Contains(actor))
-				{
 					return;
-				}
 
-				// 检查速度是否达到造成伤害的阈值
 				if (_rigidBody != null)
 				{
 					var velocity = _rigidBody.LinearVelocity;
-					float speed = velocity.Length();
-					
-					if (speed >= MinDamageVelocity)
-					{
+					if (velocity.Length() >= MinDamageVelocity)
 						TryDealImpactDamage(actor, velocity);
-					}
 				}
 			}
 		}
@@ -1065,6 +1081,15 @@ namespace Kuros.Items.World
 		/// <summary>
 		/// 尝试对目标造成碰撞伤害
 		/// </summary>
+		private float CalculateImpactDamage()
+		{
+			float attributeDamage = 0f;
+			var snapshot = GetAttributeSnapshot();
+			if (snapshot.TryGetValue("attack_power", out float ap) && ap > 0f)
+				attributeDamage = ap;
+			return attributeDamage > 0f ? attributeDamage : ThrowDamage;
+		}
+
 		private bool TryDealImpactDamage(GameActor target, Vector2 impactVelocity)
 		{
 			if (target == null || _rigidBody == null)
@@ -1072,21 +1097,14 @@ namespace Kuros.Items.World
 				return false;
 			}
 
-			// 计算伤害：优先从 ItemDefinition.AttributeEntries 取 attack_power，否则回退到脚本 ThrowDamage
-			float attributeDamage = 0f;
-			var snapshot = GetAttributeSnapshot();
-			if (snapshot.TryGetValue("attack_power", out float ap) && ap > 0f)
-				attributeDamage = ap;
-			float baseDamage = attributeDamage > 0f ? attributeDamage : ThrowDamage;
-			int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage));
+			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
 			
 			if (damage <= 0)
 			{
 				return false;
 			}
 
-			// 造成伤害（投掷物命中，使用 ThrowImpact 来源，避免触发玩家装备的近战武器效果）
-			target.TakeDamage(damage, GlobalPosition, LastDroppedBy, Kuros.Core.Events.DamageSource.ThrowImpact);
+			DamageDispatcher.DealDamage(target, damage, GlobalPosition, LastDroppedBy, Kuros.Core.Events.DamageSource.ThrowImpact);
 			_hitActors.Add(target);
 
 			// 应用击退效果
@@ -1876,5 +1894,104 @@ namespace Kuros.Items.World
 
 			return null;
 		}
+		public void TakeDamage(float damage)
+		{
+			if (!Destructible) return;
+			if (CurrentHP <= 0f) return;
+			if (_damageCooldownRemaining > 0f) return;
+
+			CurrentHP = Mathf.Max(0f, CurrentHP - damage);
+			_damageCooldownRemaining = DamageCooldown;
+			TriggerHitFlash();
+
+			if (CurrentHP <= 0f)
+				Destroy();
+		}
+
+		private void Destroy()
+		{
+			var rigidBody = _rigidBody;
+			Vector2 spawnPos = (rigidBody?.GlobalPosition ?? GlobalPosition);
+
+			if (ItemDefinition != null)
+			{
+				foreach (var entry in ItemDefinition.GetEffectEntries(ItemEffectTrigger.OnThrowDestroy))
+				{
+					if (entry?.EffectScene == null) continue;
+					try
+					{
+						var node = entry.EffectScene.Instantiate();
+						if (node is Node2D node2D)
+						{
+							var worldNode = GetTree().CurrentScene?.GetNodeOrNull<Node>("World")
+								?? GetTree().CurrentScene;
+							worldNode?.AddChild(node2D);
+							node2D.GlobalPosition = spawnPos;
+						}
+						else if (node is Kuros.Core.Effects.ActorEffect actorEffect)
+						{
+							entry.ApplyOverrides(actorEffect);
+							if (actorEffect is Kuros.Core.Effects.IWorldSpawnable worldSpawnable)
+								worldSpawnable.WorldSpawnPosition = spawnPos;
+							LastDroppedBy?.ApplyEffect(actorEffect);
+						}
+						else
+						{
+							node?.QueueFree();
+						}
+					}
+					catch (Exception ex)
+					{
+						GD.PushWarning($"[RigidBodyWorldItemEntity] Cannot spawn destroy effect: {ex.Message}");
+					}
+				}
+			}
+
+			QueueFree();
+		}
+
+		private void SetupHitFlash()
+		{
+			if (HitFlashSpritePath.IsEmpty) return;
+
+			_hitFlashSprite = GetNodeOrNull<Sprite2D>(HitFlashSpritePath);
+			if (_hitFlashSprite == null) return;
+
+			var shader = GD.Load<Shader>("res://shaders/materials/trigger_hit.gdshader");
+			if (shader == null) return;
+
+			_hitFlashMaterial = new ShaderMaterial();
+			_hitFlashMaterial.Shader = shader;
+			_hitFlashMaterial.SetShaderParameter("get_hit", false);
+			_hitFlashMaterial.SetShaderParameter("hit_effect", 0f);
+			_hitFlashMaterial.SetShaderParameter("flash_color", HitFlashColor);
+			_hitFlashMaterial.SetShaderParameter("flash_speed", HitFlashSpeed);
+			_hitFlashMaterial.SetShaderParameter("shake_intensity", HitShakeIntensity);
+		}
+
+		private void TriggerHitFlash()
+		{
+			if (_hitFlashSprite == null || _hitFlashMaterial == null) return;
+
+			if (!_hitFlashActive)
+				_hitFlashOriginalMaterial = _hitFlashSprite.Material;
+
+			_hitFlashSprite.Material = _hitFlashMaterial;
+			_hitFlashMaterial.SetShaderParameter("get_hit", true);
+			_hitFlashMaterial.SetShaderParameter("hit_effect", 1f);
+			_hitFlashTimer = HitFlashDuration;
+			_hitFlashActive = true;
+		}
+
+		private void EndHitFlash()
+		{
+			_hitFlashActive = false;
+			_hitFlashMaterial?.SetShaderParameter("get_hit", false);
+			_hitFlashMaterial?.SetShaderParameter("hit_effect", 0f);
+
+			if (_hitFlashSprite != null)
+				_hitFlashSprite.Material = _hitFlashOriginalMaterial;
+		}
+
 	}
 }

@@ -122,13 +122,10 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
             direction = direction.Normalized();
+            DamageDispatcher.DealDamageFromArea(AttackArea!, GetDamage(), Enemy, TargetableFactions);
             if (ProjectileItem != null)
             {
                 SpawnProjectile(direction);
-            }
-            else if (Player != null)
-            {
-                Player.TakeDamage(GetDamage(), Enemy.GlobalPosition, Enemy);
             }
         }
 

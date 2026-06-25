@@ -20,11 +20,7 @@ namespace Kuros.Actors.Enemies.Animation
         [Export] public string DieAnimation = "death";
         [Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
         private EnemyC1WaiterAAttackController? _attackController;
-        private string _currentKey = string.Empty;
-        private SpineAnimationPlaybackMode _currentMode = SpineAnimationPlaybackMode.Loop;
         private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
-        private float _activeLoopStart;
-        private float _activeLoopEnd;
         //private EnemyMoveAttack? _skillChargeMoveAttack;
         private Node? _spineControllerNode;
         private Callable _spineHitCallable;
@@ -83,7 +79,7 @@ namespace Kuros.Actors.Enemies.Animation
                     PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
                     break;
                 case "Dying":
-                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration, enqueueIdle: false);
+                    PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);
                     break;
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
@@ -126,7 +122,7 @@ namespace Kuros.Actors.Enemies.Animation
 
                 if (attackName.Equals(controller.ThrowAttackName, _comparison))
                 {
-                    PlayOnceIfNeeded("Stun", SkillAnimation, AttackMixDuration);
+                    PlayOnceIfNeeded("Skill1", SkillAnimation, AttackMixDuration);
                     return;
                 }
 
@@ -139,143 +135,6 @@ namespace Kuros.Actors.Enemies.Animation
         {
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
-
-        private void PlayLoopIfNeeded(string key, string animationName, float mixDuration, float timeScale = 1f)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Loop)
-            {
-                return;
-            }
-
-            if (PlayLoop(animationName, mixDuration, timeScale))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
-        private void PlayOnceIfNeeded(string key, string animationName, float mixDuration, bool enqueueIdle = true)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (_currentKey == key && _currentMode == SpineAnimationPlaybackMode.Once)
-            {
-                return;
-            }
-
-            if (PlayOnce(animationName, mixDuration, 1f, string.Empty))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.Once;
-
-                // if (enqueueIdle && !string.IsNullOrEmpty(IdleAnimation))
-                // {
-                //     QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
-                // }
-            }
-        }
-
-        private void PlayPartLoopIfNeeded(string key, string animationName, float loopStart, float loopEnd, float mixDuration)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (loopEnd <= loopStart)
-            {
-                PlayLoopIfNeeded(key, animationName, mixDuration);
-                return;
-            }
-
-            bool samePartialLoop = _currentKey == key
-                && _currentMode == SpineAnimationPlaybackMode.PartialLoop
-                && Mathf.IsEqualApprox(_activeLoopStart, loopStart)
-                && Mathf.IsEqualApprox(_activeLoopEnd, loopEnd);
-
-            if (samePartialLoop)
-            {
-                return;
-            }
-
-            if (PlayPartialLoop(animationName, loopStart, loopEnd, mixDuration))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.PartialLoop;
-                _activeLoopStart = loopStart;
-                _activeLoopEnd = loopEnd;
-            }
-        }
-
-        private void PlayPartOnceIfNeeded(string key, string animationName, float partStart, float partEnd, float mixDuration)
-        {
-            if (string.IsNullOrEmpty(animationName))
-            {
-                return;
-            }
-
-            if (partEnd <= partStart)
-            {
-                PlayOnceIfNeeded(key, animationName, mixDuration);
-                return;
-            }
-
-            bool samePartialOnce = _currentKey == key
-                && _currentMode == SpineAnimationPlaybackMode.PartialOnce
-                && Mathf.IsEqualApprox(_activeLoopStart, partStart)
-                && Mathf.IsEqualApprox(_activeLoopEnd, partEnd);
-
-            if (samePartialOnce)
-            {
-                return;
-            }
-
-            if (PlayPartialOnce(animationName, partStart, partEnd, mixDuration))
-            {
-                _currentKey = key;
-                _currentMode = SpineAnimationPlaybackMode.PartialOnce;
-                _activeLoopStart = partStart;
-                _activeLoopEnd = partEnd;
-
-                if (!string.IsNullOrEmpty(IdleAnimation))
-                {
-                    QueueAnimation(IdleAnimation, SpineAnimationPlaybackMode.Loop, 0f, mixDuration);
-                }
-            }
-        }
-
-        private void TickPartialLoop()
-        {
-            if (_currentMode != SpineAnimationPlaybackMode.PartialLoop)
-            {
-                return;
-            }
-
-            UpdatePartialLoop(_activeLoopStart, _activeLoopEnd);
-        }
-
-        private void PlayEmptyIfNeeded()
-        {
-            if (_currentKey == "Empty")
-            {
-                return;
-            }
-
-            if (PlayEmpty(DieMixDuration))
-            {
-                _currentKey = "Empty";
-                _currentMode = SpineAnimationPlaybackMode.Loop;
-            }
-        }
-
         private EnemyC1WaiterAAttackController? ResolveAttackController()
         {
             if (_attackController != null && IsInstanceValid(_attackController))

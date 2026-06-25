@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Actors.Enemies.States;
 using Kuros.Actors.Heroes.States;
 
@@ -341,10 +342,11 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private void ApplyMoveAttackDamage(SamplePlayer player)
 		{
-			if (Enemy == null) return;
+			var area = _moveArea ?? AttackArea;
+			if (area == null || Enemy == null) return;
 
-			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
+			ApplyAttackAreaMaskOverride(area);
+			DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions);
 		}
 
 		private void ApplyMoveAttackKnockback(SamplePlayer player)

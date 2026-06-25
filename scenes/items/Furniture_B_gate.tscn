@@ -7,6 +7,7 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_oj8bo"]
 [ext_resource type="Texture2D" uid="uid://cmkskjonm6883" path="res://assets/environments/scene_2_hotel/破损的酒店大门口_侧.png" id="6_re1h4"]
 
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_77eqc")
 shader_parameter/softness = 0.5
@@ -45,6 +46,9 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
+Destructible = true
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
+MaxHP = 60.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0

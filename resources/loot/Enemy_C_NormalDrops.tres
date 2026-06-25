@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="LootDropTable" load_steps=9 format=3 uid="uid://bnhfkahsy5m0w"]
+
+[ext_resource type="Resource" uid="uid://b7cpmnpvb42rf" path="res://resources/items/Weapon_Slash_Baguette.tres" id="1_ev8m8"]
+[ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_v1bwi"]
+[ext_resource type="Resource" uid="uid://cxxnxtyv1yqw6" path="res://resources/items/Weapon_Stab_Corkscrew.tres" id="3_8xk5x"]
+[ext_resource type="Resource" uid="uid://bckpievppp7bh" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="4_v1bwi"]
+[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="6_u33rm"]
+
+[sub_resource type="Resource" id="Resource_5a13u"]
+script = ExtResource("2_v1bwi")
+Item = ExtResource("1_ev8m8")
+DropChance = 0.33
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_rv3sv"]
+script = ExtResource("2_v1bwi")
+Item = ExtResource("3_8xk5x")
+DropChance = 0.33
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_e2vn0"]
+script = ExtResource("2_v1bwi")
+Item = ExtResource("4_v1bwi")
+DropChance = 0.33
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[resource]
+script = ExtResource("6_u33rm")
+MaxDrops = 1
+ScatterRadius = 48.0
+DefaultImpulse = 400.0
+Entries = [SubResource("Resource_5a13u"), SubResource("Resource_rv3sv"), SubResource("Resource_e2vn0")]

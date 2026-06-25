@@ -3,15 +3,17 @@
 [ext_resource type="Script" uid="uid://tjd0e0fbhsil" path="res://scripts/fx/EnemyBullet.cs" id="1_sahqo"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hgsvh"]
-radius = 30.0
+radius = 60.0
 
 [node name="EnemyBullet" type="Node2D"]
-z_index = 3
+z_index = 2
 y_sort_enabled = true
 script = ExtResource("1_sahqo")
+Speed = 6000.0
 MaxVerticalTiltDegrees = 5.0
-Duration = 1.0
+Duration = 3.0
 TrailPoints = 2
+TargetableFactions = 1
 Damage = 30
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -31,6 +33,7 @@ end_cap_mode = 2
 antialiased = true
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("CircleShape2D_hgsvh")

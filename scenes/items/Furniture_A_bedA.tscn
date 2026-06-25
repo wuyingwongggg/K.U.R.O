@@ -21,7 +21,7 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(450, 700)
+size = Vector2(420, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_or1aa"]
 size = Vector2(450, 600)
@@ -43,6 +43,9 @@ KnockbackForce = 800.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
+MaxHP = 60.0
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 
@@ -73,6 +76,7 @@ position = Vector2(0, 80)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 position = Vector2(0, 200)

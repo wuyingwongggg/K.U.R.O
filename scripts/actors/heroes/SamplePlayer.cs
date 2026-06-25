@@ -11,6 +11,7 @@ using Kuros.Managers;
 using Kuros.Systems.AI;
 using Kuros.UI;
 using Kuros.Utils;
+using Kuros.Core.Events;
 
 public partial class SamplePlayer : GameActor, IPlayerStatsSource
 {	
@@ -1069,6 +1070,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 	}
 	
+	public TargetableFactions CurrentAttackTargetableFactions { get; set; } =
+		TargetableFactions.Enemy | TargetableFactions.WorldItem;
+
 	public void PerformAttackCheck()
 	{
 		AttackTimer = AttackCooldown;
@@ -1237,6 +1241,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		{
 			LogNoHitDiagnostics(attackArea);
 		}
+
+		DealDamageToDestructiblesViaShape(attackArea, damageAmount);
 
 		return hitCount;
 	}
@@ -1602,6 +1608,41 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 
 		target.TakeDamage(finalDamage, GlobalPosition, this);
+	}
+
+	private void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)
+	{
+		var shapeNode = attackArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+		if (shapeNode?.Shape == null) return;
+
+		var spaceState = attackArea.GetWorld2D()?.DirectSpaceState;
+		if (spaceState == null) return;
+
+		var query = new PhysicsShapeQueryParameters2D
+		{
+			Shape = shapeNode.Shape,
+			Transform = shapeNode.GlobalTransform,
+			CollisionMask = attackArea.CollisionMask == 0 ? uint.MaxValue : attackArea.CollisionMask,
+			CollideWithAreas = true,
+			CollideWithBodies = true
+		};
+		var results = spaceState.IntersectShape(query, 32);
+
+		var attacker = attackArea.GetParent() as GameActor;
+
+		var damaged = new System.Collections.Generic.HashSet<ulong>();
+		foreach (var result in results)
+		{
+			var collider = result["collider"].As<Node>();
+			if (collider == null) continue;
+
+			var factions = CurrentAttackTargetableFactions;
+			var root = DamageDispatcher.ResolveDamageReceiver(collider, factions);
+			if (root == null || root is GameActor || !damaged.Add(root.GetInstanceId())) continue;
+
+			DamageDispatcher.DealDamage(collider, damageAmount,
+				attackArea.GlobalPosition, attacker, DamageSource.DirectAttack, factions);
+		}
 	}
 
 	public override bool IsHitByArea(Area2D? attackerArea)

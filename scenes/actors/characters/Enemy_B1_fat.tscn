@@ -33,18 +33,17 @@ radius = 1024.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_otg7e"]
 radius = 1024.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_otg7e"]
-radius = 350.0
-height = 800.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vxf5t"]
+size = Vector2(700, 800)
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(1350, 880)
+size = Vector2(1600, 1000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_otg7e"]
-size = Vector2(690.90894, 500)
+size = Vector2(1000, 500)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b5vhy"]
-radius = 320.0
+radius = 200.0
 
 [node name="Enemy_B1_fat" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -65,8 +64,6 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("18_drop_table")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-Speed = 300
-AttackCooldown = 1
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -130,6 +127,7 @@ script = ExtResource("20_2sv5o")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
+z_index = 10
 position = Vector2(0, -900)
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -139,7 +137,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(9, 9)
+scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_2sv5o")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -149,7 +147,6 @@ collision_mask = 4
 monitorable = false
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-visible = false
 scale = Vector2(3.6, 3.6)
 shape = SubResource("CircleShape2D_otg7e")
 
@@ -159,23 +156,21 @@ z_index = 10
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 70)
 rotation = 1.5707964
-shape = SubResource("CapsuleShape2D_otg7e")
+shape = SubResource("RectangleShape2D_vxf5t")
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(780, 170)
+position = Vector2(500, 0)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("2")
 
 [node name="GrabArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/GrabArea"]
-position = Vector2(918.1816, 399.99997)
+position = Vector2(500, 500)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_otg7e")
 
@@ -210,7 +205,6 @@ EscapeWindowSeconds = 3.0
 EscapeInvincibilityDuration = 1.5
 WarmupDuration = 1.0
 ActiveDuration = 0.5
-CooldownDuration = 2.0
 DamageMultiplier = 0.3
 AttackAreaPath = NodePath("../../../../Sprite2D/GrabArea")
 KnockbackDuration = 0.01

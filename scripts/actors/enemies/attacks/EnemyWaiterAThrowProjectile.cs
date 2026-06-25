@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using Kuros.Effects;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
@@ -31,10 +32,14 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>落地后依次生成的特效场景列表（Node2D）。为空时跳过。</summary>
         [Export] public PackedScene[] ImpactEffectScenes { get; set; } = Array.Empty<PackedScene>();
 
+        /// <summary>落点指示器预制体（可选）。设置后会在目标位置提前显示落点警告。</summary>
+        [Export] public PackedScene? LandingIndicatorPrefab = null;
+
         private Vector2 _startPos;
         private Vector2 _targetPos;
         private float _elapsed;
-        private bool _launched;   // 第一帧后才开始移动，确保 _startPos 已正确记录
+        private bool _launched;
+        private Node? _landingIndicator;
 
         public override void _Ready()
         {
@@ -42,7 +47,36 @@ namespace Kuros.Actors.Enemies.Attacks
             var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
             _targetPos = player?.GlobalPosition ?? Vector2.Zero;
 
+            SpawnLandingIndicator();
+
             SetPhysicsProcess(true);
+        }
+
+        private void SpawnLandingIndicator()
+        {
+            if (LandingIndicatorPrefab == null) return;
+
+            var indicator = LandingIndicatorPrefab.Instantiate<Node>();
+            _landingIndicator = indicator;
+            GetParent()?.AddChild(indicator);
+
+            if (indicator is Node2D indicator2D)
+                indicator2D.GlobalPosition = _targetPos;
+
+            if (indicator is LandingIndicator li)
+            {
+                li.WarningDuration = Duration;
+                li.Start();
+            }
+            else
+            {
+                var childLi = indicator.GetNodeOrNull<LandingIndicator>(".");
+                if (childLi != null)
+                {
+                    childLi.WarningDuration = Duration;
+                    childLi.Start();
+                }
+            }
         }
 
         public override void _PhysicsProcess(double delta)
@@ -98,7 +132,14 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
+            _landingIndicator?.QueueFree();
             QueueFree();
+        }
+
+        public override void _ExitTree()
+        {
+            _landingIndicator?.QueueFree();
+            base._ExitTree();
         }
     }
 }

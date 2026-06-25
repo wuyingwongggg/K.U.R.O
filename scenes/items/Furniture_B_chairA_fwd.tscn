@@ -27,7 +27,7 @@ size = Vector2(324, 300)
 size = Vector2(336, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(96.4706, 43.823532)
+size = Vector2(96.4706, 62.352943)
 
 [node name="FurnitureChairA_fwd" type="Node2D"]
 z_index = 2
@@ -44,7 +44,9 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-
+Destructible = true
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
+MaxHP = 20.0
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
 can_sleep = false
@@ -78,9 +80,8 @@ position = Vector2(-2.5, 200)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(-2.999998, 18.5)
+position = Vector2(-2.999998, -3.0000033)
 scale = Vector2(3.4, 3.4)
 shape = SubResource("RectangleShape2D_jyvv2")

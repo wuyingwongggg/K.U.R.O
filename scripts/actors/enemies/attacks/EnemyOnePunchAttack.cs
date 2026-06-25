@@ -1,4 +1,5 @@
 ﻿using Godot;
+using Kuros.Core;
 using Kuros.Actors.Heroes.States;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -313,6 +314,9 @@ namespace Kuros.Actors.Enemies.Attacks
 				return false;
 			}
 
+            ApplyAttackAreaMaskOverride(_onePunchArea);
+            DamageDispatcher.DealDamageFromArea(_onePunchArea!, GetDamage(), Enemy, TargetableFactions);
+
             if (!IsPlayerInsideOnePunchZone(player))
             {
 				_playerInsideDetection = false;
@@ -333,7 +337,6 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null) return;
 
 			int damage = GetDamage();
-			player.TakeDamage(damage, Enemy.GlobalPosition, Enemy);
 		}
 
         private bool IsPlayerInsideOnePunchZone(SamplePlayer player)
