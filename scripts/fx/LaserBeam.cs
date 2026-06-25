@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
@@ -45,6 +46,7 @@ namespace Kuros.Fx
         /// <summary>激光命中玩家造成的伤害（0 = 不造成伤害）。</summary>
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 0;
 
@@ -91,6 +93,7 @@ namespace Kuros.Fx
         private bool _hasDamaged;
         /// <summary>autoAim 时缓存的玩家节点，供 TryDamagePlayer 直接使用，避免射线被敌人自身 Area2D 阻挡。</summary>
         private Node2D? _cachedPlayer;
+        private GameActor? _attacker;
 
         // ── 生命周期 ──────────────────────────────────────────────
 
@@ -119,6 +122,8 @@ namespace Kuros.Fx
 
             _ray.TargetPosition = new Vector2(MaxLength, 0f);
             _ray.Enabled        = true;
+
+            ResolveAttacker();
 
             _timer = Lifetime;
 
@@ -272,8 +277,9 @@ namespace Kuros.Fx
 
             _hasDamaged = true;
 
-            if (Damage > 0)
-                actor.TakeDamage(Damage, GlobalPosition);
+            bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
+            if (!dealt) return;
 
             // 仅在命中前玩家尚未处于无敌帧时才施加击退，避免覆盖已有的击退速度。
             // 速度优先：KnockbackSpeed > 0 直接使用；否则由 KnockbackDistance / KnockbackDuration 推算（与 EnemyAttackTemplate 一致）。
@@ -284,6 +290,20 @@ namespace Kuros.Fx
                     : (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
                 if (knockSpeed > 0f)
                     actor.Velocity = beamDir * knockSpeed;
+            }
+        }
+
+        private void ResolveAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("enemies") && child is GameActor ga)
+                {
+                    _attacker = ga;
+                    break;
+                }
             }
         }
 

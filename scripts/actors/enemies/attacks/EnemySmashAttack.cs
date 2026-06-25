@@ -299,7 +299,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (area == null || Enemy == null) return;
 
 			ApplyAttackAreaMaskOverride(area);
-			DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions);
+			DealDamage(area);
 		}
 
 		private void ApplySmashEffects(SamplePlayer player)

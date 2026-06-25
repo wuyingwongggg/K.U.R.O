@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using System;
 using System.Threading.Tasks;
 
@@ -111,18 +112,35 @@ namespace Kuros.Actors.Enemies.Attacks
             GetParent()?.AddChild(projectileNode);
             projectileNode.GlobalPosition = GlobalPosition;
 
-            // 配置发射方向（唯一由控制器负责的碟子参数）
+            // Effect 和 Enemy 是同级节点，需先到父级再遍历子节点查找
+            GameActor? attacker = null;
+            var parent = GetParent();
+            if (parent != null)
+            {
+                foreach (var child in parent.GetChildren())
+                {
+                    if (child.IsInGroup("enemies") && child is GameActor ga)
+                    {
+                        attacker = ga;
+                        break;
+                    }
+                }
+            }
+            // 配置发射方向
             if (projectileNode is EnemyWaiterA02ProjectileInstance projectile)
             {
+                if (attacker != null)
+                    projectile.SetAttacker(attacker);
                 projectile.SetDirectionAndDistance(direction, projectile.ProjectileDistance);
             }
             else
             {
-                // 如果克隆的节点本身不是 EnemyWaiterA02ProjectileInstance，尝试找子节点
-                var controller = projectileNode.GetNodeOrNull<EnemyWaiterA02ProjectileInstance>(".");
-                if (controller != null)
+                var instance = projectileNode.GetNodeOrNull<EnemyWaiterA02ProjectileInstance>(".");
+                if (instance != null)
                 {
-                    controller.SetDirectionAndDistance(direction, controller.ProjectileDistance);
+                    if (attacker != null)
+                        instance.SetAttacker(attacker);
+                    instance.SetDirectionAndDistance(direction, instance.ProjectileDistance);
                 }
             }
         }

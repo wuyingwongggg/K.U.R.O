@@ -1,7 +1,7 @@
 [gd_scene load_steps=34 format=3 uid="uid://bj81vpm6lg1b8"]
 
-[ext_resource type="Script" uid="uid://5imf5agux4ch" path="res://scripts/actors/enemies/EnemyNormalGuard2.cs" id="1_wjvmm"]
-[ext_resource type="Resource" uid="uid://xsa2wlasoj6i" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_e1554"]
+[ext_resource type="Script" uid="uid://bjut5b8tdxsx2" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
+[ext_resource type="Resource" uid="uid://2txgxwswls2l" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_e1554"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ulog8"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_10g4w"]
@@ -27,7 +27,7 @@
 [ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
 [ext_resource type="Script" uid="uid://c8xkf4trw871r" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
 
-[sub_resource type="Resource" id="Resource_3kv8y"]
+[sub_resource type="Resource" id="Resource_06rhn"]
 script = ExtResource("2_ofcms")
 Positioning = 1
 MinComfortDistance = 400.0
@@ -61,9 +61,8 @@ scale = Vector2(0.33, 0.33)
 collision_layer = 2
 collision_mask = 15
 motion_mode = 1
-script = ExtResource("1_wjvmm")
-BehaviorConfig = SubResource("Resource_3kv8y")
-EnableStateDebugOverlay = true
+script = ExtResource("1_ofcms")
+BehaviorConfig = SubResource("Resource_06rhn")
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -133,7 +132,7 @@ skeleton_data_res = ExtResource("5_wjvmm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.83
+preview_time = 0.67
 script = ExtResource("6_ks25x")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -182,6 +181,12 @@ shape = SubResource("RectangleShape2D_ofcms")
 visible = false
 shape = SubResource("CircleShape2D_d5sdg")
 
+[node name="Node2D" type="Node2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(465, -630)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("7_ewc2t")
 InitialState = NodePath("Idle")
@@ -207,6 +212,7 @@ AttackName = "ThrowAttack"
 WarmupDuration = 1.16
 ActiveDuration = 0.34
 RecoveryDuration = 0.33
+DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 EffectScene = ExtResource("13_10g4w")
@@ -214,22 +220,20 @@ EffectOffset = Vector2(0, -200)
 SpawnTiming = 1
 metadata/attack_weight = 60.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("14_10g4w")
 SecondEffectScene = ExtResource("15_u8m7i")
 SecondEffectOffset = Vector2(150, -230)
 AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.65
 RecoveryDuration = 0.2
+DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-KnockbackDistance = 30.0
-KnockbackDuration = 0.06999999999999999
-KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
 GrantedImmunities = 8
 EffectScene = ExtResource("15_ulog8")
-EffectOffset = Vector2(10, -230)
 SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

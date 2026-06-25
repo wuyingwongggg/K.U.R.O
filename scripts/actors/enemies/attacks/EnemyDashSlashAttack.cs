@@ -385,7 +385,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null || Enemy.IsDead || Enemy.IsDeathSequenceActive) return;
 			if (Enemy.PlayerTarget == null) return;
 			if (_dashSlashArea != null) ApplyAttackAreaMaskOverride(_dashSlashArea);
-			DamageDispatcher.DealDamageFromArea((_dashSlashArea ?? AttackArea)!, GetDamage(), Enemy, TargetableFactions);
+			DealDamage((_dashSlashArea ?? AttackArea)!);
 			if (!IsPlayerInsideDashSlashArea(Enemy.PlayerTarget)) return;
 			ExecuteStrike();
 		}

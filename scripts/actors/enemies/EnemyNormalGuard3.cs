@@ -6,7 +6,7 @@ using Kuros.Actors.Enemies.Attacks;
 
 namespace Kuros.Actors.Enemies
 {
-	public partial class EnemyNormalGuard2 : SampleEnemy
+	public partial class EnemyNormalGuard3 : SampleEnemy
 	{
 
 	}

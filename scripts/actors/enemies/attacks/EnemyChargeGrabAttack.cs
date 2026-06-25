@@ -510,7 +510,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAnimationHit()
 		{
 			if (_grabArea != null) ApplyAttackAreaMaskOverride(_grabArea);
-			DamageDispatcher.DealDamageFromArea((_grabArea ?? AttackArea)!, GetDamage(), Enemy, TargetableFactions);
+			DealDamage((_grabArea ?? AttackArea)!);
 
 			if (_grabbedPlayer == null || !IsEnemyAlive())
 			{

@@ -44,6 +44,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath AttackAreaPath = new NodePath();
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        /// <summary>是否允许攻击者的攻击命中自身。独立于阵营筛选，默认关闭。</summary>
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [ExportCategory("Knockback")]
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
@@ -358,6 +360,23 @@ namespace Kuros.Actors.Enemies.Attacks
 
             area.CollisionMask |= factionMask;
             _customAreaOverrides.Add(area);
+        }
+
+        /// <summary>
+        /// 对指定区域造成伤害（统一入口）。
+        /// 子类调用此方法而非直接调 DamageDispatcher，确保阵营筛选和自伤开关始终生效。
+        /// </summary>
+        protected void DealDamage(Area2D area)
+        {
+            DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions, AllowSelfDamage);
+        }
+
+        /// <summary>
+        /// 对指定区域造成指定伤害（覆盖默认伤害值）。
+        /// </summary>
+        protected void DealDamage(Area2D area, int damageOverride)
+        {
+            DamageDispatcher.DealDamageFromArea(area, damageOverride, Enemy, TargetableFactions, AllowSelfDamage);
         }
 
         protected virtual bool ShouldHoldWarmupPhase()
