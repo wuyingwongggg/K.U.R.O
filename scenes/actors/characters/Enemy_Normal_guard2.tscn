@@ -212,7 +212,7 @@ KnockbackDuration = 0.06999999999999999
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -226,6 +226,7 @@ KnockbackDistance = 30.0
 KnockbackDuration = 0.06999999999999999
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 16
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

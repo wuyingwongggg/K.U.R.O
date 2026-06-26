@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://efbd75vs2jik"]
+[gd_scene load_steps=30 format=3 uid="uid://efbd75vs2jik"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_2gtws"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_q1bio"]
@@ -7,11 +7,9 @@
 [ext_resource type="Resource" uid="uid://c1utyfyjl2xl0" path="res://resources/cutscene/D_begin_intro.tres" id="3_s0ku1"]
 [ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="3_vqmt3"]
 [ext_resource type="PackedScene" uid="uid://m25wem7tlp6p" path="res://scenes/environments/elevatorGate_D_flip.tscn" id="6_2gtws"]
-[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="7_q1bio"]
+[ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="7_jlbv0"]
 [ext_resource type="Texture2D" uid="uid://fe6gutvk4r3w" path="res://assets/environments/scene_4_hotel/wall.png" id="8_jlbv0"]
-[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="8_os652"]
 [ext_resource type="Texture2D" uid="uid://ckran0ftchh3p" path="res://assets/environments/scene_4_hotel/wall4.png" id="9_q7nkw"]
-[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="9_vqmt3"]
 [ext_resource type="Texture2D" uid="uid://bfhf5tk4qxp5h" path="res://assets/environments/scene_4_hotel/wall1.png" id="10_q1bio"]
 [ext_resource type="Texture2D" uid="uid://c80drmxdeq3st" path="res://assets/environments/scene_4_hotel/wall3.png" id="11_os652"]
 [ext_resource type="Texture2D" uid="uid://beh5ya8u5t3lx" path="res://assets/environments/scene_4_hotel/floor1.png" id="11_t5r3y"]
@@ -134,7 +132,7 @@ top_level = true
 z_index = 10
 position = Vector2(0, 356)
 script = ExtResource("3_vqmt3")
-EnemyScenes = Array[PackedScene]([ExtResource("7_q1bio"), ExtResource("8_os652"), ExtResource("9_vqmt3")])
+EnemyScenes = Array[PackedScene]([ExtResource("7_jlbv0")])
 MultiEnemySelectionMode = 1
 SpawnCount = 5
 SpawnInterval = 0.0

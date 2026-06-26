@@ -77,6 +77,7 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_grl5w")
 BehaviorConfig = SubResource("Resource_dknnn")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -238,7 +239,7 @@ KnockbackDuration = 0.06
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -251,7 +252,7 @@ KnockbackDistance = 30.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

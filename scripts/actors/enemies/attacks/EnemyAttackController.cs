@@ -149,12 +149,18 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnAttackFinished()
         {
-            CleanupChildAttack(clearCooldown: true);
+            // 打断时根据子攻击所处阶段决定是否保留 CD：
+            // Recovery 阶段打断 → 攻击已基本完成，保留 CD 防止立即复用
+            // Warmup/Active 阶段打断 → 攻击未完成，清除 CD 允许重新尝试
+            bool childInRecovery = _currentAttack?.CurrentPhase == EnemyAttackTemplate.AttackPhase.Recovery;
+            CleanupChildAttack(clearCooldown: !childInRecovery);
 
+            // 不在此处立即排队下一次攻击，而是清空 _queuedAttack，
+            // 让 _PhysicsProcess 空闲循环在所有攻击 CD 结束后再做加权随机选择
             if (_pendingQueueReason != null)
             {
-                QueueNextAttack(_pendingQueueReason);
                 _pendingQueueReason = null;
+                _queuedAttack = null;
             }
             else if (ShouldAutoQueueAfterInterruption())
             {
@@ -180,9 +186,10 @@ namespace Kuros.Actors.Enemies.Attacks
                 entry.Template.Tick(delta);
             }
 
-            // 控制器空闲时，若无可用攻击（全部CD中）则每帧检查是否有攻击CD已到期，
-            // 一旦有攻击可用立即更新 _queuedAttack 以便 CanStart() 重新返回 true。
-            if (!IsRunning && (_queuedAttack == null || _queuedAttack.IsOnCooldown))
+            // 控制器空闲时，等待 _interAttackDelay 到期后再做加权随机选择，
+            // 确保此时所有攻击的独立 CD 也已到期，权重真正生效
+            if (!IsRunning && _interAttackDelay <= 0f
+                && (_queuedAttack == null || _queuedAttack.IsOnCooldown))
             {
                 var candidate = PickAttack();
                 if (candidate != null)
@@ -360,8 +367,9 @@ namespace Kuros.Actors.Enemies.Attacks
             }
             else if (_pendingQueueReason != null)
             {
-                QueueNextAttack(_pendingQueueReason);
+                // 清空排队攻击，由 _PhysicsProcess 空闲循环在 CD 到期后重新加权选择
                 _pendingQueueReason = null;
+                _queuedAttack = null;
             }
 
             // 强制清除时同步清除攻击间隔；否则应用子攻击的 CD 作为间隔

@@ -206,7 +206,7 @@ CooldownDurationMultiplier = 2.0
 DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 EffectScene = ExtResource("12_kjt0o")
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
@@ -224,6 +224,7 @@ KnockbackDistance = 300.0
 KnockbackDuration = 0.06999999999999999
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 16
 metadata/attack_weight = 40.0
 
 [node name="Assist" type="Node" parent="StateMachine"]

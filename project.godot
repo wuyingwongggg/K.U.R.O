@@ -234,3 +234,4 @@ logging/enable_file_logging=true
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+viewports/hdr_2d=true

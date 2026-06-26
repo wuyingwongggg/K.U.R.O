@@ -1,13 +1,13 @@
 [gd_scene load_steps=10 format=3 uid="uid://bl2nwvbijnwtd"]
 
 [ext_resource type="Script" uid="uid://bc7mway6od4u4" path="res://scripts/effects/LandingIndicator.cs" id="1_51b1s"]
-[ext_resource type="Texture2D" uid="uid://dqg4lp3g15lhs" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0001.png" id="3_tqdah"]
-[ext_resource type="Texture2D" uid="uid://cyer2jsimirdk" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0002.png" id="4_drsle"]
-[ext_resource type="Texture2D" uid="uid://elx014c57eh3" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0003.png" id="5_h7wal"]
-[ext_resource type="Texture2D" uid="uid://bq41la24lgvf5" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0004.png" id="6_745se"]
-[ext_resource type="Texture2D" uid="uid://drsneb32aiqrm" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0005.png" id="7_ge63s"]
-[ext_resource type="Texture2D" uid="uid://duhr0xeycc5jq" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0006.png" id="8_tc3wx"]
-[ext_resource type="Texture2D" uid="uid://bmcv5eaa5quut" path="res://assets/effect/PrinterMachine/AttackIndicatorA/时间轴 1_0007.png" id="9_lg2dp"]
+[ext_resource type="Texture2D" uid="uid://dqg4lp3g15lhs" path="res://assets/effect/AttackIndicatorA/时间轴 1_0001.png" id="3_tqdah"]
+[ext_resource type="Texture2D" uid="uid://cyer2jsimirdk" path="res://assets/effect/AttackIndicatorA/时间轴 1_0002.png" id="4_drsle"]
+[ext_resource type="Texture2D" uid="uid://elx014c57eh3" path="res://assets/effect/AttackIndicatorA/时间轴 1_0003.png" id="5_h7wal"]
+[ext_resource type="Texture2D" uid="uid://bq41la24lgvf5" path="res://assets/effect/AttackIndicatorA/时间轴 1_0004.png" id="6_745se"]
+[ext_resource type="Texture2D" uid="uid://drsneb32aiqrm" path="res://assets/effect/AttackIndicatorA/时间轴 1_0005.png" id="7_ge63s"]
+[ext_resource type="Texture2D" uid="uid://duhr0xeycc5jq" path="res://assets/effect/AttackIndicatorA/时间轴 1_0006.png" id="8_tc3wx"]
+[ext_resource type="Texture2D" uid="uid://bmcv5eaa5quut" path="res://assets/effect/AttackIndicatorA/时间轴 1_0007.png" id="9_lg2dp"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xpmmc"]
 animations = [{

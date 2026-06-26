@@ -20,7 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
     /// </summary>
     public partial class EnemyAttackTemplate : Node
     {
-        private enum AttackPhase
+        internal enum AttackPhase
         {
             Idle,
             Warmup,
@@ -56,12 +56,12 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool RequireAnimationHitTrigger = false;
         [Export] public bool AllowMultipleAnimationHits = false;
 
-        [ExportCategory("Super Armor")]
+        [ExportCategory("Effect Resistance")]
         /// <summary>
         /// 攻击期间赋予敌人的免疫集合。<br/>
         /// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举追加值，无需修改此模板。
         /// </summary>
-        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,SuperArmor,Damage")]
+        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,Damage")]
         public ImmunityFlags GrantedImmunities = ImmunityFlags.None;
 
         [ExportCategory("Collision Override")]
@@ -88,6 +88,8 @@ namespace Kuros.Actors.Enemies.Attacks
         protected Area2D? AttackArea { get; private set; }
 
         private AttackPhase _phase = AttackPhase.Idle;
+        /// <summary>当前所处阶段，仅供控制器在打断时判断子攻击所处阶段。</summary>
+        internal AttackPhase CurrentPhase => _phase;
         private float _phaseTimer = 0.0f;
         private float _cooldownTimer = 0.0f;
         protected bool _animationHitReady = false;
@@ -210,16 +212,13 @@ namespace Kuros.Actors.Enemies.Attacks
             ApplyEnemyCollisionMaskOverride();
             ApplyAttackAreaMaskOverride();
 
-            if (GrantedImmunities.HasFlag(ImmunityFlags.SuperArmor) && Enemy != null)
-            {
-                _previousIgnoreHitStateOnDamage = Enemy.IgnoreHitStateOnDamage;
-                Enemy.IgnoreHitStateOnDamage = true;
-            }
-
-            if (GrantedImmunities != ImmunityFlags.None && Enemy != null)
+            // 将非霸体类免疫写入 ActiveImmunities（霸体按阶段独立管理）
+            var nonSuperFlags = GrantedImmunities
+                & ~(ImmunityFlags.WarmupSuperArmor | ImmunityFlags.ActiveSuperArmor | ImmunityFlags.RecoverySuperArmor);
+            if (nonSuperFlags != ImmunityFlags.None && Enemy != null)
             {
                 _previousImmunities = Enemy.ActiveImmunities;
-                Enemy.ActiveImmunities |= GrantedImmunities;
+                Enemy.ActiveImmunities |= nonSuperFlags;
             }
 
             if (Enemy != null && !string.IsNullOrEmpty(AnimationName))
@@ -405,6 +404,7 @@ namespace Kuros.Actors.Enemies.Attacks
         private void SetPhase(AttackPhase phase)
         {
             _phase = phase;
+            UpdatePhaseSuperArmor();
             switch (phase)
             {
                 case AttackPhase.Warmup:
@@ -429,6 +429,50 @@ namespace Kuros.Actors.Enemies.Attacks
             if (_phase != AttackPhase.Idle && _phaseTimer <= 0.0f)
             {
                 AdvancePhase();
+            }
+        }
+
+        /// <summary>
+        /// 根据当前阶段更新霸体状态。Warmup/Active/Recovery 三个阶段可独立启用。
+        /// 进入对应阶段时开启 IgnoreHitStateOnDamage，离开时还原。
+        /// </summary>
+        private void UpdatePhaseSuperArmor()
+        {
+            if (Enemy == null) return;
+
+            ImmunityFlags requiredFlag = _phase switch
+            {
+                AttackPhase.Warmup   => ImmunityFlags.WarmupSuperArmor,
+                AttackPhase.Active   => ImmunityFlags.ActiveSuperArmor,
+                AttackPhase.Recovery  => ImmunityFlags.RecoverySuperArmor,
+                _ => ImmunityFlags.None
+            };
+
+            if (_phase == AttackPhase.Idle)
+            {
+                if (_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    Enemy.IgnoreHitStateOnDamage = _previousIgnoreHitStateOnDamage.Value;
+                    _previousIgnoreHitStateOnDamage = null;
+                }
+                return;
+            }
+
+            if (GrantedImmunities.HasFlag(requiredFlag))
+            {
+                if (!_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    _previousIgnoreHitStateOnDamage = Enemy.IgnoreHitStateOnDamage;
+                    Enemy.IgnoreHitStateOnDamage = true;
+                }
+            }
+            else
+            {
+                if (_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    Enemy.IgnoreHitStateOnDamage = _previousIgnoreHitStateOnDamage.Value;
+                    _previousIgnoreHitStateOnDamage = null;
+                }
             }
         }
 

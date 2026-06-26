@@ -64,7 +64,7 @@ namespace Kuros.Fx
         /// 垂直方向仅在 ±<see cref="MaxVerticalTiltDegrees"/> 范围内微调。
         /// </summary>
         [ExportCategory("Targeting")]
-        [Export] public bool AutoAimAtPlayer = true;   
+        [Export] public bool AutoAimAtPlayer = true;
 
         /// <summary>垂直倾斜最大角度（度）。激光基础方向水平，此值限制上下偏转幅度。</summary>
         [Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 5f;
@@ -131,9 +131,6 @@ namespace Kuros.Fx
             // AddChild 触发 _Ready 时 GlobalPosition 尚未由 SpawnEffectAtEnemy 设置，
             // 需等到下一帧位置就位后再计算朝向。
             _pendingAutoAim = AutoAimAtPlayer;
-
-            // 去掉这行，等_Process第一帧位置和朝向都就位后再画
-            //UpdateBeam();
         }
 
         public override void _Process(double delta)

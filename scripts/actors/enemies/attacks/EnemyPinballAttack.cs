@@ -43,12 +43,14 @@ namespace Kuros.Actors.Enemies.Attacks
 		private float _dashTimeElapsed;
 		private Area2D? _pinballArea;
 
+		// 注册 _PhysicsProcess 回调，控制弹射期间的每帧移动与墙壁反弹检测
 		protected override void OnInitialized()
 		{
 			base.OnInitialized();
 			SetPhysicsProcess(true);
 		}
 
+		// 攻击启动：重置状态、解析伤害判定区域、连接 Area2D 信号
 		protected override void OnAttackStarted()
 		{
 			base.OnAttackStarted();
@@ -63,6 +65,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			GameActor.AnyDamageTaken += OnAnyDamageTaken;
 		}
 
+		// 预热阶段：停止敌人移动，准备弹射
 		protected override void OnWarmupStarted()
 		{
 			base.OnWarmupStarted();
@@ -70,6 +73,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				Enemy.Velocity = Vector2.Zero;
 		}
 
+		// 生效阶段：计算朝玩家方向、设初速、启动弹射、处理已在区域内的对象
 		protected override void OnActivePhase()
 		{
 			if (Enemy == null) return;
@@ -88,6 +92,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			ProcessInitialOverlaps();
 		}
 
+		// 处理信号连接前已处于 PinballArea 内的对象（BodyEntered/AreaEntered 只对新进入者触发）
 		private void ProcessInitialOverlaps()
 		{
 			if (_pinballArea == null || Enemy == null) return;
@@ -99,6 +104,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				OnAttackAreaAreaEntered(area);
 		}
 
+		// 恢复阶段：停止弹射与移动
 		protected override void OnRecoveryStarted()
 		{
 			base.OnRecoveryStarted();
@@ -107,6 +113,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				Enemy.Velocity = Vector2.Zero;
 		}
 
+		// 攻击完全结束：断开信号、取消事件订阅
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
@@ -114,6 +121,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			DisconnectAttackAreaSignals();
 		}
 
+		// 每帧更新：速度衰减、墙壁反弹（GetLastSlideCollision）、超时结束、维护速度
 		public override void _PhysicsProcess(double delta)
 		{
 			if (Enemy == null || Enemy.IsDead || Enemy.IsDeathSequenceActive) return;
@@ -138,8 +146,10 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
+			// 速度衰减：每秒减少 SpeedDecayPerSecond，不低于 PinballMinSpeed
 			_currentSpeed = Mathf.Max(PinballMinSpeed, _currentSpeed - SpeedDecayPerSecond * dt);
 
+			// 墙壁反弹：利用 MoveAndSlide 物理引擎的实际碰撞法线（全向覆盖）
 			if (AllowWallBounce && _bounceCooldownRemaining <= 0f)
 			{
 				var collision = Enemy.GetLastSlideCollision();
@@ -154,22 +164,23 @@ namespace Kuros.Actors.Enemies.Attacks
 			Enemy.Velocity = _dashDirection * _currentSpeed;
 		}
 
+		// 弹射期间挂起 Active 阶段（由 _isDashing 控制退出时机）
 		protected override bool ShouldHoldActivePhase() => _isDashing;
 
+		// Body 进入 PinballArea：HitArea 守卫 → 解析法线 → 弹射 → 伤害 → 击退
 		private void OnAttackAreaBodyEntered(Node body)
 		{
 			if (!_isDashing || Enemy == null) return;
 
 			if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, Enemy)) return;
 
-			// GameActor 必须命中 HitArea 才弹射；非 GameActor（墙壁等）不受此限
+			// 只对命中目标 HitArea 的接触产生反应（忽略 GrabArea 等非受击区域）
 			if (body is GameActor actor && _pinballArea != null && !actor.IsHitByArea(_pinballArea))
 				return;
 
 			Vector2 enemyPos = Enemy.GlobalPosition;
 			Vector2 hitPos = body is Node2D nd ? nd.GlobalPosition : enemyPos;
-			Vector2 normal = (enemyPos - hitPos).Normalized();
-			if (normal == Vector2.Zero) normal = -_dashDirection;
+			Vector2 normal = ResolveBounceNormal(body, hitPos);
 
 			if (_bounceCooldownRemaining <= 0f)
 				Reflect(normal);
@@ -183,6 +194,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			TryApplyKnockback(body);
 		}
 
+		// Area 进入 PinballArea：HitArea 守卫 → 解析法线 → 弹射 → 伤害 → 击退
 		private void OnAttackAreaAreaEntered(Area2D area)
 		{
 			if (!_isDashing || Enemy == null) return;
@@ -190,13 +202,12 @@ namespace Kuros.Actors.Enemies.Attacks
 			var target = area.Owner ?? area;
 			if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, Enemy)) return;
 
-			// 只有命中的区域是目标的 HitArea 才弹射（跳过 GrabArea 等非受击区域）
+			// 只对命中目标 HitArea 的接触产生反应（跳过 GrabArea 等非受击区域）
 			if (target is GameActor actor && _pinballArea != null && !actor.IsHitByArea(_pinballArea))
 				return;
 
 			Vector2 enemyPos = Enemy.GlobalPosition;
-			Vector2 normal = (enemyPos - area.GlobalPosition).Normalized();
-			if (normal == Vector2.Zero) normal = -_dashDirection;
+			Vector2 normal = ResolveBounceNormal(target, area.GlobalPosition);
 
 			if (_bounceCooldownRemaining <= 0f)
 				Reflect(normal);
@@ -210,12 +221,30 @@ namespace Kuros.Actors.Enemies.Attacks
 			TryApplyKnockback(area.Owner);
 		}
 
+		// enemy 在弹射期间受到伤害时：弹射速度重置为满速
 		private void OnAnyDamageTaken(GameActor victim, GameActor? attacker, int damage)
 		{
 			if (victim != Enemy || !_isDashing) return;
 			_currentSpeed = PinballMaxSpeed;
 		}
 
+		// 反射方向计算：优先使用 MoveAndSlide 物理引擎的实际碰撞法线（方向与"谁撞谁"无关），
+		// 回退到几何中心近似 (enemyPos - targetPos).Normalized()
+		private Vector2 ResolveBounceNormal(Node target, Vector2 targetPos)
+		{
+			var collision = Enemy?.GetLastSlideCollision();
+			if (collision != null)
+			{
+				var collider = collision.GetCollider();
+				if (collider == target || (target is Area2D area && collider == (area.Owner ?? area)))
+					return collision.GetNormal();
+			}
+
+			Vector2 normal = (Enemy!.GlobalPosition - targetPos).Normalized();
+			return normal == Vector2.Zero ? -_dashDirection : normal;
+		}
+
+		// 执行一次弹射：计数+1 → 冷却重置 → 反射公式计算新方向 → 速度重置为满速
 		private void Reflect(Vector2 normal)
 		{
 			_bounceCount++;
@@ -230,6 +259,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				Enemy.Velocity = _dashDirection * _currentSpeed;
 		}
 
+		// 对被命中目标施加击退速度
 		private void TryApplyKnockback(Node? target)
 		{
 			if (Enemy == null || target is not GameActor actor) return;
@@ -244,6 +274,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				actor.Velocity = (actor.GlobalPosition - Enemy.GlobalPosition).Normalized() * knockSpeed;
 		}
 
+		// 结束弹射：停止 dash、进入 Recovery
 		private void FinishDash()
 		{
 			if (Enemy == null) return;
@@ -252,6 +283,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			ForceEnterRecoveryPhase();
 		}
 
+		// 从 PinballAreaPath 解析 Area2D 引用
 		private void ResolvePinballArea()
 		{
 			_pinballArea = null;
@@ -261,6 +293,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				?? Enemy?.GetNodeOrNull<Area2D>(PinballAreaPath);
 		}
 
+		// 连接 PinballArea 的 BodyEntered/AreaEntered 信号
 		private void ConnectAttackAreaSignals()
 		{
 			if (_pinballArea == null) return;
@@ -268,6 +301,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			_pinballArea.AreaEntered += OnAttackAreaAreaEntered;
 		}
 
+		// 断开 PinballArea 的 BodyEntered/AreaEntered 信号
 		private void DisconnectAttackAreaSignals()
 		{
 			if (_pinballArea == null) return;
@@ -275,6 +309,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			_pinballArea.AreaEntered -= OnAttackAreaAreaEntered;
 		}
 
+		// 节点退出时清理信号连接与事件订阅
 		public override void _ExitTree()
 		{
 			GameActor.AnyDamageTaken -= OnAnyDamageTaken;

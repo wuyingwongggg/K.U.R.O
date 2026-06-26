@@ -202,6 +202,7 @@ ActiveDuration = 0.2
 RecoveryDuration = 0.65
 CooldownDurationMultiplier = 3.0
 DamageMultiplier = 0.0
+GrantedImmunities = 16
 EffectScene = ExtResource("12_sycgy")
 EffectOffset = Vector2(0, -500)
 SpawnTiming = 1
@@ -217,6 +218,7 @@ KnockbackDistance = 500.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 16
 metadata/attack_weight = 0.0
 
 [node name="Assist" type="Node" parent="StateMachine"]

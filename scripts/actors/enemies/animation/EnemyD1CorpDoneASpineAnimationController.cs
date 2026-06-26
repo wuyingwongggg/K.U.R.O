@@ -193,9 +193,9 @@ namespace Kuros.Actors.Enemies.Animation
 		{
 			string expectedAnimation = string.Empty;
 			if (controller.CurrentAttackName.Equals(controller.MeleeAttackName, _comparison))
-				expectedAnimation = AttackAnimation;
+				expectedAnimation = Skill2Animation;   // Melee 播放的是 skill2
 			else if (controller.CurrentAttackName.Equals(controller.PinballAttackName, _comparison))
-				expectedAnimation = SkillAnimation;
+				expectedAnimation = AttackAnimation;   // Pinball 播放的是 attack
 
 			if (string.IsNullOrEmpty(expectedAnimation))
 				return true;

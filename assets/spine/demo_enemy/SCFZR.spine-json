@@ -392,6 +392,9 @@
 		}
 	}
 ],
+"events": {
+	"hit": {}
+},
 "animations": {
 	"attack": {
 		"slots": {
@@ -5925,7 +5928,10 @@
 					{ "time": 2 }
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 1, "name": "hit" }
+		]
 	},
 	"stun": {
 		"slots": {
