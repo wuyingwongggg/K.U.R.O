@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://bak7fmcnkgnjm"]
+[gd_scene load_steps=31 format=3 uid="uid://bak7fmcnkgnjm"]
 
 [ext_resource type="Script" uid="uid://bb00p1iq1pgyl" path="res://scripts/actors/enemies/EnemyD1CorpDoneA.cs" id="1_hglex"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_h8ewy"]
@@ -10,8 +10,10 @@
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="9_hspxy"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="10_i0e8h"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="13_bcq2h"]
-[ext_resource type="PackedScene" uid="uid://l6qj8m327ght" path="res://shaders/laser_beamA.tscn" id="13_ybbps"]
+[ext_resource type="PackedScene" uid="uid://dxjijjaojsunw" path="res://shaders/lightning_beam.tscn" id="13_ybbps"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_0em3l"]
+[ext_resource type="Script" uid="uid://dv24rb5qiaaqa" path="res://scripts/actors/enemies/attacks/EnemyAttackTemplate.cs" id="14_641yn"]
+[ext_resource type="PackedScene" uid="uid://c6c3r3w6owctg" path="res://resources/effects/LockdownWallEffect.tscn" id="15_4k14f"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_cbamd"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="16_ox0f7"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="17_fwtd0"]
@@ -53,7 +55,6 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_hglex")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -120,9 +121,9 @@ script = ExtResource("6_jn4m8")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("5_scapk")
 preview_skin = "Default"
-preview_animation = "skill2"
+preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.01
+preview_time = 4.0
 script = ExtResource("6_jn4m8")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -199,17 +200,17 @@ script = ExtResource("21_pinball")
 PinballAreaPath = NodePath("../../../../Sprite2D/PinballAttackArea")
 PinballMinSpeed = 50.0
 SpeedDecayPerSecond = 600.0
+PinballDuration = 5.0
 AttackName = "PinballAttack"
 WarmupDuration = 0.5
 ActiveDuration = 2.2
 RecoveryDuration = 0.5
-CooldownDurationMultiplier = 0.0
 KnockbackDistance = 80.0
 KnockbackDuration = 0.15
 KnockbackSpeed = 1500.0
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-metadata/attack_weight = 30.0
+metadata/attack_weight = 0.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("13_bcq2h")
@@ -217,7 +218,6 @@ AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.75
 ActiveDuration = 1.25
 RecoveryDuration = 1.0
-CooldownDurationMultiplier = 0.0
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 30.0
@@ -229,7 +229,20 @@ GrantedImmunities = 8
 EffectScene = ExtResource("13_ybbps")
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
-metadata/attack_weight = 70.0
+metadata/attack_weight = 0.0
+
+[node name="LockdownAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("14_641yn")
+AttackName = "LockdownAttack"
+WarmupDuration = 2.0
+ActiveDuration = 1.2
+RecoveryDuration = 0.8
+CooldownDurationMultiplier = 0.5
+DamageMultiplier = 0.0
+AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+GrantedImmunities = 24
+EffectScene = ExtResource("15_4k14f")
+metadata/attack_weight = 30.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("14_0em3l")
@@ -257,6 +270,7 @@ script = ExtResource("20_4mxgn")
 script = ExtResource("22_anim")
 SpineSpritePath = NodePath("../SpineSprite")
 AttackMixDuration = 0.2
+SkillMixDuration = 0.3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
 target_desired_distance = 50.0

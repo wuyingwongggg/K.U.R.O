@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6c3r3w6owctg"]
+
+[ext_resource type="PackedScene" uid="uid://c3f10a80fd4d0" path="res://resources/effects/MeetingBarrier.tscn" id="1_barrier"]
+
+[node name="LockdownWallEffect" type="Node2D"]
+z_index = 1
+y_sort_enabled = true
+
+[node name="Wall1" parent="." instance=ExtResource("1_barrier")]
+position = Vector2(750, -500)
+rotation = 0.5235988
+
+[node name="Wall2" parent="." instance=ExtResource("1_barrier")]
+position = Vector2(750, 500)
+rotation = -0.5235988
+
+[node name="Wall3" parent="." instance=ExtResource("1_barrier")]
+position = Vector2(-750, -500)
+rotation = -0.5235988
+
+[node name="Wall4" parent="." instance=ExtResource("1_barrier")]
+position = Vector2(-750, 500)
+rotation = 0.5235988

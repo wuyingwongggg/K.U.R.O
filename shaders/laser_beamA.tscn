@@ -11,14 +11,14 @@
 shader = ExtResource("2_vl6ap")
 shader_parameter/glow_intensity = 50.0
 shader_parameter/core_width = 0.550000026125
-shader_parameter/core_length = 0.90000004275
+shader_parameter/core_length = 0.9600000456
 shader_parameter/fade = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mxyg0"]
 shader = ExtResource("2_vl6ap")
 shader_parameter/glow_intensity = 1.6000000760000002
 shader_parameter/core_width = 0.400000019
-shader_parameter/core_length = 0.850000040375
+shader_parameter/core_length = 0.930000044175
 shader_parameter/fade = 1.0
 
 [node name="LaserBeamA" type="Node2D"]
@@ -28,9 +28,8 @@ script = ExtResource("1_script")
 MaxLength = 1500.0
 BeamWidth = 15.0
 GlowWidth = 45.0
-GrowDuration = 0.0
-Lifetime = 0.8
-FadeDuration = 0.5
+Lifetime = 0.4
+FadeDuration = 0.3
 Damage = 20
 KnockbackDistance = 50.0
 KnockbackSpeed = 1000.0

@@ -113,6 +113,12 @@ namespace Kuros.Actors.Enemies.Animation
 					PlayPartLoopIfNeeded("Skill", AttackAnimation, AttackLoopStart, AttackLoopEnd, SkillMixDuration);
 					return;
 				}
+
+				if (attackName.Equals(controller.LockdownAttackName, _comparison))
+				{
+					PlayOnceIfNeeded("Skill", SkillAnimation, SkillMixDuration);
+					return;
+				}
 			}
 
 			PlayIdle();

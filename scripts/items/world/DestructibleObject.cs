@@ -1,0 +1,270 @@
+using System;
+using Godot;
+
+namespace Kuros.Items.World
+{
+	public partial class DestructibleObject : Node2D
+	{
+		[ExportCategory("Health")]
+		[Export] public bool Destructible { get; set; } = true;
+		[Export(PropertyHint.Range, "1,9999,1")] public float MaxHP = 60f;
+		[Export(PropertyHint.Range, "0.1,5,0.05")] public float DamageCooldown = 0.2f;
+		public float CurrentHP { get; private set; }
+
+		[ExportCategory("Collision")]
+		[Export(PropertyHint.Range, "0,2,0.05")] public float CollisionEnableDelay = 0.15f;
+		[Export] public NodePath StaticBodyPath { get; set; } = new("StaticBody2D");
+
+		[ExportCategory("Hit Flash")]
+		[Export] public NodePath HitFlashSpritePath { get; set; } = new();
+		[Export(PropertyHint.Range, "0.01,2,0.01")] public float HitFlashDuration = 0.15f;
+		[Export(PropertyHint.Range, "1,120,1")] public float HitFlashSpeed = 30f;
+		[Export(PropertyHint.Range, "0,500,0.1")] public float HitShakeIntensity = 100f;
+		[Export] public Color HitFlashColor = new(1f, 1f, 1f, 1f);
+
+		[ExportCategory("Scanline Reveal")]
+		[Export] public bool ScanlineEnabled = true;
+		[Export] public NodePath ScanlineSpritePath { get; set; } = new("Sprite2D");
+		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineSpawnDuration = 0.3f;
+		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineDespawnDuration = 0.2f;
+
+		[ExportCategory("Destroy")]
+		[Export] public PackedScene? DestroyEffectScene { get; set; }
+		[Export] public NodePath DestructionAnimationPlayerPath { get; set; } = new();
+		[Export] public string DestructionAnimationName { get; set; } = "destroy";
+		[Export(PropertyHint.Range, "0.01,10,0.01")] public float DestructionAnimationDuration = 0.5f;
+
+		private Sprite2D? _hitFlashTarget;
+		private Sprite2D? _hitFlashOverlay;
+		private ShaderMaterial? _hitFlashMaterial;
+		private float _hitFlashTimer;
+		private bool _hitFlashActive;
+		private float _damageCooldownRemaining;
+		private bool _isDestroying;
+		private StaticBody2D? _staticBody;
+		private uint _originalCollisionLayer;
+		private uint _originalCollisionMask;
+		private ShaderMaterial? _scanlineMaterial;
+
+		public override void _Ready()
+		{
+			CurrentHP = MaxHP;
+			SetupHitFlash();
+			SetupScanline();
+			ResolveAndDisableCollision();
+			PlayScanlineSpawn();
+		}
+
+		public override void _Process(double delta)
+		{
+			if (_hitFlashActive)
+			{
+				_hitFlashTimer -= (float)delta;
+				if (_hitFlashTimer <= 0f)
+					EndHitFlash();
+				else
+					_hitFlashMaterial?.SetShaderParameter("hit_effect", _hitFlashTimer / HitFlashDuration);
+			}
+
+			if (_damageCooldownRemaining > 0f)
+				_damageCooldownRemaining -= (float)delta;
+		}
+
+		public void TakeDamage(float damage)
+		{
+			if (!Destructible) return;
+			if (CurrentHP <= 0f) return;
+			if (_damageCooldownRemaining > 0f) return;
+
+			CurrentHP = Mathf.Max(0f, CurrentHP - damage);
+			_damageCooldownRemaining = DamageCooldown;
+			TriggerHitFlash();
+
+			if (CurrentHP <= 0f)
+				Destroy();
+		}
+
+		private void Destroy()
+		{
+			if (_isDestroying) return;
+			_isDestroying = true;
+
+			DisableCollision();
+
+			Action doDestroy = () =>
+			{
+				Vector2 spawnPos = GlobalPosition;
+				if (DestroyEffectScene != null)
+				{
+					var effect = DestroyEffectScene.Instantiate();
+					if (effect is Node2D node2D)
+					{
+						GetParent()?.AddChild(node2D);
+						node2D.GlobalPosition = spawnPos;
+					}
+					else
+					{
+						effect.QueueFree();
+					}
+				}
+
+				AnimationPlayer? animPlayer = null;
+				if (!DestructionAnimationPlayerPath.IsEmpty)
+					animPlayer = GetNodeOrNull<AnimationPlayer>(DestructionAnimationPlayerPath);
+				animPlayer ??= FindChild("AnimationPlayer", recursive: true) as AnimationPlayer;
+
+				if (animPlayer != null && animPlayer.HasAnimation(DestructionAnimationName))
+				{
+					animPlayer.Play(DestructionAnimationName);
+					animPlayer.AnimationFinished += _ => QueueFree();
+					return;
+				}
+
+				if (DestructionAnimationDuration > 0f)
+					GetTree().CreateTimer(DestructionAnimationDuration).Timeout += () => QueueFree();
+				else
+					QueueFree();
+			};
+
+			if (_scanlineMaterial != null && ScanlineEnabled)
+				PlayScanlineDespawn(doDestroy);
+			else
+				doDestroy();
+		}
+
+		private void ResolveAndDisableCollision()
+		{
+			if (!StaticBodyPath.IsEmpty)
+				_staticBody = GetNodeOrNull<StaticBody2D>(StaticBodyPath);
+			_staticBody ??= FindChild("StaticBody2D", recursive: true) as StaticBody2D;
+
+			if (_staticBody == null) return;
+
+			_originalCollisionLayer = _staticBody.CollisionLayer;
+			_originalCollisionMask = _staticBody.CollisionMask;
+			_staticBody.CollisionLayer = 0;
+			_staticBody.CollisionMask = 0;
+
+			if (CollisionEnableDelay > 0f)
+				GetTree().CreateTimer(CollisionEnableDelay).Timeout += EnableCollision;
+			else
+				CallDeferred(MethodName.EnableCollision);
+		}
+
+		private void EnableCollision()
+		{
+			if (_staticBody == null || !IsInstanceValid(_staticBody)) return;
+			_staticBody.CollisionLayer = _originalCollisionLayer;
+			_staticBody.CollisionMask = _originalCollisionMask;
+		}
+
+		private void DisableCollision()
+		{
+			if (_staticBody == null || !IsInstanceValid(_staticBody)) return;
+			_staticBody.CollisionLayer = 0;
+			_staticBody.CollisionMask = 0;
+		}
+
+		private void SetupHitFlash()
+		{
+			if (HitFlashSpritePath.IsEmpty) return;
+
+			_hitFlashTarget = GetNodeOrNull<Sprite2D>(HitFlashSpritePath);
+			if (_hitFlashTarget == null) return;
+
+			var shader = GD.Load<Shader>("res://shaders/materials/trigger_hit.gdshader");
+			if (shader == null) return;
+
+			_hitFlashMaterial = new ShaderMaterial();
+			_hitFlashMaterial.Shader = shader;
+			_hitFlashMaterial.SetShaderParameter("get_hit", false);
+			_hitFlashMaterial.SetShaderParameter("hit_effect", 0f);
+			_hitFlashMaterial.SetShaderParameter("flash_color", HitFlashColor);
+			_hitFlashMaterial.SetShaderParameter("flash_speed", HitFlashSpeed);
+			_hitFlashMaterial.SetShaderParameter("shake_intensity", HitShakeIntensity);
+
+			// 创建独立叠加层，不触碰原 Sprite 的 Material
+			_hitFlashOverlay = new Sprite2D();
+			_hitFlashOverlay.Name = "_HitFlashOverlay";
+			_hitFlashOverlay.Texture = _hitFlashTarget.Texture;
+			_hitFlashOverlay.Centered = _hitFlashTarget.Centered;
+			_hitFlashOverlay.Offset = _hitFlashTarget.Offset;
+			_hitFlashOverlay.RegionEnabled = _hitFlashTarget.RegionEnabled;
+			_hitFlashOverlay.RegionRect = _hitFlashTarget.RegionRect;
+			_hitFlashOverlay.Scale = _hitFlashTarget.Scale;
+			_hitFlashOverlay.Visible = false;
+			_hitFlashOverlay.ZIndex = _hitFlashTarget.ZIndex + 1;
+			_hitFlashTarget.AddSibling(_hitFlashOverlay);
+		}
+
+		private void TriggerHitFlash()
+		{
+			if (_hitFlashOverlay == null || _hitFlashMaterial == null) return;
+
+			_hitFlashOverlay.Material = _hitFlashMaterial;
+			_hitFlashOverlay.Visible = true;
+			_hitFlashMaterial.SetShaderParameter("get_hit", true);
+			_hitFlashMaterial.SetShaderParameter("hit_effect", 1f);
+			_hitFlashTimer = HitFlashDuration;
+			_hitFlashActive = true;
+		}
+
+		private void EndHitFlash()
+		{
+			_hitFlashActive = false;
+			_hitFlashMaterial?.SetShaderParameter("get_hit", false);
+			_hitFlashMaterial?.SetShaderParameter("hit_effect", 0f);
+
+			if (_hitFlashOverlay != null)
+				_hitFlashOverlay.Visible = false;
+		}
+
+		private void SetupScanline()
+		{
+			if (!ScanlineEnabled) return;
+
+			Sprite2D? scanlineSprite = null;
+			if (!ScanlineSpritePath.IsEmpty)
+				scanlineSprite = GetNodeOrNull<Sprite2D>(ScanlineSpritePath);
+			scanlineSprite ??= FindChild("Sprite2D", recursive: true) as Sprite2D;
+
+			if (scanlineSprite?.Material is ShaderMaterial sm)
+				_scanlineMaterial = sm;
+		}
+
+		private void PlayScanlineSpawn()
+		{
+			if (_scanlineMaterial == null) return;
+			var tree = GetTree();
+			if (tree == null) return;
+
+			_scanlineMaterial.SetShaderParameter("reverse_scan", false);
+			_scanlineMaterial.SetShaderParameter("scanline_pos", 0f);
+
+			var tween = tree.CreateTween();
+			tween.TweenMethod(
+				Callable.From<float>(pos => _scanlineMaterial.SetShaderParameter("scanline_pos", pos)),
+				0f, 1f, ScanlineSpawnDuration);
+			tween.TweenCallback(Callable.From(() =>
+			{
+				_scanlineMaterial?.SetShaderParameter("scanline_pos", -1f);
+			}));
+		}
+
+		private void PlayScanlineDespawn(Action onDone)
+		{
+			if (_scanlineMaterial == null) { onDone(); return; }
+			var tree = GetTree();
+			if (tree == null) { onDone(); return; }
+
+			_scanlineMaterial.SetShaderParameter("reverse_scan", true);
+			_scanlineMaterial.SetShaderParameter("scanline_pos", 1f);
+
+			var tween = tree.CreateTween();
+			tween.TweenMethod(
+				Callable.From<float>(pos => _scanlineMaterial.SetShaderParameter("scanline_pos", pos)),
+				1f, 0f, ScanlineDespawnDuration);
+			tween.TweenCallback(Callable.From(onDone));
+		}
+	}
+}

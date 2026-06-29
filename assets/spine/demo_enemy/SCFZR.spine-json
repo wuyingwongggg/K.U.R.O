@@ -4465,7 +4465,10 @@
 					{ "time": 2 }
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 2.3, "name": "hit" }
+		]
 	},
 	"skill2": {
 		"slots": {

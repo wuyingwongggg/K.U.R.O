@@ -4,12 +4,10 @@ using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
-	public partial class LaserBeamA : Node2D, IFacingDirectional
+	public partial class LightningBeam : Node2D, IFacingDirectional
 	{
 		[ExportCategory("Beam")]
 		[Export] public float MaxLength = 3000f;
-		[Export(PropertyHint.Range, "1,2000,1")] public float BeamWidth = 32f;
-		[Export(PropertyHint.Range, "1,2000,1")] public float GlowWidth = 96f;
 		[Export(PropertyHint.Range, "0,5,0.05")] public float GrowDuration = 0.1f;
 		[Export(PropertyHint.Range, "0,3000,10")] public float MinLength = 0f;
 
@@ -34,9 +32,7 @@ namespace Kuros.Fx
 		[Export] public bool FacingRight { get; set; } = true;
 
 		private RayCast2D? _ray;
-		private Sprite2D? _glowSprite;
-		private Sprite2D? _beamSprite;
-		private Sprite2D? _spotlight;
+		private Sprite2D? _lightningSprite;
 		private float _timer;
 		private float _currentLength;
 		private float _texWidth;
@@ -49,39 +45,24 @@ namespace Kuros.Fx
 		public override void _Ready()
 		{
 			_ray = GetNodeOrNull<RayCast2D>("RayCast2D");
-			_glowSprite = GetNodeOrNull<Sprite2D>("GlowSprite");
-			_beamSprite = GetNodeOrNull<Sprite2D>("BeamSprite");
-			_spotlight = GetNodeOrNull<Sprite2D>("Spotlight");
+			_lightningSprite = GetNodeOrNull<Sprite2D>("LightningSprite");
 
-			if (_ray == null || _beamSprite == null)
+			if (_ray == null || _lightningSprite == null)
 			{
-				GD.PushWarning("[LaserBeamA] 缺少子节点");
+				GD.PushWarning("[LightningBeam] 缺少子节点");
 				QueueFree();
 				return;
 			}
 
-			// 每个实例独立复制 Material，防止多实例共享导致 fade 残留
-			if (_glowSprite?.Material is ShaderMaterial gm)
-			{
-				var copy = (ShaderMaterial)gm.Duplicate();
-				copy.SetShaderParameter("fade", 1.0f);
-				_glowSprite.Material = copy;
-			}
-			if (_beamSprite?.Material is ShaderMaterial bm)
-			{
-				var copy = (ShaderMaterial)bm.Duplicate();
-				copy.SetShaderParameter("fade", 1.0f);
-				_beamSprite.Material = copy;
-			}
+			if (_lightningSprite.Material is ShaderMaterial sm)
+				_lightningSprite.Material = (ShaderMaterial)sm.Duplicate();
 
-			_texWidth = _beamSprite.Texture?.GetWidth() ?? 2f;
-			_texHeight = _beamSprite.Texture?.GetHeight() ?? 2f;
+			_texWidth = _lightningSprite.Texture?.GetWidth() ?? 2f;
+			_texHeight = _lightningSprite.Texture?.GetHeight() ?? 2f;
 			if (_texWidth <= 0f) _texWidth = 2f;
 			if (_texHeight <= 0f) _texHeight = 2f;
 
-			// 预设初始 scale（MinLength，配合生长动画）
-			if (_glowSprite != null) _glowSprite.Scale = new Vector2(MinLength / _texWidth, GlowWidth / _texHeight);
-			if (_beamSprite != null) _beamSprite.Scale = new Vector2(MinLength / _texWidth, BeamWidth / _texHeight);
+			_lightningSprite.Scale = new Vector2(MinLength / _texWidth, _lightningSprite.Scale.Y);
 
 			_ray.TargetPosition = new Vector2(MaxLength, 0f);
 			_ray.Enabled = true;
@@ -112,24 +93,18 @@ namespace Kuros.Fx
 			_timer -= (float)delta;
 			if (_timer <= 0f) { QueueFree(); return; }
 
-			// 淡出：shader 通过 uniform fade 控制，spotlight 用 modulate.a
 			if (_timer < FadeDuration && FadeDuration > 0f)
 			{
 				float t = _timer / FadeDuration;
-				if (_glowSprite?.Material is ShaderMaterial gm)
-					gm.SetShaderParameter("fade", t);
-				if (_beamSprite?.Material is ShaderMaterial bm)
-					bm.SetShaderParameter("fade", t);
-				if (_spotlight != null)
+				if (_lightningSprite != null)
 				{
-					var c = _spotlight.Modulate;
-					_spotlight.Modulate = new Color(c.R, c.G, c.B, c.A * t);
+					var c = _lightningSprite.Modulate;
+					_lightningSprite.Modulate = new Color(c.R, c.G, c.B, t);
 				}
 			}
 
 			UpdateBeam();
 
-			// 生长完成后触发伤害，与视觉同步
 			if (!_hasDamaged && Lifetime - _timer >= GrowDuration)
 				TryDamagePlayer();
 		}
@@ -158,7 +133,7 @@ namespace Kuros.Fx
 
 		private void UpdateBeam()
 		{
-			if (_ray == null) return;
+			if (_ray == null || _lightningSprite == null) return;
 			_ray.ForceRaycastUpdate();
 			float rawLength = _ray.IsColliding()
 				? ToLocal(_ray.GetCollisionPoint()).Length()
@@ -168,20 +143,8 @@ namespace Kuros.Fx
 			float grow = GrowDuration > 0f ? Mathf.Clamp(elapsed / GrowDuration, 0f, 1f) : 1f;
 			_currentLength = Mathf.Lerp(MinLength, rawLength, grow);
 
-			if (_glowSprite != null)
-			{
-				_glowSprite.Position = Vector2.Zero;
-				_glowSprite.Scale = new Vector2(_currentLength / _texWidth, GlowWidth / _texHeight);
-			}
-
-			if (_beamSprite != null)
-			{
-				_beamSprite.Position = Vector2.Zero;
-				_beamSprite.Scale = new Vector2(_currentLength / _texWidth, BeamWidth / _texHeight);
-			}
-
-			if (_spotlight != null)
-				_spotlight.Position = Vector2.Zero;
+			_lightningSprite.Position = Vector2.Zero;
+			_lightningSprite.Scale = new Vector2(_currentLength / _texWidth, _lightningSprite.Scale.Y);
 		}
 
 		private void TryDamagePlayer()
