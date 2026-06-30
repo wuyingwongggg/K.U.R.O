@@ -19,8 +19,10 @@ namespace Kuros.Actors.Enemies.Attacks
         private Area2D? _playerDetectionArea;
         private string? _pendingQueueReason;
         private bool _playerInside;
-        /// <summary>子攻击完成后的攻击间隔（= 子攻击的 CooldownDuration），期间禁止发起任何攻击。</summary>
+        /// <summary>两次攻击之间的最小全局间隔。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制。</summary>
         private float _interAttackDelay = 0f;
+
+	        [Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0.1f;
 
         public EnemyAttackController()
         {
@@ -375,8 +377,8 @@ namespace Kuros.Actors.Enemies.Attacks
             // 强制清除时同步清除攻击间隔；否则应用子攻击的 CD 作为间隔
             if (clearControllerCooldown)
                 _interAttackDelay = 0f;
-            else if (childInterAttackDelay > 0f)
-                _interAttackDelay = childInterAttackDelay;
+            else if (MinInterAttackDelay > 0f)
+                _interAttackDelay = MinInterAttackDelay;
         }
 
 		private void DebugLogPendingAttackIfPlayerInside()

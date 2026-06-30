@@ -7,6 +7,7 @@ uniform float digital_noise_amount : hint_range(0.0, 1.0) = 0.15;
 uniform float glitch_amount : hint_range(0.0, 0.05) = 0.008;
 uniform float glitch_frequency : hint_range(0.0, 10.0) = 3.0;
 uniform float sparkle_density : hint_range(0.0, 1.0) = 0.08;
+uniform float alpha : hint_range(0.0, 1.0) = 1.0;
 uniform vec4 scan_color : source_color = vec4(0.4, 0.9, 1.0, 1.0);
 
 // Damage corruption
@@ -81,9 +82,10 @@ void fragment() {
 	// Damage effects
 	color.rgb += rgb_split * damage_level;
 	color.rgb += corrupt_color;
-	color.rgb += damage_sparkle * damage_color.rgb * damage_level;
-	color.a = max(max(scan_line, digital * 0.4), max(glitched_tex * glitch_trigger * 0.6, sparkle));
-	color.a = max(color.a, max(corrupt_mask * damage_level * 0.5, damage_sparkle * damage_level));
+	float effect_mask = max(max(scan_line, digital * 0.4), max(glitched_tex * glitch_trigger * 0.6, sparkle));
+		effect_mask = max(effect_mask, max(corrupt_mask * damage_level * 0.5, damage_sparkle * damage_level));
+		color.rgb *= tex.a;
+		color.a = alpha * effect_mask * tex.a;
 
-	COLOR = color;
+		COLOR = color;
 }

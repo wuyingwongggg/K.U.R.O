@@ -29,6 +29,7 @@ namespace Kuros.Items.World
 		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineDespawnDuration = 0.2f;
 
 		[ExportCategory("Destroy")]
+		[Export(PropertyHint.Range, "0,120,0.1")] public float LifeTime = 0f;
 		[Export] public PackedScene? DestroyEffectScene { get; set; }
 		[Export] public NodePath DestructionAnimationPlayerPath { get; set; } = new();
 		[Export] public string DestructionAnimationName { get; set; } = "destroy";
@@ -40,6 +41,7 @@ namespace Kuros.Items.World
 		private float _hitFlashTimer;
 		private bool _hitFlashActive;
 		private float _damageCooldownRemaining;
+		private float _lifeTimer;
 		private bool _isDestroying;
 		private StaticBody2D? _staticBody;
 		private uint _originalCollisionLayer;
@@ -68,6 +70,13 @@ namespace Kuros.Items.World
 
 			if (_damageCooldownRemaining > 0f)
 				_damageCooldownRemaining -= (float)delta;
+
+			if (LifeTime > 0f)
+			{
+				_lifeTimer += (float)delta;
+				if (_lifeTimer >= LifeTime)
+					Destroy();
+			}
 		}
 
 		public void TakeDamage(float damage)
@@ -84,7 +93,7 @@ namespace Kuros.Items.World
 				Destroy();
 		}
 
-		private void Destroy()
+		protected virtual void Destroy()
 		{
 			if (_isDestroying) return;
 			_isDestroying = true;
@@ -158,7 +167,7 @@ namespace Kuros.Items.World
 			_staticBody.CollisionMask = _originalCollisionMask;
 		}
 
-		private void DisableCollision()
+		protected void DisableCollision()
 		{
 			if (_staticBody == null || !IsInstanceValid(_staticBody)) return;
 			_staticBody.CollisionLayer = 0;
@@ -183,7 +192,6 @@ namespace Kuros.Items.World
 			_hitFlashMaterial.SetShaderParameter("flash_speed", HitFlashSpeed);
 			_hitFlashMaterial.SetShaderParameter("shake_intensity", HitShakeIntensity);
 
-			// 创建独立叠加层，不触碰原 Sprite 的 Material
 			_hitFlashOverlay = new Sprite2D();
 			_hitFlashOverlay.Name = "_HitFlashOverlay";
 			_hitFlashOverlay.Texture = _hitFlashTarget.Texture;

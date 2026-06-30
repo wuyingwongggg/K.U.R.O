@@ -1,0 +1,116 @@
+[gd_scene load_steps=16 format=3 uid="uid://xgrt1kpw7v23"]
+
+[ext_resource type="Script" uid="uid://dxqwo2iruswpp" path="res://scripts/fx/MeetingBarrier.cs" id="1_fyraf"]
+[ext_resource type="Texture2D" uid="uid://b170a3hyt6ghh" path="res://assets/effect/WallEffect/lightwall_2.png" id="2_fyraf"]
+[ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="3_7iyre"]
+[ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="4_xddpo"]
+[ext_resource type="Shader" uid="uid://6yurywigppwe" path="res://shaders/materials/meeting_barrier_glow.gdshader" id="5_vygsd"]
+[ext_resource type="Shader" uid="uid://dcg17rve3o6x0" path="res://shaders/materials/meeting_barrier_scan.gdshader" id="6_74s8m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_core"]
+shader = ExtResource("3_7iyre")
+shader_parameter/alpha = 0.8
+shader_parameter/damage_level = 0.0
+shader_parameter/core_color = Color(0.3, 0.8, 1, 1)
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_build"]
+shader = ExtResource("4_xddpo")
+shader_parameter/build_progress = 0.0
+shader_parameter/scanline_width = 0.025
+shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/edge_glow = 0.06
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow"]
+shader = ExtResource("5_vygsd")
+shader_parameter/edge_width = 0.3
+shader_parameter/edge_power = 2.0
+shader_parameter/glow_intensity = 1.0
+shader_parameter/breath_speed = 3.0
+shader_parameter/breath_amplitude = 0.2
+shader_parameter/glow_color = Color(0.4, 0.9, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_scan"]
+shader = ExtResource("6_74s8m")
+shader_parameter/scan_speed = 0.5
+shader_parameter/scan_line_width = 0.01
+shader_parameter/digital_noise_amount = 0.15
+shader_parameter/glitch_amount = 0.008
+shader_parameter/glitch_frequency = 3.0
+shader_parameter/sparkle_density = 0.08
+shader_parameter/alpha = 1.0
+shader_parameter/scan_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/damage_level = 0.0
+shader_parameter/damage_glitch_intensity = 0.04
+shader_parameter/damage_block_density = 0.2
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fyraf"]
+size = Vector2(300, 50)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_clhqd"]
+size = Vector2(50, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7iyre"]
+size = Vector2(50, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xddpo"]
+size = Vector2(50, 350)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vygsd"]
+size = Vector2(50, 220)
+
+[node name="MeetingBarrier_bottomright" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_fyraf")
+DespawnDuration = 0.8
+MaxHP = 80.0
+CollisionEnableDelay = 0.4
+HitFlashSpritePath = NodePath("CoreWall")
+HitShakeIntensity = 20.0
+ScanlineSpritePath = NodePath("")
+LifeTime = 20.0
+
+[node name="CoreWall" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_core")
+texture = ExtResource("2_fyraf")
+
+[node name="BuildMask" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_build")
+texture = ExtResource("2_fyraf")
+
+[node name="GlowWall" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_glow")
+texture = ExtResource("2_fyraf")
+
+[node name="ScanFX" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_scan")
+texture = ExtResource("2_fyraf")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-140, 70)
+rotation = -0.08726646
+shape = SubResource("RectangleShape2D_fyraf")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(90, 40)
+rotation = 1.3962634
+shape = SubResource("RectangleShape2D_clhqd")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(250, -50)
+rotation = 0.6981317
+shape = SubResource("RectangleShape2D_7iyre")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(180, -70)
+rotation = 0.87266463
+shape = SubResource("RectangleShape2D_xddpo")
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(310, -215)
+shape = SubResource("RectangleShape2D_vygsd")

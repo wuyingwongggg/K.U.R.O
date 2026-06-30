@@ -35,7 +35,7 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,5,0.01")] public float WarmupDuration = 0.2f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float ActiveDuration = 0.15f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float RecoveryDuration = 0.35f;
-        [Export(PropertyHint.Range, "0,10,0.1")] public float CooldownDurationMultiplier = 1.0f;
+        [Export(PropertyHint.Range, "0,30,0.1")] public float CooldownDurationMultiplier = 1.0f;
 
         [ExportCategory("Combat")]
         [Export(PropertyHint.Range, "0,10,0.1")] public float DamageMultiplier = 1.0f;

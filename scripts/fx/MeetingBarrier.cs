@@ -14,17 +14,25 @@ namespace Kuros.Fx
 
 		[ExportCategory("Build Animation")]
 		[Export(PropertyHint.Range, "0.1,3,0.05")] public float BuildDuration = 0.5f;
-		[Export(PropertyHint.Range, "0.1,3,0.05")] public float DespawnDuration = 0.3f;
+		[Export(PropertyHint.Range, "0.1,3,0.05")] public float DespawnDuration = 0.8f;
 
 		private ShaderMaterial? _buildMaterial;
+		private ShaderMaterial? _coreMaterial;
+		private ShaderMaterial? _glowMaterial;
 		private ShaderMaterial? _scanMaterial;
+		private Sprite2D? _coreSprite;
+		private Sprite2D? _buildSprite;
+		private Sprite2D? _glowSprite;
+		private Sprite2D? _scanSprite;
 
-		public bool IsDespawning { get; private set; }
+		private bool _despawning;
+		private float _despawnTimer;
 
 		public override void _Ready()
 		{
 			ScanlineEnabled = false;
 			base._Ready();
+			ResolveSprites();
 			ResolveMaterials();
 			PlaySpawnAnimation();
 		}
@@ -32,13 +40,36 @@ namespace Kuros.Fx
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
-			if (_scanMaterial != null && MaxHP > 0f)
-				_scanMaterial.SetShaderParameter("damage_level", 1.0f - CurrentHP / MaxHP);
+
+			if (MaxHP > 0f)
+			{
+				float level = 1.0f - CurrentHP / MaxHP;
+				_scanMaterial?.SetShaderParameter("damage_level", level);
+				_coreMaterial?.SetShaderParameter("damage_level", level);
+			}
+
+			if (_despawning)
+			{
+				_despawnTimer -= (float)delta;
+				if (_despawnTimer <= 0f)
+				{
+					SetLayerVisibility(false);
+					DoBaseDestroy();
+				}
+				else
+				{
+					float t = Mathf.Max(0f, _despawnTimer / DespawnDuration);
+					_coreMaterial?.SetShaderParameter("alpha", t);
+					_glowMaterial?.SetShaderParameter("alpha", t);
+					_scanMaterial?.SetShaderParameter("alpha", t);
+				}
+			}
 		}
 
 		public void PlaySpawnAnimation()
 		{
-			IsDespawning = false;
+			_despawning = false;
+			SetShaderAlpha(1f);
 			SetBuildProgress(0f);
 			SetLayerVisibility(true);
 
@@ -55,60 +86,84 @@ namespace Kuros.Fx
 			tween.SetTrans(Tween.TransitionType.Cubic);
 		}
 
-		public void PlayDespawnAnimation(Action? onDone = null)
+		protected override void Destroy()
 		{
-			if (IsDespawning)
+			if (_despawning) return;
+			_despawning = true;
+			_despawnTimer = DespawnDuration;
+			DisableCollision();
+		}
+
+		private void DoBaseDestroy()
+		{
+			Vector2 spawnPos = GlobalPosition;
+			if (DestroyEffectScene != null)
 			{
-				onDone?.Invoke();
+				var effect = DestroyEffectScene.Instantiate();
+				if (effect is Node2D node2D)
+				{
+					GetParent()?.AddChild(node2D);
+					node2D.GlobalPosition = spawnPos;
+				}
+				else
+				{
+					effect.QueueFree();
+				}
+			}
+
+			AnimationPlayer? animPlayer = null;
+			if (!DestructionAnimationPlayerPath.IsEmpty)
+				animPlayer = GetNodeOrNull<AnimationPlayer>(DestructionAnimationPlayerPath);
+			animPlayer ??= FindChild("AnimationPlayer", recursive: true) as AnimationPlayer;
+
+			if (animPlayer != null && animPlayer.HasAnimation(DestructionAnimationName))
+			{
+				animPlayer.Play(DestructionAnimationName);
+				animPlayer.AnimationFinished += _ => QueueFree();
 				return;
 			}
-			IsDespawning = true;
 
-			if (_buildMaterial == null)
-			{
-				onDone?.Invoke();
-				return;
-			}
+			if (DestructionAnimationDuration > 0f)
+				GetTree().CreateTimer(DestructionAnimationDuration).Timeout += () => QueueFree();
+			else
+				QueueFree();
+		}
 
-			var tree = GetTree();
-			if (tree == null)
-			{
-				onDone?.Invoke();
-				return;
-			}
+		private void ResolveSprites()
+		{
+			_coreSprite = GetSprite(CoreWallPath);
+			_buildSprite = GetSprite(BuildMaskPath);
+			_glowSprite = GetSprite(GlowWallPath);
+			_scanSprite = GetSprite(ScanFXPath);
+		}
 
-			var tween = tree.CreateTween();
-			tween.TweenMethod(
-				Callable.From<float>(pos => _buildMaterial.SetShaderParameter("build_progress", pos)),
-				1f, 0f, DespawnDuration);
-			tween.SetEase(Tween.EaseType.In);
-			tween.SetTrans(Tween.TransitionType.Cubic);
-			tween.TweenCallback(Callable.From(() =>
-			{
-				SetLayerVisibility(false);
-				onDone?.Invoke();
-			}));
+		private Sprite2D? GetSprite(NodePath path)
+		{
+			if (path.IsEmpty) return null;
+			return GetNodeOrNull<Sprite2D>(path);
 		}
 
 		private void ResolveMaterials()
 		{
-			if (!BuildMaskPath.IsEmpty)
+			if (_coreSprite?.Material is ShaderMaterial smc)
 			{
-				var sprite = GetNodeOrNull<Sprite2D>(BuildMaskPath);
-				if (sprite?.Material is ShaderMaterial sm)
-				{
-					_buildMaterial = (ShaderMaterial)sm.Duplicate();
-					sprite.Material = _buildMaterial;
-				}
+				_coreMaterial = (ShaderMaterial)smc.Duplicate();
+				_coreSprite.Material = _coreMaterial;
 			}
-			if (!ScanFXPath.IsEmpty)
+			if (_buildSprite?.Material is ShaderMaterial sm)
 			{
-				var sprite = GetNodeOrNull<Sprite2D>(ScanFXPath);
-				if (sprite?.Material is ShaderMaterial sm)
-				{
-					_scanMaterial = (ShaderMaterial)sm.Duplicate();
-					sprite.Material = _scanMaterial;
-				}
+				_buildMaterial = (ShaderMaterial)sm.Duplicate();
+				_buildSprite.Material = _buildMaterial;
+			}
+			if (_glowSprite?.Material is ShaderMaterial smg)
+			{
+				_glowMaterial = (ShaderMaterial)smg.Duplicate();
+				_glowSprite.Material = _glowMaterial;
+			}
+			if (_scanSprite?.Material is ShaderMaterial sm2)
+			{
+				_scanMaterial = (ShaderMaterial)sm2.Duplicate();
+				_scanSprite.Material = _scanMaterial;
 			}
 		}
 
@@ -117,18 +172,23 @@ namespace Kuros.Fx
 			_buildMaterial?.SetShaderParameter("build_progress", progress);
 		}
 
-		private void SetLayerVisibility(bool visible)
+		private void SetShaderAlpha(float a)
 		{
-			SetSpriteVisible(CoreWallPath, visible);
-			SetSpriteVisible(BuildMaskPath, visible);
-			SetSpriteVisible(GlowWallPath, visible);
-			SetSpriteVisible(ScanFXPath, visible);
+			_coreMaterial?.SetShaderParameter("alpha", a);
+			_glowMaterial?.SetShaderParameter("alpha", a);
+			_scanMaterial?.SetShaderParameter("alpha", a);
 		}
 
-		private void SetSpriteVisible(NodePath path, bool visible)
+		private void SetLayerVisibility(bool visible)
 		{
-			if (path.IsEmpty) return;
-			var sprite = GetNodeOrNull<CanvasItem>(path);
+			SetSpriteVisible(_coreSprite, visible);
+			SetSpriteVisible(_buildSprite, visible);
+			SetSpriteVisible(_glowSprite, visible);
+			SetSpriteVisible(_scanSprite, visible);
+		}
+
+		private static void SetSpriteVisible(CanvasItem? sprite, bool visible)
+		{
 			if (sprite != null) sprite.Visible = visible;
 		}
 	}
