@@ -29,8 +29,8 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 			
-			// Stop running if shift is released
-			if (!IsActionPressed("run"))
+			// Stop running if shift is released (long press no longer held)
+			if (!IsActionLongPressHeld("run"))
 			{
 				ChangeState("Walk");
 				return;

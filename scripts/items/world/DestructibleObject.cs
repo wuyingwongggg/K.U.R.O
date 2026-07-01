@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 namespace Kuros.Items.World
 {
 	public partial class DestructibleObject : Node2D
 	{
+		private static readonly HashSet<SceneTree> PendingRebakeScenes = new();
+		private static bool _rebakeTimerScheduled;
 		[ExportCategory("Health")]
 		[Export] public bool Destructible { get; set; } = true;
 		[Export(PropertyHint.Range, "1,9999,1")] public float MaxHP = 60f;
@@ -50,12 +53,23 @@ namespace Kuros.Items.World
 
 		public override void _Ready()
 		{
+			if (!IsInGroup("world_items"))
+				AddToGroup("world_items");
+
 			CurrentHP = MaxHP;
 			SetupHitFlash();
 			SetupScanline();
 			ResolveAndDisableCollision();
 			PlayScanlineSpawn();
+			if (HasNavigationSourceGeometryDescendant(this))
+				ScheduleNavigationRebake();
 		}
+		public override void _ExitTree()
+		{
+			if (HasNavigationSourceGeometryDescendant(this))
+				ScheduleNavigationRebake();
+		}
+
 
 		public override void _Process(double delta)
 		{
@@ -273,6 +287,49 @@ namespace Kuros.Items.World
 				Callable.From<float>(pos => _scanlineMaterial.SetShaderParameter("scanline_pos", pos)),
 				1f, 0f, ScanlineDespawnDuration);
 			tween.TweenCallback(Callable.From(onDone));
+		}
+		private static bool HasNavigationSourceGeometryDescendant(Node node)
+		{
+			foreach (Node child in node.GetChildren())
+			{
+				if (child.IsInGroup("navigation_polygon_source_geometry_group")) return true;
+				if (HasNavigationSourceGeometryDescendant(child)) return true;
+			}
+			return false;
+		}
+
+		private static void RebakeAllNavigationRegions(Node node)
+		{
+			if (!GodotObject.IsInstanceValid(node)) return;
+			if (node is NavigationRegion2D navRegion)
+			{
+				navRegion.BakeNavigationPolygon();
+				return;
+			}
+			foreach (Node child in node.GetChildren())
+				RebakeAllNavigationRegions(child);
+		}
+
+		private static void ScheduleNavigationRebake()
+		{
+			var tree = Engine.GetMainLoop() as SceneTree;
+			if (tree == null) return;
+
+			PendingRebakeScenes.Add(tree);
+
+			if (_rebakeTimerScheduled) return;
+
+			_rebakeTimerScheduled = true;
+			tree.CreateTimer(0.0).Timeout += () =>
+			{
+				_rebakeTimerScheduled = false;
+				foreach (var sceneTree in PendingRebakeScenes)
+				{
+					var scene = sceneTree.CurrentScene;
+					if (scene != null) RebakeAllNavigationRegions(scene);
+				}
+				PendingRebakeScenes.Clear();
+			};
 		}
 	}
 }

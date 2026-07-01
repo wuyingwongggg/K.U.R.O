@@ -64,7 +64,19 @@ namespace Kuros.Actors.Heroes.States
 
             return false;
         }
-        
+
+        protected bool IsActionLongPressHeld(string actionName)
+            => Player.IsActionLongPressHeld(actionName);
+
+        protected bool WasActionLongPressTriggered(string actionName)
+            => Player.WasActionLongPressTriggered(actionName);
+
+        protected bool WasActionShortPressed(string actionName)
+            => Player.WasActionShortPressed(actionName);
+
+        protected float GetActionHoldDuration(string actionName)
+            => Player.GetActionHoldDuration(actionName);
+
         /// <summary>
         /// 检查是否应该处理玩家输入（移动和攻击）
         /// 如果对话正在进行或刚刚结束，则返回false，阻止移动和攻击输入

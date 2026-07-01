@@ -1,0 +1,79 @@
+[gd_scene load_steps=10 format=3 uid="uid://b4qqpgiusbp7l"]
+
+[ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="1_tbjep"]
+[ext_resource type="Texture2D" uid="uid://e6qg3hxyt36u" path="res://assets/effect/WallEffect/firewallB_1.png" id="2_tbjep"]
+[ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="3_jdtr2"]
+[ext_resource type="Shader" uid="uid://6yurywigppwe" path="res://shaders/materials/meeting_barrier_glow.gdshader" id="4_6najf"]
+[ext_resource type="Shader" uid="uid://dcg17rve3o6x0" path="res://shaders/materials/meeting_barrier_scan.gdshader" id="5_6wneh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rw4bx"]
+shader = ExtResource("1_tbjep")
+shader_parameter/alpha = 0.8
+shader_parameter/damage_level = 0.0
+shader_parameter/core_color = Color(0.3019608, 0.6745098, 1, 1)
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gouo6"]
+shader = ExtResource("3_jdtr2")
+shader_parameter/build_progress = 0.0
+shader_parameter/scanline_width = 0.025
+shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/edge_glow = 0.06
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0i87u"]
+shader = ExtResource("4_6najf")
+shader_parameter/edge_width = 0.3
+shader_parameter/edge_power = 2.0
+shader_parameter/alpha = 1.0
+shader_parameter/glow_intensity = 1.0
+shader_parameter/breath_speed = 3.0
+shader_parameter/breath_amplitude = 0.2
+shader_parameter/glow_color = Color(0.4, 0.9, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tjiw8"]
+shader = ExtResource("5_6wneh")
+shader_parameter/scan_speed = 0.5
+shader_parameter/scan_line_width = 0.01
+shader_parameter/digital_noise_amount = 0.15
+shader_parameter/glitch_amount = 0.008
+shader_parameter/glitch_frequency = 3.0
+shader_parameter/sparkle_density = 0.08
+shader_parameter/alpha = 1.0
+shader_parameter/scan_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/damage_level = 0.0
+shader_parameter/damage_glitch_intensity = 0.04
+shader_parameter/damage_block_density = 0.2
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[node name="FireWallA" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+
+[node name="CoreWall" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_rw4bx")
+rotation = -0.6981317
+skew = 0.39618975
+texture = ExtResource("2_tbjep")
+offset = Vector2(-80, -250)
+
+[node name="BuildMask" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_gouo6")
+rotation = -0.6981317
+skew = 0.39618975
+texture = ExtResource("2_tbjep")
+offset = Vector2(-80, -250)
+
+[node name="GlowWall" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_0i87u")
+rotation = -0.6981317
+skew = 0.39618975
+texture = ExtResource("2_tbjep")
+offset = Vector2(-80, -250)
+
+[node name="ScanFX" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_tjiw8")
+rotation = -0.6981317
+skew = 0.39618975
+texture = ExtResource("2_tbjep")
+offset = Vector2(-80, -250)

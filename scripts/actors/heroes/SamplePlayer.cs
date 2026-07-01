@@ -113,6 +113,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public string LastMovementStateName { get; private set; } = "Idle";
 	public bool AiInputOverrideEnabled { get; private set; }
 
+	private readonly Kuros.Systems.InputTracking.InputHoldTracker _holdTracker = new();
+
 	// IPlayerStatsSource interface implementation
 	public event Action<int, int, int>? StatsUpdated;
 	
@@ -139,6 +141,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		base._Ready();
 		AddToGroup("player");
+		_holdTracker.Register("run", longPressThreshold: 0.4f);
 		
 		// Fallback: Try to find nodes if not assigned in editor (Backward compatibility)
 		if (AttackArea == null) AttackArea = GetNodeOrNull<Area2D>("AttackArea");
@@ -180,6 +183,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+		_holdTracker.Process((float)delta);
 		UpdateSyncedAttackAreaAttackBoneMotion();
 		if (!EnableStateDebugOverlay) return;
 
@@ -661,6 +665,10 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		flag = false;
 		return true;
 	}
+	public bool IsActionLongPressHeld(string actionName) => _holdTracker.IsLongPressHeld(actionName);
+	public bool WasActionLongPressTriggered(string actionName) => _holdTracker.WasLongPressTriggered(actionName);
+	public bool WasActionShortPressed(string actionName) => _holdTracker.WasShortPressed(actionName);
+	public float GetActionHoldDuration(string actionName) => _holdTracker.GetHoldDuration(actionName);
 
 	// private async System.Threading.Tasks.Task RequestAiDecisionTestAsync()
 	// {

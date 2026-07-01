@@ -12,16 +12,16 @@
 
 ```
 攻击发起（敌人/玩家/特效）
-    │
-    ├── 有 Area2D 引用
-    │   └── DealDamageFromArea(area, damage, attacker, factions, allowSelfDamage)
-    │       ├── 玩家路径：GetFirstNodeInGroup("player") → IsHitByArea → DealToGameActor
-    │       └── 其他路径：IntersectShape → ResolveDamageReceiver → DealDamage
-    │
-    └── 有具体目标节点（信号触发）
-        └── DealDamage(target, damage, origin, attacker, source, factions, allowSelfDamage)
-            └── 遍历节点树 → GetFaction 过滤 → 自伤保护 → TakeDamage
-            └── 返回 bool：true=命中有效目标，false=未命中（阵营不匹配）
+	│
+	├── 有 Area2D 引用
+	│   └── DealDamageFromArea(area, damage, attacker, factions, allowSelfDamage)
+	│       ├── 玩家路径：GetFirstNodeInGroup("player") → IsHitByArea → DealToGameActor
+	│       └── 其他路径：IntersectShape → ResolveDamageReceiver → DealDamage
+	│
+	└── 有具体目标节点（信号触发）
+		└── DealDamage(target, damage, origin, attacker, source, factions, allowSelfDamage)
+			└── 遍历节点树 → GetFaction 过滤 → 自伤保护 → TakeDamage
+			└── 返回 bool：true=命中有效目标，false=未命中（阵营不匹配）
 ```
 
 ---
@@ -32,13 +32,13 @@
 
 ```csharp
 public static bool DealDamage(
-    Node target,
-    float damage,
-    Vector2? origin = null,
-    GameActor? attacker = null,
-    DamageSource source = DamageSource.DirectAttack,
-    TargetableFactions allowedFactions = TargetableFactions.All,
-    bool allowSelfDamage = false)
+	Node target,
+	float damage,
+	Vector2? origin = null,
+	GameActor? attacker = null,
+	DamageSource source = DamageSource.DirectAttack,
+	TargetableFactions allowedFactions = TargetableFactions.All,
+	bool allowSelfDamage = false)
 ```
 
 **流程**：
@@ -52,11 +52,11 @@ public static bool DealDamage(
 
 ```csharp
 public static void DealDamageFromArea(
-    Area2D area,
-    float damage,
-    GameActor? attacker,
-    TargetableFactions allowedFactions = TargetableFactions.All,
-    bool allowSelfDamage = false)
+	Area2D area,
+	float damage,
+	GameActor? attacker,
+	TargetableFactions allowedFactions = TargetableFactions.All,
+	bool allowSelfDamage = false)
 ```
 
 **两条路径**：
@@ -81,11 +81,11 @@ IntersectShape(area.Shape) → 扫描所有重叠碰撞体 → ResolveDamageRece
 [Flags]
 public enum TargetableFactions
 {
-    None      = 0,
-    Player    = 1 << 0,  // group "player"
-    Enemy     = 1 << 1,  // group "enemies"
-    WorldItem = 1 << 2,  // group "world_items"
-    All       = Player | Enemy | WorldItem
+	None      = 0,
+	Player    = 1 << 0,  // group "player"
+	Enemy     = 1 << 1,  // group "enemies"
+	WorldItem = 1 << 2,  // group "world_items"
+	All       = Player | Enemy | WorldItem
 }
 ```
 
@@ -136,12 +136,12 @@ bool allowSelfDamage = false
 
 protected void DealDamage(Area2D area)
 {
-    DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions, AllowSelfDamage);
+	DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions, AllowSelfDamage);
 }
 
 protected void DealDamage(Area2D area, int damageOverride)
 {
-    DamageDispatcher.DealDamageFromArea(area, damageOverride, Enemy, TargetableFactions, AllowSelfDamage);
+	DamageDispatcher.DealDamageFromArea(area, damageOverride, Enemy, TargetableFactions, AllowSelfDamage);
 }
 ```
 
@@ -163,22 +163,22 @@ _attackArea.AreaEntered += OnAreaEntered;
 
 void OnBodyEntered(Node body)
 {
-    if (_hit) return;
-    // 自伤守卫（受 AllowSelfDamage 控制）
-    if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+	if (_hit) return;
+	// 自伤守卫（受 AllowSelfDamage 控制）
+	if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
 
-    bool alreadyInvincible = body is MainCharacter mc && mc.IsHitInvincible;
+	bool alreadyInvincible = body is MainCharacter mc && mc.IsHitInvincible;
 
-    // 关键：检查返回值，阵营不匹配则不自毁
-    bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-        DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
-    if (!dealt) return;
+	// 关键：检查返回值，阵营不匹配则不自毁
+	bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+		DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
+	if (!dealt) return;
 
-    if (!alreadyInvincible && body is GameActor hitActor)
-        ApplyKnockback(hitActor);
+	if (!alreadyInvincible && body is GameActor hitActor)
+		ApplyKnockback(hitActor);
 
-    _hit = true;
-    QueueFree();
+	_hit = true;
+	QueueFree();
 }
 ```
 
@@ -189,16 +189,16 @@ void OnBodyEntered(Node body)
 ```csharp
 private void ResolveAttacker()
 {
-    var parent = GetParent();
-    if (parent == null) return;
-    foreach (var child in parent.GetChildren())
-    {
-        if (child.IsInGroup("enemies") && child is GameActor ga)
-        {
-            _attacker = ga;
-            break;
-        }
-    }
+	var parent = GetParent();
+	if (parent == null) return;
+	foreach (var child in parent.GetChildren())
+	{
+		if (child.IsInGroup("enemies") && child is GameActor ga)
+		{
+			_attacker = ga;
+			break;
+		}
+	}
 }
 ```
 

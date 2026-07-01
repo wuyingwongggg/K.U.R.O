@@ -25,6 +25,7 @@ shader_parameter/edge_glow = 0.06
 shader = ExtResource("5_uqd6c")
 shader_parameter/edge_width = 0.3
 shader_parameter/edge_power = 2.0
+shader_parameter/alpha = 1.0
 shader_parameter/glow_intensity = 1.0
 shader_parameter/breath_speed = 3.0
 shader_parameter/breath_amplitude = 0.2
@@ -60,12 +61,11 @@ size = Vector2(50, 350)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uqd6c"]
 size = Vector2(50, 150)
 
-[node name="MeetingBarrier_topright" type="Node2D"]
+[node name="MeetingBarrier_topright" type="Node2D" groups=["navigation_polygon_source_geometry_group"]]
 z_index = 2
 y_sort_enabled = true
 scale = Vector2(1.5, 1.5)
 script = ExtResource("1_gkaro")
-DespawnDuration = 0.8
 MaxHP = 80.0
 CollisionEnableDelay = 0.4
 HitFlashSpritePath = NodePath("CoreWall")
