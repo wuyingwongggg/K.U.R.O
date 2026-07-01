@@ -51,29 +51,21 @@ y_sort_enabled = true
 
 [node name="CoreWall" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rw4bx")
-rotation = -0.6981317
-skew = 0.39618975
 texture = ExtResource("2_tbjep")
 offset = Vector2(-80, -250)
 
 [node name="BuildMask" type="Sprite2D" parent="."]
 visible = false
 material = SubResource("ShaderMaterial_gouo6")
-rotation = -0.6981317
-skew = 0.39618975
 texture = ExtResource("2_tbjep")
 offset = Vector2(-80, -250)
 
 [node name="GlowWall" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0i87u")
-rotation = -0.6981317
-skew = 0.39618975
 texture = ExtResource("2_tbjep")
 offset = Vector2(-80, -250)
 
 [node name="ScanFX" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_tjiw8")
-rotation = -0.6981317
-skew = 0.39618975
 texture = ExtResource("2_tbjep")
 offset = Vector2(-80, -250)

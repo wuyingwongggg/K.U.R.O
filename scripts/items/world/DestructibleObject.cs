@@ -61,8 +61,6 @@ namespace Kuros.Items.World
 			SetupScanline();
 			ResolveAndDisableCollision();
 			PlayScanlineSpawn();
-			if (HasNavigationSourceGeometryDescendant(this))
-				ScheduleNavigationRebake();
 		}
 		public override void _ExitTree()
 		{
@@ -179,6 +177,8 @@ namespace Kuros.Items.World
 			if (_staticBody == null || !IsInstanceValid(_staticBody)) return;
 			_staticBody.CollisionLayer = _originalCollisionLayer;
 			_staticBody.CollisionMask = _originalCollisionMask;
+			if (HasNavigationSourceGeometryDescendant(this))
+				ScheduleNavigationRebake();
 		}
 
 		protected void DisableCollision()

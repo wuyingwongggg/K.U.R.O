@@ -59,7 +59,7 @@ size = Vector2(50, 200)
 size = Vector2(50, 350)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bes0i"]
-size = Vector2(60, 220)
+size = Vector2(60, 230)
 
 [node name="MeetingBarrier_bottomleft" type="Node2D"]
 z_index = 2
@@ -112,5 +112,5 @@ rotation = -0.87266463
 shape = SubResource("RectangleShape2D_le7ft")
 
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-300, -215)
+position = Vector2(-300, -220)
 shape = SubResource("RectangleShape2D_bes0i")
