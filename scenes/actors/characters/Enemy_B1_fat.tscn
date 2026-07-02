@@ -210,7 +210,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/GrabArea")
 KnockbackDuration = 0.01
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -224,6 +224,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 24
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

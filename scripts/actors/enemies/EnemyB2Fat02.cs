@@ -4,8 +4,10 @@ using Kuros.Core.Effects;
 using Kuros.Controllers;
 using Kuros.Actors.Enemies.Attacks;
 
-public partial class EnemyB2Fat02 : SampleEnemy
+namespace Kuros.Actors.Enemies
 {
+	public partial class EnemyB2Fat02 : SampleEnemy
+	{
 	// [Export(PropertyHint.Range, "0.1,10,0.1")] public float HitWindowSeconds = 2f;
 	// [Export(PropertyHint.Range, "0.1,5,0.1")] public float FreezeOnHitDuration = 0.5f;
 	// [Export(PropertyHint.Range, "1,10,1")] public int HitsToFreeze = 2;
@@ -88,4 +90,5 @@ public partial class EnemyB2Fat02 : SampleEnemy
 	// 		_timestamps.Clear();
 	// 	}
 	// }
+	}
 }

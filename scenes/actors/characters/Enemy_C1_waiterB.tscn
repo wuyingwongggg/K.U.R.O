@@ -20,10 +20,10 @@
 [ext_resource type="Script" uid="uid://c8dl2dxj817c1" path="res://scripts/actors/enemies/attacks/EnemyDashSlashAttack.cs" id="11_5drfe"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="11_dying_state"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="12_dead_state"]
-[ext_resource type="PackedScene" uid="uid://bbh4qpwwrrpna" path="res://shaders/laser_beam.tscn" id="14_evlou"]
 [ext_resource type="PackedScene" uid="uid://bso7mhhjbapey" path="res://shaders/laser_beam_ultimate.tscn" id="15_evlou"]
 [ext_resource type="Script" uid="uid://pq441lqdfxhh" path="res://scripts/actors/enemies/attacks/EnemyUltimateBeamAttack.cs" id="15_ultbeam"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="16_eyt4q"]
+[ext_resource type="PackedScene" uid="uid://l6qj8m327ght" path="res://shaders/laser_beamA.tscn" id="17_eyt4q"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c8ikhh4fs46ba" path="res://animations/spine/Enemy_C1_waiterB.tres" id="18_t4d47"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_uohhx"]
 [ext_resource type="Script" uid="uid://dvu6xk56lp65v" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
@@ -256,7 +256,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/DashSlashArea")
 KnockbackDistance = 500.0
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
-GrantedImmunities = 8
+GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -272,8 +272,8 @@ KnockbackDistance = 50.0
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
-EffectScene = ExtResource("14_evlou")
+GrantedImmunities = 24
+EffectScene = ExtResource("17_eyt4q")
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
 metadata/attack_weight = 40.0
@@ -291,7 +291,7 @@ KnockbackDistance = 50.0
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 31
+GrantedImmunities = 127
 IgnoreEnemyCollisionDuringAttack = true
 EffectScene = ExtResource("15_evlou")
 EffectOffset = Vector2(-100, -750)

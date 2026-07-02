@@ -148,7 +148,7 @@ bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.31
+preview_time = 0.0
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -167,7 +167,6 @@ scale = Vector2(0.9999998, 0.9999998)
 bone_name = "Upper Body"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("CircleShape2D_vj0fg")
 
 [node name="HitArea" type="Area2D" parent="."]

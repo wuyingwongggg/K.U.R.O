@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://c6c3r3w6owctg"]
+
+[ext_resource type="PackedScene" uid="uid://c3f10a80fd4d0" path="res://resources/effects/MeetingBarrier_topright.tscn" id="1_barrier"]
+[ext_resource type="PackedScene" uid="uid://54q6lt8040dl" path="res://resources/effects/MeetingBarrier_bottomleft.tscn" id="1_yq06y"]
+[ext_resource type="PackedScene" uid="uid://0vta5k4h2345" path="res://resources/effects/MeetingBarrier_topleft.tscn" id="2_4frkr"]
+[ext_resource type="PackedScene" uid="uid://xgrt1kpw7v23" path="res://resources/effects/MeetingBarrier_bottomright.tscn" id="4_243ri"]
+
+[node name="LockdownWallEffect" type="Node2D"]
+y_sort_enabled = true
+
+[node name="MeetingBarrier_bottomright" parent="." instance=ExtResource("4_243ri")]
+position = Vector2(440, 500)
+
+[node name="MeetingBarrier_bottomleft" parent="." instance=ExtResource("1_yq06y")]
+position = Vector2(-440, 500)
+
+[node name="MeetingBarrier_topright" parent="." instance=ExtResource("1_barrier")]
+position = Vector2(440, -500)
+
+[node name="MeetingBarrier_topleft" parent="." instance=ExtResource("2_4frkr")]
+position = Vector2(-440, -500)

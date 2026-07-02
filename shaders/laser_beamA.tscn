@@ -1,0 +1,61 @@
+[gd_scene load_steps=8 format=3 uid="uid://l6qj8m327ght"]
+
+[ext_resource type="Script" uid="uid://bdb7yirf863a2" path="res://scripts/fx/LaserBeamA.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cv6ol02rd852j" path="res://assets/effect/LightEffect/spotlight_1.png" id="2_spot"]
+[ext_resource type="Shader" uid="uid://mgoi3nxo6p5p" path="res://shaders/materials/laser_blaster_glow.gdshader" id="2_vl6ap"]
+[ext_resource type="Texture2D" uid="uid://bdh5uuivcd50q" path="res://assets/effect/LightEffect/laserpointer.png" id="3_beam"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_62fkw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vfvjj"]
+shader = ExtResource("2_vl6ap")
+shader_parameter/glow_intensity = 50.0
+shader_parameter/core_width = 0.550000026125
+shader_parameter/core_length = 0.9600000456
+shader_parameter/fade = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mxyg0"]
+shader = ExtResource("2_vl6ap")
+shader_parameter/glow_intensity = 1.6000000760000002
+shader_parameter/core_width = 0.400000019
+shader_parameter/core_length = 0.930000044175
+shader_parameter/fade = 1.0
+
+[node name="LaserBeamA" type="Node2D"]
+z_index = 3
+y_sort_enabled = true
+script = ExtResource("1_script")
+MaxLength = 1500.0
+BeamWidth = 15.0
+GlowWidth = 45.0
+Lifetime = 0.4
+FadeDuration = 0.3
+Damage = 20
+KnockbackDistance = 50.0
+KnockbackSpeed = 1000.0
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+target_position = Vector2(3000, 0)
+collision_mask = 4
+
+[node name="Spotlight" type="Sprite2D" parent="."]
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+material = SubResource("CanvasItemMaterial_62fkw")
+scale = Vector2(0.8, 0.5)
+texture = ExtResource("2_spot")
+
+[node name="GlowSprite" type="Sprite2D" parent="."]
+modulate = Color(18.892157, 0, 0, 1)
+material = SubResource("ShaderMaterial_vfvjj")
+texture = ExtResource("3_beam")
+centered = false
+offset = Vector2(0, -10)
+
+[node name="BeamSprite" type="Sprite2D" parent="."]
+modulate = Color(1, 0.26666668, 0, 1)
+material = SubResource("ShaderMaterial_mxyg0")
+scale = Vector2(1, 0.3)
+texture = ExtResource("3_beam")
+centered = false
+offset = Vector2(0, -10)

@@ -214,7 +214,7 @@ KnockbackDistance = 500.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
-GrantedImmunities = 10
+GrantedImmunities = 26
 IgnoreEnemyCollisionDuringAttack = true
 EffectScene = ExtResource("14_6yc1u")
 EffectOffset = Vector2(250, 0)
@@ -232,6 +232,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 24
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

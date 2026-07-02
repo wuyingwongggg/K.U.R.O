@@ -270,7 +270,7 @@ namespace Kuros.Actors.Enemies.Attacks
 	            }
 
 			ApplyAttackAreaMaskOverride(_kickArea);
-			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
+			DealDamage(_kickArea!);
 			ApplyKickKnockback(player);
 			return true;
 	        }
@@ -423,7 +423,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (!_canAttemptKickAttack) return;
 
 			ApplyAttackAreaMaskOverride(_kickArea);
-			DamageDispatcher.DealDamageFromArea(_kickArea!, GetDamage(), Enemy, TargetableFactions);
+			DealDamage(_kickArea!);
 
 			if (IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{

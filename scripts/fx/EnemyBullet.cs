@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 using System.Collections.Generic;
 
 namespace Kuros.Fx
@@ -48,6 +49,7 @@ namespace Kuros.Fx
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
 
@@ -69,6 +71,7 @@ namespace Kuros.Fx
         private bool    _initialized;
         private bool    _hit;
         private Node2D? _player;
+        private GameActor? _attacker;
 
         /// <summary>拖尾历史世界坐标（队列头 = 最旧）。</summary>
         private readonly Queue<Vector2> _trail = new();
@@ -85,6 +88,12 @@ namespace Kuros.Fx
             _glowLine   = GetNodeOrNull<Line2D>("GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
 
+            if (_attackArea != null)
+            {
+                _attackArea.BodyEntered += OnAttackAreaBodyEntered;
+                _attackArea.AreaEntered += OnAttackAreaAreaEntered;
+            }
+
             if (_beamLine != null)
             {
                 _beamLine.Width        = BeamWidth;
@@ -96,6 +105,22 @@ namespace Kuros.Fx
                 _glowLine.Width        = GlowWidth;
                 _glowLine.DefaultColor = GlowColor;
                 _glowLine.Points       = System.Array.Empty<Vector2>();
+            }
+
+            ResolveAttacker();
+        }
+
+        private void ResolveAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("enemies") && child is GameActor ga)
+                {
+                    _attacker = ga;
+                    break;
+                }
             }
         }
 
@@ -147,14 +172,70 @@ namespace Kuros.Fx
                 _trail.Dequeue();
             UpdateTrail();
 
-            // ─ 命中检测 ────────────────────────────────────────────
-            if (!_hit)
-                TryHitPlayer();
-
             // ─ 计时销毁 ─────────────────────────────────────────────
             _timer -= dt;
             if (_timer <= 0f)
                 QueueFree();
+        }
+
+        public override void _ExitTree()
+        {
+            if (_attackArea != null)
+            {
+                _attackArea.BodyEntered -= OnAttackAreaBodyEntered;
+                _attackArea.AreaEntered -= OnAttackAreaAreaEntered;
+            }
+            base._ExitTree();
+        }
+
+        // ── 命中处理 ──────────────────────────────────────────────
+
+        private void OnAttackAreaBodyEntered(Node body)
+        {
+            if (_hit) return;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+
+            bool alreadyInvincible = body is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
+
+            bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+            if (!dealt) return;
+
+            if (!alreadyInvincible && body is GameActor hitActor)
+                ApplyKnockback(hitActor);
+
+            _hit = true;
+            QueueFree();
+        }
+
+        private void OnAttackAreaAreaEntered(Area2D area)
+        {
+            if (_hit) return;
+            var target = area.Owner ?? area;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
+
+            bool alreadyInvincible = area.Owner is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
+
+            bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+            if (!dealt) return;
+
+            if (!alreadyInvincible && area.Owner is GameActor hitActor)
+                ApplyKnockback(hitActor);
+
+            _hit = true;
+            QueueFree();
+        }
+
+        private void ApplyKnockback(GameActor actor)
+        {
+            float knockSpeed = KnockbackSpeed > 0f
+                ? KnockbackSpeed
+                : (KnockbackDistance > 0f
+                    ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
+                    : 0f);
+            if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
+                actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
         }
 
         // ── 私有方法 ──────────────────────────────────────────────
@@ -184,36 +265,6 @@ namespace Kuros.Fx
             tiltAngle = Mathf.Clamp(tiltAngle, -maxTiltRad, maxTiltRad);
 
             return baseAngle + tiltAngle;
-        }
-
-        /// <summary>
-        /// 通过 AttackArea 与玩家物理体接触触发伤害（同 LaserBeamUltimate）。
-        /// </summary>
-        private void TryHitPlayer()
-        {
-            if (_attackArea == null || !_attackArea.IsInsideTree()) return;
-            if (_player is not GameActor actor) return;
-            if (!actor.IsHitByArea(_attackArea)) return;
-
-            _hit = true;
-
-            bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
-
-            if (Damage > 0 && TargetableFactions.HasFlag(TargetableFactions.Player))
-                if (TargetableFactions.HasFlag(TargetableFactions.Player)) actor.TakeDamage(Damage, GlobalPosition);
-
-            if (!alreadyInvincible)
-            {
-                float knockSpeed = KnockbackSpeed > 0f
-                    ? KnockbackSpeed
-                    : (KnockbackDistance > 0f
-                        ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-                        : 0f);
-                if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                    actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
-            }
-
-            QueueFree();
         }
 
         /// <summary>

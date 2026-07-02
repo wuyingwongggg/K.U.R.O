@@ -35,7 +35,7 @@ namespace Kuros.Actors.Heroes.States
 			Vector2 input = GetMovementInput();
 			if (input != Vector2.Zero)
 			{
-				if (IsActionPressed("run"))
+				if (IsActionLongPressHeld("run"))
 				{
 					ChangeState("Run");
 				}

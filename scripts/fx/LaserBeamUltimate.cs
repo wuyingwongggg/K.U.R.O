@@ -38,6 +38,7 @@ namespace Kuros.Fx
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 30;
 
@@ -178,7 +179,7 @@ namespace Kuros.Fx
 
             bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
-            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, null, TargetableFactions);
+            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, null, TargetableFactions, AllowSelfDamage);
 
             if (!alreadyInvincible)
             {

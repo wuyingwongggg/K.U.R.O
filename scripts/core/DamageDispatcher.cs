@@ -18,7 +18,9 @@ namespace Kuros.Core
         public static bool DealDamage(Node target, float damage,
             Vector2? origin = null, GameActor? attacker = null,
             DamageSource source = DamageSource.DirectAttack,
-            TargetableFactions allowedFactions = TargetableFactions.All)
+            TargetableFactions allowedFactions = TargetableFactions.All,
+            bool allowSelfDamage = false,
+            Area2D? attackerArea = null)
         {
             Node? current = target;
             while (current != null)
@@ -33,6 +35,8 @@ namespace Kuros.Core
                 if (current is GameActor actor)
                 {
                     if (attacker == null) { current = current.GetParentOrNull<Node>(); continue; }
+                    if (!allowSelfDamage && BelongsToActor(current, attacker)) { current = current.GetParentOrNull<Node>(); continue; }
+                    if (attackerArea != null && !actor.IsHitByArea(attackerArea)) return false;
                     DealToGameActor(actor, damage, origin, attacker, source);
                     return true;
                 }
@@ -66,8 +70,25 @@ namespace Kuros.Core
         }
 
         public static void DealDamageFromArea(Area2D area, float damage, GameActor? attacker,
-            TargetableFactions allowedFactions = TargetableFactions.All)
+            TargetableFactions allowedFactions = TargetableFactions.All,
+            bool allowSelfDamage = false)
         {
+            var damaged = new System.Collections.Generic.HashSet<ulong>();
+
+            // 玩家：直接用 area.OverlapsArea(HitArea) 精确判断
+            if (allowedFactions.HasFlag(TargetableFactions.Player))
+            {
+                var playerNode = area.GetTree()?.GetFirstNodeInGroup("player");
+                if (playerNode is GameActor player
+                    && player.IsHitByArea(area)
+                    && (allowSelfDamage || !BelongsToActor(player, attacker))
+                    && damaged.Add(player.GetInstanceId()))
+                {
+                    DealToGameActor(player, damage, area.GlobalPosition, attacker, DamageSource.DirectAttack);
+                }
+            }
+
+            // 其他阵营：IntersectShape 扫描
             var shapeNode = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             if (shapeNode?.Shape == null) return;
 
@@ -84,19 +105,18 @@ namespace Kuros.Core
             };
             var results = spaceState.IntersectShape(query, 32);
 
-            var damaged = new System.Collections.Generic.HashSet<ulong>();
             foreach (var result in results)
             {
                 var collider = result["collider"].As<Node>();
                 if (collider == null) continue;
 
-                if (BelongsToActor(collider, attacker)) continue;
+                if (!allowSelfDamage && BelongsToActor(collider, attacker)) continue;
 
                 var root = ResolveDamageReceiver(collider, allowedFactions);
                 if (root == null || !damaged.Add(root.GetInstanceId())) continue;
 
                 DealDamage(collider, damage, area.GlobalPosition, attacker,
-                    DamageSource.DirectAttack, allowedFactions);
+                    DamageSource.DirectAttack, allowedFactions, allowSelfDamage, area);
             }
         }
 
@@ -120,7 +140,7 @@ namespace Kuros.Core
             return null;
         }
 
-        private static bool BelongsToActor(Node node, GameActor? actor)
+        public static bool BelongsToActor(Node node, GameActor? actor)
         {
             if (actor == null) return false;
 

@@ -9,16 +9,20 @@ namespace Kuros.Core
     [Flags]
     public enum ImmunityFlags
     {
-        None              = 0,
+        None                 = 0,
         /// <summary>免疫眩晕（FreezeEffect 等）。</summary>
-        Stun              = 1 << 0,
+        Stun                 = 1 << 0,
         /// <summary>免疫强制位移（击退、黑洞吸附等）。</summary>
-        ForcedMovement    = 1 << 1,
+        ForcedMovement       = 1 << 1,
         /// <summary>免疫减速效果。</summary>
-        SpeedSlow         = 1 << 2,
-        /// <summary>超级护甲：受到伤害时不进入受击硬直状态（等同于 IgnoreHitStateOnDamage）。</summary>
-        SuperArmor        = 1 << 3,
+        SpeedSlow            = 1 << 2,
+        /// <summary>预热阶段霸体：Warmup 期间受到伤害不进入受击硬直。</summary>
+        WarmupSuperArmor     = 1 << 3,
+        /// <summary>生效阶段霸体：Active 期间受到伤害不进入受击硬直。</summary>
+        ActiveSuperArmor     = 1 << 4,
+        /// <summary>恢复阶段霸体：Recovery 期间受到伤害不进入受击硬直。</summary>
+        RecoverySuperArmor   = 1 << 5,
         /// <summary>免疫所有伤害（TakeDamage 直接返回）。</summary>
-        Damage            = 1 << 4,
+        Damage               = 1 << 6,
     }
 }

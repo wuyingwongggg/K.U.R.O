@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
@@ -45,6 +46,7 @@ namespace Kuros.Fx
         /// <summary>激光命中玩家造成的伤害（0 = 不造成伤害）。</summary>
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 0;
 
@@ -62,7 +64,7 @@ namespace Kuros.Fx
         /// 垂直方向仅在 ±<see cref="MaxVerticalTiltDegrees"/> 范围内微调。
         /// </summary>
         [ExportCategory("Targeting")]
-        [Export] public bool AutoAimAtPlayer = true;   
+        [Export] public bool AutoAimAtPlayer = true;
 
         /// <summary>垂直倾斜最大角度（度）。激光基础方向水平，此值限制上下偏转幅度。</summary>
         [Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 5f;
@@ -91,6 +93,7 @@ namespace Kuros.Fx
         private bool _hasDamaged;
         /// <summary>autoAim 时缓存的玩家节点，供 TryDamagePlayer 直接使用，避免射线被敌人自身 Area2D 阻挡。</summary>
         private Node2D? _cachedPlayer;
+        private GameActor? _attacker;
 
         // ── 生命周期 ──────────────────────────────────────────────
 
@@ -120,15 +123,14 @@ namespace Kuros.Fx
             _ray.TargetPosition = new Vector2(MaxLength, 0f);
             _ray.Enabled        = true;
 
+            ResolveAttacker();
+
             _timer = Lifetime;
 
             // 自动对准延迟到 _Process 第一帧执行：
             // AddChild 触发 _Ready 时 GlobalPosition 尚未由 SpawnEffectAtEnemy 设置，
             // 需等到下一帧位置就位后再计算朝向。
             _pendingAutoAim = AutoAimAtPlayer;
-
-            // 去掉这行，等_Process第一帧位置和朝向都就位后再画
-            //UpdateBeam();
         }
 
         public override void _Process(double delta)
@@ -272,8 +274,9 @@ namespace Kuros.Fx
 
             _hasDamaged = true;
 
-            if (Damage > 0)
-                actor.TakeDamage(Damage, GlobalPosition);
+            bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
+            if (!dealt) return;
 
             // 仅在命中前玩家尚未处于无敌帧时才施加击退，避免覆盖已有的击退速度。
             // 速度优先：KnockbackSpeed > 0 直接使用；否则由 KnockbackDistance / KnockbackDuration 推算（与 EnemyAttackTemplate 一致）。
@@ -284,6 +287,20 @@ namespace Kuros.Fx
                     : (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
                 if (knockSpeed > 0f)
                     actor.Velocity = beamDir * knockSpeed;
+            }
+        }
+
+        private void ResolveAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("enemies") && child is GameActor ga)
+                {
+                    _attacker = ga;
+                    break;
+                }
             }
         }
 

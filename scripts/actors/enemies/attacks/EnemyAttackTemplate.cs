@@ -20,7 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
     /// </summary>
     public partial class EnemyAttackTemplate : Node
     {
-        private enum AttackPhase
+        internal enum AttackPhase
         {
             Idle,
             Warmup,
@@ -35,7 +35,7 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,5,0.01")] public float WarmupDuration = 0.2f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float ActiveDuration = 0.15f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float RecoveryDuration = 0.35f;
-        [Export(PropertyHint.Range, "0,10,0.1")] public float CooldownDurationMultiplier = 1.0f;
+        [Export(PropertyHint.Range, "0,30,0.1")] public float CooldownDurationMultiplier = 1.0f;
 
         [ExportCategory("Combat")]
         [Export(PropertyHint.Range, "0,10,0.1")] public float DamageMultiplier = 1.0f;
@@ -44,6 +44,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath AttackAreaPath = new NodePath();
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        /// <summary>是否允许攻击者的攻击命中自身。独立于阵营筛选，默认关闭。</summary>
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [ExportCategory("Knockback")]
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
@@ -54,12 +56,12 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool RequireAnimationHitTrigger = false;
         [Export] public bool AllowMultipleAnimationHits = false;
 
-        [ExportCategory("Super Armor")]
+        [ExportCategory("Effect Resistance")]
         /// <summary>
         /// 攻击期间赋予敌人的免疫集合。<br/>
         /// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举追加值，无需修改此模板。
         /// </summary>
-        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,SuperArmor,Damage")]
+        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,Damage")]
         public ImmunityFlags GrantedImmunities = ImmunityFlags.None;
 
         [ExportCategory("Collision Override")]
@@ -86,6 +88,8 @@ namespace Kuros.Actors.Enemies.Attacks
         protected Area2D? AttackArea { get; private set; }
 
         private AttackPhase _phase = AttackPhase.Idle;
+        /// <summary>当前所处阶段，仅供控制器在打断时判断子攻击所处阶段。</summary>
+        internal AttackPhase CurrentPhase => _phase;
         private float _phaseTimer = 0.0f;
         private float _cooldownTimer = 0.0f;
         protected bool _animationHitReady = false;
@@ -208,16 +212,13 @@ namespace Kuros.Actors.Enemies.Attacks
             ApplyEnemyCollisionMaskOverride();
             ApplyAttackAreaMaskOverride();
 
-            if (GrantedImmunities.HasFlag(ImmunityFlags.SuperArmor) && Enemy != null)
-            {
-                _previousIgnoreHitStateOnDamage = Enemy.IgnoreHitStateOnDamage;
-                Enemy.IgnoreHitStateOnDamage = true;
-            }
-
-            if (GrantedImmunities != ImmunityFlags.None && Enemy != null)
+            // 将非霸体类免疫写入 ActiveImmunities（霸体按阶段独立管理）
+            var nonSuperFlags = GrantedImmunities
+                & ~(ImmunityFlags.WarmupSuperArmor | ImmunityFlags.ActiveSuperArmor | ImmunityFlags.RecoverySuperArmor);
+            if (nonSuperFlags != ImmunityFlags.None && Enemy != null)
             {
                 _previousImmunities = Enemy.ActiveImmunities;
-                Enemy.ActiveImmunities |= GrantedImmunities;
+                Enemy.ActiveImmunities |= nonSuperFlags;
             }
 
             if (Enemy != null && !string.IsNullOrEmpty(AnimationName))
@@ -360,6 +361,23 @@ namespace Kuros.Actors.Enemies.Attacks
             _customAreaOverrides.Add(area);
         }
 
+        /// <summary>
+        /// 对指定区域造成伤害（统一入口）。
+        /// 子类调用此方法而非直接调 DamageDispatcher，确保阵营筛选和自伤开关始终生效。
+        /// </summary>
+        protected void DealDamage(Area2D area)
+        {
+            DamageDispatcher.DealDamageFromArea(area, GetDamage(), Enemy, TargetableFactions, AllowSelfDamage);
+        }
+
+        /// <summary>
+        /// 对指定区域造成指定伤害（覆盖默认伤害值）。
+        /// </summary>
+        protected void DealDamage(Area2D area, int damageOverride)
+        {
+            DamageDispatcher.DealDamageFromArea(area, damageOverride, Enemy, TargetableFactions, AllowSelfDamage);
+        }
+
         protected virtual bool ShouldHoldWarmupPhase()
         {
             return false;
@@ -386,6 +404,7 @@ namespace Kuros.Actors.Enemies.Attacks
         private void SetPhase(AttackPhase phase)
         {
             _phase = phase;
+            UpdatePhaseSuperArmor();
             switch (phase)
             {
                 case AttackPhase.Warmup:
@@ -410,6 +429,50 @@ namespace Kuros.Actors.Enemies.Attacks
             if (_phase != AttackPhase.Idle && _phaseTimer <= 0.0f)
             {
                 AdvancePhase();
+            }
+        }
+
+        /// <summary>
+        /// 根据当前阶段更新霸体状态。Warmup/Active/Recovery 三个阶段可独立启用。
+        /// 进入对应阶段时开启 IgnoreHitStateOnDamage，离开时还原。
+        /// </summary>
+        private void UpdatePhaseSuperArmor()
+        {
+            if (Enemy == null) return;
+
+            ImmunityFlags requiredFlag = _phase switch
+            {
+                AttackPhase.Warmup   => ImmunityFlags.WarmupSuperArmor,
+                AttackPhase.Active   => ImmunityFlags.ActiveSuperArmor,
+                AttackPhase.Recovery  => ImmunityFlags.RecoverySuperArmor,
+                _ => ImmunityFlags.None
+            };
+
+            if (_phase == AttackPhase.Idle)
+            {
+                if (_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    Enemy.IgnoreHitStateOnDamage = _previousIgnoreHitStateOnDamage.Value;
+                    _previousIgnoreHitStateOnDamage = null;
+                }
+                return;
+            }
+
+            if (GrantedImmunities.HasFlag(requiredFlag))
+            {
+                if (!_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    _previousIgnoreHitStateOnDamage = Enemy.IgnoreHitStateOnDamage;
+                    Enemy.IgnoreHitStateOnDamage = true;
+                }
+            }
+            else
+            {
+                if (_previousIgnoreHitStateOnDamage.HasValue)
+                {
+                    Enemy.IgnoreHitStateOnDamage = _previousIgnoreHitStateOnDamage.Value;
+                    _previousIgnoreHitStateOnDamage = null;
+                }
             }
         }
 

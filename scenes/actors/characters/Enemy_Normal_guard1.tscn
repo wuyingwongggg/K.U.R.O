@@ -208,7 +208,7 @@ DamageMultiplier = 1.5
 KnockbackDistance = 500.0
 KnockbackDuration = 0.2
 KnockbackSpeed = 3000.0
-GrantedImmunities = 8
+GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -221,6 +221,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 1500.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 16
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
@@ -260,4 +261,7 @@ path_max_distance = 500.0
 avoidance_enabled = true
 radius = 100.0
 max_speed = 350.0
-debug_path_custom_line_width = 2.0
+debug_enabled = true
+debug_use_custom = true
+debug_path_custom_color = Color(1, 0, 0, 1)
+debug_path_custom_point_size = 10.0

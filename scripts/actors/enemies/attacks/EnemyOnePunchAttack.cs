@@ -315,7 +315,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
             ApplyAttackAreaMaskOverride(_onePunchArea);
-            DamageDispatcher.DealDamageFromArea(_onePunchArea!, GetDamage(), Enemy, TargetableFactions);
+            DealDamage(_onePunchArea!);
 
             if (!IsPlayerInsideOnePunchZone(player))
             {

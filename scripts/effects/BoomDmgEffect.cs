@@ -27,6 +27,7 @@ namespace Kuros.Fx
         [ExportCategory("Targets")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         public override void _Ready()
         {

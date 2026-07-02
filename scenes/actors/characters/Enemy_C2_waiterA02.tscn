@@ -59,8 +59,7 @@ DebugOverlayFontSize = 128
 DebugOverlayColor = Color(1, 0.95, 0.2, 1)
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 20
+AttackDamage = 20.0
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -124,16 +123,16 @@ script = ExtResource("5_htedi")
 skeleton_data_res = ExtResource("6_4msjm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
-preview_time = 0.55
+preview_frame = false
+preview_time = 2.3
 script = ExtResource("5_htedi")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
+z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
@@ -163,7 +162,7 @@ scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_7t51a")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
-z_index = 10
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, -120)
@@ -172,6 +171,12 @@ shape = SubResource("RectangleShape2D_dsttm")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 visible = false
 shape = SubResource("CircleShape2D_yski7")
+
+[node name="Node2D" type="Node2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -1200)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_ugem5")
@@ -190,31 +195,36 @@ script = ExtResource("9_27i41")
 script = ExtResource("10_bd65j")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="WheelAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="WheelAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("11_kjt0o")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+AttackName = "WheelAttack"
 WarmupDuration = 0.3
 ActiveDuration = 2.2
 RecoveryDuration = 0.63
 CooldownDurationMultiplier = 2.0
 DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
-GrantedImmunities = 8
+AllowMultipleAnimationHits = true
+GrantedImmunities = 24
 EffectScene = ExtResource("12_kjt0o")
-EffectOffset = Vector2(0, -400)
 SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("13_a0san")
+AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.3
 ActiveDuration = 0.3
 RecoveryDuration = 0.4
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
+TargetableFactions = 7
 KnockbackDistance = 300.0
 KnockbackDuration = 0.06999999999999999
 KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
+GrantedImmunities = 16
 metadata/attack_weight = 40.0
 
 [node name="Assist" type="Node" parent="StateMachine"]

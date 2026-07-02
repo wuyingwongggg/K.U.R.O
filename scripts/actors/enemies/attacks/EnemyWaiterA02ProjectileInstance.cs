@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 using Kuros.Actors.Heroes;
 using Kuros.Actors.Heroes.States;
 
@@ -33,6 +34,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
 
         /// <summary>击中玩家时造成的伤害。</summary>
         [Export] public int Damage { get; set; } = 1;
@@ -52,9 +54,10 @@ namespace Kuros.Actors.Enemies.Attacks
         private Vector2 _startPos;
         private Vector2 _targetPos;
         private float _elapsed;
-        private bool _launched;   // 第一帧后才开始移动
+        private bool _launched;
         private Area2D? _hitbox;
-        private bool _hasHit;     // 防止多次碰撞
+        private bool _hasHit;
+        private GameActor? _attacker;
 
         public override void _Ready()
         {
@@ -105,6 +108,11 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
+        public void SetAttacker(GameActor attacker)
+        {
+            _attacker = attacker;
+        }
+
         /// <summary>
         /// 初始化落点。由创建者（EnemyWaiterA02WheelAttackController）调用。
         /// </summary>
@@ -118,7 +126,6 @@ namespace Kuros.Actors.Enemies.Attacks
         /// </summary>
         public void SetDirectionAndDistance(Vector2 direction, float distance)
         {
-            // 相对于起点沿方向移动指定距离
             _targetPos = GlobalPosition + direction.Normalized() * distance;
         }
 
@@ -137,23 +144,29 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (_hasHit) return;
 
-            if (area.IsInGroup("player_hitbox") || area.Owner is SamplePlayer)
-            {
-                DamageDispatcher.DealDamageFromArea(_hitbox!, Damage, null, TargetableFactions);
+            var target = area.Owner ?? area;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
 
-                if (area.Owner is SamplePlayer player)
-                    TryApplyPlayerKnockback(player);
+            bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+            if (!dealt) return;
 
-                _hasHit = true;
-                QueueFree();
-            }
+            if (area.Owner is SamplePlayer player)
+                TryApplyPlayerKnockback(player);
+
+            _hasHit = true;
+            QueueFree();
         }
 
         private void OnHitboxBodyEntered(Node body)
         {
             if (_hasHit) return;
 
-            DamageDispatcher.DealDamageFromArea(_hitbox!, Damage, null, TargetableFactions);
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+
+            bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+            if (!dealt) return;
 
             if (body is SamplePlayer player)
                 TryApplyPlayerKnockback(player);
