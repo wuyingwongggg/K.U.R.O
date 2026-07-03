@@ -164,28 +164,30 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 DebugLineWidth = 8.0
 
+[node name="Wall" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(0, -813)
+texture = ExtResource("8_jlbv0")
+offset = Vector2(0, -200)
+
+[node name="Sprite2D" type="Sprite2D" parent="Wall"]
+position = Vector2(2179, -154)
+texture = ExtResource("9_q7nkw")
+
+[node name="Sprite2D2" type="Sprite2D" parent="Wall"]
+position = Vector2(-1381, -154)
+texture = ExtResource("10_q1bio")
+
+[node name="Sprite2D3" type="Sprite2D" parent="Wall"]
+position = Vector2(500, -154)
+texture = ExtResource("11_os652")
+
 [node name="Environments" type="Node2D" parent="."]
 position = Vector2(0, 340)
 
 [node name="Floor" type="Sprite2D" parent="Environments"]
 position = Vector2(0, 30)
 texture = ExtResource("11_t5r3y")
-
-[node name="Wall" type="Sprite2D" parent="Environments"]
-position = Vector2(0, -1353)
-texture = ExtResource("8_jlbv0")
-
-[node name="Sprite2D" type="Sprite2D" parent="Environments/Wall"]
-position = Vector2(2179, 46)
-texture = ExtResource("9_q7nkw")
-
-[node name="Sprite2D2" type="Sprite2D" parent="Environments/Wall"]
-position = Vector2(-1381, 52)
-texture = ExtResource("10_q1bio")
-
-[node name="Sprite2D3" type="Sprite2D" parent="Environments/Wall"]
-position = Vector2(500, -9)
-texture = ExtResource("11_os652")
 
 [node name="ElevatorGateD_filp" parent="Environments" instance=ExtResource("6_2gtws")]
 position = Vector2(-2581, 370)

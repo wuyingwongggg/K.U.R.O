@@ -83,7 +83,6 @@ material = SubResource("ShaderMaterial_build")
 texture = ExtResource("3_7yfj8")
 
 [node name="GlowWall" type="Sprite2D" parent="."]
-z_index = 2
 material = SubResource("ShaderMaterial_glow")
 texture = ExtResource("3_7yfj8")
 

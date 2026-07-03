@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://wqcdwpyo1nji"]
+[gd_scene load_steps=42 format=3 uid="uid://wqcdwpyo1nji"]
 
 [ext_resource type="Script" uid="uid://byhv4hxerfcr8" path="res://scripts/actors/enemies/EnemyB1Thin.cs" id="1_grl5w"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://bltkdnwnhmukw" path="res://scripts/actors/enemies/attacks/EnemyKickAttack.cs" id="12_5i0uy"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="14"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="17"]
+[ext_resource type="PackedScene" uid="uid://b3e6c8gckfrwh" path="res://shaders/smash_effect_small.tscn" id="17_4488g"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18"]
 [ext_resource type="Script" uid="uid://dgmp6fiocpyam" path="res://scripts/actors/enemies/states/EnemyDashBackState.cs" id="19_h8apo"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://ctc3e5rj67keh" path="res://animations/spine/Enemy_B1_thin.tres" id="20_5i0uy"]
@@ -204,6 +205,12 @@ shape = SubResource("RectangleShape2D_h8apo")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_l3qmk")
 
+[node name="Node2D" type="Node2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(900, 0)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("2")
 InitialState = NodePath("Idle")
@@ -243,7 +250,7 @@ GrantedImmunities = 24
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("12_4a6st")
 WarmupDuration = 0.5
 RecoveryDuration = 0.28
@@ -253,6 +260,9 @@ KnockbackDuration = 0.1
 KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
 GrantedImmunities = 24
+EffectScene = ExtResource("17_4488g")
+SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
