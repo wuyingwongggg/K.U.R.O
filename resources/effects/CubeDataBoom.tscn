@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://ccnppsi6ofeip"]
+
+[ext_resource type="Script" uid="uid://4lhpjb8uvav0" path="res://scripts/fx/CubeDataBoom.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cb3h4btqn06lv" path="res://resources/effects/CubeData_small.tscn" id="2_cube"]
+
+[node name="CubeDataBoom" type="Node2D"]
+script = ExtResource("1_script")
+CubeScene = ExtResource("2_cube")
+SpawnDuration = 0.05
+MinSpeed = 400.0
+MaxSpeed = 400.0
+ScaleMin = 0.5
+ScaleMax = 1.0
+MaxLifetime = 0.5

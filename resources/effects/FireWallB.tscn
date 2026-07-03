@@ -1,9 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://w4v8hptbjx0g"]
+[gd_scene load_steps=13 format=3 uid="uid://w4v8hptbjx0g"]
 
 [ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="1_48whl"]
 [ext_resource type="Script" uid="uid://dxqwo2iruswpp" path="res://scripts/fx/MeetingBarrier.cs" id="1_lhwsv"]
 [ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="3_jxfbj"]
-[ext_resource type="Texture2D" uid="uid://e6qg3hxyt36u" path="res://assets/effect/WallEffect/firewallB_1.png" id="3_lhwsv"]
+[ext_resource type="Texture2D" uid="uid://b676hx3037rv4" path="res://assets/effect/WallEffect/firewallA_2.png" id="3_lhwsv"]
 [ext_resource type="Shader" uid="uid://6yurywigppwe" path="res://shaders/materials/meeting_barrier_glow.gdshader" id="4_18yl4"]
 [ext_resource type="Shader" uid="uid://dcg17rve3o6x0" path="res://shaders/materials/meeting_barrier_scan.gdshader" id="5_333ig"]
 
@@ -46,38 +46,52 @@ shader_parameter/damage_glitch_intensity = 0.04
 shader_parameter/damage_block_density = 0.2
 shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lhwsv"]
+size = Vector2(120, 275.5)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jxfbj"]
-size = Vector2(200, 1200)
+size = Vector2(120, 303.0239)
 
 [node name="FireWallB" type="Node2D"]
 z_index = 2
 y_sort_enabled = true
+scale = Vector2(1.5, 1.5)
 script = ExtResource("1_lhwsv")
+MaxHP = 80.0
+CollisionEnableDelay = 0.4
+HitFlashSpritePath = NodePath("CoreWall")
+HitShakeIntensity = 20.0
+ScanlineSpritePath = NodePath("BuildMask")
+LifeTime = 20.0
 
 [node name="CoreWall" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rw4bx")
 texture = ExtResource("3_lhwsv")
-offset = Vector2(-80, -250)
+offset = Vector2(0, -300)
 
 [node name="BuildMask" type="Sprite2D" parent="."]
 visible = false
 material = SubResource("ShaderMaterial_gouo6")
 texture = ExtResource("3_lhwsv")
-offset = Vector2(-80, -250)
+offset = Vector2(0, -300)
 
 [node name="GlowWall" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0i87u")
 texture = ExtResource("3_lhwsv")
-offset = Vector2(-80, -250)
+offset = Vector2(0, -300)
 
 [node name="ScanFX" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_tjiw8")
 texture = ExtResource("3_lhwsv")
-offset = Vector2(-80, -250)
+offset = Vector2(0, -300)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-80, -20)
-rotation = 0.36651915
+position = Vector2(-59.333336, -227.08334)
+shape = SubResource("RectangleShape2D_lhwsv")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(3.72406, 19.936132)
+rotation = -0.43633232
 shape = SubResource("RectangleShape2D_jxfbj")

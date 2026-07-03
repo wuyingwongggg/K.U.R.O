@@ -222,9 +222,6 @@ position = Vector2(-955, -511)
 [node name="FurnitureWaterMachineA" parent="." instance=ExtResource("18_s0ku1")]
 position = Vector2(-826, -327)
 
-[node name="FurniturePrinterMachineA" parent="." instance=ExtResource("19_jlbv0")]
-position = Vector2(-2141, -532)
-
 [node name="FurnitureTableOfficeB_rwd" parent="." instance=ExtResource("21_q7nkw")]
 position = Vector2(-457, -440)
 
@@ -269,5 +266,8 @@ position = Vector2(1213, 873)
 
 [node name="FurnitureChairOfficeB2" parent="." instance=ExtResource("23_os652")]
 position = Vector2(129, -565)
+
+[node name="FurniturePrinterMachineA" parent="." instance=ExtResource("19_jlbv0")]
+position = Vector2(-2085, -414)
 
 [node name="AnimationCharacter" parent="." instance=ExtResource("20_q7nkw")]

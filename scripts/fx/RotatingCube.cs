@@ -9,14 +9,16 @@ namespace Kuros.Fx
         [ExportCategory("Movement")]
         [Export] public bool FacingRight { get; set; } = true;
         [Export(PropertyHint.Range, "50,6000,10")] public float Speed = 600f;
-        [Export(PropertyHint.Range, "0,90,0.5")] public float MaxVerticalTiltDegrees = 30f;
+        [Export(PropertyHint.Range, "0,360,0.5")] public float MaxVerticalTiltDegrees = 30f;
 
         [ExportCategory("Timing")]
-        [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 8.0f;
+        [Export(PropertyHint.Range, "0.01,30,0.01")] public float Duration = 8.0f;
 
         [ExportCategory("Lifecycle")]
-        [Export(PropertyHint.Range, "0.1,2,0.05")] public float BuildDuration = 0.3f;
-        [Export(PropertyHint.Range, "0.1,2,0.05")] public float DespawnDuration = 0.5f;
+        [Export(PropertyHint.Range, "0.01,2,0.01")] public float BuildDuration = 0.3f;
+        [Export(PropertyHint.Range, "0.01,2,0.01")] public float DespawnDuration = 0.5f;
+        [Export] public PackedScene? DestroyEffect { get; set; }
+        public float BaseScale { get; set; } = 1f;
 
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -79,22 +81,29 @@ namespace Kuros.Fx
                 _despawnTimer -= dt;
                 if (_despawnTimer <= 0f)
                 {
+                    SpawnDestroyEffect();
                     QueueFree();
                     return;
                 }
-                float t = Mathf.Max(0f, _despawnTimer / DespawnDuration);
-                _wireframeMaterial?.SetShaderParameter("alpha", t);
-                _faceMaterial?.SetShaderParameter("face_alpha", t);
-                return;
             }
 
             if (_spawning || _hit) return;
 
             GlobalPosition += _velocity * dt;
 
-            _timer -= dt;
-            if (_timer <= 0f)
-                Destroy();
+            if (!_despawning)
+            {
+                _timer -= dt;
+                if (_timer <= 0f)
+                    Destroy();
+            }
+
+            if (_despawning)
+            {
+                float t = Mathf.Max(0f, _despawnTimer / DespawnDuration);
+                _wireframeMaterial?.SetShaderParameter("alpha", t);
+                _faceMaterial?.SetShaderParameter("face_alpha", t);
+            }
         }
 
         public override void _ExitTree()
@@ -132,7 +141,7 @@ namespace Kuros.Fx
             tween.SetTrans(Tween.TransitionType.Cubic);
 
             // Scale pop with overshoot
-            tween.TweenProperty(this, "scale", Vector2.One, BuildDuration);
+            tween.TweenProperty(this, "scale", new Vector2(BaseScale, BaseScale), BuildDuration);
             tween.SetEase(Tween.EaseType.Out);
             tween.SetTrans(Tween.TransitionType.Back);
 
@@ -166,6 +175,22 @@ namespace Kuros.Fx
             _despawnTimer = DespawnDuration;
             if (_attackArea != null)
                 _attackArea.SetDeferred(Area2D.PropertyName.Monitoring, false);
+        }
+
+        private void SpawnDestroyEffect()
+        {
+            if (DestroyEffect == null) return;
+
+            var instance = DestroyEffect.Instantiate();
+            if (instance is Node2D node2D)
+            {
+                GetParent()?.AddChild(node2D);
+                node2D.GlobalPosition = GlobalPosition;
+            }
+            else
+            {
+                instance.QueueFree();
+            }
         }
 
         private void ResolveSprites()
@@ -229,6 +254,7 @@ namespace Kuros.Fx
                 ApplyKnockback(hitActor);
 
             _hit = true;
+            SpawnDestroyEffect();
             QueueFree();
         }
 
@@ -248,6 +274,7 @@ namespace Kuros.Fx
                 ApplyKnockback(hitActor);
 
             _hit = true;
+            SpawnDestroyEffect();
             QueueFree();
         }
 

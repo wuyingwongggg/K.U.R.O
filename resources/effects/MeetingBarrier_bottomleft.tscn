@@ -70,7 +70,7 @@ MaxHP = 80.0
 CollisionEnableDelay = 0.4
 HitFlashSpritePath = NodePath("CoreWall")
 HitShakeIntensity = 20.0
-ScanlineSpritePath = NodePath("")
+ScanlineSpritePath = NodePath("BuildMask")
 LifeTime = 20.0
 
 [node name="CoreWall" type="Sprite2D" parent="."]

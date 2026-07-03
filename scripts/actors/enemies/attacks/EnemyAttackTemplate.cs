@@ -138,6 +138,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnInitialized() { }
 
+        public virtual bool IsPlayerInDetectionRange() => true;
+
         public virtual bool CanStart()
         {
             if (Enemy == null || Player == null) return false;
