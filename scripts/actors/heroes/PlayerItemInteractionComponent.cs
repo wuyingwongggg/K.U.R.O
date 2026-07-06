@@ -141,7 +141,9 @@ namespace Kuros.Actors.Heroes
                 return;
             }
 
-            if (Input.IsActionJustPressed("put_down") && CanPerformItemAction())
+            var player = _actor as SamplePlayer;
+
+            if (player != null && player.WasActionLongPressTriggered("take_up") && CanPerformItemAction())
             {
                 TryHandleDrop(DropDisposition.Place);
             }
@@ -171,9 +173,9 @@ namespace Kuros.Actors.Heroes
                 TryUseSelectedItem();
             }
 
-            if (Input.IsActionJustPressed("take_up"))
+            if (player != null && player.WasActionShortPressed("take_up"))
             {
-                GD.Print($"[PlayerItemInteractionComponent] take_up 按键被按下");
+                GD.Print($"[PlayerItemInteractionComponent] take_up 短按");
                 TriggerPickupState();
             }
 

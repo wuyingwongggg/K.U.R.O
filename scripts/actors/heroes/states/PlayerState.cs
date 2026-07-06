@@ -74,6 +74,9 @@ namespace Kuros.Actors.Heroes.States
         protected bool WasActionShortPressed(string actionName)
             => Player.WasActionShortPressed(actionName);
 
+        protected bool WasActionJustPressed(string actionName)
+            => Player.WasActionJustPressed(actionName);
+
         protected float GetActionHoldDuration(string actionName)
             => Player.GetActionHoldDuration(actionName);
 

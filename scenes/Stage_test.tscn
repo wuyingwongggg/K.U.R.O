@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=40 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -30,10 +30,7 @@
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="30_m86xd"]
-[ext_resource type="PackedScene" uid="uid://b3e6c8gckfrwh" path="res://shaders/smash_effect_small.tscn" id="30_v4xrh"]
-[ext_resource type="PackedScene" uid="uid://bs2p8j2t1tndn" path="res://resources/effects/StoneFall.tscn" id="31_v4xrh"]
 [ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="32_0ipan"]
-[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="33_6eerp"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -232,20 +229,8 @@ ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
 
-[node name="SmashEffectSmall" parent="World" instance=ExtResource("30_v4xrh")]
-z_index = 1
-z_as_relative = false
-position = Vector2(-170, -369)
-
-[node name="StoneFall" parent="World" instance=ExtResource("31_v4xrh")]
-position = Vector2(-1027, -690)
-Duration = 3.0
-
 [node name="FurnitureBedA" parent="World" instance=ExtResource("32_0ipan")]
 position = Vector2(-434, 126)
-
-[node name="ParticleBurst" parent="World" instance=ExtResource("33_6eerp")]
-position = Vector2(-861, 362)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

@@ -130,6 +130,8 @@ namespace Kuros.Actors.Heroes.Attacks
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0f;
+        public bool IsInRecovery => _phase == AttackPhase.Recovery;
+        public bool CanDashCancel => !IsRunning || IsInRecovery;
         public bool WantsRestart => _wantsRestart;
         public bool WantsMove => _wantsMove;
 

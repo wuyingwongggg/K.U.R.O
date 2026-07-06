@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://b3e6c8gckfrwh"]
+
+[ext_resource type="Script" uid="uid://todh1of7cr8k" path="res://scripts/fx/ParticleBurst.cs" id="1_ohyff"]
+[ext_resource type="PackedScene" uid="uid://bs2p8j2t1tndn" path="res://resources/effects/StoneFall.tscn" id="2_4b8xy"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="3_oy1jx"]
+
+[node name="SmashEffectSmall" type="Node2D"]
+script = ExtResource("1_ohyff")
+ParticleScene = ExtResource("2_4b8xy")
+CenterEffect = ExtResource("3_oy1jx")
+SpawnCount = 2
+SpawnRadius = 100.0
+SpawnDuration = 0.05
+MinSpeed = 400.0
+SpreadAngle = 180.0
+BaseDirection = Vector2(0, -1)
+Damage = 20
+TargetableFactions = 7
+ScaleMin = 1.0
+ScaleMax = 1.0
+MaxLifetime = 0.5

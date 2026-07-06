@@ -11,6 +11,7 @@ namespace Kuros.Fx
     /// </summary>
     public partial class ParabolicProjectile : Node2D
     {
+        [ExportCategory("Trajectory")]
         /// <summary>飞行方向（单位向量）。外部可在 AddChild 前覆盖。</summary>
         [Export] public Vector2 Direction = Vector2.Up;
         /// <summary>飞行水平距离（像素）。</summary>
@@ -19,6 +20,8 @@ namespace Kuros.Fx
         [Export] public float Duration = 1.0f;
         /// <summary>抛物线峰值高度（像素，正值向上）。</summary>
         [Export] public float PeakHeight = 400f;
+
+        [ExportCategory("Damage")]
         /// <summary>击中造成的伤害。</summary>
         [Export] public int Damage = 20;
         /// <summary>可攻击的阵营。</summary>
@@ -26,8 +29,13 @@ namespace Kuros.Fx
         public TargetableFactions TargetableFactions = TargetableFactions.Player;
         /// <summary>是否允许伤害同阵营。</summary>
         [Export] public bool AllowSelfDamage;
+
+        [ExportCategory("Knockback")]
         /// <summary>击退速度（像素/秒），0 不击退。</summary>
-        [Export] public float KnockbackSpeed = 200f;
+        [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 200f;
+        [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
+
+        [ExportCategory("Hit Detection")]
         /// <summary>命中判定 Area2D 路径。</summary>
         [Export] public NodePath HitboxPath = new("AttackArea");
 
@@ -37,6 +45,7 @@ namespace Kuros.Fx
         private bool _launched;
         private bool _hasHit;
         private Area2D? _hitbox;
+        private GameActor? _attacker;
 
         public override void _Ready()
         {
@@ -49,6 +58,7 @@ namespace Kuros.Fx
                 _hitbox.AreaEntered += OnHitboxAreaEntered;
             }
 
+            ResolveAttacker();
             SetPhysicsProcess(true);
         }
 
@@ -88,9 +98,9 @@ namespace Kuros.Fx
         private void OnHitboxBodyEntered(Node body)
         {
             if (_hasHit) return;
-            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, null)) return;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
 
-            bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, null,
+            bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
             if (!dealt) return;
 
@@ -105,9 +115,9 @@ namespace Kuros.Fx
         {
             if (_hasHit) return;
             var target = area.Owner ?? area;
-            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, null)) return;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
 
-            bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, null,
+            bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
             if (!dealt) return;
 
@@ -118,12 +128,35 @@ namespace Kuros.Fx
             QueueFree();
         }
 
+        /// <summary>
+        /// 沿飞行方向施加击退速度。方向为零时回退到 Vector2.Right。
+        /// </summary>
         private void ApplyKnockback(GameActor actor)
         {
             if (KnockbackSpeed <= 0f) return;
-            Vector2 dir = (actor.GlobalPosition - GlobalPosition).Normalized();
-            if (dir == Vector2.Zero) dir = Vector2.Right;
-            actor.Velocity = dir * KnockbackSpeed;
+
+            Vector2 dir = Direction;
+            if (dir.LengthSquared() < 0.01f)
+                dir = Vector2.Right;
+
+            actor.Velocity = dir.Normalized() * KnockbackSpeed;
+        }
+
+        /// <summary>
+        /// 从父节点查找 enemies 组的 GameActor 作为攻击来源，用于 DealDamage 的阵营过滤。
+        /// </summary>
+        private void ResolveAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("enemies") && child is GameActor ga)
+                {
+                    _attacker = ga;
+                    break;
+                }
+            }
         }
     }
 }

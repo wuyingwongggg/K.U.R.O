@@ -52,8 +52,15 @@ namespace Kuros.Actors.Heroes.States
 				ChangeState("Attack");
 				return;
 			}
-			
-			// Check for run
+
+			// Space 按下帧 → Dash
+			if (IsActionJustPressed("dash"))
+			{
+				ChangeState("Dash");
+				return;
+			}
+
+			// Shift 按住 → Run
 			if (IsActionPressed("run"))
 			{
 				ChangeState("Run");

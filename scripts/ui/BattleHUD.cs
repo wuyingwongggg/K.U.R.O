@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes.States;
 using Kuros.Core;
 using Kuros.Systems.Inventory;
 using Kuros.Items;
@@ -153,6 +154,7 @@ namespace Kuros.UI
 
 			// 尝试自动连接玩家（如果场景中已有玩家）
 			CallDeferred(MethodName.TryAutoConnectPlayer);
+			CreateDashIndicator();
 
 			// 发出就绪信号
 			EmitSignal(SignalName.HUDReady);
@@ -666,6 +668,7 @@ namespace Kuros.UI
 				
 				// 连接玩家物品栏组件
 				ConnectPlayerInventory(samplePlayer);
+				_dashState = samplePlayer.StateMachine?.GetNodeOrNull<PlayerDashState>("Dash");
 			}
 		}
 
@@ -766,7 +769,14 @@ namespace Kuros.UI
 			}));
 		}
 
-		private SamplePlayer? _player;
+		// Dash 指示器
+	private Control? _dashIcon;
+	private ThrowCooldownOverlay? _dashCooldownOverlay;
+	private Label? _dashChargeLabel;
+	private PlayerDashState? _dashState;
+	private float _dashUpdateTimer;
+
+	private SamplePlayer? _player;
 		
 		/// <summary>
 		/// 设置玩家引用（用于获取最大生命值等属性）
@@ -821,6 +831,7 @@ namespace Kuros.UI
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
+			UpdateDashDisplay((float)delta);
 			// 定期刷新飞行中投掷武器的冷却遮罩进度
 			if (_player?.InventoryComponent?.ReservedQuickBarSlots.Count > 0)
 			{
@@ -912,7 +923,85 @@ namespace Kuros.UI
 				}
 			}
 		}
+	private void CreateDashIndicator()
+	{
+		_dashIcon = new DashIconControl
+		{
+			Name = "DashIndicator",
+		};
+		_dashIcon.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		_dashIcon.OffsetLeft = 20;
+		_dashIcon.OffsetTop = 120;
+		_dashIcon.OffsetRight = 60;
+		_dashIcon.OffsetBottom = 160;
+		AddChild(_dashIcon);
+
+		_dashCooldownOverlay = new ThrowCooldownOverlay();
+		_dashCooldownOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_dashCooldownOverlay.OffsetLeft = 0;
+		_dashCooldownOverlay.OffsetTop = 0;
+		_dashCooldownOverlay.OffsetRight = 0;
+		_dashCooldownOverlay.OffsetBottom = 0;
+		_dashIcon.AddChild(_dashCooldownOverlay);
+
+		_dashChargeLabel = new Label
+		{
+			Name = "DashChargeLabel",
+			HorizontalAlignment = HorizontalAlignment.Right,
+			VerticalAlignment = VerticalAlignment.Bottom,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		_dashChargeLabel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+		_dashChargeLabel.OffsetLeft = -28;
+		_dashChargeLabel.OffsetTop = -18;
+		_dashChargeLabel.OffsetRight = 0;
+		_dashChargeLabel.OffsetBottom = 0;
+		_dashChargeLabel.AddThemeColorOverride("font_color", Colors.White);
+		_dashChargeLabel.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.8f));
+		_dashChargeLabel.AddThemeConstantOverride("outline_size", 2);
+		_dashChargeLabel.AddThemeFontSizeOverride("font_size", 14);
+		_dashIcon.AddChild(_dashChargeLabel);
+	}
+
+	private void UpdateDashDisplay(float delta)
+	{
+		if (_dashState == null || _dashIcon == null) return;
+
+		_dashUpdateTimer -= delta;
+		if (_dashUpdateTimer > 0f) return;
+		_dashUpdateTimer = 0.05f;
+
+		if (_dashCooldownOverlay != null)
+			_dashCooldownOverlay.Progress = 1f - _dashState.RechargeProgress;
+
+		if (_dashChargeLabel != null)
+			_dashChargeLabel.Text = $"{_dashState.Charges}";
+	}
+
 		/// <summary>
+		private partial class DashIconControl : Control
+		{
+			public override void _Ready()
+			{
+				MouseFilter = MouseFilterEnum.Ignore;
+			}
+			public override void _Draw()
+			{
+				var size = Size;
+				var center = size * 0.5f;
+				var r = Mathf.Min(size.X, size.Y) * 0.38f;
+				var color = new Color(0.4f, 0.7f, 1f, 0.9f);
+				var points = new Vector2[]
+				{
+					center + new Vector2(0, -r),
+					center + new Vector2(r, 0),
+					center + new Vector2(0, r),
+					center + new Vector2(-r, 0)
+				};
+				DrawPolygon(points, new Color[] { color });
+			}
+		}
+
 		/// 投掷武器冷却扇形遮罩控件
 		/// 从12点钟方向顺时针绘制半透明扇形，覆盖图标表示冷却剩余时间
 		/// </summary>

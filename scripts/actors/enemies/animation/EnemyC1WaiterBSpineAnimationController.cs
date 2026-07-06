@@ -96,7 +96,7 @@ namespace Kuros.Actors.Enemies.Animation
 		}
 
 		/// <summary>
-		/// 需要残影的状态：KeepDistance 后撤、DashSlash 冲刺阶段。
+		/// 需要残影的状态：KeepDistance 后撤、DashSlash 冲刺 + slash 全程。
 		/// </summary>
 		private bool NeedsAfterimage()
 		{
@@ -112,13 +112,10 @@ namespace Kuros.Actors.Enemies.Animation
 				if (controller == null)
 					return false;
 
-				// DashSlash 攻击：仅冲刺阶段（dash 未结束）播放残影，slash 收招阶段停止
+				// DashSlash 攻击：冲刺 + slash 全程播放残影
 				string attackName = controller.CurrentAttackName;
 				if (attackName.Equals(controller.Skill1AttackName, _comparison))
-				{
-					var skill1Attack = _attackController?.GetNodeOrNull<EnemyDashSlashAttack>(controller.Skill1AttackName);
-					return skill1Attack != null && !skill1Attack.IsDashFinished;
-				}
+					return true;
 			}
 
 			return false;

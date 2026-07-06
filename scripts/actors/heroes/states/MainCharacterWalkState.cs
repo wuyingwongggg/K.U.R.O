@@ -49,22 +49,15 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 
-			// Shift short-press = dodge
-			if (WasActionShortPressed("run"))
+			// Space 按下帧 → Dash
+			if (IsActionJustPressed("dash"))
 			{
-				Vector2 input = GetMovementInput();
-				_dodgeDirection = input != Vector2.Zero ? input.Normalized()
-					: new Vector2(Actor.FacingRight ? 1f : -1f, 0f);
-				_dodgeTimer = DodgeDuration;
-
-				if (input.X != 0)
-					Actor.FlipFacing(input.X > 0);
-
+				ChangeState("Dash");
 				return;
 			}
 
-			// Shift long-press = run
-			if (IsActionLongPressHeld("run"))
+			// Shift 按住 → Run
+			if (IsActionPressed("run"))
 			{
 				ChangeState("Run");
 				return;

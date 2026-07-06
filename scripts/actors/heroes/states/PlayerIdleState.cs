@@ -54,6 +54,13 @@ namespace Kuros.Actors.Heroes.States
 		{
 			if (HandleDialogueGating(delta)) return;
 			
+			// Space 按下帧 → Dash
+			if (IsActionJustPressed("dash"))
+			{
+				ChangeState("Dash");
+				return;
+			}
+
 			// 检查是否转换到 IdleHolding（持握可投掷物品）
 			var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
 			if (selectedStack != null && !selectedStack.IsEmpty && selectedStack.Item.IsThrowable)
@@ -78,14 +85,14 @@ namespace Kuros.Actors.Heroes.States
 				{
 					ChangeState("Run");
 				}
-				else
+				else if (!IsActionPressed("run"))
 				{
 					ChangeState("Walk");
 				}
 				return;
 			}
 
-			if (IsActionJustPressed("take_up"))
+			if (WasActionShortPressed("take_up"))
 			{
 				ChangeState("PickUp");
 				return;

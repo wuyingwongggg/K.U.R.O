@@ -335,7 +335,8 @@ namespace Kuros.Actors.Heroes
 			|| stateOrAnimationName.Equals("stun", StringComparison.OrdinalIgnoreCase)
 			|| stateOrAnimationName.Equals("IdleHolding", StringComparison.OrdinalIgnoreCase)
 			|| stateOrAnimationName.Equals("RunHolding", StringComparison.OrdinalIgnoreCase)
-			|| stateOrAnimationName.Equals("Throw", StringComparison.OrdinalIgnoreCase);
+			|| stateOrAnimationName.Equals("Throw", StringComparison.OrdinalIgnoreCase)
+				|| stateOrAnimationName.Equals("Dash", StringComparison.OrdinalIgnoreCase);
 			
 	}
 

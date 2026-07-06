@@ -10,11 +10,6 @@ size = Vector2(100, 100)
 z_index = 2
 z_as_relative = false
 script = ExtResource("1_script")
-Direction = Vector2(0, -1)
-Duration = 1.0
-PeakHeight = 600.0
-Damage = 20
-TargetableFactions = 7
 HitboxPath = NodePath("Area2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
