@@ -537,7 +537,7 @@ namespace Kuros.Items.World
 					// fallback: no-op
 				}
 				
-// 根据飞行距离和持续时间计算实际水平速度
+			// 根据飞行距离和持续时间计算实际水平速度
 			// 水平速度 = 距离 / 时间，方向由 velocity.X 的符号决定
 			float horizontalDistance = GetEffectiveThrowHorizontalDistance();
 			float duration = (float)GetEffectiveThrowParabolicDuration();

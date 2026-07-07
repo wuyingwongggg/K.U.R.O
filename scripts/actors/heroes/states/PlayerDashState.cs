@@ -13,7 +13,7 @@ namespace Kuros.Actors.Heroes.States
         public float DashDuration = 0.2f;
 
         [Export(PropertyHint.Range, "0.1,2,0.01")]
-        public float InvincibilityDuration = 0.35f;
+        public float InvincibilityDuration = 0.2f;
 
         [ExportCategory("Dash Charging")]
         [Export(PropertyHint.Range, "1,10,1")]
