@@ -61,7 +61,7 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 攻击期间赋予敌人的免疫集合。<br/>
         /// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举追加值，无需修改此模板。
         /// </summary>
-        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,Damage")]
+        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,ThrowableDamage,NonThrowableDamage")]
         public ImmunityFlags GrantedImmunities = ImmunityFlags.None;
 
         [ExportCategory("Collision Override")]

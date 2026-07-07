@@ -84,6 +84,11 @@ func import_items_from_csv() -> void:
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
 		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")
+		_s_vec2(res,  "ThrowStartOffset", row, hm, "ThrowStartOffset")
+		_s_float(res, "ThrowParabolicDuration",      row, hm, "ThrowParabolicDuration")
+		_s_float(res, "ThrowParabolicPeakHeight",    row, hm, "ThrowParabolicPeakHeight")
+		_s_float(res, "ThrowHorizontalDistance",     row, hm, "ThrowHorizontalDistance")
+		_s_float(res, "ThrowParabolicLandingYOffset", row, hm, "ThrowParabolicLandingYOffset")
 		_s_float(res, "ThrowWeaponCooldown", row, hm, "ThrowWeaponCooldown")
 		# attack_power 存于 AttributeEntries 子资源
 		var atk = _col(row, hm, "attack_power")
@@ -246,6 +251,13 @@ func _s_bool(res: Resource, prop: String, row: Array, hm: Dictionary, col: Strin
 	var v = _col(row, hm, col).to_lower()
 	if v != "": res.set(prop, v == "true" or v == "1" or v == "yes")
 
+
+func _s_vec2(res: Resource, prop: String, row: Array, hm: Dictionary, col: String) -> void:
+	var v = _col(row, hm, col)
+	if v == "": return
+	var parts = v.split("|")
+	if parts.size() != 2: return
+	res.set(prop, Vector2(float(parts[0]), float(parts[1])))
 func _s_float_neg1(res: Resource, prop: String, row: Array, hm: Dictionary) -> void:
 	var v = _col(row, hm, prop)
 	if v != "":

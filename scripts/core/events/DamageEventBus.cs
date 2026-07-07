@@ -9,8 +9,10 @@ namespace Kuros.Core.Events
     /// </summary>
     public enum DamageSource
     {
-        /// <summary>近战/武器直接攻击</summary>
+        /// <summary>普通武器直接攻击（!IsThrowable）</summary>
         DirectAttack,
+        /// <summary>投掷武器直接攻击（IsThrowable 武器近战）</summary>
+        ThrowableDirectAttack,
         /// <summary>持续区域效果（如 SpikeAttackEffect）</summary>
         AreaEffect,
         /// <summary>投掷物命中</summary>

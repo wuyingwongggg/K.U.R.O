@@ -34,14 +34,7 @@ namespace Kuros.Items.World
 
         // ─── 落点指示 ─────────────────────────────────────────────────────────────
         [ExportGroup("Landing Indicator")]
-        /// <summary>落点圆外圈颜色</summary>
-        [Export] public Color LandingOuterColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.9f);
-        /// <summary>落点圆内填充颜色（透明度较低）</summary>
-        [Export] public Color LandingFillColor { get; set; } = new Color(1f, 0.3f, 0.2f, 0.25f);
-        /// <summary>落点指示圆半径（像素）</summary>
-        [Export(PropertyHint.Range, "4,1000,1")] public float LandingRadius { get; set; } = 12f;
-        /// <summary>落点圆外圈线宽（像素）</summary>
-        [Export(PropertyHint.Range, "1,6,0.5")] public float LandingLineWidth { get; set; } = 2f;
+        [Export] public PackedScene? LandingIndicatorScene { get; set; }
 
         // ─── 武器参数覆盖（留空则从武器场景自动读取）─────────────────────────────
         [ExportGroup("Weapon Param Override (optional)")]
@@ -70,6 +63,7 @@ namespace Kuros.Items.World
         private Vector2 _landingLocalPos = Vector2.Zero;
         // 当前帧的采样点列表（局部坐标）
         private readonly List<Vector2> _trailPoints = new();
+		private Node2D? _landingIndicatorInstance;
 
         private struct WeaponThrowParams
         {
@@ -95,6 +89,13 @@ namespace Kuros.Items.World
                 _interaction = _player.GetNodeOrNull<PlayerItemInteractionComponent>("ItemInteraction");
         }
 
+        public override void _ExitTree()
+        {
+            _landingIndicatorInstance?.QueueFree();
+            _landingIndicatorInstance = null;
+            base._ExitTree();
+        }
+
         public override void _Process(double delta)
         {
             base._Process(delta);
@@ -102,6 +103,7 @@ namespace Kuros.Items.World
             {
                 if (_shouldDraw) { _shouldDraw = false; QueueRedraw(); }
                 return;
+            UpdateLandingIndicator(false);
             }
 
             bool wantsDraw = CheckShouldDraw();
@@ -117,8 +119,10 @@ namespace Kuros.Items.World
             }
             else if (wantsDraw)
             {
-                QueueRedraw(); // 每帧刷新（玩家移动时落点随之移动）
+                QueueRedraw();
             }
+
+            UpdateLandingIndicator(wantsDraw);
         }
 
         public override void _Draw()
@@ -132,19 +136,41 @@ namespace Kuros.Items.World
                 float alpha = Mathf.Lerp(0.3f, 1f, (float)i / Mathf.Max(1, _trailPoints.Count - 1));
                 DrawCircle(_trailPoints[i], DotRadius, TrailColor with { A = TrailColor.A * alpha });
             }
-
-            // 绘制落点填充圆
-            DrawCircle(_landingLocalPos, LandingRadius, LandingFillColor);
-            // 绘制落点轮廓圆（用多线段模拟圆弧边框）
-            DrawArc(_landingLocalPos, LandingRadius, 0f, Mathf.Tau, 32, LandingOuterColor, LandingLineWidth);
-            // 绘制十字准线
-            float crossSize = LandingRadius * 0.5f;
-            DrawLine(_landingLocalPos + new Vector2(-crossSize, 0), _landingLocalPos + new Vector2(crossSize, 0), LandingOuterColor, LandingLineWidth);
-            DrawLine(_landingLocalPos + new Vector2(0, -crossSize), _landingLocalPos + new Vector2(0, crossSize), LandingOuterColor, LandingLineWidth);
         }
 
         // ─── 辅助方法 ─────────────────────────────────────────────────────────────
 
+
+        private void UpdateLandingIndicator(bool show)
+        {
+            if (LandingIndicatorScene == null)
+            {
+                if (_landingIndicatorInstance != null)
+                {
+                    _landingIndicatorInstance.QueueFree();
+                    _landingIndicatorInstance = null;
+                }
+                return;
+            }
+
+            if (!show || _trailPoints.Count == 0)
+            {
+                if (_landingIndicatorInstance != null)
+                {
+                    _landingIndicatorInstance.QueueFree();
+                    _landingIndicatorInstance = null;
+                }
+                return;
+            }
+
+            if (_landingIndicatorInstance == null)
+            {
+                _landingIndicatorInstance = LandingIndicatorScene.Instantiate<Node2D>();
+                AddChild(_landingIndicatorInstance);
+            }
+
+            _landingIndicatorInstance.Position = _landingLocalPos;
+        }
         private bool CheckShouldDraw()
         {
             if (_player == null) return false;
@@ -157,6 +183,8 @@ namespace Kuros.Items.World
 
             // 确保武器参数已缓存
             EnsureParamsCached(stack.Item);
+            if (_cachedParams.HorizontalDistance <= 0f || _cachedParams.Duration <= 0)
+                return false;
             return true;
         }
 
@@ -170,7 +198,6 @@ namespace Kuros.Items.World
 
             _cachedItem = item;
 
-            // ─── 优先从 ItemDefinition 直接读取投掷参数 ───────────────────────────
             _cachedParams = new WeaponThrowParams
             {
                 PeakHeight         = item.ThrowParabolicPeakHeight,
@@ -219,33 +246,26 @@ namespace Kuros.Items.World
             var p = _cachedParams;
             float facingX = _player.FacingRight ? 1f : -1f;
 
-            // 起始点（玩家全局坐标）
-            // 实际投掷流程：
-            // 1. ComputeSpawnPosition：playerPos + (facingX*ThrowOffset.X, ThrowOffset.Y)
-            // 2. ApplyThrowImpulse：spawnPos + ThrowStartOffset（全局）
-            // 转换为局部坐标，玩家在原点，所以：
-            float startLocalX = facingX * p.ThrowOffset.X + p.ThrowStartOffset.X;
-            float startLocalY = p.ThrowOffset.Y + p.ThrowStartOffset.Y;
 
-            float landingY = startLocalY + p.LandingYOffset;
+            float scaleComp = 1f / Mathf.Max(_player.Scale.X, 0.001f);
 
-            // 根据飞行距离和持续时间计算平顺轨迹
-            // 实际飞行距离乘以方向和缩放因子
-            float totalDX = p.HorizontalDistance * facingX * 6f;  // 乘以3来补偿物体缩放
+            float startLocalX = (facingX * p.ThrowOffset.X + p.ThrowStartOffset.X) * scaleComp;
+            float startLocalY = (p.ThrowOffset.Y + p.ThrowStartOffset.Y) * scaleComp;
+            float landingY = startLocalY + p.LandingYOffset * scaleComp;
+
+            float totalDX = p.HorizontalDistance * facingX * scaleComp * 2f;
+            float peakH = p.PeakHeight * scaleComp;
             float duration = (float)p.Duration;
 
             for (int i = 0; i <= TotalSamples; i++)
             {
                 float phase = (float)i / TotalSamples;
-                
-                // 水平方向：线性从起点到落点
+
                 float x = startLocalX + totalDX * phase;
-                
-                // 垂直方向：与 RigidBodyWorldItemEntity._PhysicsProcess 完全一致
-                // y = Lerp(start, landing, phase) - sin(phase*π) * peakHeight
+
                 float y = Mathf.Lerp(startLocalY, landingY, phase)
-                        - Mathf.Sin(phase * Mathf.Pi) * p.PeakHeight * 6f;
-                
+                        - Mathf.Sin(phase * Mathf.Pi) * peakH;
+
                 _trailPoints.Add(new Vector2(x, y));
             }
 

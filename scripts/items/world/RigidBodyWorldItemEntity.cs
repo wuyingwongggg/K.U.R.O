@@ -125,6 +125,7 @@ namespace Kuros.Items.World
 		private AnimationPlayer? _destructionAnimPlayer; // 销毁动画播放器引用
 		private bool _isThrown = false; // 是否正在投掷中
 		public bool IsDisposableCopy { get; set; }
+		public float ThrowCooldownRemaining { get; set; }
 		private Sprite2D? _highlightSprite; // Outline highlight 精灵
 		private ShaderMaterial? _outlineMaterial; // Outline 着色器材料
 		private Area2D? _cachedPlayerGrabArea; // 缓存的玩家 GrabArea
@@ -616,6 +617,9 @@ namespace Kuros.Items.World
 
 			if (_rigidBody == null) return;
 
+			if (ThrowCooldownRemaining > 0f)
+				ThrowCooldownRemaining = Mathf.Max(0f, ThrowCooldownRemaining - (float)delta);
+
 			// 更新投掷武器冷却计时器
 			if (_isInCooldown)
 			{
@@ -803,6 +807,9 @@ namespace Kuros.Items.World
 				return false;
 			}
 
+			if (ThrowCooldownRemaining > 0f && _lastTransferredItem != null)
+				TryApplyCooldownToPickedStack(actor);
+
 			ApplyItemEffects(actor, ItemEffectTrigger.OnPickup);
 			SyncPlayerHandAndQuickBar(actor);
 
@@ -854,6 +861,40 @@ namespace Kuros.Items.World
 			}
 		}
 
+
+		private void TryApplyCooldownToPickedStack(GameActor actor)
+		{
+			if (_lastTransferredItem == null || !(actor is SamplePlayer player) || player.InventoryComponent == null)
+				return;
+
+			float cd = ThrowCooldownRemaining;
+			InventoryContainer? quickbar = player.InventoryComponent.QuickBar;
+			if (quickbar != null)
+			{
+				for (int i = 0; i < quickbar.SlotCount; i++)
+				{
+					var stack = quickbar.GetStack(i);
+					if (stack != null && stack.Item == _lastTransferredItem )
+					{
+						stack.ThrowCooldownRemaining = Mathf.Max(stack.ThrowCooldownRemaining, cd);
+						return;
+					}
+				}
+			}
+			InventoryContainer? backpack = player.InventoryComponent.Backpack;
+			if (backpack != null)
+			{
+				for (int i = 0; i < backpack.SlotCount; i++)
+				{
+					var stack = backpack.GetStack(i);
+					if (stack != null && stack.Item == _lastTransferredItem )
+					{
+						stack.ThrowCooldownRemaining = Mathf.Max(stack.ThrowCooldownRemaining, cd);
+						return;
+					}
+				}
+			}
+		}
 		private void ResolveRigidBody()
 		{
 			if (RigidBodyPath.IsEmpty)

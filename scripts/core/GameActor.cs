@@ -283,7 +283,14 @@ namespace Kuros.Core
 		public virtual void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack)
 		{
 			if (IsDeathSequenceActive || IsDead) return;
-			if (ActiveImmunities.HasFlag(ImmunityFlags.Damage)) return;
+
+			if (ActiveImmunities.HasFlag(ImmunityFlags.ThrowableDamage)
+				&& (damageSource == Events.DamageSource.ThrowableDirectAttack || damageSource == Events.DamageSource.ThrowImpact))
+				return;
+			if (ActiveImmunities.HasFlag(ImmunityFlags.NonThrowableDamage)
+				&& damageSource != Events.DamageSource.ThrowableDirectAttack
+				&& damageSource != Events.DamageSource.ThrowImpact)
+				return;
 			if (damage <= 0) return;
 
 			if (DamageIntercepted != null)

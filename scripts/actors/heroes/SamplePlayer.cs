@@ -1617,7 +1617,10 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			return;
 		}
 
-		target.TakeDamage(finalDamage, GlobalPosition, this);
+		var source = InventoryComponent?.GetSelectedQuickBarStack()?.Item.IsThrowable == true
+		? Kuros.Core.Events.DamageSource.ThrowableDirectAttack
+		: Kuros.Core.Events.DamageSource.DirectAttack;
+	target.TakeDamage(finalDamage, GlobalPosition, this, source);
 	}
 
 	private void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)

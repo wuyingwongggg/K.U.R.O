@@ -49,7 +49,9 @@ func _export_items() -> void:
 
 	var headers := [
 		"file", "ItemId", "DisplayName", "Description", "Category", "Tags",
-		"MaxStackSize", "BuildClass", "LevelCount", "IsThrowable", "IsThrowWeapon", "ThrowWeaponCooldown",
+		"MaxStackSize", "BuildClass", "LevelCount", "IsThrowable", "IsThrowWeapon",
+		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
+		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
 		"attack_power", "SkillRefs"
 	]
 	var rows: Array = [headers]
@@ -92,7 +94,12 @@ func _export_items() -> void:
 			_str(str(r.get("BuildClass", ""))),
 			str(r.get("LevelCount", "1")),
 			str(r.get("IsThrowable", "false")),
-				str(r.get("IsThrowWeapon", "false")),
+			str(r.get("IsThrowWeapon", "false")),
+			_vec2_str(str(r.get("ThrowStartOffset", "Vector2(0, -400)"))),
+			str(r.get("ThrowParabolicDuration", "0.35")),
+			str(r.get("ThrowParabolicPeakHeight", "10")),
+			str(r.get("ThrowHorizontalDistance", "500")),
+			str(r.get("ThrowParabolicLandingYOffset", "300")),
 			str(r.get("ThrowWeaponCooldown", "2.0")),
 			atk, skill_refs
 		])
@@ -388,6 +395,16 @@ func _hattr(header: String, attr: String) -> String:
 # ══════════════════════════════════════════════════════════════════════════════
 
 ## 提取 "some text" → some text
+
+## u63d0u53d6 Vector2(x, y) u2192 "x|y"
+func _vec2_str(raw: String) -> String:
+	var s := raw.strip_edges()
+	var start := s.find("(")
+	var comma := s.find(",")
+	var end   := s.find(")")
+	if start < 0 or comma < 0 or end < 0:
+		return ""
+	return s.substr(start + 1, comma - start - 1).strip_edges() + "|" + s.substr(comma + 1, end - comma - 1).strip_edges()
 func _str(raw: String) -> String:
 	var s := raw.strip_edges()
 	if s.length() >= 2 and s.begins_with("\"") and s.ends_with("\""):

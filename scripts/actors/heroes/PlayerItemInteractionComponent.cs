@@ -303,6 +303,7 @@ namespace Kuros.Actors.Heroes
 
             InventoryItemStack extracted;
             bool extractedFromInventory;
+            float savedCd = selectedStack.ThrowCooldownRemaining;
 
             if (isThrowWeapon)
             {
@@ -330,6 +331,9 @@ namespace Kuros.Actors.Heroes
             }
 
             entity.LastDroppedBy = _actor;
+
+            if (entity is RigidBodyWorldItemEntity re && savedCd > 0f)
+                re.ThrowCooldownRemaining = savedCd;
 
             if (disposition == DropDisposition.Throw)
             {

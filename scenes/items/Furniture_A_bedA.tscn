@@ -45,7 +45,6 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
 HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
-MaxHP = 60.0
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 

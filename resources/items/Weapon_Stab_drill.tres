@@ -23,4 +23,7 @@ MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_kq0dh")]([SubResource("Attribute_AttackPower")])
 WeaponSkillResources = Array[Resource]([ExtResource("4_kq0dh")])
 LevelCount = 0
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicPeakHeight = 100.0
+ThrowParabolicLandingYOffset = 250.0
 WorldScenePath = "res://scenes/weapons/Weapon_Stab_drill.tscn"
