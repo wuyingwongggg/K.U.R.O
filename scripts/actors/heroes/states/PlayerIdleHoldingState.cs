@@ -55,7 +55,7 @@ namespace Kuros.Actors.Heroes.States
 
 			// 检查是否还有可投掷物品
 			var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
-			if (selectedStack == null || selectedStack.IsEmpty || !selectedStack.Item.IsThrowable)
+			if (selectedStack == null || selectedStack.IsEmpty || !selectedStack.Item.IsThrowable || selectedStack.IsThrowOnCooldown)
 			{
 				//GD.Print($"[PlayerIdleHoldingState] 物品不可投掷或已消失，返回 Idle");
 				ChangeState("Idle");

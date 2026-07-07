@@ -312,34 +312,20 @@ namespace Kuros.UI
 			bool isEmpty = stack == null || stack.IsEmpty;
 			bool isEmptyItem = !isEmpty && stack!.Item.ItemId == "empty_item";
 
-			// 检测是否为投掷武器预占槽：empty_item 且槽位在预留集合中
-			Kuros.Items.World.RigidBodyWorldItemEntity? thrownWeapon = null;
-			if (isEmptyItem && _player?.InventoryComponent?.ReservedQuickBarSlots.Contains(slotIndex) == true)
-			{
-				thrownWeapon = FindThrownWeaponInSlot(slotIndex);
-			}
-			
-			// 更新标签文字
+
+			// u66f4u65b0u6807u7b7eu6587u5b57
 			if (_quickSlotLabels[slotIndex] != null)
 			{
-				if (thrownWeapon != null)
-					_quickSlotLabels[slotIndex].Text = thrownWeapon.ItemDefinition?.DisplayName ?? "";
-				else if (isEmpty || isEmptyItem)
+				if (isEmpty || isEmptyItem)
 					_quickSlotLabels[slotIndex].Text = "";
 				else
 					_quickSlotLabels[slotIndex].Text = stack!.Item.DisplayName;
 			}
-			
-			// 更新图标
+
+			// u66f4u65b0u56feu6807
 			if (_quickSlotIcons[slotIndex] != null)
 			{
-				if (thrownWeapon != null)
-				{
-					// 显示投掷武器图标，半透明表示不可用状态
-					_quickSlotIcons[slotIndex].Texture = thrownWeapon.ItemDefinition?.Icon;
-					_quickSlotIcons[slotIndex].Modulate = new Color(1f, 1f, 1f, 0.55f);
-				}
-				else if (isEmpty || isEmptyItem)
+				if (isEmpty || isEmptyItem)
 				{
 					_quickSlotIcons[slotIndex].Texture = null;
 					_quickSlotIcons[slotIndex].Modulate = new Color(1, 1, 1, 0.3f);
@@ -351,8 +337,8 @@ namespace Kuros.UI
 				}
 			}
 
-			// 更新投掷冷却遮罩
-			UpdateThrowCooldownOverlay(slotIndex, thrownWeapon);
+			// u66f4u65b0u6295u63b7u51b7u5374u906eu7f69uff08u4eceu69fdu4f4d stack u8bfbu53d6uff09
+			UpdateThrowCooldownOverlay(slotIndex, stack);
 		}
 		
 		/// <summary>
@@ -832,51 +818,29 @@ namespace Kuros.UI
 		{
 			base._Process(delta);
 			UpdateDashDisplay((float)delta);
-			// 定期刷新飞行中投掷武器的冷却遮罩进度
-			if (_player?.InventoryComponent?.ReservedQuickBarSlots.Count > 0)
+			// u5b9au671fu5237u65b0u6295u63b7u6b66u5668u69fdu4f4d CD u906eu7f69
+			_throwCooldownUpdateTimer -= (float)delta;
+			if (_throwCooldownUpdateTimer <= 0f)
 			{
-				_throwCooldownUpdateTimer -= (float)delta;
-				if (_throwCooldownUpdateTimer <= 0f)
+				_throwCooldownUpdateTimer = ThrowCooldownUpdateInterval;
+				for (int i = 0; i < 5; i++)
 				{
-					_throwCooldownUpdateTimer = ThrowCooldownUpdateInterval;
-					foreach (int i in _player.InventoryComponent.ReservedQuickBarSlots)
-					{
-						if (i >= 0 && i < 5) UpdateQuickBarSlot(i);
-					}
+					var qbStack = _player?.InventoryComponent?.QuickBar?.GetStack(i);
+					if (qbStack != null && qbStack.IsThrowOnCooldown)
+						UpdateQuickBarSlot(i);
 				}
 			}
 		}
 
-		/// <summary>
-		/// 在 world_items 组中查找指定槽位的飞行中投掷武器实体
-		/// </summary>
-		private Kuros.Items.World.RigidBodyWorldItemEntity? FindThrownWeaponInSlot(int slotIndex)
-		{
-			var tree = GetTree();
-			if (tree == null) return null;
-			foreach (var node in tree.GetNodesInGroup("world_items"))
-			{
-				if (node is Kuros.Items.World.RigidBodyWorldItemEntity entity
-					&& entity.ReservedQuickBarSlotIndex == slotIndex
-					&& entity.LastDroppedBy == _player)
-				{
-					return entity;
-				}
-			}
-			return null;
-		}
-
-		/// <summary>
-		/// 更新指定槽位的投掷冷却扇形遮罩
-		/// </summary>
-		private void UpdateThrowCooldownOverlay(int slotIndex, Kuros.Items.World.RigidBodyWorldItemEntity? thrownWeapon)
+		private void UpdateThrowCooldownOverlay(int slotIndex, InventoryItemStack? stack)
 		{
 			if (_quickSlotIcons[slotIndex] == null) return;
 
-			if (thrownWeapon != null && thrownWeapon.IsThrowWeaponInCooldown)
+			if (stack != null && stack.IsThrowOnCooldown)
 			{
 				var overlay = GetOrCreateCooldownOverlay(slotIndex);
-				overlay.Progress = thrownWeapon.ThrowCooldownProgress;
+				float cd = stack.Item.ThrowWeaponCooldown;
+				overlay.Progress = cd > 0f ? stack.ThrowCooldownRemaining / cd : 0f;
 				overlay.Visible = true;
 			}
 			else

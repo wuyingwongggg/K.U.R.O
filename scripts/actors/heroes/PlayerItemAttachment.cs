@@ -232,6 +232,12 @@ namespace Kuros.Actors.Heroes
             string? currentState = _actor?.StateMachine?.CurrentState?.Name;
 
             // 只控制视觉显示（是否显示图标），与Hitbox独立
+
+            if (Inventory?.GetSelectedQuickBarStack()?.IsThrowOnCooldown == true)
+            {
+                ShowItemIcon(null);
+                return;
+            }
             // 对于可投掷物(投掷类)：在IdleHolding、RunHolding状态显示
             // 对于不可投掷物(武器类)：在Idle、Run、Walk、Hit状态显示
             if (!ShouldShowHoldingItem(currentState))

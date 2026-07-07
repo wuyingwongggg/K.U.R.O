@@ -286,59 +286,37 @@ namespace Kuros.Actors.Heroes
                 return false;
             }
 
-            // 從快捷欄選中的槽位獲取物品（左手物品）
             var selectedStack = InventoryComponent.GetSelectedQuickBarStack();
-            GD.Print($"[PlayerItemInteractionComponent] TryHandleDrop({disposition}, skipAnimation={skipAnimation}): selectedStack={selectedStack?.Item?.ItemId ?? "null"}");
             if (selectedStack == null || selectedStack.IsEmpty || selectedStack.Item.ItemId == "empty_item")
-            {
-                GD.PrintErr($"[PlayerItemInteractionComponent] TryHandleDrop 失败: 快捷栏为空或物品是empty_item (null={selectedStack==null}, empty={selectedStack?.IsEmpty ?? false}, itemId={selectedStack?.Item?.ItemId ?? "null"})");
                 return false;
-            }
 
             if (!skipAnimation && disposition == DropDisposition.Throw)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 触发 Throw 状态...");
                 if (TryTriggerThrowState())
-                {
-                    GD.Print($"[PlayerItemInteractionComponent] 成功进入 Throw 状态，等待动画完成");
                     return false;
-                }
-
-                GD.PrintErr($"[PlayerItemInteractionComponent] TryTriggerThrowState 失败");
                 return TryHandleDrop(disposition, skipAnimation: true);
             }
 
-            // 投掷武器时：在物品从背包移除（InventoryChanged）之前预注册飞行状态
-            // 防止 RefreshBuildState 因背包变化而提前移除构筑效果
-            PlayerBuildController? buildController = null;
-            bool preRegisteredBuild = false;
-            if (disposition == DropDisposition.Throw && selectedStack.Item.IsThrowable)
+            bool isThrowWeapon = disposition == DropDisposition.Throw && selectedStack.Item.IsThrowWeapon;
+            if (isThrowWeapon && selectedStack.IsThrowOnCooldown)
+                return false;
+
+            InventoryItemStack extracted;
+            bool extractedFromInventory;
+
+            if (isThrowWeapon)
             {
-                buildController = _actor?.FindChild("BuildController", recursive: true, owned: false) as PlayerBuildController;
-                // GD.Print($"[PlayerItemInteractionComponent][InFlight] 预注册: IsThrowable={selectedStack.Item.IsThrowable}, buildController={(buildController != null ? buildController.Name : \"NULL\")}, item={selectedStack.Item.ItemId}");
-                if (buildController != null)
-                {
-                    buildController.RegisterThrowInFlight(selectedStack.Item);
-                    preRegisteredBuild = true;
-                    // GD.Print($"[PlayerItemInteractionComponent][InFlight] 预注册成功，即将提取物品");
-                }
-                else
-                {
-                    // GD.PrintErr($"[PlayerItemInteractionComponent][InFlight] 未找到 BuildController，预注册失败！actor={_actor?.Name ?? \"null\"}");
-                }
+                selectedStack.ThrowCooldownRemaining = selectedStack.Item.ThrowWeaponCooldown;
+                extracted = new InventoryItemStack(selectedStack.Item, 1);
+                extractedFromInventory = false;
             }
             else
             {
-                // GD.Print($"[PlayerItemInteractionComponent][InFlight] 跳过预注册: disposition={disposition}, IsThrowable={selectedStack.Item.IsThrowable}");
-            }
-
-            // 從快捷欄提取物品
-            if (!InventoryComponent.TryExtractFromSelectedQuickBarSlot(selectedStack.Quantity, out var extracted, _actor) || extracted == null || extracted.IsEmpty)
-            {
-                // 提取失败：回滚预注册的飞行状态
-                if (preRegisteredBuild && buildController != null)
-                    buildController.UnregisterThrowInFlight(selectedStack.Item);
-                return false;
+                if (!InventoryComponent.TryExtractFromSelectedQuickBarSlot(selectedStack.Quantity, out var invExtracted, _actor)
+                    || invExtracted == null || invExtracted.IsEmpty)
+                    return false;
+                extracted = invExtracted;
+                extractedFromInventory = true;
             }
 
             var spawnPosition = ComputeSpawnPosition(disposition);
@@ -346,87 +324,8 @@ namespace Kuros.Actors.Heroes
 
             if (entity == null)
             {
-                // Recovery path: spawn failed, try to return extracted items to quickbar
-                if (extracted == null || extracted.IsEmpty)
-                {
-                    // Spawn 失败且无法恢复：回滚预注册
-                    if (preRegisteredBuild && buildController != null)
-                        buildController.UnregisterThrowInFlight(selectedStack.Item);
-                    return false;
-                }
-
-                int originalQuantity = extracted.Quantity;
-                int totalRecovered = 0;
-
-                // Step 1: Try to return items to the selected quickbar slot first
-                if (InventoryComponent.TryReturnStackToSelectedQuickBarSlot(extracted, out var returnedToSlot))
-                {
-                    totalRecovered += returnedToSlot;
-                }
-
-                // Step 2: If there are remaining items, try to add them to quickbar or backpack
-                if (!extracted.IsEmpty)
-                {
-                    int remainingQuantity = extracted.Quantity;
-                    
-                    // 先嘗試放回快捷欄
-                    if (InventoryComponent.QuickBar != null)
-                    {
-                        for (int i = 1; i < 5 && remainingQuantity > 0; i++)
-                        {
-                            int added = InventoryComponent.QuickBar.TryAddItemToSlot(extracted.Item, remainingQuantity, i);
-                            if (added > 0)
-                            {
-                                totalRecovered += added;
-                                remainingQuantity -= added;
-                                int safeRemove = Math.Min(added, extracted.Quantity);
-                                if (safeRemove > 0)
-                                {
-                                    extracted.Remove(safeRemove);
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 如果快捷欄也放不下，放入背包
-                    if (!extracted.IsEmpty && InventoryComponent.Backpack != null)
-                    {
-                        int addedToBackpack = InventoryComponent.Backpack.AddItem(extracted.Item, extracted.Quantity);
-                        if (addedToBackpack > 0)
-                        {
-                            totalRecovered += addedToBackpack;
-                            int safeRemove = Math.Min(addedToBackpack, extracted.Quantity);
-                            if (safeRemove > 0)
-                            {
-                                extracted.Remove(safeRemove);
-                            }
-                        }
-                    }
-                }
-
-                // Step 3: Handle any remaining items that couldn't be recovered
-                if (!extracted.IsEmpty)
-                {
-                    int lostQuantity = extracted.Quantity;
-                    GameLogger.Error(
-                        nameof(PlayerItemInteractionComponent),
-                        $"[Item Recovery] Failed to recover {lostQuantity}x '{extracted.Item?.ItemId ?? "unknown"}' " +
-                        $"(recovered {totalRecovered}/{originalQuantity}). Items lost due to spawn failure and full inventory.");
-
-                    // Clear the extracted stack to maintain consistency
-                    // Note: These items are lost - inventory is full
-                    extracted.Remove(lostQuantity);
-                }
-
-                // Spawn 失败，物品已放回背包（InventoryChanged 会重新计算构筑点），回滚预注册
-                if (preRegisteredBuild && buildController != null)
-                    buildController.UnregisterThrowInFlight(selectedStack.Item);
-
-                return false;
-            }
-
-            if (entity == null)
-            {
+                if (extractedFromInventory)
+                    InventoryComponent.TryReturnStackToSelectedQuickBarSlot(extracted, out _);
                 return false;
             }
 
@@ -434,10 +333,13 @@ namespace Kuros.Actors.Heroes
 
             if (disposition == DropDisposition.Throw)
             {
+                if (entity is RigidBodyWorldItemEntity rigidEntity)
+                    rigidEntity.IsDisposableCopy = isThrowWeapon;
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
             }
 
-            InventoryComponent.NotifyItemRemoved(extracted.Item.ItemId);
+            if (extractedFromInventory)
+                InventoryComponent.NotifyItemRemoved(extracted.Item.ItemId);
             return true;
         }
 

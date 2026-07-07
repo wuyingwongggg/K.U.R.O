@@ -124,6 +124,7 @@ namespace Kuros.Items.World
 		private bool _isDestroying = false; // 是否正在销毁中
 		private AnimationPlayer? _destructionAnimPlayer; // 销毁动画播放器引用
 		private bool _isThrown = false; // 是否正在投掷中
+		public bool IsDisposableCopy { get; set; }
 		private Sprite2D? _highlightSprite; // Outline highlight 精灵
 		private ShaderMaterial? _outlineMaterial; // Outline 着色器材料
 		private Area2D? _cachedPlayerGrabArea; // 缓存的玩家 GrabArea
@@ -563,7 +564,7 @@ namespace Kuros.Items.World
 					// 构筑效果已在 PlayerItemInteractionComponent.TryHandleDrop 中预注册，此处无需重复注册
 					
 					// 投掷武器：进入冷却状态，并预占原快捷栏槽位
-					if (IsThrowWeapon)
+					if (!IsDisposableCopy && IsThrowWeapon)
 					{
 						_isInCooldown = true;
 						_throwCooldownTimer = ThrowWeaponCooldown;
@@ -632,7 +633,7 @@ namespace Kuros.Items.World
 				_landingHideTimer -= delta;
 				if (_landingHideTimer <= 0.0)
 				{
-					if (IsThrowWeapon)
+					if (!IsDisposableCopy && IsThrowWeapon)
 					{
 						HideItemAtLanding(); // 投掷武器：仅隐藏，等 _inventoryReturnTimer 到期后销毁
 					}
@@ -745,7 +746,7 @@ namespace Kuros.Items.World
 					{
 						_landingHideTimer = LandingHideDelay;
 
-						if (IsThrowWeapon)
+						if (!IsDisposableCopy && IsThrowWeapon)
 						{
 							// 投掷武器：LandingHideDelay 后隐藏，ThrowWeaponCooldown 后归还背包
 							_inventoryReturnTimer = ThrowWeaponCooldown;
@@ -1140,7 +1141,7 @@ namespace Kuros.Items.World
 					{
 						_landingHideTimer = LandingHideDelay;
 
-						if (IsThrowWeapon)
+						if (!IsDisposableCopy && IsThrowWeapon)
 						{
 							_inventoryReturnTimer = ThrowWeaponCooldown;
 						}
