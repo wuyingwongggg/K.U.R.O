@@ -28,7 +28,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(750, 332)
+size = Vector2(900, 350)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
@@ -121,9 +121,9 @@ script = ExtResource("20_0ugu3")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("17_s72su")
 preview_skin = "Default"
-preview_animation = "-- Empty --"
+preview_animation = "attack"
 preview_frame = true
-preview_time = 1.16
+preview_time = 0.0
 script = ExtResource("20_0ugu3")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -136,7 +136,7 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(445, 81)
+position = Vector2(300, 80)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]

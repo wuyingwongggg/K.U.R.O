@@ -122,8 +122,26 @@ namespace Kuros.Actors.Heroes.States
             }
 
 
-            if (!_inBurst)
+
+            if (_inBurst)
             {
+                if (IsActionJustPressed("attack"))
+                    BufferInput("attack", AttackPriority);
+            }
+            else
+            {
+                var buffered = ConsumeBufferedInput();
+                if (buffered == "dash" && CanDash)
+                {
+                    ChangeState("Dash");
+                    return;
+                }
+                if (buffered == "attack" || IsAttackTriggered())
+                {
+                    Player.RequestAttackFromState(Name);
+                    ChangeState("Attack");
+                    return;
+                }
                 if (IsActionJustPressed("dash") && CanDash)
                 {
                     ChangeState("Dash");
@@ -132,12 +150,6 @@ namespace Kuros.Actors.Heroes.States
                 if (GetMovementInput() != Vector2.Zero)
                 {
                     ChangeState("Walk");
-                    return;
-                }
-                if (IsAttackTriggered())
-                {
-                    Player.RequestAttackFromState(Name);
-                    ChangeState("Attack");
                     return;
                 }
             }

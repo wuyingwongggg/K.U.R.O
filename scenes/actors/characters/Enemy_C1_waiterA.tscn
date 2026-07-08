@@ -38,7 +38,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cc1qw"]
-size = Vector2(1000, 800)
+size = Vector2(1200, 800)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q6o81"]
 radius = 1024.0
@@ -130,20 +130,20 @@ skeleton_data_res = ExtResource("7_cc1qw")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.33
+preview_time = 1.0
 script = ExtResource("23_spine_controller")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
+z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(500, -200)
+position = Vector2(450, -200)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_cc1qw")
 

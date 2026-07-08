@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using Kuros.Systems.FSM;
 using Kuros.Core;
 using Kuros.Managers;
@@ -9,7 +10,58 @@ namespace Kuros.Actors.Heroes.States
 {
     public partial class PlayerState : State
     {
+        [ExportCategory("Input Buffer")]
+        [Export(PropertyHint.Range, "0.05,1,0.01")] public float BufferWindow = 0.3f;
+        [Export] public int DashPriority = 3;
+        [Export] public int AttackPriority = 2;
+
+        private struct BufferedInput
+        {
+            public string Action;
+            public int Priority;
+            public float Remaining;
+        }
+
+        private readonly List<BufferedInput> _inputBuffer = new();
+
         protected SamplePlayer Player => (SamplePlayer)Actor;
+
+        /// <summary>缓冲一个预输入，在可打断阶段自动消费。</summary>
+        protected void BufferInput(string action, int priority)
+        {
+            for (int i = _inputBuffer.Count - 1; i >= 0; i--)
+            {
+                if (_inputBuffer[i].Action == action)
+                    _inputBuffer.RemoveAt(i);
+            }
+            _inputBuffer.Add(new BufferedInput { Action = action, Priority = priority, Remaining = BufferWindow });
+        }
+
+        /// <summary>取出缓冲中优先级最高的动作，无则返回 null。</summary>
+        protected string? ConsumeBufferedInput()
+        {
+            if (_inputBuffer.Count == 0) return null;
+            int best = 0;
+            for (int i = 1; i < _inputBuffer.Count; i++)
+                if (_inputBuffer[i].Priority > _inputBuffer[best].Priority)
+                    best = i;
+            var action = _inputBuffer[best].Action;
+            _inputBuffer.Clear();
+            return action;
+        }
+
+        public override void Update(double delta)
+        {
+            for (int i = _inputBuffer.Count - 1; i >= 0; i--)
+            {
+                var b = _inputBuffer[i];
+                b.Remaining -= (float)delta;
+                if (b.Remaining <= 0f)
+                    _inputBuffer.RemoveAt(i);
+                else
+                    _inputBuffer[i] = b;
+            }
+        }
         
         /// <summary>
         /// 播放动画（自动检测是使用 AnimationPlayer 还是 Spine 动画）

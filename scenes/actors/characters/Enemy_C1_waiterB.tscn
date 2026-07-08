@@ -152,7 +152,7 @@ skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.76
+preview_time = 2.3667
 script = ExtResource("5_muxhp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -201,12 +201,11 @@ position = Vector2(400, 0)
 shape = SubResource("RectangleShape2D_st2e3")
 
 [node name="DashSlashArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashSlashArea"]
-position = Vector2(800, 0)
+position = Vector2(600, 0)
 shape = SubResource("RectangleShape2D_m8hjw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
