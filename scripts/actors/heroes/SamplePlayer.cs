@@ -141,7 +141,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		base._Ready();
 		AddToGroup("player");
-		_holdTracker.Register("run", longPressThreshold: 0.4f);
+		// dash/run 已拆分独立按键，不再需要 InputHoldTracker 区分长短按
+		_holdTracker.Register("take_up", longPressThreshold: 0.35f);
 		
 		// Fallback: Try to find nodes if not assigned in editor (Backward compatibility)
 		if (AttackArea == null) AttackArea = GetNodeOrNull<Area2D>("AttackArea");
@@ -668,6 +669,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public bool IsActionLongPressHeld(string actionName) => _holdTracker.IsLongPressHeld(actionName);
 	public bool WasActionLongPressTriggered(string actionName) => _holdTracker.WasLongPressTriggered(actionName);
 	public bool WasActionShortPressed(string actionName) => _holdTracker.WasShortPressed(actionName);
+	public bool WasActionJustPressed(string actionName) => _holdTracker.WasActionJustPressed(actionName);
 	public float GetActionHoldDuration(string actionName) => _holdTracker.GetHoldDuration(actionName);
 
 	// private async System.Threading.Tasks.Task RequestAiDecisionTestAsync()
@@ -1615,7 +1617,12 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			return;
 		}
 
-		target.TakeDamage(finalDamage, GlobalPosition, this);
+		var stack = InventoryComponent?.GetSelectedQuickBarStack();
+		bool isThrowable = stack?.Item.IsThrowable == true && stack?.IsThrowOnCooldown != true;
+		var source = isThrowable
+			? Kuros.Core.Events.DamageSource.ThrowableDirectAttack
+			: Kuros.Core.Events.DamageSource.DirectAttack;
+	target.TakeDamage(finalDamage, GlobalPosition, this, source);
 	}
 
 	private void DealDamageToDestructiblesViaShape(Area2D attackArea, float damageAmount)

@@ -11,6 +11,7 @@ namespace Kuros.Systems.InputTracking
     {
         private readonly Dictionary<string, float> _thresholds = new();
         private readonly Dictionary<string, float> _pressTimes = new();
+        private readonly HashSet<string> _justPressedThisFrame = new();
         private readonly HashSet<string> _longPressTriggeredThisFrame = new();
         private readonly HashSet<string> _shortPressDetectedThisFrame = new();
 
@@ -31,6 +32,7 @@ namespace Kuros.Systems.InputTracking
         {
             _thresholds.Remove(actionName);
             _pressTimes.Remove(actionName);
+            _justPressedThisFrame.Remove(actionName);
             _longPressTriggeredThisFrame.Remove(actionName);
             _shortPressDetectedThisFrame.Remove(actionName);
         }
@@ -40,6 +42,7 @@ namespace Kuros.Systems.InputTracking
         /// </summary>
         public void Process(float delta)
         {
+            _justPressedThisFrame.Clear();
             _longPressTriggeredThisFrame.Clear();
             _shortPressDetectedThisFrame.Clear();
 
@@ -51,6 +54,7 @@ namespace Kuros.Systems.InputTracking
                 if (Godot.Input.IsActionJustPressed(action))
                 {
                     _pressTimes[action] = 0f;
+                    _justPressedThisFrame.Add(action);
                 }
                 else if (Godot.Input.IsActionPressed(action))
                 {
@@ -71,6 +75,15 @@ namespace Kuros.Systems.InputTracking
                     _pressTimes[action] = 0f;
                 }
             }
+        }
+
+        /// <summary>
+        /// 按下帧触发 —— 在按下的第一帧为 true（Edge-triggered）。
+        /// 适用于：Shift 按下 = 闪避，即时无延迟。
+        /// </summary>
+        public bool WasActionJustPressed(string actionName)
+        {
+            return _justPressedThisFrame.Contains(actionName);
         }
 
         /// <summary>

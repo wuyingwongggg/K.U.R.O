@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://bs2p8j2t1tndn"]
+
+[ext_resource type="Script" uid="uid://eepjb2ec81e2" path="res://scripts/fx/ParabolicProjectile.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cnpofvwjvoqod" path="res://assets/effect/AttackEffect/item_broken_effect/Stone.png" id="2_texture"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5h3t6"]
+size = Vector2(100, 100)
+
+[node name="StoneFall" type="Node2D"]
+z_index = 2
+z_as_relative = false
+script = ExtResource("1_script")
+HitboxPath = NodePath("Area2D")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.15, 0.15)
+texture = ExtResource("2_texture")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_mask = 7
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_5h3t6")

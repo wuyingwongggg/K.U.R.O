@@ -136,6 +136,7 @@ preview_time = 0.67
 script = ExtResource("6_ks25x")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 position = Vector2(0, -600)
@@ -151,7 +152,6 @@ scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 collision_mask = 4
 monitorable = false
@@ -213,7 +213,6 @@ WarmupDuration = 1.16
 ActiveDuration = 0.34
 RecoveryDuration = 0.33
 DamageMultiplier = 0.0
-AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
 EffectScene = ExtResource("13_10g4w")

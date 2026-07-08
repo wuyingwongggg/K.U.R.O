@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bmhkq2sfgo8a5"]
+
+[ext_resource type="Texture2D" uid="uid://dpq3xah0g344a" path="res://assets/effect/AttackEffect/item_broken_effect/SmashEffect.png" id="1_2nodp"]
+[ext_resource type="Script" uid="uid://bekgm7cl4mt1h" path="res://scripts/effects/SmashEffectFadeOut.cs" id="2_ua7bf"]
+
+[node name="Node2D" type="Node2D"]
+z_index = 1
+z_as_relative = false
+script = ExtResource("2_ua7bf")
+FadeOutDuration = 1.5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.4)
+texture = ExtResource("1_2nodp")

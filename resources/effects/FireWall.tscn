@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://c08uxmi4ffstu"]
+
+[ext_resource type="PackedScene" uid="uid://b4qqpgiusbp7l" path="res://resources/effects/FireWallA.tscn" id="1_xf22n"]
+[ext_resource type="PackedScene" uid="uid://w4v8hptbjx0g" path="res://resources/effects/FireWallB.tscn" id="2_7qfoa"]
+
+[node name="FIreWall" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+
+[node name="FireWallA" parent="." instance=ExtResource("1_xf22n")]
+position = Vector2(127, -580)
+
+[node name="FireWallB" parent="." instance=ExtResource("2_7qfoa")]
+position = Vector2(124, 424)

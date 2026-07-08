@@ -22,6 +22,12 @@ namespace Kuros.Actors.Heroes.States
 		{
 			if (HandleDialogueGating(delta)) return;
 			
+			if (IsActionJustPressed("dash"))
+			{
+				ChangeState("Dash");
+				return;
+			}
+
 			if (IsAttackTriggered() && Actor.AttackTimer <= 0)
 			{
 				MainCharacter.RequestAttackFromState(Name);
@@ -30,7 +36,7 @@ namespace Kuros.Actors.Heroes.States
 			}
 			
 			// Stop running if shift is released (long press no longer held)
-			if (!IsActionLongPressHeld("run"))
+			if (!IsActionPressed("run"))
 			{
 				ChangeState("Walk");
 				return;

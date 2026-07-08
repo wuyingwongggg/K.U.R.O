@@ -134,6 +134,18 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             InitializeSelection();
         }
 
+
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		if (QuickBar == null) return;
+		for (int i = 0; i < QuickBar.SlotCount; i++)
+		{
+			var stack = QuickBar.GetStack(i);
+			if (stack == null || stack.ThrowCooldownRemaining <= 0f) continue;
+			stack.ThrowCooldownRemaining -= (float)delta;
+		}
+	}
         private InventoryContainer CreateBackpack()
         {
             var container = new InventoryContainer

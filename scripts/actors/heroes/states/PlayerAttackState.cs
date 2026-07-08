@@ -73,6 +73,13 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 
+			if (IsActionJustPressed("dash") && _activeTemplate.CanDashCancel)
+			{
+				_activeTemplate.Cancel(clearCooldown: true);
+				ChangeState("Dash");
+				return;
+			}
+
 			_activeTemplate.Tick(delta);
 
 			Player.MoveAndSlide();
@@ -94,6 +101,9 @@ namespace Kuros.Actors.Heroes.States
 				requestedState = Player.LastMovementStateName;
 			}
 
+			var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
+			bool throwOnCooldown = selectedStack?.IsThrowOnCooldown == true;
+
 			foreach (var template in _attackTemplates)
 			{
 				template.SetTriggerSourceState(requestedState);
@@ -101,6 +111,9 @@ namespace Kuros.Actors.Heroes.States
 				{
 					continue;
 				}
+
+				if (throwOnCooldown && template.HasWeaponRequirement)
+					continue;
 
 				if (template.TryStart(checkInput: false))
 				{

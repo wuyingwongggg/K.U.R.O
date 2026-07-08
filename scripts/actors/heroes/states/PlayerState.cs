@@ -59,7 +59,7 @@ namespace Kuros.Actors.Heroes.States
                 return true;
 
             var skill = Player.WeaponSkillController?.GetPrimarySkillDefinition();
-            if (skill?.AllowHoldContinuousAttack == true && IsActionPressed("attack"))
+            if ((skill == null || skill.AllowHoldContinuousAttack) && IsActionPressed("attack"))
                 return true;
 
             return false;
@@ -73,6 +73,9 @@ namespace Kuros.Actors.Heroes.States
 
         protected bool WasActionShortPressed(string actionName)
             => Player.WasActionShortPressed(actionName);
+
+        protected bool WasActionJustPressed(string actionName)
+            => Player.WasActionJustPressed(actionName);
 
         protected float GetActionHoldDuration(string actionName)
             => Player.GetActionHoldDuration(actionName);

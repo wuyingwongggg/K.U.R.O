@@ -4,9 +4,10 @@ Enemy_B1_thin,400.0,40.0,,600
 Enemy_B2_fat02,,30,,180
 Enemy_C1_waiterA,,10.0,,100
 Enemy_C1_waiterB,600.0,50.0,,800
-Enemy_C2_waiterA02,350,20,,120
+Enemy_C2_waiterA02,,20.0,,120
+Enemy_D1_corpDoneA,,10.0,,150
 Enemy_D1_printerMachine,400.0,0.0,,100
 Enemy_Normal_guard1,350.0,20.0,,180
-Enemy_Normal_guard2,350,20,,150
+Enemy_Normal_guard2,350.0,20.0,,150
 Enemy_Normal_guard3,,0.0,,120
 main_character,500.0,10.0,,1200

@@ -231,12 +231,12 @@ namespace Kuros.Actors.Enemies.Attacks
 
         private EnemyAttackTemplate? PickAttack()
         {
-            // 只在非CD中的攻击里做加权随机选择，避免选中后立即无法启动
             float totalWeight = 0f;
             foreach (var entry in _entries)
             {
                 if (entry.Template == null || !GodotObject.IsInstanceValid(entry.Template)) continue;
                 if (entry.Template.IsOnCooldown) continue;
+                if (!entry.Template.IsPlayerInDetectionRange()) continue;
                 totalWeight += entry.Weight;
             }
             if (totalWeight <= 0f) return null;
@@ -248,6 +248,7 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 if (entry.Template == null || !GodotObject.IsInstanceValid(entry.Template)) continue;
                 if (entry.Template.IsOnCooldown) continue;
+                if (!entry.Template.IsPlayerInDetectionRange()) continue;
                 cumulative += entry.Weight;
                 if (roll <= cumulative)
                 {

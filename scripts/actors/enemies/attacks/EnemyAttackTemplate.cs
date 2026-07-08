@@ -61,7 +61,7 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 攻击期间赋予敌人的免疫集合。<br/>
         /// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举追加值，无需修改此模板。
         /// </summary>
-        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,Damage")]
+        [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,ThrowableDamage,NonThrowableDamage")]
         public ImmunityFlags GrantedImmunities = ImmunityFlags.None;
 
         [ExportCategory("Collision Override")]
@@ -75,6 +75,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [ExportCategory("Effect")]
         [Export] public PackedScene? EffectScene = null;
+        /// <summary>额外特效场景，与 EffectScene 同时生成，共享相同的 SpawnMarkers/EffectOffset/IFacingDirectional 配置。</summary>
+        [Export] public Godot.Collections.Array<PackedScene> AdditionalEffects = new();
         [Export] public Vector2 EffectOffset = Vector2.Zero;
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
         /// <summary>
@@ -137,6 +139,8 @@ namespace Kuros.Actors.Enemies.Attacks
         }
 
         protected virtual void OnInitialized() { }
+
+        public virtual bool IsPlayerInDetectionRange() => true;
 
         public virtual bool CanStart()
         {
@@ -654,28 +658,27 @@ namespace Kuros.Actors.Enemies.Attacks
             frozenState.ApplyExternalDisplacement(velocity, duration);
         }
 
-        /// <summary>
-        /// 在敌人位置生成特效（支持 Node2D 和 ActorEffect）。
-        /// </summary>
         protected virtual void SpawnEffectAtEnemy()
         {
-            if (EffectScene == null || Enemy == null)
-            {
-                return;
-            }
+            if (Enemy == null) return;
+
+            SpawnSingleEffect(EffectScene);
+            foreach (var scene in AdditionalEffects)
+                SpawnSingleEffect(scene);
+        }
+
+        private void SpawnSingleEffect(PackedScene? scene)
+        {
+            if (scene == null) return;
 
             try
             {
-                var effect = EffectScene.Instantiate();
-                
-                // 根据敌人朝向调整偏移（X 轴翻转）
-                Vector2 adjustedOffset = EffectOffset;
-                if (!Enemy.FacingRight && EffectOffset.X != 0)
-                {
-                    adjustedOffset.X = -EffectOffset.X;
-                }
+                var effect = scene.Instantiate();
 
-                // 有 Markers 则依次使用锚点，否则以敌人原点为基准
+                Vector2 adjustedOffset = EffectOffset;
+                if (!Enemy!.FacingRight && EffectOffset.X != 0)
+                    adjustedOffset.X = -EffectOffset.X;
+
                 Vector2 basePos;
                 if (SpawnMarkers.Length > 0)
                 {
@@ -684,8 +687,7 @@ namespace Kuros.Actors.Enemies.Attacks
                     if (marker != null && GodotObject.IsInstanceValid(marker))
                     {
                         Vector2 rel = marker.GlobalPosition - Enemy.GlobalPosition;
-                        if (!Enemy.FacingRight)
-                            rel.X = -rel.X;
+                        if (!Enemy.FacingRight) rel.X = -rel.X;
                         basePos = Enemy.GlobalPosition + rel;
                     }
                     else
@@ -702,30 +704,19 @@ namespace Kuros.Actors.Enemies.Attacks
                 Vector2 spawnPos = basePos + adjustedOffset;
 
                 if (effect is Node2D node2D)
-                {		    
-		            // 先设朝向，再AddChild，确保_Ready执行时值已正确
-                    // 将敌人朝向传递给方向性特效（如激光束）
-                    // 将敌人朝向传递给方向性特效（激光束、飞弹等）
+                {
                     if (node2D is Kuros.Fx.IFacingDirectional facing)
-                    {
                         facing.FacingRight = Enemy.FacingRight;
-                    }
-                    // 世界坐标生成（如烟雾、粒子等视觉效果）
+
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;
                 }
-                
                 else if (effect is Kuros.Core.Effects.ActorEffect actorEffect)
                 {
-                    // ActorEffect 应用到敌人身上
                     if (Enemy.EffectController != null)
-                    {
                         Enemy.ApplyEffect(actorEffect);
-                    }
                     else
-                    {
                         actorEffect.QueueFree();
-                    }
                 }
                 else
                 {
@@ -734,9 +725,8 @@ namespace Kuros.Actors.Enemies.Attacks
             }
             catch (System.Exception ex)
             {
-                GD.PushWarning($"[{AttackName}] 无法生成攻击特效: {ex.Message}");
+                GD.PushWarning($"[{AttackName}] 无法生成特效: {ex.Message}");
             }
         }
     }
 }
-

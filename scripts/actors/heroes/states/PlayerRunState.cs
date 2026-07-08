@@ -115,6 +115,12 @@ namespace Kuros.Actors.Heroes.States
             //     return;
             // }
             
+            if (IsActionJustPressed("dash"))
+            {
+                ChangeState("Dash");
+                return;
+            }
+
             if (IsAttackTriggered() && Actor.AttackTimer <= 0)
             {
                 Player.RequestAttackFromState(Name);

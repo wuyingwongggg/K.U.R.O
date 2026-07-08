@@ -42,6 +42,8 @@ animations = [{
 }]
 
 [node name="HitH" type="AnimatedSprite2D"]
+z_index = 3
 scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_to6ee")
+autoplay = "default"
 flip_h = true

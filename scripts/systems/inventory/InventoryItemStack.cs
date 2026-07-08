@@ -20,6 +20,8 @@ namespace Kuros.Systems.Inventory
 
         public bool IsFull => Quantity >= Item.MaxStackSize;
         public bool IsEmpty => Quantity <= 0;
+        public float ThrowCooldownRemaining { get; set; }
+        public bool IsThrowOnCooldown => ThrowCooldownRemaining > 0f;
         private readonly Dictionary<string, float> _runtimeAttributeAdditions = new(StringComparer.OrdinalIgnoreCase);
 
         public InventoryItemStack(ItemDefinition item, int quantity)

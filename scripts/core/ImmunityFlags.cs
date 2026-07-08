@@ -22,7 +22,10 @@ namespace Kuros.Core
         ActiveSuperArmor     = 1 << 4,
         /// <summary>恢复阶段霸体：Recovery 期间受到伤害不进入受击硬直。</summary>
         RecoverySuperArmor   = 1 << 5,
-        /// <summary>免疫所有伤害（TakeDamage 直接返回）。</summary>
-        Damage               = 1 << 6,
+        /// <summary>免疫投掷武器伤害（ThrowableDirectAttack + ThrowImpact）。</summary>
+        ThrowableDamage      = 1 << 7,
+        /// <summary>免疫所有非投掷伤害（仅 Throwable 来源可穿透）。若需免疫全部伤害，同时勾选此项与 ThrowableDamage。</summary>
+        NonThrowableDamage   = 1 << 8,
+
     }
 }

@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
@@ -13,18 +14,48 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>激光束在 Active 阶段持续的时长（秒）。</summary>
         [Export(PropertyHint.Range, "0,60,0.1")] public float BeamDuration = 3.0f;
 
+
+        [Export(PropertyHint.Range, "0.1,10,0.1")] public float InterruptFrozenDuration = 2.0f;
         private float _beamTimer;
         private bool _isInBeamPhase;
         private bool _beamFinalized = false;
         public bool IsBeamFinished => _beamFinalized;
 
-        // Warmup 阶段一开始就重置，防止第二次触发时动画控制器在 Warmup 期间
-        // 读到上一次遗留的 _beamFinalized=true 而提前播放收尾动画。
+
         protected override void OnWarmupStarted()
         {
             base.OnWarmupStarted();
             _beamFinalized = false;
             _isInBeamPhase = false;
+            SubscribeDamageInterrupt();
+        }
+
+        protected override void OnAttackFinished()
+        {
+            UnsubscribeDamageInterrupt();
+            base.OnAttackFinished();
+        }
+
+        private void SubscribeDamageInterrupt()
+        {
+            if (Enemy == null) return;
+            Enemy.DamageTaken += OnDamageTakenDuringBeam;
+        }
+
+        private void UnsubscribeDamageInterrupt()
+        {
+            if (Enemy == null) return;
+            Enemy.DamageTaken -= OnDamageTakenDuringBeam;
+        }
+
+        private void OnDamageTakenDuringBeam(int _)
+        {
+            if (!IsRunning || Enemy == null) return;
+            UnsubscribeDamageInterrupt();
+            var frozenState = Enemy.StateMachine?.GetNodeOrNull<EnemyFrozenState>("Frozen");
+            if (frozenState != null)
+                frozenState.FrozenDuration = InterruptFrozenDuration;
+            Enemy.StateMachine?.ChangeState("Frozen");
         }
 
         protected override void OnActivePhase()

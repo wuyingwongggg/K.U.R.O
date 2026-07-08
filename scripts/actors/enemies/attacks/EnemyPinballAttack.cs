@@ -10,30 +10,20 @@ namespace Kuros.Actors.Enemies.Attacks
 	/// </summary>
 	public partial class EnemyPinballAttack : EnemyAttackTemplate
 	{
-		[ExportCategory("Pinball")]
+		[ExportCategory("Areas")]
+		[Export] public NodePath DetectionAreaPath = new();
 		[Export] public NodePath PinballAreaPath = new();
 
-		[Export(PropertyHint.Range, "0,3000,10")]
-		public float PinballMaxSpeed = 800f;
+		[ExportCategory("Pinball")]
+		[Export(PropertyHint.Range, "0,3000,10")] public float PinballMaxSpeed = 800f;
+		[Export(PropertyHint.Range, "0,3000,10")] public float PinballMinSpeed = 200f;
+		[Export(PropertyHint.Range, "0,3000,10")] public float SpeedDecayPerSecond = 300f;
+		[Export(PropertyHint.Range, "0.5,60,0.1")] public float PinballDuration = 3.0f;
+		[Export(PropertyHint.Range, "0.05,0.5,0.01")] public float BounceCooldown = 0.1f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float MinBounceTimeBeforeDamage = 0f;
+		[Export] public bool AllowWallBounce = true;
 
-		[Export(PropertyHint.Range, "0,3000,10")]
-		public float PinballMinSpeed = 200f;
-
-		[Export(PropertyHint.Range, "0,3000,10")]
-		public float SpeedDecayPerSecond = 300f;
-
-		[Export(PropertyHint.Range, "0.5,60,0.1")]
-		public float PinballDuration = 3.0f;
-
-		[Export(PropertyHint.Range, "0.05,0.5,0.01")]
-		public float BounceCooldown = 0.1f;
-
-		[Export(PropertyHint.Range, "0,5,0.01")]
-		public float MinBounceTimeBeforeDamage = 0f;
-
-		[Export]
-		public bool AllowWallBounce = true;
-
+		private Area2D? _detectionArea;
 		private bool _isDashing;
 		private Vector2 _dashDirection = Vector2.Right;
 		private float _currentSpeed;
@@ -43,14 +33,22 @@ namespace Kuros.Actors.Enemies.Attacks
 		private float _dashTimeElapsed;
 		private Area2D? _pinballArea;
 
-		// 注册 _PhysicsProcess 回调，控制弹射期间的每帧移动与墙壁反弹检测
 		protected override void OnInitialized()
 		{
 			base.OnInitialized();
 			SetPhysicsProcess(true);
+
+			if (!DetectionAreaPath.IsEmpty)
+				_detectionArea = GetNodeOrNull<Area2D>(DetectionAreaPath)
+					?? Enemy?.GetNodeOrNull<Area2D>(DetectionAreaPath);
 		}
 
-		// 攻击启动：重置状态、解析伤害判定区域、连接 Area2D 信号
+		public override bool IsPlayerInDetectionRange()
+		{
+			if (_detectionArea == null) return true;
+			return _detectionArea.OverlapsBody(Player);
+		}
+
 		protected override void OnAttackStarted()
 		{
 			base.OnAttackStarted();

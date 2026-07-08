@@ -32,21 +32,28 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 			
+			// Space 按下帧 → Dash
+			if (IsActionJustPressed("dash"))
+			{
+				ChangeState("Dash");
+				return;
+			}
+
 			Vector2 input = GetMovementInput();
 			if (input != Vector2.Zero)
 			{
-				if (IsActionLongPressHeld("run"))
+				if (IsActionPressed("run"))
 				{
 					ChangeState("Run");
 				}
-				else
+				else if (!IsActionPressed("run"))
 				{
 					ChangeState("Walk");
 				}
 				return;
 			}
 
-			if (IsActionJustPressed("take_up"))
+			if (WasActionShortPressed("take_up"))
 			{
 				ChangeState("PickUp");
 				return;

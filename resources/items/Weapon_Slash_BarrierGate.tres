@@ -24,4 +24,7 @@ MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_ax0uh")]([SubResource("Resource_ax0uh")])
 WeaponSkillResources = Array[Resource]([ExtResource("6_skill_ref")])
 LevelCount = 0
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicPeakHeight = 100.0
+ThrowParabolicLandingYOffset = 250.0
 WorldScenePath = "res://scenes/weapons/Weapon_Slash_barrierGate.tscn"

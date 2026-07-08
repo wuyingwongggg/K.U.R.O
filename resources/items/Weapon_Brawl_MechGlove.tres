@@ -24,4 +24,7 @@ MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_1j4ax")]([SubResource("Resource_aecqv")])
 WeaponSkillResources = Array[Resource]([ExtResource("4_1j4ax")])
 LevelCount = 0
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicPeakHeight = 100.0
+ThrowParabolicLandingYOffset = 250.0
 WorldScenePath = "uid://ctpw5uqly3yu5"

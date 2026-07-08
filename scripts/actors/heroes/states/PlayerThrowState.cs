@@ -78,7 +78,7 @@ namespace Kuros.Actors.Heroes.States
         if (_animationFinished)
         {
             var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
-            if (selectedStack != null && !selectedStack.IsEmpty && selectedStack.Item.IsThrowable)
+            if (selectedStack != null && !selectedStack.IsEmpty && selectedStack.Item.IsThrowable && !selectedStack.IsThrowOnCooldown)
             {
                 GD.Print($"[PlayerThrowState] 还有可投掷物品，返回 IdleHolding");
                 ChangeState("IdleHolding");

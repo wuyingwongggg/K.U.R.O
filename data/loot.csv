@@ -12,5 +12,5 @@ Enemy_C_NormalDrops,1,1.0,1,48.0,400.0,3,Weapon_Brawl_DiscoBall,0.33,1,,
 Enemy_Normal_EliteDrops,1,1.0,1,48.0,400.0,1,Weapon_Throw_EmojiBomb,0.5,1,,
 Enemy_Normal_EliteDrops,1,1.0,1,48.0,400.0,2,Weapon_Brawl_RiotBracer,0.5,1,,
 Enemy_Normal_NormalDrops,1,1.0,1,48.0,400.0,1,Weapon_Throw_SmokeGrenade,0.33,1,220.0,90.0
-Enemy_Normal_NormalDrops,1,1.0,1,48.0,400.0,2,Weapon_Throw_EmojiBomb,0.5,1,,
-Enemy_Normal_NormalDrops,1,1.0,1,48.0,400.0,3,Weapon_Brawl_RiotBracer,0.5,1,,
+Enemy_Normal_NormalDrops,1,1.0,1,48.0,400.0,2,Weapon_Slash_ExpandBaton,0.33,1,,
+Enemy_Normal_NormalDrops,1,1.0,1,48.0,400.0,3,Weapon_Brawl_RiotGlove,0.33,1,,

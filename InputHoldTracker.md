@@ -66,7 +66,7 @@ GetActionHoldDuration("run")
    ```csharp
    if (WasActionShortPressed("your_action"))
    {
-       // 短按逻辑
+	   // 短按逻辑
    }
    ```
 

@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes.States;
 using Kuros.Core;
 using Kuros.Systems.Inventory;
 using Kuros.Items;
@@ -153,6 +154,7 @@ namespace Kuros.UI
 
 			// 尝试自动连接玩家（如果场景中已有玩家）
 			CallDeferred(MethodName.TryAutoConnectPlayer);
+			CreateDashIndicator();
 
 			// 发出就绪信号
 			EmitSignal(SignalName.HUDReady);
@@ -310,34 +312,20 @@ namespace Kuros.UI
 			bool isEmpty = stack == null || stack.IsEmpty;
 			bool isEmptyItem = !isEmpty && stack!.Item.ItemId == "empty_item";
 
-			// 检测是否为投掷武器预占槽：empty_item 且槽位在预留集合中
-			Kuros.Items.World.RigidBodyWorldItemEntity? thrownWeapon = null;
-			if (isEmptyItem && _player?.InventoryComponent?.ReservedQuickBarSlots.Contains(slotIndex) == true)
-			{
-				thrownWeapon = FindThrownWeaponInSlot(slotIndex);
-			}
-			
-			// 更新标签文字
+
+			// u66f4u65b0u6807u7b7eu6587u5b57
 			if (_quickSlotLabels[slotIndex] != null)
 			{
-				if (thrownWeapon != null)
-					_quickSlotLabels[slotIndex].Text = thrownWeapon.ItemDefinition?.DisplayName ?? "";
-				else if (isEmpty || isEmptyItem)
+				if (isEmpty || isEmptyItem)
 					_quickSlotLabels[slotIndex].Text = "";
 				else
 					_quickSlotLabels[slotIndex].Text = stack!.Item.DisplayName;
 			}
-			
-			// 更新图标
+
+			// u66f4u65b0u56feu6807
 			if (_quickSlotIcons[slotIndex] != null)
 			{
-				if (thrownWeapon != null)
-				{
-					// 显示投掷武器图标，半透明表示不可用状态
-					_quickSlotIcons[slotIndex].Texture = thrownWeapon.ItemDefinition?.Icon;
-					_quickSlotIcons[slotIndex].Modulate = new Color(1f, 1f, 1f, 0.55f);
-				}
-				else if (isEmpty || isEmptyItem)
+				if (isEmpty || isEmptyItem)
 				{
 					_quickSlotIcons[slotIndex].Texture = null;
 					_quickSlotIcons[slotIndex].Modulate = new Color(1, 1, 1, 0.3f);
@@ -349,8 +337,8 @@ namespace Kuros.UI
 				}
 			}
 
-			// 更新投掷冷却遮罩
-			UpdateThrowCooldownOverlay(slotIndex, thrownWeapon);
+			// u66f4u65b0u6295u63b7u51b7u5374u906eu7f69uff08u4eceu69fdu4f4d stack u8bfbu53d6uff09
+			UpdateThrowCooldownOverlay(slotIndex, stack);
 		}
 		
 		/// <summary>
@@ -666,6 +654,7 @@ namespace Kuros.UI
 				
 				// 连接玩家物品栏组件
 				ConnectPlayerInventory(samplePlayer);
+				_dashState = samplePlayer.StateMachine?.GetNodeOrNull<PlayerDashState>("Dash");
 			}
 		}
 
@@ -766,7 +755,14 @@ namespace Kuros.UI
 			}));
 		}
 
-		private SamplePlayer? _player;
+		// Dash 指示器
+	private Control? _dashIcon;
+	private ThrowCooldownOverlay? _dashCooldownOverlay;
+	private Label? _dashChargeLabel;
+	private PlayerDashState? _dashState;
+	private float _dashUpdateTimer;
+
+	private SamplePlayer? _player;
 		
 		/// <summary>
 		/// 设置玩家引用（用于获取最大生命值等属性）
@@ -821,51 +817,30 @@ namespace Kuros.UI
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
-			// 定期刷新飞行中投掷武器的冷却遮罩进度
-			if (_player?.InventoryComponent?.ReservedQuickBarSlots.Count > 0)
+			UpdateDashDisplay((float)delta);
+			// u5b9au671fu5237u65b0u6295u63b7u6b66u5668u69fdu4f4d CD u906eu7f69
+			_throwCooldownUpdateTimer -= (float)delta;
+			if (_throwCooldownUpdateTimer <= 0f)
 			{
-				_throwCooldownUpdateTimer -= (float)delta;
-				if (_throwCooldownUpdateTimer <= 0f)
+				_throwCooldownUpdateTimer = ThrowCooldownUpdateInterval;
+				for (int i = 0; i < 5; i++)
 				{
-					_throwCooldownUpdateTimer = ThrowCooldownUpdateInterval;
-					foreach (int i in _player.InventoryComponent.ReservedQuickBarSlots)
-					{
-						if (i >= 0 && i < 5) UpdateQuickBarSlot(i);
-					}
+					var qbStack = _player?.InventoryComponent?.QuickBar?.GetStack(i);
+					if (qbStack != null && qbStack.IsThrowOnCooldown)
+						UpdateQuickBarSlot(i);
 				}
 			}
 		}
 
-		/// <summary>
-		/// 在 world_items 组中查找指定槽位的飞行中投掷武器实体
-		/// </summary>
-		private Kuros.Items.World.RigidBodyWorldItemEntity? FindThrownWeaponInSlot(int slotIndex)
-		{
-			var tree = GetTree();
-			if (tree == null) return null;
-			foreach (var node in tree.GetNodesInGroup("world_items"))
-			{
-				if (node is Kuros.Items.World.RigidBodyWorldItemEntity entity
-					&& entity.ReservedQuickBarSlotIndex == slotIndex
-					&& entity.LastDroppedBy == _player)
-				{
-					return entity;
-				}
-			}
-			return null;
-		}
-
-		/// <summary>
-		/// 更新指定槽位的投掷冷却扇形遮罩
-		/// </summary>
-		private void UpdateThrowCooldownOverlay(int slotIndex, Kuros.Items.World.RigidBodyWorldItemEntity? thrownWeapon)
+		private void UpdateThrowCooldownOverlay(int slotIndex, InventoryItemStack? stack)
 		{
 			if (_quickSlotIcons[slotIndex] == null) return;
 
-			if (thrownWeapon != null && thrownWeapon.IsThrowWeaponInCooldown)
+			if (stack != null && stack.IsThrowOnCooldown)
 			{
 				var overlay = GetOrCreateCooldownOverlay(slotIndex);
-				overlay.Progress = thrownWeapon.ThrowCooldownProgress;
+				float cd = stack.Item.ThrowWeaponCooldown;
+				overlay.Progress = cd > 0f ? stack.ThrowCooldownRemaining / cd : 0f;
 				overlay.Visible = true;
 			}
 			else
@@ -912,7 +887,85 @@ namespace Kuros.UI
 				}
 			}
 		}
+	private void CreateDashIndicator()
+	{
+		_dashIcon = new DashIconControl
+		{
+			Name = "DashIndicator",
+		};
+		_dashIcon.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		_dashIcon.OffsetLeft = 20;
+		_dashIcon.OffsetTop = 120;
+		_dashIcon.OffsetRight = 60;
+		_dashIcon.OffsetBottom = 160;
+		AddChild(_dashIcon);
+
+		_dashCooldownOverlay = new ThrowCooldownOverlay();
+		_dashCooldownOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_dashCooldownOverlay.OffsetLeft = 0;
+		_dashCooldownOverlay.OffsetTop = 0;
+		_dashCooldownOverlay.OffsetRight = 0;
+		_dashCooldownOverlay.OffsetBottom = 0;
+		_dashIcon.AddChild(_dashCooldownOverlay);
+
+		_dashChargeLabel = new Label
+		{
+			Name = "DashChargeLabel",
+			HorizontalAlignment = HorizontalAlignment.Right,
+			VerticalAlignment = VerticalAlignment.Bottom,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		_dashChargeLabel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+		_dashChargeLabel.OffsetLeft = -28;
+		_dashChargeLabel.OffsetTop = -18;
+		_dashChargeLabel.OffsetRight = 0;
+		_dashChargeLabel.OffsetBottom = 0;
+		_dashChargeLabel.AddThemeColorOverride("font_color", Colors.White);
+		_dashChargeLabel.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.8f));
+		_dashChargeLabel.AddThemeConstantOverride("outline_size", 2);
+		_dashChargeLabel.AddThemeFontSizeOverride("font_size", 14);
+		_dashIcon.AddChild(_dashChargeLabel);
+	}
+
+	private void UpdateDashDisplay(float delta)
+	{
+		if (_dashState == null || _dashIcon == null) return;
+
+		_dashUpdateTimer -= delta;
+		if (_dashUpdateTimer > 0f) return;
+		_dashUpdateTimer = 0.05f;
+
+		if (_dashCooldownOverlay != null)
+			_dashCooldownOverlay.Progress = 1f - _dashState.RechargeProgress;
+
+		if (_dashChargeLabel != null)
+			_dashChargeLabel.Text = $"{_dashState.Charges}";
+	}
+
 		/// <summary>
+		private partial class DashIconControl : Control
+		{
+			public override void _Ready()
+			{
+				MouseFilter = MouseFilterEnum.Ignore;
+			}
+			public override void _Draw()
+			{
+				var size = Size;
+				var center = size * 0.5f;
+				var r = Mathf.Min(size.X, size.Y) * 0.38f;
+				var color = new Color(0.4f, 0.7f, 1f, 0.9f);
+				var points = new Vector2[]
+				{
+					center + new Vector2(0, -r),
+					center + new Vector2(r, 0),
+					center + new Vector2(0, r),
+					center + new Vector2(-r, 0)
+				};
+				DrawPolygon(points, new Color[] { color });
+			}
+		}
+
 		/// 投掷武器冷却扇形遮罩控件
 		/// 从12点钟方向顺时针绘制半透明扇形，覆盖图标表示冷却剩余时间
 		/// </summary>
