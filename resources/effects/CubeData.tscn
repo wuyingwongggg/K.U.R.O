@@ -53,12 +53,11 @@ size = Vector2(100, 100)
 z_index = 3
 script = ExtResource("5_script")
 Speed = 2000.0
-MaxVerticalTiltDegrees = 90.0
+MaxVerticalTiltDegrees = 360.0
 Duration = 0.8
 BuildDuration = 1.0
 DespawnDuration = 0.1
 DestroyEffect = ExtResource("2_uj88d")
-TargetableFactions = 3
 
 [node name="FaceFill" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_faces")

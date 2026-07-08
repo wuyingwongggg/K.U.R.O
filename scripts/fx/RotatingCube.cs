@@ -189,8 +189,7 @@ namespace Kuros.Fx
                 if (player != null)
                 {
                     Vector2 toPlayer = GetPlayerAimCenter(player) - GlobalPosition;
-                    bool playerInFront = FacingRight ? toPlayer.X >= 0f : toPlayer.X <= 0f;
-                    if (playerInFront && toPlayer != Vector2.Zero)
+                    if (toPlayer != Vector2.Zero)
                     {
                         float maxTilt = Mathf.DegToRad(MaxVerticalTiltDegrees);
                         float dySign = FacingRight ? 1f : -1f;

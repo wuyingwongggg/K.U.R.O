@@ -1617,9 +1617,11 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			return;
 		}
 
-		var source = InventoryComponent?.GetSelectedQuickBarStack()?.Item.IsThrowable == true
-		? Kuros.Core.Events.DamageSource.ThrowableDirectAttack
-		: Kuros.Core.Events.DamageSource.DirectAttack;
+		var stack = InventoryComponent?.GetSelectedQuickBarStack();
+		bool isThrowable = stack?.Item.IsThrowable == true && stack?.IsThrowOnCooldown != true;
+		var source = isThrowable
+			? Kuros.Core.Events.DamageSource.ThrowableDirectAttack
+			: Kuros.Core.Events.DamageSource.DirectAttack;
 	target.TakeDamage(finalDamage, GlobalPosition, this, source);
 	}
 

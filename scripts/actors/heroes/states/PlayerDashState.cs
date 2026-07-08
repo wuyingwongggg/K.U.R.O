@@ -5,28 +5,30 @@ namespace Kuros.Actors.Heroes.States
 {
     public partial class PlayerDashState : PlayerState
     {
+        [ExportCategory("Dash Burst")]
+        [Export(PropertyHint.Range, "100,5000,10")] public float BurstSpeed = 4000f;
+        [Export(PropertyHint.Range, "0.01,1,0.01")] public float BurstDuration = 0.1f;
+        [Export(PropertyHint.Range, "0.1,5,0.1")] public float BurstAnimationSpeed = 2f;
+
+        [ExportCategory("Dash Recovery")]
+        [Export(PropertyHint.Range, "100,5000,10")] public float RecoverySpeed = 500f;
+        [Export(PropertyHint.Range, "0.01,1,0.01")] public float RecoveryDuration = 0.57f;
+        [Export(PropertyHint.Range, "0.1,5,0.1")] public float RecoveryAnimationSpeed = 1f;
+
         [ExportCategory("Dash")]
-        [Export(PropertyHint.Range, "100,5000,10")]
-        public float DashSpeed = 2000f;
-
-        [Export(PropertyHint.Range, "0.05,1,0.01")]
-        public float DashDuration = 0.2f;
-
-        [Export(PropertyHint.Range, "0.1,2,0.01")]
-        public float InvincibilityDuration = 0.2f;
+        [Export(PropertyHint.Range, "0.1,2,0.01")] public float InvincibilityDuration = 0.2f;
 
         [ExportCategory("Dash Charging")]
-        [Export(PropertyHint.Range, "1,10,1")]
-        public int MaxCharges = 1;
-
-        [Export(PropertyHint.Range, "0.5,10,0.1")]
-        public float RechargeTime = 2.0f;
+        [Export(PropertyHint.Range, "1,10,1")] public int MaxCharges = 1;
+        [Export(PropertyHint.Range, "0.5,10,0.1")] public float RechargeTime = 2.0f;
 
         private int _charges;
         private float _rechargeTimer;
         private Vector2 _dashDirection;
-        private float _dashTimer;
+        private float _elapsed;
         private Node? _afterimage;
+        private bool _inBurst;
+        private float _totalDuration;
 
         public int Charges => _charges;
         public bool CanDash => _charges > 0;
@@ -65,15 +67,18 @@ namespace Kuros.Actors.Heroes.States
                 _rechargeTimer = RechargeTime;
 
             Vector2 input = GetMovementInput();
-            if (input != Vector2.Zero)
-                _dashDirection = input.Normalized();
-            else
+            bool isBackDash = input == Vector2.Zero;
+            if (isBackDash)
                 _dashDirection = new Vector2(Actor.FacingRight ? -1f : 1f, 0f);
+            else
+                _dashDirection = input.Normalized();
 
-            if (_dashDirection.X != 0)
+            if (!isBackDash && _dashDirection.X != 0)
                 Actor.FlipFacing(_dashDirection.X > 0);
 
-            _dashTimer = DashDuration;
+            _elapsed = 0f;
+            _inBurst = true;
+            _totalDuration = BurstDuration + RecoveryDuration;
 
             if (Player is MainCharacter mainChar)
                 mainChar.StartHitInvincibility(InvincibilityDuration);
@@ -82,27 +87,62 @@ namespace Kuros.Actors.Heroes.States
             _afterimage?.Call("start");
 
             if (Player is MainCharacter mc)
-                PlayAnimation(mc.RunAnimationName, true);
+            {
+                mc.SetSpineAnimationSpeed(BurstAnimationSpeed);
+                PlayAnimation(isBackDash ? mc.DashBackAnimationName : mc.DashAnimationName, false);
+            }
             else
+            {
                 PlayAnimation("animations/run", true);
+            }
         }
 
         public override void Exit()
         {
             _afterimage?.Call("stop");
             Actor.Velocity = Vector2.Zero;
+            if (Player is MainCharacter mc)
+                mc.SetSpineAnimationSpeed(1f);
         }
 
         public override void PhysicsUpdate(double delta)
         {
-            _dashTimer -= (float)delta;
-            if (_dashTimer <= 0f)
+            _elapsed += (float)delta;
+            if (_elapsed >= _totalDuration)
             {
                 ChangeState("Idle");
                 return;
             }
 
-            Actor.Velocity = _dashDirection * DashSpeed;
+            if (_inBurst && _elapsed >= BurstDuration)
+            {
+                _inBurst = false;
+                if (Player is MainCharacter mc)
+                    mc.SetSpineAnimationSpeed(RecoveryAnimationSpeed);
+            }
+
+
+            if (!_inBurst)
+            {
+                if (IsActionJustPressed("dash") && CanDash)
+                {
+                    ChangeState("Dash");
+                    return;
+                }
+                if (GetMovementInput() != Vector2.Zero)
+                {
+                    ChangeState("Walk");
+                    return;
+                }
+                if (IsAttackTriggered())
+                {
+                    Player.RequestAttackFromState(Name);
+                    ChangeState("Attack");
+                    return;
+                }
+            }
+            float speed = _inBurst ? BurstSpeed : RecoverySpeed;
+            Actor.Velocity = _dashDirection * speed;
             Actor.MoveAndSlide();
             Actor.ClampPositionToScreen();
         }
@@ -111,7 +151,7 @@ namespace Kuros.Actors.Heroes.States
         {
             if (nextState == "Dying" || nextState == "Dead")
                 return true;
-            return _dashTimer <= 0f;
+            return !_inBurst;
         }
     }
 }

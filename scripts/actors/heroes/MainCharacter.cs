@@ -21,6 +21,8 @@ namespace Kuros.Actors.Heroes
 	[Export] public string IdleAnimationName { get; set; } = "idle";
 	[Export] public string WalkAnimationName { get; set; } = "walk";
 	[Export] public string RunAnimationName { get; set; } = "run";
+	[Export] public string DashAnimationName { get; set; } = "dash";
+	[Export] public string DashBackAnimationName { get; set; } = "backdash";
 	[Export] public string AttackAnimationName { get; set; } = "attack";
 	[Export] public string IdleHoldingAnimationName { get; set; } = "idle_holding_item";
 	[Export] public string RunHoldingAnimationName { get; set; } = "run_holding_item";

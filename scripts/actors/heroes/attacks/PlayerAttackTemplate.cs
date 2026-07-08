@@ -391,7 +391,7 @@ namespace Kuros.Actors.Heroes.Attacks
             }
 
             var activeSkill = Player.WeaponSkillController?.GetPrimarySkillDefinition();
-            bool holdAllowed = AllowHoldInput || activeSkill?.AllowHoldContinuousAttack == true;
+            bool holdAllowed = AllowHoldInput || activeSkill == null || activeSkill.AllowHoldContinuousAttack;
 
             foreach (var action in TriggerActions)
             {

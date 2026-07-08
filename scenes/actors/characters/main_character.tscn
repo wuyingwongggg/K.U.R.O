@@ -151,7 +151,7 @@ bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.6666667
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -368,6 +368,11 @@ script = ExtResource("21_6hy0m")
 
 [node name="Dash" type="Node" parent="StateMachine"]
 script = ExtResource("44_dashstate")
+BurstSpeed = 3000.0
+BurstDuration = 0.2
+BurstAnimationSpeed = 1.5
+RecoverySpeed = 100.0
+RecoveryDuration = 0.47000000000000003
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("17_13pt2")
@@ -404,6 +409,7 @@ script = ExtResource("21_utqjm")
 
 [node name="AfterimageController" type="Node" parent="."]
 script = ExtResource("45_afterimage")
+lifetime = 0.2
 
 [node name="GameStateProvider" type="Node" parent="."]
 script = ExtResource("27_game_state_provider")

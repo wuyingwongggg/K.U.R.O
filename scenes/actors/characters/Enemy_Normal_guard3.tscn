@@ -136,6 +136,7 @@ preview_time = 0.67
 script = ExtResource("6_ks25x")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 position = Vector2(0, -600)
