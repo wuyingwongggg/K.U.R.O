@@ -50,7 +50,6 @@ Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_4f7kl")]([SubResource("Resource_4f7kl")])
 EffectEntries = Array[ExtResource("2_drw4h")]([SubResource("Resource_48rr8"), SubResource("Resource_fwe2t"), SubResource("Resource_27clv")])
-LevelCount = 0
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicPeakHeight = 100.0

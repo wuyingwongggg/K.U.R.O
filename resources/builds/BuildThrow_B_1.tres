@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+EffectId = "BuildThrow_B_1"
+DisplayName = "投掷_家具强化_1"
+Description = "效果：1"
+BuildClass = "Throw"
+StatBonuses = Dictionary[String, float]({
+"attack_damage": 2.0,
+"max_health": 5.0
+})
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

@@ -10,14 +10,12 @@ extends SceneTree
 # ── 源目录 ─────────────────────────────────────────────────────────────────────
 const ITEMS_DIR  := "res://resources/items"
 const SKILLS_DIR := "res://resources/items/skills"
-const BUILDS_DIR := "res://resources/builds"
 const LOOT_DIR   := "res://resources/loot"
 const CHAR_DIR  := "res://scenes/actors/characters"
 
 # ── 输出路径 ───────────────────────────────────────────────────────────────────
 const OUT_ITEMS  := "res://data/items.csv"
 const OUT_CHARACTERS := "res://data/characters.csv"
-const OUT_BUILDS := "res://data/builds.csv"
 const OUT_SKILLS := "res://data/skills.csv"
 const OUT_LOOT   := "res://data/loot.csv"
 
@@ -32,8 +30,6 @@ func _initialize() -> void:
 func _run() -> void:
 	print("[ExportCsv] Starting export...")
 	_export_items()
-	_export_builds()
-	_export_skills()
 	_export_loot()
 	_export_characters()
 	print("[ExportCsv] All exports completed.")
@@ -49,7 +45,7 @@ func _export_items() -> void:
 
 	var headers := [
 		"file", "ItemId", "DisplayName", "Description", "Category", "Tags",
-		"MaxStackSize", "BuildClass", "LevelCount", "IsThrowable", "IsThrowWeapon",
+		"MaxStackSize", "BuildClass", "IsThrowable", "IsThrowWeapon",
 		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
 		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
 		"attack_power", "SkillRefs"
@@ -92,7 +88,6 @@ func _export_items() -> void:
 			_arr_str(str(r.get("Tags", ""))),
 			str(r.get("MaxStackSize", "1")),
 			_str(str(r.get("BuildClass", ""))),
-			str(r.get("LevelCount", "1")),
 			str(r.get("IsThrowable", "false")),
 			str(r.get("IsThrowWeapon", "false")),
 			_vec2_str(str(r.get("ThrowStartOffset", "Vector2(0, -400)"))),
@@ -106,43 +101,6 @@ func _export_items() -> void:
 
 	_write_csv(OUT_ITEMS, rows)
 	print("[ExportCsv] items.csv -> %d rows" % (rows.size() - 1))
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  BUILDS  (resources/builds/*.tres  →  BuildLevelEffectEntry)
-# ══════════════════════════════════════════════════════════════════════════════
-
-func _export_builds() -> void:
-	var files := _list_tres(BUILDS_DIR)
-	if files.is_empty():
-		push_warning("[ExportCsv] No .tres found in " + BUILDS_DIR)
-		return
-
-	var headers := [
-		"file", "BuildId", "BuildClass", "BuildName", "Level", "RequiredPoints",
-		"EffectId", "EffectScript", "Description"
-	]
-	var rows: Array = [headers]
-
-	for fpath_v in files:
-		var fpath: String = str(fpath_v)
-		var p := _parse_tres(fpath)
-		if p.is_empty():
-			continue
-		var r: Dictionary = p["resource"]
-		rows.append([
-			fpath.get_file().get_basename(),
-			_str(str(r.get("BuildId", ""))),
-			_str(str(r.get("BuildClass", ""))),
-			_str(str(r.get("BuildName", ""))),
-			str(r.get("Level", "1")),
-			str(r.get("RequiredPoints", "1")),
-			_str(str(r.get("EffectId", ""))),
-			_str(str(r.get("EffectScript", ""))),
-			_str(str(r.get("Description", "")))
-		])
-
-	_write_csv(OUT_BUILDS, rows)
-	print("[ExportCsv] builds.csv -> %d rows" % (rows.size() - 1))
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  SKILLS  (resources/items/skills/*.tres  →  WeaponSkillDefinition)

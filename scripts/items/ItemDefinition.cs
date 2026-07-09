@@ -61,7 +61,6 @@ namespace Kuros.Items
             set => _weaponSkillResources = value ?? new();
         }
         [Export] public string BuildClass { get; set; } = string.Empty;
-        [Export(PropertyHint.Range, "0,99,1")] public int LevelCount { get; set; } = 1;
         [Export] public bool IsThrowable { get; set; } = false; // 是否为投掷物，影响拾取该物体的外观，非投掷物背在身后，投掷物则直接举起
         [Export] public bool IsThrowWeapon { get; set; } = false; // 投掷后是否回收（冷却归还背包）。true=投掷武器（回收），false=一次性投掷物（落地销毁）
 

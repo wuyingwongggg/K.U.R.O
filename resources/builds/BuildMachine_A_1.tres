@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://cmuj2nvt6bdcc"]
+
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_lkb81"]
+
+[resource]
+script = ExtResource("1_lkb81")
+EffectId = "BuildMachine_A_1"
+DisplayName = "机械_热量累积强化_1"
+Description = "效果：1"
+BuildClass = "Machine"
+StatBonuses = Dictionary[String, float]({
+"attack_damage": 1.0,
+"speed": 10.0
+})
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

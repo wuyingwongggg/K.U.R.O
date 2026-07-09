@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Godot;
-using Kuros.Actors.Heroes;
 using Kuros.Managers;
 using Kuros.Systems;
 
@@ -17,25 +16,21 @@ namespace Kuros.UI
         [Export] public Label? NameLabel0 { get; set; }
         [Export] public Label? BuildClassLabel0 { get; set; }
         [Export] public Label? DescLabel0 { get; set; }
-        [Export] public Label? ProgressLabel0 { get; set; }
 
         [Export] public VBoxContainer? Card1 { get; set; }
         [Export] public Label? NameLabel1 { get; set; }
         [Export] public Label? BuildClassLabel1 { get; set; }
         [Export] public Label? DescLabel1 { get; set; }
-        [Export] public Label? ProgressLabel1 { get; set; }
 
         [Export] public VBoxContainer? Card2 { get; set; }
         [Export] public Label? NameLabel2 { get; set; }
         [Export] public Label? BuildClassLabel2 { get; set; }
         [Export] public Label? DescLabel2 { get; set; }
-        [Export] public Label? ProgressLabel2 { get; set; }
 
         private VBoxContainer[] _cards = null!;
         private Label[] _nameLabels = null!;
         private Label[] _buildClassLabels = null!;
         private Label[] _descLabels = null!;
-        private Label[] _progressLabels = null!;
 
         private List<BuildEffectDefinition> _options = new();
         private Action<BuildEffectDefinition>? _onConfirmed;
@@ -62,25 +57,21 @@ namespace Kuros.UI
             NameLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/NameLabel0");
             BuildClassLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/BuildClassLabel0");
             DescLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/DescLabel0");
-            ProgressLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/ProgressLabel0");
 
             Card1 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card1");
             NameLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/NameLabel1");
             BuildClassLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/BuildClassLabel1");
             DescLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/DescLabel1");
-            ProgressLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/ProgressLabel1");
 
             Card2 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card2");
             NameLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/NameLabel2");
             BuildClassLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/BuildClassLabel2");
             DescLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/DescLabel2");
-            ProgressLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/ProgressLabel2");
 
             _cards = new[] { Card0!, Card1!, Card2! };
             _nameLabels = new[] { NameLabel0!, NameLabel1!, NameLabel2! };
             _buildClassLabels = new[] { BuildClassLabel0!, BuildClassLabel1!, BuildClassLabel2! };
             _descLabels = new[] { DescLabel0!, DescLabel1!, DescLabel2! };
-            _progressLabels = new[] { ProgressLabel0!, ProgressLabel1!, ProgressLabel2! };
         }
 
         public void ShowWindow(List<BuildEffectDefinition> options, Action<BuildEffectDefinition> onConfirmed)
@@ -163,8 +154,6 @@ namespace Kuros.UI
 
         private void PopulateOptions()
         {
-            var buildController = ResolveBuildController();
-
             for (int i = 0; i < 3; i++)
             {
                 bool hasOption = i < _options.Count;
@@ -186,43 +175,7 @@ namespace Kuros.UI
                 {
                     _buildClassLabels[i].Text = "";
                 }
-
-                _progressLabels[i].Text = BuildProgressText(buildController, buildClass, effect.LevelCount);
             }
-        }
-
-        private static string BuildProgressText(PlayerBuildController? buildController, string buildClass, int levelCount)
-        {
-            if (buildController == null || string.IsNullOrWhiteSpace(buildClass))
-                return "";
-
-            int currentPoints = 0;
-            if (buildController.BuildCountByClass.TryGetValue(buildClass, out int pts))
-                currentPoints = pts;
-
-            int afterPts = currentPoints + levelCount;
-            var thresholds = new[] { 1, 4, 6 };
-            var levelNames = new[] { "Lv1", "Lv2", "Lv3" };
-
-            var parts = new List<string>();
-            for (int j = 0; j < thresholds.Length; j++)
-            {
-                int threshold = thresholds[j];
-                bool alreadyReached = currentPoints >= threshold;
-                bool willReach = !alreadyReached && afterPts >= threshold;
-
-                char status = alreadyReached ? '●' : (willReach ? '◐' : '○');
-                string segment = $"{status} {levelNames[j]}";
-                if (willReach)
-                    segment += " <-- 选中即解锁";
-                else if (alreadyReached)
-                    segment += " 已激活";
-                else
-                    segment += $" ({afterPts}/{threshold})";
-                parts.Add(segment);
-            }
-
-            return string.Join("  ", parts);
         }
 
         private static string GetBuildClassName(string buildClass)
@@ -234,14 +187,6 @@ namespace Kuros.UI
                 "Waiter" => "宴会协议",
                 _ => buildClass
             };
-        }
-
-        private PlayerBuildController? ResolveBuildController()
-        {
-            var tree = GetTree();
-            if (tree == null) return null;
-            var player = tree.GetFirstNodeInGroup("player") as SamplePlayer;
-            return player?.FindChild("BuildController", recursive: true, owned: false) as PlayerBuildController;
         }
 
         private void UpdateHighlights()

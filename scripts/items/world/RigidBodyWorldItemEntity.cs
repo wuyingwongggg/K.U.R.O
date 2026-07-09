@@ -1372,14 +1372,7 @@ namespace Kuros.Items.World
 			var item = ItemDefinition ?? CurrentStack?.Item;
 			if (item == null) return;
 
-			var buildController = player.FindChild("BuildController", recursive: true, owned: false) as PlayerBuildController;
-
-			// 先把物品放回背包/快捷栏，再注销飞行列表。
-			// 顺序关键：若先 UnregisterThrowInFlight，RefreshBuildState 会在物品尚未入背包时移除构筑效果，
-			// 随后 InventoryChanged 又重新添加效果，导致冷却计时器归零。
-			// 先放回背包后，InventoryChanged 触发时效果仍存在（由飞行列表保障），
-			// SyncBuildEffects 检测到 existing != null 直接 return，冷却不重置；
-			// 紧接着 UnregisterThrowInFlight 再次 RefreshBuildState，此时物品已在背包，效果继续保留。
+			// 先把物品放回背包/快捷栏。
 
 			// Step 1：优先归还到投掷前记录的槽位（该槽位已被 empty_item 占位）
 			bool returnedToSlot = false;
@@ -1402,9 +1395,6 @@ namespace Kuros.Items.World
 				_reservedQuickBarSlotIndex = -1;
 			}
 
-			// Step 2：物品已回到背包后再注销飞行列表，此时 RefreshBuildState 能正确计入背包中的武器
-			buildController?.UnregisterThrowInFlight(item);
-
 			SyncPlayerHandAndQuickBar(player);
 		}
 
@@ -1423,19 +1413,13 @@ namespace Kuros.Items.World
 			_landingHideTimer = 0.0;
 			_inventoryReturnTimer = 0.0; // 飞行中命中：取消归还计划
 
-			// 飞行中命中销毁：释放预占槽位（道具不归还），同时注销构筑效果保留
+			// 飞行中命中销毁：释放预占槽位（道具不归还）
 			if (LastDroppedBy is SamplePlayer impactSPlayer)
 			{
 				if (_reservedQuickBarSlotIndex >= 0 && impactSPlayer.InventoryComponent != null)
 				{
 					impactSPlayer.InventoryComponent.ReservedQuickBarSlots.Remove(_reservedQuickBarSlotIndex);
 					_reservedQuickBarSlotIndex = -1;
-				}
-				var impactBuildController = impactSPlayer.FindChild("BuildController", recursive: true, owned: false) as PlayerBuildController;
-				var destroyedItem = ItemDefinition ?? CurrentStack?.Item;
-				if (impactBuildController != null && destroyedItem != null)
-				{
-					impactBuildController.UnregisterThrowInFlight(destroyedItem);
 				}
 			}
 

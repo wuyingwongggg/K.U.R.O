@@ -8,13 +8,11 @@ class_name ImportCsv
 
 const ITEMS_CSV_PATH  = "res://data/items.csv"
 const SKILLS_CSV_PATH = "res://data/skills.csv"
-const BUILDS_CSV_PATH = "res://data/builds.csv"
 const LOOT_CSV_PATH   = "res://data/loot.csv"
 const CHARACTERS_CSV_PATH = "res://data/characters.csv"
 
 const ITEMS_DIR  = "res://resources/items/"
 const SKILLS_DIR = "res://resources/items/skills/"
-const BUILDS_DIR = "res://resources/builds/"
 const LOOT_DIR   = "res://resources/loot/"
 const CHARACTERS_DIR = "res://scenes/actors/characters/"
 
@@ -25,7 +23,6 @@ func import_all() -> void:
 	_log.info("=== 开始批量导入 CSV → .tres ===")
 	import_skills_from_csv()
 	import_items_from_csv()
-	import_builds_from_csv()
 	import_loot_from_csv()
 	import_characters_from_csv()
 	_log.info("=== 全部导入完成 ===")
@@ -80,7 +77,6 @@ func import_items_from_csv() -> void:
 		_s_str(res,   "DisplayName", row, hm, "DisplayName")
 		_s_str(res,   "Description", row, hm, "Description")
 		_s_str(res,   "BuildClass",  row, hm, "BuildClass")
-		_s_int(res,   "LevelCount",   row, hm, "LevelCount")
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
 		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")
@@ -96,30 +92,6 @@ func import_items_from_csv() -> void:
 		if _save(res, path): count += 1
 	_log.info("  → 更新 %d 个" % count)
 
-# ── BUILDS ────────────────────────────────────────────────────────────────────
-func import_builds_from_csv() -> void:
-	_log.info("--- [builds] ---")
-	var rows = _read_csv(BUILDS_CSV_PATH)
-	if rows.is_empty(): return
-	var hm = _hmap(rows[0])
-	var count = 0
-	for i in range(1, rows.size()):
-		var row = rows[i]
-		var fname = _col(row, hm, "file")
-		if fname == "": continue
-		var path = "%s%s.tres" % [BUILDS_DIR, fname]
-		var res = _load(path)
-		if res == null: continue
-		_s_str(res, "BuildId",        row, hm, "BuildId")
-		_s_str(res, "BuildClass",     row, hm, "BuildClass")
-		_s_str(res, "BuildName",      row, hm, "BuildName")
-		_s_int(res, "Level",          row, hm, "Level")
-		_s_int(res, "RequiredPoints", row, hm, "RequiredPoints")
-		_s_str(res, "EffectId",       row, hm, "EffectId")
-		_s_str(res, "EffectScript",   row, hm, "EffectScript")
-		_s_str(res, "Description",    row, hm, "Description")
-		if _save(res, path): count += 1
-	_log.info("  → 更新 %d 个" % count)
 
 # ── LOOT ──────────────────────────────────────────────────────────────────────
 # CSV 结构：每行对应一个 LootDropTable 中的一条 Entry

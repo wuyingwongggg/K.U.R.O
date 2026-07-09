@@ -34,7 +34,6 @@ Tags = Array[String](["tag_weapon", "build_guard", "tag_throw"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_0ac3k")]([SubResource("Attribute_AttackPower")])
 EffectEntries = Array[ExtResource("2_letw0")]([SubResource("Resource_letw0"), SubResource("Resource_0ac3k")])
-LevelCount = 0
 IsThrowable = true
 IsThrowWeapon = true
 ThrowStartOffset = Vector2(0, -250)

@@ -23,7 +23,6 @@ namespace Kuros.Managers
         [Export] public bool DebugTrigger { get; set; }
 
         private SamplePlayer? _boundPlayer;
-        private PlayerBuildController? _buildController;
         private int _lastKnownScore;
         private int _triggerCount;
         private bool _isSelectionActive;
@@ -70,7 +69,6 @@ namespace Kuros.Managers
                 _boundPlayer.StatsUpdated -= OnPlayerStatsUpdated;
 
             _boundPlayer = player;
-            _buildController = player.FindChild("BuildController", recursive: true, owned: false) as PlayerBuildController;
             _boundPlayer.StatsUpdated += OnPlayerStatsUpdated;
             _lastKnownScore = player.Score;
             _triggerCount = ThresholdCurve?.GetTriggerCount(player.Score) ?? 0;
@@ -81,7 +79,6 @@ namespace Kuros.Managers
             if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                 _boundPlayer.StatsUpdated -= OnPlayerStatsUpdated;
             _boundPlayer = null;
-            _buildController = null;
         }
 
         private void OnPlayerStatsUpdated(int health, int maxHealth, int score)
@@ -128,8 +125,6 @@ namespace Kuros.Managers
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                 {
                     ApplyEffectBonuses(chosenEffect);
-                    if (_buildController != null)
-                        _buildController.AddBuildEffectPoints(chosenEffect.BuildClass, chosenEffect.LevelCount);
                 }
                 _isSelectionActive = false;
 

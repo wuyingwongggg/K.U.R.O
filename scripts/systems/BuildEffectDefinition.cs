@@ -16,11 +16,8 @@ namespace Kuros.Systems
         [Export(PropertyHint.MultilineText)] public string Description { get; set; } = string.Empty;
 
         [ExportGroup("构筑类型")]
-        /// <summary>所属构筑类别（Guard / Machine / Banquet ...），对应 PlayerBuildController 的统计维度。</summary>
+        /// <summary>所属构筑类别（Guard / Machine / Banquet ...）。</summary>
         [Export] public string BuildClass { get; set; } = string.Empty;
-
-        /// <summary>选择后贡献的构筑等级点数（通常为 1）。</summary>
-        [Export(PropertyHint.Range, "1,10,1")] public int LevelCount { get; set; } = 1;
 
         [ExportGroup("数值加成")]
         /// <summary>
