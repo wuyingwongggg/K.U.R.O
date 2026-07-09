@@ -59,6 +59,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
+[node name="Icon0" type="TextureRect" parent="Panel/MainVBox/Cards/Card0"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 64)
+expand_mode = 1
+stretch_mode = 5
+
 [node name="KeyLabel0" type="Label" parent="Panel/MainVBox/Cards/Card0"]
 layout_mode = 2
 text = "[1]"
@@ -105,6 +111,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
+[node name="Icon1" type="TextureRect" parent="Panel/MainVBox/Cards/Card1"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 64)
+expand_mode = 1
+stretch_mode = 5
+
 [node name="KeyLabel1" type="Label" parent="Panel/MainVBox/Cards/Card1"]
 layout_mode = 2
 text = "[2]"
@@ -150,6 +162,12 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
+
+[node name="Icon2" type="TextureRect" parent="Panel/MainVBox/Cards/Card2"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 64)
+expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyLabel2" type="Label" parent="Panel/MainVBox/Cards/Card2"]
 layout_mode = 2

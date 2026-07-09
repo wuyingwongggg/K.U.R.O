@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://u5y51338u6l5"]
+
+[ext_resource type="Script" uid="uid://cd4kfqso2x1cw" path="res://scripts/builds/buildcore/ThrowCoreEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://kwbg3wy7rik" path="res://scenes/items/Furniture_B_chairA.tscn" id="2_cd3g7"]
+
+[node name="ThrowCore" type="Node"]
+script = ExtResource("1")
+FurnitureScene = ExtResource("2_cd3g7")
+EffectId = "02f4ccc9-6e5d-4381-ae3d-dc7bcbf90cac"
+Description = "投掷：进入投掷状态时显示指示器（MainCharacter.HitboxEditorPreview），按下核心技能键在指示器位置生成一个一次性家具。"
+Duration = 0.0

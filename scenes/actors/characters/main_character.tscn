@@ -79,7 +79,7 @@ DebugOverlayColor = Color(0, 1, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 10.0
+AttackDamage = 100.0
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -489,6 +489,7 @@ offset_bottom = -1737.4999
 scale = Vector2(2.205, 2.205)
 
 [node name="ThrowTrajectoryPreview" type="Node2D" parent="."]
+visible = false
 z_index = 10
 y_sort_enabled = true
 script = ExtResource("43_throwpreview")

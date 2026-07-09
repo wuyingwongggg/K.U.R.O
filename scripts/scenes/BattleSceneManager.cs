@@ -105,6 +105,7 @@ namespace Kuros.Scenes
 
 			// 背包还原推迟到下一帧执行，确保 HUD._Ready 已完成，不会错过 NotifyHealthChanged 信号
 			CallDeferred(MethodName.RestoreInventoryTransit);
+			CallDeferred(MethodName.RestoreBuildState);
 
 			// 显示关卡名称弹窗
 			if (AutoShowLevelName)
@@ -152,6 +153,11 @@ namespace Kuros.Scenes
 
 			SaveManager.Instance.PendingInventoryTransit = null;
 			GameLogger.Info(nameof(BattleSceneManager), "已从过渡快照还原背包与血量。");
+		}
+		private void RestoreBuildState()
+		{
+			if (Player is not SamplePlayer sp) return;
+			BuildSelectionManager.Instance?.RestoreBuildState(sp);
 		}
 
 		/// <summary>

@@ -1,5 +1,6 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://cguarqlknpx7b"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://cguarqlknpx7b"]
 
+[ext_resource type="Texture2D" uid="uid://cyjh04f738fg5" path="res://assets/BuildIcon/Guard_II.png" id="1_53mu0"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_qbh33"]
 
 [resource]
@@ -11,4 +12,5 @@ BuildClass = "Machine"
 StatBonuses = Dictionary[String, float]({
 "speed": 20.0
 })
+Icon = ExtResource("1_53mu0")
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

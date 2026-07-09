@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://3krditn78uto"]
 
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1"]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c88kwpwoxtoev"]
+[gd_scene load_steps=13 format=3 uid="uid://c88kwpwoxtoev"]
 
 [ext_resource type="Script" uid="uid://3vrm8fkuw0da" path="res://scripts/ui/BattleHUD.cs" id="1_battle_hud"]
 [ext_resource type="Texture2D" uid="uid://tw6du7s4uppx" path="res://resources/ui/生命值.png" id="2_health_bar"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://vgh6xkgwp8w4" path="res://resources/ui/金币.png" id="6_gold"]
 [ext_resource type="Texture2D" uid="uid://cy0qwoe0qpjfb" path="res://resources/ui/武器栏底.png" id="7_weapon_bg"]
 [ext_resource type="Texture2D" uid="uid://dhj5yxqdvg6ju" path="res://resources/ui/武器栏框（未选中）.png" id="8_slot_normal"]
+[ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/CoreHUD.tscn" id="9_core_hud"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_domk2"]
 atlas = ExtResource("2_health_fill")
@@ -24,14 +25,18 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -18.0
-offset_right = 8.0
-offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
+
 script = ExtResource("1_battle_hud")
+QuickBarPanelStyle = null
+GoldLabelStyle = null
+PauseButtonStyle = null
 StatusMessageAnchorNormalized = Vector2(0.5, 0.5)
+StatusMessagePixelOffset = Vector2(0, 0)
+DefaultSwordItem = null
+SpawnDefaultSwordInQuickBar = false
+[node name="CoreHUD" parent="." instance=ExtResource("9_core_hud")]
 
 [node name="MinimapPanel" type="Panel" parent="."]
 visible = false
@@ -179,7 +184,7 @@ offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 14
-text = "WASD: Move | Space: Attack | Shift: Run | F: Pick Up | G: Put Down | ESC: Menu"
+text = "WASD: Move | Space: Dash | Shift: Run | Left mouse: Attack|Right mouse & hold: Pick Up & Put Down | F: CoreSkill | ESC: Menu"
 horizontal_alignment = 1
 
 [node name="QuickBarPanel" type="Panel" parent="."]
@@ -203,10 +208,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 88.37206
-offset_top = -2.3333454
-offset_right = 48.37207
-offset_bottom = -12.333282
+offset_left = 382.9457
+offset_top = -3.1666684
+offset_right = 342.94568
+offset_bottom = -13.166607
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.8327243, 0.2918077)

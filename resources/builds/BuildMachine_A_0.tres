@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://bh73r5tnpb3qh"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bh73r5tnpb3qh"]
 
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_744u2"]
+[ext_resource type="Texture2D" uid="uid://lt17133enlt2" path="res://assets/BuildIcon/Machine_I.png" id="1_ueba8"]
 
 [resource]
 script = ExtResource("1_744u2")
@@ -11,4 +12,5 @@ BuildClass = "Machine"
 StatBonuses = Dictionary[String, float]({
 "attack_damage": 1.0
 })
+Icon = ExtResource("1_ueba8")
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

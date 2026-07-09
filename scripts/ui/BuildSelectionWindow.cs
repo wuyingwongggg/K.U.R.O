@@ -13,21 +13,25 @@ namespace Kuros.UI
         [Export] public Label? HintLabel { get; set; }
 
         [Export] public VBoxContainer? Card0 { get; set; }
+        [Export] public TextureRect? Icon0 { get; set; }
         [Export] public Label? NameLabel0 { get; set; }
         [Export] public Label? BuildClassLabel0 { get; set; }
         [Export] public Label? DescLabel0 { get; set; }
 
         [Export] public VBoxContainer? Card1 { get; set; }
+        [Export] public TextureRect? Icon1 { get; set; }
         [Export] public Label? NameLabel1 { get; set; }
         [Export] public Label? BuildClassLabel1 { get; set; }
         [Export] public Label? DescLabel1 { get; set; }
 
         [Export] public VBoxContainer? Card2 { get; set; }
+        [Export] public TextureRect? Icon2 { get; set; }
         [Export] public Label? NameLabel2 { get; set; }
         [Export] public Label? BuildClassLabel2 { get; set; }
         [Export] public Label? DescLabel2 { get; set; }
 
         private VBoxContainer[] _cards = null!;
+        private TextureRect?[] _iconRects = null!;
         private Label[] _nameLabels = null!;
         private Label[] _buildClassLabels = null!;
         private Label[] _descLabels = null!;
@@ -51,24 +55,30 @@ namespace Kuros.UI
 
         private void ResolveExports()
         {
+            TitleLabel ??= GetNodeOrNull<Label>("Panel/MainVBox/TitleLabel");
+            HintLabel ??= GetNodeOrNull<Label>("Panel/MainVBox/HintLabel");
             Panel ??= GetNodeOrNull<PanelContainer>("Panel");
 
             Card0 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card0");
+            Icon0 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card0/Icon0");
             NameLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/NameLabel0");
             BuildClassLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/BuildClassLabel0");
             DescLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/DescLabel0");
 
             Card1 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card1");
+            Icon1 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card1/Icon1");
             NameLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/NameLabel1");
             BuildClassLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/BuildClassLabel1");
             DescLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/DescLabel1");
 
             Card2 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card2");
+            Icon2 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card2/Icon2");
             NameLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/NameLabel2");
             BuildClassLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/BuildClassLabel2");
             DescLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/DescLabel2");
 
             _cards = new[] { Card0!, Card1!, Card2! };
+            _iconRects = new TextureRect?[] { Icon0, Icon1, Icon2 };
             _nameLabels = new[] { NameLabel0!, NameLabel1!, NameLabel2! };
             _buildClassLabels = new[] { BuildClassLabel0!, BuildClassLabel1!, BuildClassLabel2! };
             _descLabels = new[] { DescLabel0!, DescLabel1!, DescLabel2! };
@@ -162,6 +172,11 @@ namespace Kuros.UI
                 if (!hasOption) continue;
 
                 var effect = _options[i];
+                if (_iconRects[i] != null)
+                {
+                    _iconRects[i]!.Texture = effect.Icon;
+                    _iconRects[i]!.Visible = effect.Icon != null;
+                }
                 _nameLabels[i].Text = effect.DisplayName;
                 _descLabels[i].Text = effect.Description;
 
@@ -178,15 +193,19 @@ namespace Kuros.UI
             }
         }
 
+        private static readonly Dictionary<string, string> BuildClassDisplayNames = new()
+        {
+            { "Machine", "机械协议" },
+            { "Waiter", "宴会协议" },
+            { "Throw", "投掷协议" },
+            { "Generic", "通用" },
+        };
+
         private static string GetBuildClassName(string buildClass)
         {
-            return buildClass switch
-            {
-                "Guard" => "安保协议",
-                "Machine" => "机械协议",
-                "Waiter" => "宴会协议",
-                _ => buildClass
-            };
+            if (BuildClassDisplayNames.TryGetValue(buildClass, out var name))
+                return name;
+            return buildClass;
         }
 
         private void UpdateHighlights()
