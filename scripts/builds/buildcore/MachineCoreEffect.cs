@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Core.Effects;
 
 namespace Kuros.Builds.BuildCore
@@ -82,7 +83,7 @@ namespace Kuros.Builds.BuildCore
         {
             if (!IsInstanceValid(this) || Actor == null) return;
             if (_releaseCooldownRemaining > 0f) return;
-            if (!@event.IsActionPressed("core_skill") || @event.IsEcho()) return;
+            if (!@event.IsActionPressed(InputActions.CoreSkill) || @event.IsEcho()) return;
 
             ReleaseHeat();
             GetViewport()?.SetInputAsHandled();

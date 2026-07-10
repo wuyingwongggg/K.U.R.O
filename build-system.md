@@ -21,7 +21,7 @@
 ### 过滤逻辑
 
 ```
-筛选条件：effect.BuildClass == _playerCoreClass || effect.BuildClass == "Generic"
+筛选条件：effect.BuildClass == _playerCoreClass || effect.BuildClass == BuildClassConstants.Generic
 ```
 
 ### 核心效果统一架构
@@ -137,7 +137,23 @@ public event Action<float> OnMoved;              // MachineCore 监听累积热�
 
 ### 3.4 输入映射
 
-新增核心技能键绑定（如 Key Q 或 Key R），各 CoreEffect 在 `_Input` 中各自监听。
+新增核心技能键绑定（如 Key F 或 Key Q），各 CoreEffect 在 `_Input` 中各自监听。
+
+### 3.5 共享常量（维护性设计）
+
+为避免新增构筑类型/属性/输入时修改多处代码，提取以下集中定义的常量：
+
+| 文件 | 说明 | 新增时只需 |
+|---|---|---|
+| `scripts/systems/BuildClassConstants.cs` | 构筑类别常量（Machine/Waiter/Throw/Generic） | 加一行 `const string` |
+| `scripts/core/InputActions.cs` | 输入动作名常量（core_skill 等） | 加一行 `const string` |
+| `scripts/core/effects/StatOp.cs` | 属性操作 delegate 字典 | 在 `Registry` 中加一行 key + Apply/Revert/GetOriginal |
+| `scripts/ui/CoreHUD.cs` `_panelMap` | 核心类型 → HUD 面板字典 | 加 Export + 一行 `_panelMap[BuildClassConstants.Xxx]` |
+
+使用方式：
+- 所有文件引用 `BuildClassConstants.Machine` 而非字符串 `"Machine"`
+- 所有 CoreEffect 引用 `InputActions.CoreSkill` 而非字符串 `"core_skill"`
+- `BuildStatBonusEffect` 通过 `StatOp.Registry` 查找 apply/revert 操作，不再手写 switch
 
 ---
 

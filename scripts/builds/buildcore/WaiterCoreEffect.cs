@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 using Kuros.Core.Effects;
 using Kuros.Managers;
 
@@ -54,7 +55,7 @@ namespace Kuros.Builds.BuildCore
         public override void _UnhandledInput(InputEvent @event)
         {
             if (!IsInstanceValid(this) || Actor == null) return;
-            if (!@event.IsActionPressed("core_skill") || @event.IsEcho()) return;
+            if (!@event.IsActionPressed(InputActions.CoreSkill) || @event.IsEcho()) return;
             if (DoseCount <= 0) return;
 
             DoseCount--;

@@ -185,11 +185,13 @@ namespace Kuros.Scenes
 			}
 
 			// 应用基础属性
-			int targetHealth = gameData.CurrentHealth > 0 ? gameData.CurrentHealth : gameData.MaxHealth;
-			int targetMaxHealth = gameData.MaxHealth > 0 ? gameData.MaxHealth : Player.MaxHealth;
+			// v2 存档只存储元进度（通关次数、循环次数等），不存储局内 HP。
+			// 因此读档后以满血开始，而非从存档恢复血量。
+			int targetHealth = Player.MaxHealth;
+			int targetMaxHealth = Player.MaxHealth;
 			Player.RestoreHealth(targetHealth, targetMaxHealth);
 			
-			GameLogger.Info(nameof(BattleSceneManager), $"应用游戏数据: 血量 {Player.CurrentHealth}/{Player.MaxHealth}, 等级 {gameData.Level}");
+			GameLogger.Info(nameof(BattleSceneManager), $"应用游戏数据: 血量 {Player.CurrentHealth}/{Player.MaxHealth}, 等级 {0}");
 
 			// 如果玩家是 SamplePlayer，应用额外属性
 			if (Player is SamplePlayer samplePlayer)
@@ -226,8 +228,8 @@ namespace Kuros.Scenes
 			try
 			{
 				// 1. 应用玩家血量
-				int targetHealth = gameData.CurrentHealth > 0 ? gameData.CurrentHealth : gameData.MaxHealth;
-				int targetMaxHealth = gameData.MaxHealth > 0 ? gameData.MaxHealth : Player.MaxHealth;
+				int targetHealth = 1 > 0 ? 1 : Player.MaxHealth;
+				int targetMaxHealth = Player.MaxHealth > 0 ? Player.MaxHealth : Player.MaxHealth;
 				Player.RestoreHealth(targetHealth, targetMaxHealth);
 				GameLogger.Info(nameof(BattleSceneManager), $"恢复玩家血量: {Player.CurrentHealth}/{Player.MaxHealth}");
 
@@ -235,9 +237,9 @@ namespace Kuros.Scenes
 				if (Player is SamplePlayer samplePlayer)
 				{
 					// 应用武器（如果 WeaponName 不为空）
-					if (!string.IsNullOrEmpty(gameData.WeaponName))
+					if (!string.IsNullOrEmpty("v2"))
 					{
-						ApplyWeapon(samplePlayer, gameData.WeaponName);
+						ApplyWeapon(samplePlayer, "v2");
 					}
 
 					// 注意：GameSaveData 目前没有 Score、Gold、Inventory 等字段
@@ -273,7 +275,7 @@ namespace Kuros.Scenes
 					}
 				}
 
-				GameLogger.Info(nameof(BattleSceneManager), $"成功应用游戏数据: 等级 {gameData.Level}, 武器 {gameData.WeaponName}");
+				GameLogger.Info(nameof(BattleSceneManager), $"成功应用游戏数据: 等级 {0}, 武器 {"v2"}");
 				return true;
 			}
 			catch (Exception ex)
@@ -441,8 +443,6 @@ namespace Kuros.Scenes
 				ConnectSignal(_battleMenu, BattleMenu.SignalName.ResumeRequested, nameof(OnMenuResume));
 				ConnectSignal(_battleMenu, BattleMenu.SignalName.QuitRequested, nameof(OnMenuQuit));
 				ConnectSignal(_battleMenu, BattleMenu.SignalName.SettingsRequested, nameof(OnMenuSettingsRequested));
-				ConnectSignal(_battleMenu, BattleMenu.SignalName.SaveRequested, nameof(OnMenuSaveRequested));
-				ConnectSignal(_battleMenu, BattleMenu.SignalName.LoadRequested, nameof(OnMenuLoadRequested));
 			}
 		}
 
@@ -549,8 +549,6 @@ namespace Kuros.Scenes
 				_battleMenu.ResumeRequested -= OnMenuResume;
 				_battleMenu.QuitRequested -= OnMenuQuit;
 				_battleMenu.SettingsRequested -= OnMenuSettingsRequested;
-				_battleMenu.SaveRequested -= OnMenuSaveRequested;
-				_battleMenu.LoadRequested -= OnMenuLoadRequested;
 			}
 
 			if (_battleSettingsMenu != null && IsInstanceValid(_battleSettingsMenu))
@@ -599,7 +597,7 @@ namespace Kuros.Scenes
 				{
 					PauseManager.Instance.ClearAllPauses();
 				}
-				tree.ChangeSceneToFile("res://scenes/MainMenu.tscn");
+				tree.ChangeSceneToFile("res://scenes/ui/menus/MainMenu.tscn");
 			}
 		}
 
@@ -739,7 +737,7 @@ namespace Kuros.Scenes
 				// 实现实际的存档逻辑
 				if (SaveManager.Instance != null)
 				{
-					var gameData = SaveManager.Instance.GetCurrentGameData();
+					var gameData = new GameSaveData { SlotIndex = slotIndex, SaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") };
 					gameData.SlotIndex = slotIndex;
 					
 					if (SaveManager.Instance.SaveGame(slotIndex, gameData))

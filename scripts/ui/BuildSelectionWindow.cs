@@ -195,10 +195,10 @@ namespace Kuros.UI
 
         private static readonly Dictionary<string, string> BuildClassDisplayNames = new()
         {
-            { "Machine", "机械协议" },
-            { "Waiter", "宴会协议" },
-            { "Throw", "投掷协议" },
-            { "Generic", "通用" },
+            { BuildClassConstants.Machine, "机械协议" },
+            { BuildClassConstants.Waiter, "宴会协议" },
+            { BuildClassConstants.Throw, "投掷协议" },
+            { BuildClassConstants.Generic, "通用" },
         };
 
         private static string GetBuildClassName(string buildClass)

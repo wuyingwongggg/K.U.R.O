@@ -16,8 +16,6 @@ namespace Kuros.UI
         // 信号
         [Signal] public delegate void ResumeRequestedEventHandler();
         [Signal] public delegate void SettingsRequestedEventHandler();
-        [Signal] public delegate void SaveRequestedEventHandler();
-        [Signal] public delegate void LoadRequestedEventHandler();
         [Signal] public delegate void QuitRequestedEventHandler();
         [Signal] public delegate void ExitGameRequestedEventHandler();
 
@@ -25,8 +23,6 @@ namespace Kuros.UI
         [Export] public Button ResumeButton { get; private set; } = null!;
         [Export] public Button SettingsButton { get; private set; } = null!;
         [Export] public Button CompendiumButton { get; private set; } = null!;
-        [Export] public Button SaveButton { get; private set; } = null!;
-        [Export] public Button LoadButton { get; private set; } = null!;
         [Export] public Button QuitButton { get; private set; } = null!;
         [Export] public Button ExitButton { get; private set; } = null!;
 
@@ -67,8 +63,6 @@ namespace Kuros.UI
             ResumeButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/ResumeButton");
             SettingsButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/SettingsButton");
             CompendiumButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/CompendiumButton");
-            SaveButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/SaveButton");
-            LoadButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/LoadButton");
             QuitButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/QuitButton");
             ExitButton ??= GetNodeOrNull<Button>("Window/WindowMargin/WindowVBox/ExitButton");
 
@@ -76,8 +70,6 @@ namespace Kuros.UI
             ConnectButtonSignal(ResumeButton, nameof(OnResumePressed));
             ConnectButtonSignal(SettingsButton, nameof(OnSettingsPressed));
             ConnectButtonSignal(CompendiumButton, nameof(OnCompendiumPressed));
-            ConnectButtonSignal(SaveButton, nameof(OnSavePressed));
-            ConnectButtonSignal(LoadButton, nameof(OnLoadPressed));
             ConnectButtonSignal(QuitButton, nameof(OnQuitPressed));
             ConnectButtonSignal(ExitButton, nameof(OnExitGamePressed));
 
@@ -496,16 +488,5 @@ namespace Kuros.UI
             }
         }
 
-        private void OnSavePressed()
-        {
-            EmitSignal(SignalName.SaveRequested);
-            GameLogger.Info(nameof(BattleMenu), "打开存档界面");
-        }
-
-        private void OnLoadPressed()
-        {
-            EmitSignal(SignalName.LoadRequested);
-            GameLogger.Info(nameof(BattleMenu), "打开读档界面");
-        }
     }
 }

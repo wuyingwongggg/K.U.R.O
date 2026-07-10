@@ -128,7 +128,7 @@ namespace Kuros.UI
 			var tree = GetTree();
 			if (tree != null)
 			{
-				tree.ChangeSceneToFile("res://scenes/MainMenu.tscn");
+				tree.ChangeSceneToFile("res://scenes/ui/menus/MainMenu.tscn");
 			}
 		}
 	}

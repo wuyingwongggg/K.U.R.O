@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Core;
 using Kuros.Core.Effects;
 
 namespace Kuros.Builds.BuildCore
@@ -38,7 +39,7 @@ namespace Kuros.Builds.BuildCore
         public override void _UnhandledInput(InputEvent @event)
         {
             if (!IsInstanceValid(this) || Actor == null) return;
-            if (!@event.IsActionPressed("core_skill") || @event.IsEcho()) return;
+            if (!@event.IsActionPressed(InputActions.CoreSkill) || @event.IsEcho()) return;
             if (!CanSpawn || FurnitureScene == null) return;
 
             SpawnFurniture();

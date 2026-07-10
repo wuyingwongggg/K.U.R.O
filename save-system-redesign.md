@@ -41,7 +41,20 @@
 | UnlockedCharacterIds | string[] | 已解锁角色 |
 | UnlockedStageIds | string[] | 已解锁场景 |
 | MaxStageReached | int | 达到的最远场景编号 |
+| StoryFlags | string[] | 已触发的剧情标记（如 "ch1_boss_defeated"） |
+| LastStoryNodeId | string | 当前剧情节点 ID（决定下次从哪继续） |
+| CompletedStoryIds | string[] | 已完成的故事线 ID（防重复触发） |
 | CompendiumData | 见下 | 图鉴发现数据 |
+
+### 剧情进度 (StoryData)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| StoryFlags | string[] | 已触发的剧情标记，驱动分支/跳过逻辑 |
+| LastStoryNodeId | string | 当前剧情节点 ID，读档后从此继续 |
+| CompletedStoryIds | string[] | 已完成的故事线 ID，防重复触发 |
+
+剧情进度是永久 meta-progress，关闭游戏/死亡后保留。
 
 ### 图鉴发现数据 (CompendiumData)
 
@@ -51,12 +64,14 @@
 | CollectedWeaponIds | string[] | 拾取过的武器 ID |
 | MetNpcIds | string[] | 对话过的 NPC ID |
 
-### 不保存的内容
+### 不保存的内容（局内临时状态）
 
 - 局内武器、背包、构筑效果、当前分数
 - 局内 HP、位置、敌人状态
 - 场景中的物件状态
 - 构筑效果点数
+
+> 剧情进度（StoryFlags / LastStoryNodeId / CompletedStoryIds）是**永久进度**，不属于局内临时状态，始终持久化。
 
 ## 四、GameSaveData 改造
 
@@ -83,6 +98,9 @@ Level (hardcoded 1)          → 删除，改用 MaxStageReached
     "ClearCount": 3,
     "TotalKills": 847,
     "MaxStageReached": 4,
+    "StoryFlags": ["ch1_boss_defeated", "met_p2_friend"],
+    "LastStoryNodeId": "ch2_begin_intro",
+    "CompletedStoryIds": ["ch1_main_line"],
     "UnlockedCharacterIds": ["samurai", "ninja"],
     "UnlockedStageIds": ["stage_1", "stage_2", "stage_3"],
     "CompendiumData": {
@@ -93,6 +111,47 @@ Level (hardcoded 1)          → 删除，改用 MaxStageReached
   }
 }
 ```
+
+### 字典驱动实现
+
+避免新增字段需要同步修改属性定义、`ToDictionary`、`FromDictionary`、JSON 示例四处代码。`GameSaveData` 底层是一个 `Dictionary<string, Variant>`，序列化只管字典本身：
+
+```csharp
+public class GameSaveData
+{
+    private readonly Dictionary<string, Variant> _data = new();
+
+    // ── 元数据 ─────────────────────────────────
+    public int SlotIndex       { get => Get<int>("SlotIndex"); set => Set("SlotIndex", value); }
+    public string CreateTime   { get => Get<string>("CreateTime") ?? ""; set => Set("CreateTime", value); }
+    public string LastPlayTime { get => Get<string>("LastPlayTime") ?? ""; set => Set("LastPlayTime", value); }
+    public int PlayTimeSeconds { get => Get<int>("PlayTimeSeconds"); set => Set("PlayTimeSeconds", value); }
+
+    // ── 永久进度 ───────────────────────────────
+    public int HighScore           { get => Get<int>("HighScore"); set => Set("HighScore", value); }
+    public int ClearCount          { get => Get<int>("ClearCount"); set => Set("ClearCount", value); }
+    public int TotalKills          { get => Get<int>("TotalKills"); set => Set("TotalKills", value); }
+    public int MaxStageReached     { get => Get<int>("MaxStageReached"); set => Set("MaxStageReached", value); }
+    public string LastStoryNodeId  { get => Get<string>("LastStoryNodeId") ?? ""; set => Set("LastStoryNodeId", value); }
+
+    // ── 数组 / 集合 ─────────────────────────────
+    public string[] StoryFlags { get => GetArray("StoryFlags"); set => Set("StoryFlags", new Variant(value)); }
+    public string[] CompletedStoryIds { get => GetArray("CompletedStoryIds"); set => Set("CompletedStoryIds", new Variant(value)); }
+    public string[] UnlockedCharacterIds { get => GetArray("UnlockedCharacterIds"); set => Set("UnlockedCharacterIds", new Variant(value)); }
+    public string[] UnlockedStageIds { get => GetArray("UnlockedStageIds"); set => Set("UnlockedStageIds", new Variant(value)); }
+
+    // ── 序列化（只碰 _data） ─────────────────────
+    public Dictionary<string, Variant> ToDictionary() => new(_data);
+    public static GameSaveData FromDictionary(Dictionary<string, Variant> dict) => new() { _data = new(dict) };
+
+    // ── 辅助 ──────────────────────────────────
+    private T? Get<T>(string key) => _data.TryGetValue(key, out var v) ? (T)(object)v : default;
+    private void Set<T>(string key, T value) => _data[key] = Variant.From(value);
+    private string[] GetArray(string key) => _data.TryGetValue(key, out var v) ? // ...
+}
+```
+
+**新增字段只需加一行属性**，不改 `ToDictionary` / `FromDictionary` / JSON 结构。
 
 ### 增量更新的方法
 
@@ -106,7 +165,16 @@ public void RecordRun(int score, bool cleared, int kills, int stageReached,
     TotalKills += kills;
     MaxStageReached = Math.Max(MaxStageReached, stageReached);
     CompendiumData.Merge(newEnemyKills, newWeaponPicks);
-    LastPlayTime = DateTime.Now;
+    LastPlayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+}
+
+// 剧情进度更新（任意时机调用，即时写盘）
+public void RecordStory(string storyNodeId, string? storyFlag = null, string? completedStoryId = null)
+{
+    LastStoryNodeId = storyNodeId;
+    if (storyFlag != null && !StoryFlags.Contains(storyFlag)) StoryFlags = StoryFlags.Append(storyFlag).ToArray();
+    if (completedStoryId != null && !CompletedStoryIds.Contains(completedStoryId)) CompletedStoryIds = CompletedStoryIds.Append(completedStoryId).ToArray();
+    LastPlayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 }
 ```
 

@@ -78,7 +78,6 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_enemy_script")
 BehaviorConfig = SubResource("Resource_r5hc0")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -151,7 +150,7 @@ script = ExtResource("5_muxhp")
 skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
+preview_frame = false
 preview_time = 2.3667
 script = ExtResource("5_muxhp")
 

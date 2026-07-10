@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://save_slot_selection"]
+[gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/SaveSlotSelection.cs" id="1_save_slot"]
+[ext_resource type="Script" path="res://scripts/ui/SaveSlotSelection.cs" id="1"]
 
 [node name="SaveSlotSelection" type="Control"]
 layout_mode = 3
@@ -9,7 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_save_slot")
+script = ExtResource("1")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -27,18 +27,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -600.0
-offset_top = -400.0
-offset_right = 600.0
-offset_bottom = 400.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="MenuPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+offset_left = -480.0
+offset_top = -350.0
+offset_right = 480.0
+offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -49,7 +41,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+alignment = 1
+theme_override_constants/separation = 15
 
 [node name="Title" type="Label" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
@@ -60,81 +53,148 @@ theme_override_font_sizes/font_size = 32
 [node name="HSeparator" type="HSeparator" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="ContentContainer" type="HBoxContainer" parent="MenuPanel/VBoxContainer"]
+[node name="SlotGrid" type="HBoxContainer" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
+alignment = 1
 theme_override_constants/separation = 20
 
-[node name="LeftPanel" type="VBoxContainer" parent="MenuPanel/VBoxContainer/ContentContainer"]
+[node name="SlotButton0" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid"]
 layout_mode = 2
+custom_minimum_size = Vector2(240, 320)
 size_flags_horizontal = 3
-
-[node name="ScrollContainer" type="ScrollContainer" parent="MenuPanel/VBoxContainer/ContentContainer/LeftPanel"]
-layout_mode = 2
 size_flags_vertical = 3
+focus_mode = 2
 
-[node name="SlotGrid" type="GridContainer" parent="MenuPanel/VBoxContainer/ContentContainer/LeftPanel/ScrollContainer"]
-layout_mode = 2
-columns = 4
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+mouse_filter = 2
+theme_override_constants/separation = 8
 
-[node name="RightPanel" type="VBoxContainer" parent="MenuPanel/VBoxContainer/ContentContainer"]
+[node name="SlotName0" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton0/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(300, 0)
-size_flags_horizontal = 0
-
-[node name="DetailTitle" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel"]
-layout_mode = 2
-text = "存档详情"
+text = "存档槽位 1（空）"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
 
-[node name="DetailSeparator" type="HSeparator" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel"]
+[node name="SlotDetail0" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton0/VBox"]
 layout_mode = 2
+text = "点击开始新游戏"
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
 
-[node name="LocationImage" type="TextureRect" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel"]
+[node name="DeleteButton0" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton0"]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 30.0
+text = "×"
+focus_mode = 0
+
+[node name="SlotButton1" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 200)
-expand_mode = 1
-stretch_mode = 5
+custom_minimum_size = Vector2(240, 320)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
 
-[node name="InfoContainer" type="VBoxContainer" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel"]
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="SlotName1" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton1/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+text = "存档槽位 2（空）"
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
 
-[node name="HealthLabel" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel/InfoContainer"]
+[node name="SlotDetail1" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton1/VBox"]
 layout_mode = 2
-text = "生命值: --/--"
-theme_override_font_sizes/font_size = 16
+text = "点击开始新游戏"
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
 
-[node name="WeaponLabel" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel/InfoContainer"]
+[node name="DeleteButton1" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton1"]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 30.0
+text = "×"
+focus_mode = 0
+
+[node name="SlotButton2" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid"]
 layout_mode = 2
-text = "武器: --"
-theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2(240, 320)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
 
-[node name="LevelLabel" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel/InfoContainer"]
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="SlotName2" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton2/VBox"]
 layout_mode = 2
-text = "关卡进度: --"
-theme_override_font_sizes/font_size = 16
+text = "存档槽位 3（空）"
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
 
-[node name="PlayTimeLabel" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel/InfoContainer"]
+[node name="SlotDetail2" type="Label" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton2/VBox"]
 layout_mode = 2
-text = "游戏时间: --"
-theme_override_font_sizes/font_size = 16
+text = "点击开始新游戏"
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
 
-[node name="SaveTimeLabel" type="Label" parent="MenuPanel/VBoxContainer/ContentContainer/RightPanel/InfoContainer"]
-layout_mode = 2
-text = "保存时间: --"
-theme_override_font_sizes/font_size = 16
-
-[node name="SwitchModeButton" type="Button" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-text = "切换到存档"
-theme_override_font_sizes/font_size = 20
-
-[node name="BackButton" type="Button" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-text = "返回"
-theme_override_font_sizes/font_size = 20
-
+[node name="DeleteButton2" type="Button" parent="MenuPanel/VBoxContainer/SlotGrid/SlotButton2"]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 30.0
+text = "×"
+focus_mode = 0

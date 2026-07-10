@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://vgh6xkgwp8w4" path="res://resources/ui/金币.png" id="6_gold"]
 [ext_resource type="Texture2D" uid="uid://cy0qwoe0qpjfb" path="res://resources/ui/武器栏底.png" id="7_weapon_bg"]
 [ext_resource type="Texture2D" uid="uid://dhj5yxqdvg6ju" path="res://resources/ui/武器栏框（未选中）.png" id="8_slot_normal"]
-[ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/CoreHUD.tscn" id="9_core_hud"]
+[ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/BuildCoreHUD.tscn" id="9_core_hud"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_domk2"]
 atlas = ExtResource("2_health_fill")

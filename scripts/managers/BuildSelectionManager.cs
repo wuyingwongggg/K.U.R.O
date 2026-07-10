@@ -18,7 +18,7 @@ namespace Kuros.Managers
         /// <summary>构筑效果变动时触发（选择新效果、恢复效果等）。</summary>
         public event Action? PickedEffectsChanged;
 
-        private const string GenericBuildClass = "Generic";
+        private const string GenericBuildClass = BuildClassConstants.Generic;
 
         [ExportGroup("Thresholds")]
         [Export] public ScoreThresholdCurve? ThresholdCurve { get; set; }
@@ -215,6 +215,18 @@ namespace Kuros.Managers
         public void SetPlayerCoreClass(string buildClass)
         {
             _playerCoreClass = buildClass;
+        }
+
+        /// <summary>重置所有构筑状态（新游戏开始时调用）。</summary>
+        public void ResetBuildState()
+        {
+            _coreSelected = false;
+            _selectedCoreId = null;
+            _playerCoreClass = null;
+            _pickedEffectIds.Clear();
+            _pendingScore = 0;
+            _lastKnownScore = 0;
+            _triggerCount = 0;
         }
 
         private PackedScene? _windowScene;

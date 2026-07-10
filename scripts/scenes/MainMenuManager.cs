@@ -5,477 +5,285 @@ using Kuros.Utils;
 
 namespace Kuros.Scenes
 {
-	/// <summary>
-	/// 主菜单场景管理器 - 管理主菜单及其子菜单的显示和切换
-	/// </summary>
-	public partial class MainMenuManager : Control
-	{
-		[ExportCategory("Scene Paths")]
-		[Export] public string BattleScenePath = "res://scenes/ExampleBattle.tscn";
+    /// <summary>
+    /// 主菜单场景管理器。
+    ///
+    /// 流程：启动 → TitleScreen → MainMenu（3按钮）→ SaveSlotSelection → Stage_1
+    ///
+    /// 三个按钮：
+    ///   开始游戏 → LoadSaveSlotSelection() → 选槽位 → 读档/新游戏 → 场景切换
+    ///   设置     → LoadSettingsMenu()
+    ///   退出游戏 → GetTree().Quit()
+    ///
+    /// 按钮在 .tscn 中预置，_Ready 时通过 GetNodeOrNull 查找并连接信号。
+    /// 子菜单（SaveSlotSelection / SettingsMenu）通过 UIManager 加载到独立 CanvasLayer。
+    /// 进入子菜单前 HideMenu() 隐藏主菜单面板，返回时 ShowMenu() 恢复。
+    /// </summary>
+    public partial class MainMenuManager : Control
+    {
+        [ExportCategory("Scene Paths")]
+        [Export] public string BattleScenePath = "res://scenes/Stage_1.tscn";
 
-		private MainMenu? _mainMenu;
-		private ModeSelectionMenu? _modeSelectionMenu;
-		private SettingsMenu? _settingsMenu;
-		private SaveSlotSelection? _saveSlotSelection;
-		private LoadingScreen? _loadingScreen;
-		private Callable? _onLoadingCompleteCallable;
-		private string _pendingScenePath = "";
-		private bool _isLoadingScene;
-		private PackedScene? _loadedBattleScene;
+        [ExportCategory("Main Menu Buttons")]
+        [Export] public Button StartGameButton { get; private set; } = null!;
+        [Export] public Button SettingsButton { get; private set; } = null!;
+        [Export] public Button QuitButton { get; private set; } = null!;
 
-		public override void _Ready()
-		{
-			CleanupUI();
-			DialogicUtils.CleanupPersistentState(this);
-			CallDeferred(MethodName.InitializeMenus);
-		}
+        private Control? _menuPanel;
+        private SettingsMenu? _settingsMenu;
+        private SaveSlotSelection? _saveSlotSelection;
+        private LoadingScreen? _loadingScreen;
+        private Callable? _onLoadingCompleteCallable;
+        private string _pendingScenePath = "";
+        private bool _isLoadingScene;
+        private PackedScene? _loadedBattleScene;
 
-		private void InitializeMenus()
-		{
-			if (UIManager.Instance == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), "UIManager未初始化！");
-				return;
-			}
+        public override void _Ready()
+        {
+            CleanupUI();
+            DialogicUtils.CleanupPersistentState(this);
+            CallDeferred(MethodName.InitializeMenus);
+        }
 
-			// 确保清理所有UI
-			UIManager.Instance.ClearAllUI();
-			_mainMenu = null;
-			_modeSelectionMenu = null;
-			_settingsMenu = null;
-			_saveSlotSelection = null;
+        private void InitializeMenus()
+        {
+            if (UIManager.Instance == null)
+            {
+                GameLogger.Error(nameof(MainMenuManager), "UIManager未初始化！");
+                return;
+            }
 
-			// 加载主菜单
-			LoadMainMenu();
-		}
+            UIManager.Instance.ClearAllUI();
+            _settingsMenu = null;
+            _saveSlotSelection = null;
 
-		/// <summary>
-		/// 加载主菜单
-		/// </summary>
-		public void LoadMainMenu()
-		{
-			if (UIManager.Instance == null) return;
+            ResolveMenuExports();
+            ShowMenu();
+        }
 
-			// 隐藏其他菜单
-			HideAllMenus();
+        private void ResolveMenuExports()
+        {
+            StartGameButton ??= GetNodeOrNull<Button>("MenuPanel/VBoxContainer/StartGameButton");
+            SettingsButton ??= GetNodeOrNull<Button>("MenuPanel/VBoxContainer/SettingsButton");
+            QuitButton ??= GetNodeOrNull<Button>("MenuPanel/VBoxContainer/QuitButton");
+            _menuPanel ??= GetNodeOrNull<Control>("MenuPanel");
 
-			// 如果已经加载，直接显示
-			if (_mainMenu != null && IsInstanceValid(_mainMenu))
-			{
-				_mainMenu.Visible = true;
-				return;
-			}
+            ConnectButton(StartGameButton, nameof(OnStartGamePressed));
+            ConnectButton(SettingsButton, nameof(OnSettingsPressed));
+            ConnectButton(QuitButton, nameof(OnQuitPressed));
+        }
 
-			_mainMenu = UIManager.Instance.LoadMainMenu();
-			if (_mainMenu != null)
-			{
-				_mainMenu.Visible = true;
-				_mainMenu.StartGameRequested += OnStartGame;
-				_mainMenu.ModeSelectionRequested += OnModeSelectionRequested;
-				_mainMenu.LoadGameRequested += OnLoadGameRequested;
-				_mainMenu.SettingsRequested += OnSettingsRequested;
-				_mainMenu.QuitRequested += OnQuit;
-			}
-		}
+        private void ConnectButton(Button? button, string methodName)
+        {
+            if (button == null) return;
+            var callable = new Callable(this, methodName);
+            if (!button.IsConnected(Button.SignalName.Pressed, callable))
+                button.Connect(Button.SignalName.Pressed, callable);
+        }
 
-		/// <summary>
-		/// 加载模式选择菜单
-		/// </summary>
-		public void LoadModeSelectionMenu()
-		{
-			if (UIManager.Instance == null) return;
+        private void ShowMenu()
+        {
+            HideAllSubMenus();
+            if (_menuPanel != null)
+                _menuPanel.Visible = true;
+        }
 
-			HideAllMenus();
+        private void HideMenu()
+        {
+            if (_menuPanel != null)
+                _menuPanel.Visible = false;
+        }
 
-			// 如果已经加载，直接显示
-			if (_modeSelectionMenu != null && IsInstanceValid(_modeSelectionMenu))
-			{
-				_modeSelectionMenu.Visible = true;
-				return;
-			}
+        private void HideAllSubMenus()
+        {
+            if (_settingsMenu != null && IsInstanceValid(_settingsMenu))
+                _settingsMenu.Visible = false;
+            if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
+                _saveSlotSelection.Visible = false;
+        }
 
-			_modeSelectionMenu = UIManager.Instance.LoadModeSelectionMenu();
-			if (_modeSelectionMenu != null)
-			{
-				_modeSelectionMenu.Visible = true;
-				_modeSelectionMenu.ModeSelected += OnModeSelected;
-				_modeSelectionMenu.BackRequested += LoadMainMenu;
-			}
-		}
+        // ── 按钮回调 ──
 
-		/// <summary>
-		/// 加载设置菜单
-		/// </summary>
-		public void LoadSettingsMenu()
-		{
-			if (UIManager.Instance == null) return;
+        private void OnStartGamePressed()
+        {
+            LoadSaveSlotSelection();
+        }
 
-			HideAllMenus();
+        private void OnSettingsPressed()
+        {
+            LoadSettingsMenu();
+        }
 
-			// 如果已经加载，直接显示
-			if (_settingsMenu != null && IsInstanceValid(_settingsMenu))
-			{
-				_settingsMenu.Visible = true;
-				return;
-			}
+        private void OnQuitPressed()
+        {
+            CleanupUI();
+            GetTree()?.Quit();
+        }
 
-			_settingsMenu = UIManager.Instance.LoadSettingsMenu();
-			if (_settingsMenu != null)
-			{
-				_settingsMenu.Visible = true;
-				_settingsMenu.BackRequested += LoadMainMenu;
-			}
-		}
+        // ── 返回主菜单 ──
 
-		/// <summary>
-		/// 加载存档选择菜单（从主界面进入，只允许读档）
-		/// </summary>
-		public void LoadSaveSlotSelection(SaveLoadMode mode, bool allowSave = false)
-		{
-			if (UIManager.Instance == null) return;
+        public void LoadMainMenu()
+        {
+            ShowMenu();
+        }
 
-			HideAllMenus();
+        // ── 设置菜单 ──
 
-			// 如果已经加载，直接显示并刷新
-			if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
-			{
-				_saveSlotSelection.Visible = true;
-				_saveSlotSelection.SetMode(mode);
-				_saveSlotSelection.SetAllowSave(allowSave);
-				_saveSlotSelection.SetSource(false); // 从主菜单进入
-				_saveSlotSelection.RefreshSlots();
-				return;
-			}
+        public void LoadSettingsMenu()
+        {
+            if (UIManager.Instance == null) return;
 
-			_saveSlotSelection = UIManager.Instance.LoadSaveSlotSelection();
-			if (_saveSlotSelection != null)
-			{
-				_saveSlotSelection.Visible = true;
-				_saveSlotSelection.SetMode(mode);
-				_saveSlotSelection.SetAllowSave(allowSave);
-				_saveSlotSelection.SetSource(false); // 从主菜单进入
-				_saveSlotSelection.SlotSelected += OnSaveSlotSelected;
-				_saveSlotSelection.BackRequested += LoadMainMenu;
-				_saveSlotSelection.ModeSwitchRequested += OnSaveSlotSelectionModeSwitchRequested;
-			}
-		}
+            HideMenu();
 
-		private void OnSaveSlotSelectionModeSwitchRequested(int newMode)
-		{
-			var mode = (SaveLoadMode)newMode;
-			// 从主界面进入时，不允许切换到存档模式
-			if (mode == SaveLoadMode.Save && _saveSlotSelection != null)
-			{
-				// 如果当前不允许存档，不允许切换
-				if (!_saveSlotSelection.AllowSave)
-				{
-					GD.Print("从主界面进入，不允许存档");
-					return;
-				}
-			}
-			
-			// 切换模式
-			if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
-			{
-				_saveSlotSelection.SetMode(mode);
-			}
-		}
+            if (_settingsMenu != null && IsInstanceValid(_settingsMenu))
+            {
+                _settingsMenu.Visible = true;
+                return;
+            }
 
-		private void HideAllMenus()
-		{
-			if (UIManager.Instance == null) return;
+            _settingsMenu = UIManager.Instance.LoadSettingsMenu();
+            if (_settingsMenu != null)
+            {
+                _settingsMenu.Visible = true;
+                _settingsMenu.BackRequested += LoadMainMenu;
+            }
+        }
 
-			if (_mainMenu != null && IsInstanceValid(_mainMenu))
-			{
-				_mainMenu.Visible = false;
-			}
-			if (_modeSelectionMenu != null && IsInstanceValid(_modeSelectionMenu))
-			{
-				_modeSelectionMenu.Visible = false;
-			}
-			if (_settingsMenu != null && IsInstanceValid(_settingsMenu))
-			{
-				_settingsMenu.Visible = false;
-			}
-			if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
-			{
-				_saveSlotSelection.Visible = false;
-			}
-		}
+        // ── 存档选择 ──
 
-		private void OnStartGame()
-		{
-			GameLogger.Info(nameof(MainMenuManager), "开始新游戏");
-			if (UIManager.Instance == null)
-			{
-				PerformSceneChange(BattleScenePath);
-				return;
-			}
-			_loadingScreen = UIManager.Instance.LoadLoadingScreen();
-			if (_loadingScreen == null)
-			{
-				PerformSceneChange(BattleScenePath);
-				return;
-			}
-			_pendingScenePath = BattleScenePath;
-			_loadedBattleScene = null;
-			_isLoadingScene = true;
-			_loadingScreen.ShowLoading();
-			var onComplete = new Callable(this, MethodName.OnLoadingScreenComplete);
-			_onLoadingCompleteCallable = onComplete;
-			if (!_loadingScreen.IsConnected(LoadingScreen.SignalName.LoadingComplete, onComplete))
-				_loadingScreen.Connect(LoadingScreen.SignalName.LoadingComplete, onComplete);
-			// 后台异步加载战斗场景，加载过程中加载页会持续播放动画
-			Error err = ResourceLoader.LoadThreadedRequest(_pendingScenePath);
-			if (err != Error.Ok)
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"异步加载场景失败: {_pendingScenePath}, err={err}");
-				_isLoadingScene = false;
-				if (_loadingScreen != null) _loadingScreen.SetLoadingComplete();
-			}
-		}
+        public void LoadSaveSlotSelection()
+        {
+            if (UIManager.Instance == null) return;
 
-		public override void _Process(double delta)
-		{
-			base._Process(delta);
-			if (!_isLoadingScene || string.IsNullOrEmpty(_pendingScenePath)) return;
-			var status = ResourceLoader.LoadThreadedGetStatus(_pendingScenePath);
-			if (status == ResourceLoader.ThreadLoadStatus.Loaded)
-			{
-				_isLoadingScene = false;
-				_loadedBattleScene = ResourceLoader.LoadThreadedGet(_pendingScenePath) as PackedScene;
-				if (_loadingScreen != null && !_loadingScreen.IsLoadingComplete())
-					_loadingScreen.SetLoadingComplete();
-			}
-			else if (status == ResourceLoader.ThreadLoadStatus.Failed)
-			{
-				_isLoadingScene = false;
-				GameLogger.Error(nameof(MainMenuManager), $"场景加载失败: {_pendingScenePath}");
-				_pendingScenePath = "";
-				if (_loadingScreen != null && !_loadingScreen.IsLoadingComplete())
-					_loadingScreen.SetLoadingComplete();
-			}
-		}
+            HideMenu();
 
-		private void OnLoadingScreenComplete()
-		{
-			var callable = _onLoadingCompleteCallable;
-			if (_loadingScreen != null && callable != null)
-			{
-				Callable cb = callable.Value;
-				if (_loadingScreen.IsConnected(LoadingScreen.SignalName.LoadingComplete, cb))
-					_loadingScreen.Disconnect(LoadingScreen.SignalName.LoadingComplete, cb);
-				_loadingScreen = null;
-			}
-			_onLoadingCompleteCallable = null;
-			PackedScene? scene = _loadedBattleScene;
-			string path = _pendingScenePath;
-			_loadedBattleScene = null;
-			_pendingScenePath = "";
-			// 如果异步加载失败（未获取到场景且没有待切换路径），则不进行场景切换，保持当前场景
-			if (scene == null && string.IsNullOrEmpty(path))
-			{
-				GameLogger.Error(nameof(MainMenuManager), "异步加载失败，保持当前场景不变");
-				return;
-			}
-			if (scene != null)
-				PerformSceneChangeWithPacked(scene);
-			else if (!string.IsNullOrEmpty(path))
-				PerformSceneChange(path);
-		}
+            if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
+            {
+                _saveSlotSelection.Visible = true;
+                _saveSlotSelection.RefreshSlots();
+                return;
+            }
 
-		/// <summary>
-		/// 使用已加载的 PackedScene 切换场景（用于异步加载完成后）
-		/// </summary>
-		private void PerformSceneChangeWithPacked(PackedScene scene)
-		{
-			var tree = GetTree();
-			if (tree == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), "无法获取场景树！");
-				return;
-			}
-			if (PauseManager.Instance != null)
-				PauseManager.Instance.ClearAllPauses();
-			CleanupUI();
-			var error = tree.ChangeSceneToPacked(scene);
-			if (error != Error.Ok)
-				GameLogger.Error(nameof(MainMenuManager), $"切换场景失败: {error}");
-			else
-				GameLogger.Info(nameof(MainMenuManager), "已切换到战斗场景");
-		}
-		
-		/// <summary>
-		/// 执行场景切换的统一方法
-		/// </summary>
-		private void PerformSceneChange(string scenePath)
-		{
-			var tree = GetTree();
-			if (tree == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), "无法获取场景树！");
-				return;
-			}
-			
-			// 清除所有暂停请求，确保场景切换时游戏未暂停
-			if (PauseManager.Instance != null)
-			{
-				PauseManager.Instance.ClearAllPauses();
-			}
-			
-			CleanupUI();
-			
-			// 检查场景路径是否存在
-			if (!ResourceLoader.Exists(scenePath))
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"场景文件不存在: {scenePath}");
-				return;
-			}
-			
-			// 尝试预加载场景以检查是否有问题
-			var scene = ResourceLoader.Load<PackedScene>(scenePath);
-			if (scene == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"无法加载场景资源: {scenePath}");
-				GameLogger.Error(nameof(MainMenuManager), "请检查场景文件是否损坏或引用的资源是否存在");
-				return;
-			}
-			
-			// 尝试实例化场景以验证完整性
-			var testInstance = scene.Instantiate();
-			if (testInstance == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"场景实例化失败: {scenePath}");
-				GameLogger.Error(nameof(MainMenuManager), "场景文件可能损坏或包含无效节点");
-				return;
-			}
-			testInstance.QueueFree(); // 清理测试实例
-			
-			// 使用 ChangeSceneToFile 方法（Godot 4.x 推荐）
-			var error = tree.ChangeSceneToFile(scenePath);
-			if (error != Error.Ok)
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"切换场景失败: {error}, 路径: {scenePath}");
-				GameLogger.Error(nameof(MainMenuManager), $"错误详情: {GetErrorDescription(error)}");
-				GameLogger.Error(nameof(MainMenuManager), $"错误代码值: {(int)error}");
-			}
-			else
-			{
-				GameLogger.Info(nameof(MainMenuManager), $"成功切换到场景: {scenePath}");
-			}
-		}
-		
-		private string GetErrorDescription(Error error)
-		{
-			return error switch
-			{
-				Error.Ok => "成功",
-				Error.Failed => "操作失败",
-				Error.OutOfMemory => "内存不足",
-				Error.FileNotFound => "文件未找到",
-				Error.FileAlreadyInUse => "文件正在使用",
-				Error.FileCantOpen => "无法打开文件",
-				Error.FileCantWrite => "无法写入文件",
-				Error.FileCantRead => "无法读取文件",
-				_ => $"未知错误: {error}"
-			};
-		}
+            _saveSlotSelection = UIManager.Instance.LoadSaveSlotSelection();
+            if (_saveSlotSelection != null)
+            {
+                _saveSlotSelection.Visible = true;
+                _saveSlotSelection.SlotSelected += OnSaveSlotSelected;
+                _saveSlotSelection.BackRequested += LoadMainMenu;
+            }
+        }
 
-		private void OnModeSelectionRequested()
-		{
-			LoadModeSelectionMenu();
-		}
+        private void OnSaveSlotSelected(int slotIndex)
+        {
+            GD.Print($"MainMenuManager.OnSaveSlotSelected 被调用，槽位: {slotIndex}");
+            if (_saveSlotSelection == null || SaveManager.Instance == null)
+            {
+                GD.PrintErr($"MainMenuManager.OnSaveSlotSelected: _saveSlotSelection 或 SaveManager 为 null");
+                return;
+            }
 
-		private void OnLoadGameRequested()
-		{
-			LoadSaveSlotSelection(SaveLoadMode.Load, false); // 从主界面进入，禁用存档
-		}
+            if (SaveManager.Instance.HasSave(slotIndex))
+            {
+                GD.Print($"MainMenuManager: 槽位 {slotIndex} 有存档，加载中...");
+                var gameData = SaveManager.Instance.LoadGame(slotIndex);
+                if (gameData == null)
+                {
+                    GD.PrintErr($"MainMenuManager: LoadGame 返回 null");
+                    return;
+                }
+                SaveManager.Instance.SetCurrentGameData(gameData);
+                GameLogger.Info(nameof(MainMenuManager), $"读档槽位 {slotIndex}，进入场景");
+            }
+            else
+            {
+                GD.Print($"MainMenuManager: 槽位 {slotIndex} 无存档，创建新游戏...");
+                SaveManager.Instance.NewGame(slotIndex);
+                GameLogger.Info(nameof(MainMenuManager), $"新游戏槽位 {slotIndex}，进入场景");
+            }
 
-		private void OnSettingsRequested()
-		{
-			LoadSettingsMenu();
-		}
+            GD.Print($"MainMenuManager: 即将切换到 {BattleScenePath}");
+            PerformSceneChange(BattleScenePath);
+        }
 
-		private void OnModeSelected(string modeName)
-		{
-			GameLogger.Info(nameof(MainMenuManager), $"选择了模式: {modeName}");
-			PerformSceneChange(BattleScenePath);
-		}
-		
-		private void OnSaveSlotSelected(int slotIndex)
-		{
-			if (_saveSlotSelection == null) return;
+        // ── 场景切换 ──
 
-			// 从主界面进入时，只允许读档
-			GameLogger.Info(nameof(MainMenuManager), $"加载存档槽位: {slotIndex}");
-			
-			// 实现实际的读档逻辑
-			if (SaveManager.Instance == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), "SaveManager.Instance 为空，无法加载存档");
-				return;
-			}
-			
-			var gameData = SaveManager.Instance.LoadGame(slotIndex);
-			if (gameData == null)
-			{
-				GameLogger.Error(nameof(MainMenuManager), $"加载失败: 槽位 {slotIndex}");
-				return; // 加载失败，不切换场景
-			}
-			
-			// 将加载的游戏数据存储到 SaveManager，供战斗场景使用
-			SaveManager.Instance.SetCurrentGameData(gameData);
-			GameLogger.Info(nameof(MainMenuManager), $"成功加载槽位 {slotIndex}，数据已存储，准备切换场景");
-			
-			// 只有在数据成功存储后才切换场景
-			PerformSceneChange(BattleScenePath);
-		}
+        private void PerformSceneChange(string scenePath)
+        {
+            var tree = GetTree();
+            if (tree == null)
+            {
+                GameLogger.Error(nameof(MainMenuManager), "无法获取场景树！");
+                return;
+            }
 
-		private void OnQuit()
-		{
-			var tree = GetTree();
-			CleanupUI();
-			tree.Quit();
-		}
+            if (PauseManager.Instance != null)
+                PauseManager.Instance.ClearAllPauses();
 
-		private void CleanupUI()
-		{
-			if (UIManager.Instance == null) return;
+            CleanupUI();
 
-			// 取消訂閱 _saveSlotSelection 事件以防止處理器洩漏
-			if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
-			{
-				_saveSlotSelection.SlotSelected -= OnSaveSlotSelected;
-				_saveSlotSelection.BackRequested -= LoadMainMenu;
-				_saveSlotSelection.ModeSwitchRequested -= OnSaveSlotSelectionModeSwitchRequested;
-			}
+            if (!ResourceLoader.Exists(scenePath))
+            {
+                GameLogger.Error(nameof(MainMenuManager), $"场景文件不存在: {scenePath}");
+                return;
+            }
 
-			// 若正在显示加载页则断开并隐藏
-			if (_loadingScreen != null && IsInstanceValid(_loadingScreen))
-			{
-				var c = _onLoadingCompleteCallable;
-				if (c != null)
-				{
-					Callable cb = c.Value;
-					if (_loadingScreen.IsConnected(LoadingScreen.SignalName.LoadingComplete, cb))
-						_loadingScreen.Disconnect(LoadingScreen.SignalName.LoadingComplete, cb);
-				}
-				_loadingScreen.HideLoading();
-				_loadingScreen = null;
-			}
-			_onLoadingCompleteCallable = null;
-			_pendingScenePath = "";
+            var scene = ResourceLoader.Load<PackedScene>(scenePath);
+            if (scene == null)
+            {
+                GameLogger.Error(nameof(MainMenuManager), $"无法加载场景资源: {scenePath}");
+                return;
+            }
 
-			UIManager.Instance.ClearAllUI();
-			_mainMenu = null;
-			_modeSelectionMenu = null;
-			_settingsMenu = null;
-			_saveSlotSelection = null;
-		}
+            var testInstance = scene.Instantiate();
+            if (testInstance == null)
+            {
+                GameLogger.Error(nameof(MainMenuManager), $"场景实例化失败: {scenePath}");
+                return;
+            }
+            testInstance.QueueFree();
 
-		public override void _ExitTree()
-		{
-			CleanupUI();
-		}
-	}
+            var error = tree.ChangeSceneToFile(scenePath);
+            if (error != Error.Ok)
+                GameLogger.Error(nameof(MainMenuManager), $"切换场景失败: {error}, 路径: {scenePath}");
+            else
+                GameLogger.Info(nameof(MainMenuManager), $"成功切换到场景: {scenePath}");
+        }
+
+        // ── 清理 ──
+
+        private void CleanupUI()
+        {
+            if (UIManager.Instance == null) return;
+
+            if (_saveSlotSelection != null && IsInstanceValid(_saveSlotSelection))
+            {
+                _saveSlotSelection.SlotSelected -= OnSaveSlotSelected;
+                _saveSlotSelection.BackRequested -= LoadMainMenu;
+            }
+
+            if (_loadingScreen != null && IsInstanceValid(_loadingScreen))
+            {
+                var c = _onLoadingCompleteCallable;
+                if (c != null)
+                {
+                    Callable cb = c.Value;
+                    if (_loadingScreen.IsConnected(LoadingScreen.SignalName.LoadingComplete, cb))
+                        _loadingScreen.Disconnect(LoadingScreen.SignalName.LoadingComplete, cb);
+                }
+                _loadingScreen.HideLoading();
+                _loadingScreen = null;
+            }
+            _onLoadingCompleteCallable = null;
+            _pendingScenePath = "";
+
+            UIManager.Instance.ClearAllUI();
+            _settingsMenu = null;
+            _saveSlotSelection = null;
+        }
+
+        public override void _ExitTree()
+        {
+            CleanupUI();
+        }
+    }
 }

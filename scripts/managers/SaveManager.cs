@@ -19,9 +19,10 @@ namespace Kuros.Managers
         private const string SaveDirectoryName = "saves";
         private const string SaveFilePrefix = "save_";
         private const string SaveFileExtension = ".save";
-        private const int SAVE_FORMAT_VERSION = 1;
+        private const int SAVE_FORMAT_VERSION = 2;
+        private const int SaveSlotsCount = 3;
         private string _saveDirectory = "";
-        
+
         // 游戏时间追踪
         private int _totalPlayTimeSeconds = 0;
         private double _accumulatedDelta = 0.0;
@@ -52,11 +53,6 @@ namespace Kuros.Managers
             
             // 初始化游戏时间追踪
             _accumulatedDelta = 0.0;
-            
-#if DEBUG
-            // 创建测试存档（槽位0，所有信息都是1）- 仅在调试模式下执行
-            CreateTestSave(0);
-#endif
         }
         
         public override void _Process(double delta)
@@ -117,7 +113,7 @@ namespace Kuros.Managers
         /// </summary>
         public bool HasSave(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= 12) return false;
+            if (slotIndex < 0 || slotIndex >= SaveSlotsCount) return false;
             string filePath = GetSaveFilePath(slotIndex);
             return Godot.FileAccess.FileExists(filePath);
         }
@@ -127,7 +123,7 @@ namespace Kuros.Managers
         /// </summary>
         public bool SaveGame(int slotIndex, GameSaveData data)
         {
-            if (slotIndex < 0 || slotIndex >= 12)
+            if (slotIndex < 0 || slotIndex >= SaveSlotsCount)
             {
                 GD.PrintErr($"SaveManager: 无效的存档槽位: {slotIndex}");
                 return false;
@@ -164,7 +160,7 @@ namespace Kuros.Managers
         /// </summary>
         public GameSaveData? LoadGame(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= 12)
+            if (slotIndex < 0 || slotIndex >= SaveSlotsCount)
             {
                 GD.PrintErr($"SaveManager: 无效的存档槽位: {slotIndex}");
                 return null;
@@ -294,11 +290,9 @@ namespace Kuros.Managers
                 SaveName = $"存档 {slotIndex + 1}",
                 SaveTime = gameData.SaveTime,
                 PlayTime = FormatPlayTime(gameData.PlayTimeSeconds),
-                Level = gameData.Level,
-                CurrentHealth = gameData.CurrentHealth,
-                MaxHealth = gameData.MaxHealth,
-                WeaponName = gameData.WeaponName,
-                LevelProgress = gameData.LevelProgress
+                ClearCount = gameData.ClearCount,
+                CycleCount = gameData.CycleCount,
+                MaxStageReached = gameData.MaxStageReached
             };
         }
 
@@ -334,28 +328,31 @@ namespace Kuros.Managers
             PendingInventoryTransit = data;
         }
 
-        private void CreateTestSave(int slotIndex)
+        /// <summary>新游戏：在空槽位写入初始永久进度数据。</summary>
+        public void NewGame(int slotIndex)
         {
-            if (HasSave(slotIndex))
-            {
-                // 如果已存在，不覆盖
-                return;
-            }
-
-            var testData = new GameSaveData
+            var data = new GameSaveData
             {
                 SlotIndex = slotIndex,
                 SaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                PlayTimeSeconds = 1,
-                Level = 1,
-                CurrentHealth = 1,
-                MaxHealth = 1,
-                WeaponName = "1",
-                LevelProgress = "1"
+                PlayTimeSeconds = 0,
+                HighScore = 0,
+                ClearCount = 0,
+                CycleCount = 0,
+                MaxStageReached = 1,
             };
+            SaveGame(slotIndex, data);
+        }
 
-            SaveGame(slotIndex, testData);
-            GD.Print($"SaveManager: 创建测试存档，槽位 {slotIndex}，所有信息都是1");
+        /// <summary>删除指定槽位的存档。</summary>
+        public bool DeleteSave(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= SaveSlotsCount) return false;
+            string filePath = GetSaveFilePath(slotIndex);
+            if (!Godot.FileAccess.FileExists(filePath)) return false;
+            DirAccess.RemoveAbsolute(filePath);
+            GD.Print($"SaveManager: 已删除存档槽位 {slotIndex}");
+            return true;
         }
 
         /// <summary>
@@ -394,101 +391,6 @@ namespace Kuros.Managers
             CurrentGameData = null;
         }
 
-        /// <summary>
-        /// 获取当前游戏数据（用于保存）
-        /// </summary>
-        public GameSaveData GetCurrentGameData()
-        {
-            // 获取玩家实例
-            SamplePlayer? player = null;
-            if (GetTree() != null)
-            {
-                player = GetTree().GetFirstNodeInGroup("player") as SamplePlayer;
-            }
-            
-            // 获取玩家生命值
-            int currentHealth = 1;
-            int maxHealth = 1;
-            if (player != null)
-            {
-                currentHealth = player.CurrentHealth;
-                maxHealth = player.MaxHealth;
-            }
-            
-            // 获取装备的武器名称
-            string weaponName = "无";
-            if (player != null && player.InventoryComponent != null)
-            {
-                var weaponSlot = player.InventoryComponent.GetSpecialSlot(SpecialInventorySlotIds.PrimaryWeapon);
-                if (weaponSlot != null && !weaponSlot.IsEmpty && weaponSlot.Stack != null)
-                {
-                    weaponName = weaponSlot.Stack.Item.DisplayName;
-                }
-            }
-            
-            // 获取关卡名称
-            string levelName = "未知关卡";
-            int level = 1; // TODO: Derive actual level number from game state (e.g., from a LevelManager or scene progression system)
-            string levelProgress = "未知";
-            
-            if (GetTree() != null)
-            {
-                // 尝试查找 BattleSceneManager
-                BattleSceneManager? sceneManager = null;
-                
-                // 首先尝试从当前场景根节点查找
-                if (GetTree().CurrentScene != null)
-                {
-                    sceneManager = GetTree().CurrentScene.GetNodeOrNull<BattleSceneManager>(".");
-                }
-                
-                // 如果没找到，尝试在整个场景树中查找
-                if (sceneManager == null)
-                {
-                    var allNodes = GetTree().GetNodesInGroup("scene_manager");
-                    foreach (var node in allNodes)
-                    {
-                        if (node is BattleSceneManager bsm)
-                        {
-                            sceneManager = bsm;
-                            break;
-                        }
-                    }
-                }
-                
-                // 如果还是没找到，尝试递归查找
-                if (sceneManager == null && GetTree().CurrentScene != null)
-                {
-                    sceneManager = GetTree().CurrentScene.GetNodeOrNull<BattleSceneManager>("BattleSceneManager");
-                }
-                
-                if (sceneManager != null && !string.IsNullOrEmpty(sceneManager.LevelName))
-                {
-                    levelName = sceneManager.LevelName;
-                    levelProgress = levelName;
-                }
-                else if (GetTree().CurrentScene != null)
-                {
-                    // 使用场景名称作为关卡名称
-                    levelName = GetTree().CurrentScene.Name;
-                    levelProgress = levelName;
-                }
-            }
-            
-            // 游戏时间已在 _Process 中持续更新，这里不需要额外处理
-            
-            return new GameSaveData
-            {
-                SlotIndex = -1, // 占位符，SaveGame() 会在序列化前设置正确的槽位索引
-                SaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                PlayTimeSeconds = _totalPlayTimeSeconds,
-                Level = level,
-                CurrentHealth = currentHealth,
-                MaxHealth = maxHealth,
-                WeaponName = weaponName,
-                LevelProgress = levelProgress
-            };
-        }
     }
 
     /// <summary>
@@ -614,46 +516,74 @@ namespace Kuros.Managers
         }
     }
 
+    /// <summary>
+    /// 游戏存档数据（v2：纯元进度，不含局内状态如 HP/武器/背包）。
+    /// 底层为 Dictionary 驱动，序列化时直接序列化字典，新增字段无需改序列化逻辑。
+    /// </summary>
     public class GameSaveData
     {
-        public int SlotIndex { get; set; }
-        public string SaveTime { get; set; } = "";
-        public int PlayTimeSeconds { get; set; }
-        public int Level { get; set; }
-        public int CurrentHealth { get; set; }
-        public int MaxHealth { get; set; }
-        public string WeaponName { get; set; } = "";
-        public string LevelProgress { get; set; } = "";
+        private readonly Godot.Collections.Dictionary<string, Variant> _data = new();
 
+        // 元数据
+        public int SlotIndex       { get => Get<int>("SlotIndex"); set => Set("SlotIndex", value); }
+        public string SaveTime     { get => Get<string>("SaveTime") ?? ""; set => Set("SaveTime", value); }
+        public int PlayTimeSeconds { get => Get<int>("PlayTimeSeconds"); set => Set("PlayTimeSeconds", value); }
+
+        // 永久进度
+        public int HighScore       { get => Get<int>("HighScore"); set => Set("HighScore", value); }
+        public int ClearCount      { get => Get<int>("ClearCount"); set => Set("ClearCount", value); }
+        public int CycleCount      { get => Get<int>("CycleCount"); set => Set("CycleCount", value); }
+        public int MaxStageReached { get => Get<int>("MaxStageReached"); set => Set("MaxStageReached", value); }
+
+        // 剧情
+        public string LastStoryNodeId { get => Get<string>("LastStoryNodeId") ?? ""; set => Set("LastStoryNodeId", value); }
+        public Godot.Collections.Array<string> StoryFlags    { get => GetArray("StoryFlags"); set => SetArray("StoryFlags", value); }
+        public Godot.Collections.Array<string> CompletedStoryIds { get => GetArray("CompletedStoryIds"); set => SetArray("CompletedStoryIds", value); }
+
+        // 序列化
         public Godot.Collections.Dictionary<string, Variant> ToDictionary()
         {
-            return new Godot.Collections.Dictionary<string, Variant>
-            {
-                { "SlotIndex", SlotIndex },
-                { "SaveTime", SaveTime },
-                { "PlayTimeSeconds", PlayTimeSeconds },
-                { "Level", Level },
-                { "CurrentHealth", CurrentHealth },
-                { "MaxHealth", MaxHealth },
-                { "WeaponName", WeaponName },
-                { "LevelProgress", LevelProgress }
-            };
+            var copy = new Godot.Collections.Dictionary<string, Variant>();
+            foreach (var kvp in _data) copy[kvp.Key] = kvp.Value;
+            return copy;
         }
-
         public static GameSaveData FromDictionary(Godot.Collections.Dictionary<string, Variant> dict)
         {
-            return new GameSaveData
-            {
-                SlotIndex = dict.ContainsKey("SlotIndex") ? dict["SlotIndex"].AsInt32() : 0,
-                SaveTime = dict.ContainsKey("SaveTime") ? dict["SaveTime"].AsString() : "",
-                PlayTimeSeconds = dict.ContainsKey("PlayTimeSeconds") ? dict["PlayTimeSeconds"].AsInt32() : 0,
-                Level = dict.ContainsKey("Level") ? dict["Level"].AsInt32() : 1,
-                CurrentHealth = dict.ContainsKey("CurrentHealth") ? dict["CurrentHealth"].AsInt32() : 0,
-                MaxHealth = dict.ContainsKey("MaxHealth") ? dict["MaxHealth"].AsInt32() : 0,
-                WeaponName = dict.ContainsKey("WeaponName") ? dict["WeaponName"].AsString() : "",
-                LevelProgress = dict.ContainsKey("LevelProgress") ? dict["LevelProgress"].AsString() : ""
-            };
+            var data = new GameSaveData();
+            foreach (var kvp in dict) data._data[kvp.Key] = kvp.Value;
+            return data;
         }
+
+        // 辅助：从字典取值并转为目标类型。
+        // 注意：不能使用 (T)(object)variant，因为 boxed Variant 无法直接 unbox 为 int/string。
+        // 必须通过 Variant 的原生转换方法 (AsInt32/AsString/AsSingle/AsBool)。
+        private T? Get<T>(string key)
+        {
+            if (_data.TryGetValue(key, out var v) && v.VariantType != Variant.Type.Nil)
+            {
+                if (typeof(T) == typeof(int))
+                    return (T)(object)v.AsInt32();
+                if (typeof(T) == typeof(string))
+                    return (T)(object)v.AsString();
+                if (typeof(T) == typeof(float))
+                    return (T)(object)v.AsSingle();
+                if (typeof(T) == typeof(bool))
+                    return (T)(object)v.AsBool();
+            }
+            return default;
+        }
+        private void Set<T>(string key, T value) => _data[key] = Variant.From(value);
+        private Godot.Collections.Array<string> GetArray(string key)
+        {
+            if (_data.TryGetValue(key, out var v) && v.VariantType == Variant.Type.Array)
+            {
+                var result = new Godot.Collections.Array<string>();
+                foreach (var item in v.AsGodotArray()) result.Add(item.AsString());
+                return result;
+            }
+            return new Godot.Collections.Array<string>();
+        }
+        private void SetArray(string key, Godot.Collections.Array<string> value) { Variant v = value; _data[key] = v; }
     }
 
     /// <summary>
@@ -666,13 +596,11 @@ namespace Kuros.Managers
         public string SaveName { get; set; } = "";
         public string SaveTime { get; set; } = "";
         public string PlayTime { get; set; } = "";
-        public int Level { get; set; }
+        public int ClearCount { get; set; }
+        public int CycleCount { get; set; }
+        public int MaxStageReached { get; set; }
         public Texture2D? Thumbnail { get; set; }
         public Texture2D? LocationImage { get; set; }
-        public int CurrentHealth { get; set; }
-        public int MaxHealth { get; set; }
-        public string WeaponName { get; set; } = "";
-        public string LevelProgress { get; set; } = "";
     }
 }
 

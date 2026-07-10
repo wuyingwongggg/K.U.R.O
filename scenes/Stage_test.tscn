@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_0ipan"]
 [ext_resource type="Resource" path="res://resources/builds/buildcore/WaiterCore.tres" id="5_e5fdm"]
 [ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="5_s6mo5"]
-[ext_resource type="Resource" path="res://resources/builds/buildcore/MachineCore.tres" id="6_5vpwd"]
+[ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="6_5vpwd"]
 [ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_6eerp"]
 [ext_resource type="PackedScene" uid="uid://blwgkboyojmcq" path="res://scenes/weapons/Weapon_Brawl_riotGlove.tscn" id="6_28ted"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_bnjvr"]
