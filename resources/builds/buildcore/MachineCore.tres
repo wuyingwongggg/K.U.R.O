@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3 uid="uid://orpyd8uc48vo"]
+
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://doo4rgx7btd4t" path="res://scenes/builds/MachineCore.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+CoreId = "MachineCore"
+DisplayName = "机械协议核心"
+Description = "热量表：攻击和移动时累计热量，按下核心技能键清空当前获取的全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。"
+BuildClass = "Machine"
+CoreEffectScene = ExtResource("2")

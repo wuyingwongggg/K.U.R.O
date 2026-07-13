@@ -600,6 +600,20 @@ namespace Kuros.Actors.Heroes
 		}
 	}
 
+	/// <summary>开关投掷指示器（ThrowCoreEffect 调用）。</summary>
+	public void EnableThrowIndicator(bool enable)
+	{
+		var indicator = GetThrowIndicatorNode();
+		if (indicator != null && IsInstanceValid(indicator))
+			((CanvasItem)indicator).Visible = enable;
+	}
+
+	/// <summary>获取投掷指示器节点。</summary>
+	public Node? GetThrowIndicatorNode()
+	{
+		return GetNodeOrNull("ThrowTrajectoryPreview");
+	}
+
 	protected override void OnDeathFinalized()
 		{
 			ClearHitInvincibility();

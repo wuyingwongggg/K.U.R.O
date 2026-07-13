@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://btf6tubgpkpq0"]
+
+[ext_resource type="Script" uid="uid://bcret0hi2qm2a" path="res://scripts/builds/buildcore/WaiterCoreEffect.cs" id="1"]
+
+[node name="WaiterCore" type="Node"]
+script = ExtResource("1")
+EffectId = "02f4ccc9-6e5d-4381-ae3d-dc7bcbf90cac"
+Description = "药剂：每过N秒后获取一针药剂，按下核心技能键消耗一针药剂恢复血量。"
+Duration = 0.0

@@ -35,7 +35,6 @@ namespace Kuros.Actors.Heroes.Attacks
         [ExportCategory("Input")]
         [Export] public Array<StringName> TriggerActions { get; set; } = new();
         [Export] public bool AllowHoldInput = false;
-        [Export] public bool BufferInputUntilReady = true;
         [Export] public bool AllowRecoveryCancel = true;
 
         [ExportCategory("Timing (s)")]
@@ -102,7 +101,6 @@ namespace Kuros.Actors.Heroes.Attacks
         private AttackPhase _phase = AttackPhase.Idle;
         private float _phaseTimer = 0f;
         private float _cooldownTimer = 0f;
-        private bool _bufferedInput = false;
         private bool _wantsRestart = false;
         private bool _wantsMove = false;
         private bool _hitEffectSubscribed = false;
@@ -406,26 +404,10 @@ namespace Kuros.Actors.Heroes.Attacks
                 }
             }
 
-            if (BufferInputUntilReady && _bufferedInput)
-            {
-                _bufferedInput = false;
-                return true;
-            }
-
             return false;
         }
 
-        public void BufferInput()
-        {
-            if (BufferInputUntilReady)
-            {
-                _bufferedInput = true;
-            }
-        }
 
-        /// <summary>
-        /// 根据武器技能定义的覆盖值（>=0）和模板默认值计算实际 timing。
-        /// skillOverride < 0 时返回 templateDefault。
         /// </summary>
         private static float ResolveSkillTiming(float? skillOverride, float templateDefault)
         {

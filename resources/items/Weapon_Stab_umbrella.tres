@@ -23,7 +23,6 @@ MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_q00hu")]([SubResource("Attribute_AttackPower")])
 EffectEntries = Array[ExtResource("2_iq0we")]([null])
 WeaponSkillResources = Array[Resource]([ExtResource("4_qwcde")])
-LevelCount = 0
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicPeakHeight = 100.0
 ThrowParabolicLandingYOffset = 250.0

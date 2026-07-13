@@ -1,4 +1,16 @@
 Enemy_C1_waiterB.png
+size:1922,1922
+filter:Linear,Linear
+SLASH_B0002
+bounds:0,962,960,960
+SLASH_B0003
+bounds:0,0,960,960
+SLASH_B0004
+bounds:962,962,960,960
+SLASH_B0005
+bounds:962,0,960,960
+
+Enemy_C1_waiterB_2.png
 size:2024,1876
 filter:Linear,Linear
 001

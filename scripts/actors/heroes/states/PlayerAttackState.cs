@@ -73,14 +73,31 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 
-			if (IsActionJustPressed("dash") && _activeTemplate.CanDashCancel)
+			// 缓冲/消费 dash 预输入
+		if (IsActionJustPressed("dash"))
+		{
+			if (_activeTemplate.CanDashCancel)
 			{
 				_activeTemplate.Cancel(clearCooldown: true);
 				ChangeState("Dash");
 				return;
 			}
+			BufferInput("dash", DashPriority);
+		}
 
-			_activeTemplate.Tick(delta);
+		// Recovery 期间检查缓冲区
+		if (_activeTemplate.IsInRecovery)
+		{
+			var buffered = ConsumeBufferedInput();
+			if (buffered == "dash")
+			{
+				_activeTemplate.Cancel(clearCooldown: true);
+				ChangeState("Dash");
+				return;
+			}
+		}
+
+		_activeTemplate.Tick(delta);
 
 			Player.MoveAndSlide();
 			Player.ClampPositionToScreen();

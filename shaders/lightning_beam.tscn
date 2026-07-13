@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://tuvfrpaqbads" path="res://scripts/fx/LightningBeam.cs" id="1_script"]
 [ext_resource type="Shader" uid="uid://b6xl0c7op3kjn" path="res://shaders/materials/lightning_beam.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="3_tex"]
+[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="3_tex"]
 [ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="4_noise"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5phwg"]

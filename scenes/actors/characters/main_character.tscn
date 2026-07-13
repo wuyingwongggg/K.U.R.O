@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=50 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="Script" uid="uid://12wblt72y8xt" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
@@ -36,18 +36,10 @@
 [ext_resource type="Resource" uid="uid://dc7u7akvpcjtn" path="res://resources/items/skills/WeaponSkill_Stab_Umbrella.tres" id="26_hitbox_preview_skill"]
 [ext_resource type="Script" uid="uid://bi2qqqs7h8pdp" path="res://scripts/systems/ai/GameStateProvider.cs" id="27_game_state_provider"]
 [ext_resource type="Script" uid="uid://b04ejw6pwys28" path="res://scripts/systems/ai/OllamaGenerateClient.cs" id="28_ollama_client"]
-[ext_resource type="Script" uid="uid://ju5its2xwou2" path="res://scripts/actors/heroes/PlayerBuildController.cs" id="28_rs5xn"]
 [ext_resource type="Script" uid="uid://dv3qa4rhngv5v" path="res://scripts/systems/ai/AiDecisionBridge.cs" id="29_ai_decision_bridge"]
-[ext_resource type="Resource" uid="uid://dlngh4ui567ss" path="res://resources/builds/Build_Machine_level1.tres" id="30_6tvdn"]
 [ext_resource type="Script" uid="uid://wi8yrx6su0t7" path="res://scripts/systems/ai/GameStateDebugPanel.cs" id="30_game_state_debug_panel"]
-[ext_resource type="Resource" uid="uid://dhrqhkm1koxla" path="res://resources/builds/Build_Machine_level2.tres" id="31_a5ycu"]
 [ext_resource type="Script" uid="uid://ihixldc0uwkm" path="res://scripts/systems/ai/AiOutputDebugPanel.cs" id="31_ai_output_debug_panel"]
-[ext_resource type="Resource" uid="uid://cg1ohbn3itor0" path="res://resources/builds/Build_Machine_level3.tres" id="32_a8ffv"]
 [ext_resource type="Script" uid="uid://ddrw67q4fyjya" path="res://scripts/systems/ai/AiDecisionExecutor.cs" id="33_ai_decision_executor"]
-[ext_resource type="Script" uid="uid://ba5xnpfo03sgb" path="res://scripts/actors/heroes/BuildLevelEffectEntry.cs" id="35_hyeo7"]
-[ext_resource type="Resource" uid="uid://b14bb35ful4ke" path="res://resources/builds/Build_Guard_level1.tres" id="39_26vrv"]
-[ext_resource type="Resource" uid="uid://c42i4clr4tuwh" path="res://resources/builds/Build_Guard_level2.tres" id="40_8fw8m"]
-[ext_resource type="Resource" uid="uid://vgnowuoegwns" path="res://resources/builds/Build_Guard_level3.tres" id="41_o4xwm"]
 [ext_resource type="Script" uid="uid://0jtxqm11tc2f" path="res://scripts/items/world/ThrowTrajectoryPreview.cs" id="43_throwpreview"]
 [ext_resource type="Script" uid="uid://dc7rmaqqyg4vn" path="res://scripts/actors/heroes/states/PlayerDashState.cs" id="44_dashstate"]
 [ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="45_afterimage"]
@@ -87,8 +79,8 @@ DebugOverlayColor = Color(0, 1, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 10.0
-MaxHealth = 1200
+AttackDamage = 100.0
+MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -372,7 +364,7 @@ BurstSpeed = 3000.0
 BurstDuration = 0.2
 BurstAnimationSpeed = 1.5
 RecoverySpeed = 100.0
-RecoveryDuration = 0.47000000000000003
+RecoveryDuration = 0.47
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("17_13pt2")
@@ -496,11 +488,8 @@ offset_top = -1737.4999
 offset_bottom = -1737.4999
 scale = Vector2(2.205, 2.205)
 
-[node name="BuildController" type="Node" parent="."]
-script = ExtResource("28_rs5xn")
-LevelEntries = Array[ExtResource("35_hyeo7")]([ExtResource("30_6tvdn"), ExtResource("31_a5ycu"), ExtResource("32_a8ffv"), ExtResource("39_26vrv"), ExtResource("40_8fw8m"), ExtResource("41_o4xwm")])
-
 [node name="ThrowTrajectoryPreview" type="Node2D" parent="."]
+visible = false
 z_index = 10
 y_sort_enabled = true
 script = ExtResource("43_throwpreview")

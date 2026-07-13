@@ -5,7 +5,7 @@ namespace Kuros.Systems
 {
     /// <summary>
     /// 构筑效果定义（三选一弹窗中的可选项）。
-    /// 携带构筑类型和等级点数，选择后同时施加数值加成并推动 Build Level 进度。
+    /// 纯数值效果填写 StatBonuses；复杂效果额外指定 EffectScene。
     /// </summary>
     [GlobalClass]
     public partial class BuildEffectDefinition : Resource
@@ -16,18 +16,21 @@ namespace Kuros.Systems
         [Export(PropertyHint.MultilineText)] public string Description { get; set; } = string.Empty;
 
         [ExportGroup("构筑类型")]
-        /// <summary>所属构筑类别（Guard / Machine / Banquet ...），对应 PlayerBuildController 的统计维度。</summary>
+        /// <summary>所属构筑类别（Machine / Waiter / Throw / Generic）。用于核心过滤。</summary>
         [Export] public string BuildClass { get; set; } = string.Empty;
-
-        /// <summary>选择后贡献的构筑等级点数（通常为 1）。</summary>
-        [Export(PropertyHint.Range, "1,10,1")] public int LevelCount { get; set; } = 1;
 
         [ExportGroup("数值加成")]
         /// <summary>
-        /// 选择后直接施加的属性修正。
-        /// Key 使用 ItemAttributeIds 或 GameActor 的属性名（如 "attack_damage", "speed", "max_health"）。
-        /// Value 为固定值增量。
+        /// 选择后直接施加的属性修正（经 BuildStatBonusEffect）。
+        /// Key: "attack_damage", "speed", "max_health" 等。
         /// </summary>
         [Export] public Dictionary<string, float> StatBonuses { get; set; } = new();
+
+        [ExportGroup("表现")]
+        [Export] public Texture2D? Icon { get; set; }
+
+        [ExportGroup("复杂效果")]
+        /// <summary>可选的自定义 ActorEffect 场景（PackedScene）。非空时实例化并加入 EffectController。</summary>
+        [Export] public PackedScene? EffectScene { get; set; }
     }
 }

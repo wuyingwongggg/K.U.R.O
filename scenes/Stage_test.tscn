@@ -1,15 +1,19 @@
-[gd_scene load_steps=42 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=48 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="2_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="2_v4xrh"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="2_ybuta"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_6eerp"]
 [ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_v4xrh"]
 [ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="4_7yh4q"]
 [ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_dhx6f"]
+[ext_resource type="Resource" path="res://resources/builds/buildcore/ThrowCore.tres" id="4_kwrre"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_0ipan"]
+[ext_resource type="Resource" path="res://resources/builds/buildcore/WaiterCore.tres" id="5_e5fdm"]
 [ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="5_s6mo5"]
+[ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="6_5vpwd"]
 [ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_6eerp"]
 [ext_resource type="PackedScene" uid="uid://blwgkboyojmcq" path="res://scenes/weapons/Weapon_Brawl_riotGlove.tscn" id="6_28ted"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_bnjvr"]
@@ -19,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_kwrre"]
 [ext_resource type="PackedScene" uid="uid://cdnitqquebaw6" path="res://scenes/weapons/Weapon_Stab_drill.tscn" id="9_ngl7c"]
 [ext_resource type="PackedScene" uid="uid://6ghjqyjkk37w" path="res://scenes/weapons/Weapon_Stab_umbrella.tscn" id="10_dxexl"]
+[ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="11_0ipan"]
 [ext_resource type="PackedScene" uid="uid://bvvyo3wubh12j" path="res://scenes/weapons/Weapon_Throw_gravityGrenade.tscn" id="11_5dr7i"]
 [ext_resource type="PackedScene" uid="uid://dfmke56wtqt2x" path="res://scenes/weapons/Weapon_Throw_metalSpike.tscn" id="12_mkebo"]
 [ext_resource type="PackedScene" uid="uid://3d7hnjx31f45" path="res://scenes/weapons/Weapon_Slash_violinBow.tscn" id="12_ngl7c"]
@@ -29,7 +34,7 @@
 [ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="19_dxexl"]
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
-[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/WeaponBuild/icon.svg" id="30_m86xd"]
+[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
 [ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="31_dhx6f"]
 [ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="32_0ipan"]
 [ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="32_6eerp"]
@@ -62,6 +67,9 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-3189, -1581, 2800, -15
 source_geometry_mode = 2
 agent_radius = 80.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eh1sc"]
+size = Vector2(200, 800)
+
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_s6mo5")
 Player = NodePath("World/MainCharacter")
@@ -71,6 +79,7 @@ LevelName = "test"
 y_sort_enabled = true
 
 [node name="BuildSelectionManager" parent="World" instance=ExtResource("2_v4xrh")]
+CorePool = Array[ExtResource("3_6eerp")]([ExtResource("4_kwrre"), ExtResource("5_e5fdm"), ExtResource("6_5vpwd")])
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="World"]
 position = Vector2(-2306, 0)
@@ -152,6 +161,14 @@ navigation_polygon = SubResource("NavigationPolygon_6eerp")
 position = Vector2(-1972, 3)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
+
+[node name="CorePickupZone" type="Area2D" parent="World"]
+collision_mask = 4
+script = ExtResource("11_0ipan")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/CorePickupZone"]
+position = Vector2(-2600, 230)
+shape = SubResource("RectangleShape2D_eh1sc")
 
 [node name="MainCharacter" parent="World" instance=ExtResource("1_tv6fd")]
 position = Vector2(-1086.9999, -70.99999)

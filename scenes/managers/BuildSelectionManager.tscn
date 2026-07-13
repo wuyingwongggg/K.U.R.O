@@ -1,63 +1,40 @@
-[gd_scene load_steps=11 format=3 uid="uid://bjwnor5ufbb8r"]
+[gd_scene load_steps=27 format=3 uid="uid://bjwnor5ufbb8r"]
 
 [ext_resource type="Script" uid="uid://d3t47ery0onnl" path="res://scripts/managers/BuildSelectionManager.cs" id="1"]
-[ext_resource type="Script" uid="uid://7jkau6kxuvlf" path="res://scripts/systems/ScoreThresholdCurve.cs" id="2_ca1aj"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="3_emrpw"]
+[ext_resource type="Script" uid="uid://7jkau6kxuvlf" path="res://scripts/systems/ScoreThresholdCurve.cs" id="2"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="3"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_core"]
+[ext_resource type="Resource" uid="uid://bh73r5tnpb3qh" path="res://resources/builds/BuildMachine_A_0.tres" id="4"]
+[ext_resource type="Resource" uid="uid://cmuj2nvt6bdcc" path="res://resources/builds/BuildMachine_A_1.tres" id="5"]
+[ext_resource type="Resource" uid="uid://c3nfme2whksfc" path="res://resources/builds/BuildMachine_A_2.tres" id="6"]
+[ext_resource type="Resource" uid="uid://ccquk34dj7pwx" path="res://resources/builds/BuildMachine_B_0.tres" id="7"]
+[ext_resource type="Resource" uid="uid://cguarqlknpx7b" path="res://resources/builds/BuildMachine_B_1.tres" id="8"]
+[ext_resource type="Resource" uid="uid://bsr8earh2vvgm" path="res://resources/builds/BuildMachine_B_2.tres" id="9"]
+[ext_resource type="Resource" uid="uid://byv2j1g00wpw0" path="res://resources/builds/BuildThrow_A_0.tres" id="10"]
+[ext_resource type="Resource" uid="uid://3krditn78uto" path="res://resources/builds/BuildThrow_A_1.tres" id="11"]
+[ext_resource type="Resource" uid="uid://bqhxf76eimm70" path="res://resources/builds/BuildThrow_A_2.tres" id="12"]
+[ext_resource type="Resource" uid="uid://dgnhkr3lw213n" path="res://resources/builds/BuildThrow_B_0.tres" id="13"]
+[ext_resource type="Resource" uid="uid://cdswkjr4187x3" path="res://resources/builds/BuildThrow_B_1.tres" id="14"]
+[ext_resource type="Resource" path="res://resources/builds/BuildThrow_B_2.tres" id="15"]
+[ext_resource type="Resource" uid="uid://knxfy6qhgaqq" path="res://resources/builds/BuildWaiter_A_0.tres" id="16"]
+[ext_resource type="Resource" uid="uid://0fr4r33hi043" path="res://resources/builds/BuildWaiter_A_1.tres" id="17"]
+[ext_resource type="Resource" uid="uid://c4t4pikfy3acp" path="res://resources/builds/BuildWaiter_A_2.tres" id="18"]
+[ext_resource type="Resource" uid="uid://bf1o1we1lcck0" path="res://resources/builds/BuildWaiter_B_0.tres" id="19"]
+[ext_resource type="Resource" uid="uid://cksh5endw1xji" path="res://resources/builds/BuildWaiter_B_1.tres" id="20"]
+[ext_resource type="Resource" path="res://resources/builds/BuildWaiter_B_2.tres" id="21"]
+[ext_resource type="Resource" path="res://resources/builds/buildcore/MachineCore.tres" id="22"]
+[ext_resource type="Resource" path="res://resources/builds/buildcore/WaiterCore.tres" id="23"]
+[ext_resource type="Resource" path="res://resources/builds/buildcore/ThrowCore.tres" id="24"]
 
-[sub_resource type="Resource" id="Resource_emrpw"]
-script = ExtResource("2_ca1aj")
-Power = 0.30000000000000004
+[sub_resource type="Resource" id="ThresholdCurve"]
+script = ExtResource("2")
+Bxp = 20.0
+Power = 0.3
 Add = 40.0
 metadata/_custom_type_script = "uid://7jkau6kxuvlf"
 
-[sub_resource type="Resource" id="Resource_xli8l"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildGuardA"
-DisplayName = "BuildGuardA"
-Description = "安保构筑效果A"
-BuildClass = "guard"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
-[sub_resource type="Resource" id="Resource_1p4mg"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildGuardB"
-DisplayName = "BuildGuardB"
-Description = "安保构筑效果B"
-BuildClass = "guard"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
-[sub_resource type="Resource" id="Resource_8vrvn"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildGuardC"
-DisplayName = "BuildGuardC"
-Description = "安保构筑效果C"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
-[sub_resource type="Resource" id="Resource_1x0vg"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildMachineA"
-DisplayName = "BuildMachineA"
-Description = "机械构筑效果A"
-BuildClass = "machine"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
-[sub_resource type="Resource" id="Resource_x7sk2"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildMachine"
-DisplayName = "BuildMachineB"
-Description = "机械构筑效果B"
-BuildClass = "machine"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
-[sub_resource type="Resource" id="Resource_b3fdh"]
-script = ExtResource("3_emrpw")
-EffectId = "BuildMachine"
-DisplayName = "BuildMachineC"
-Description = "机械构筑效果C"
-BuildClass = "machine"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
-
 [node name="BuildSelectionManager" type="Node"]
 script = ExtResource("1")
-ThresholdCurve = SubResource("Resource_emrpw")
-EffectPool = Array[ExtResource("3_emrpw")]([SubResource("Resource_xli8l"), SubResource("Resource_1p4mg"), SubResource("Resource_8vrvn"), SubResource("Resource_1x0vg"), SubResource("Resource_x7sk2"), SubResource("Resource_b3fdh")])
+ThresholdCurve = SubResource("ThresholdCurve")
+CorePool = Array[ExtResource("3_core")]([ExtResource("22"), ExtResource("23"), ExtResource("24")])
+EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15"), ExtResource("16"), ExtResource("17"), ExtResource("18"), ExtResource("19"), ExtResource("20"), ExtResource("21")])
