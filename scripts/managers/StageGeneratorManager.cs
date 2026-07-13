@@ -19,22 +19,34 @@ namespace Kuros.Managers
     [GlobalClass]
     public partial class StageGeneratorManager : Node
     {
-        [ExportCategory("房间场景")]
+        [ExportCategory("Room Scenes")]
         [Export] public PackedScene? BeginScene { get; set; }
         [Export] public PackedScene? EndScene { get; set; }
-        [Export] public Array<PackedScene> MiddleScenePool { get; set; } = new();
 
-        [ExportCategory("生成配置")]
-        [Export(PropertyHint.Range, "0,10,1")] public int MinMiddleRooms { get; set; } = 2; // 生成中间房间数量的随机范围，实际数量在 Min 和 Max 之间随机抽取
-        [Export(PropertyHint.Range, "0,10,1")] public int MaxMiddleRooms { get; set; } = 2; 
+        [ExportCategory("Middle Rooms — Easy")]
+        [Export] public Array<PackedScene> EasyMiddlePool { get; set; } = new();
+        [Export(PropertyHint.Range, "0,10,1")] public int EasyRoomMin { get; set; } = 0;
+        [Export(PropertyHint.Range, "0,10,1")] public int EasyRoomMax { get; set; } = 0;
+
+        [ExportCategory("Middle Rooms — Normal")]
+        [Export] public Array<PackedScene> NormalMiddlePool { get; set; } = new();
+        [Export(PropertyHint.Range, "0,10,1")] public int NormalRoomMin { get; set; } = 0;
+        [Export(PropertyHint.Range, "0,10,1")] public int NormalRoomMax { get; set; } = 0;
+
+        [ExportCategory("Middle Rooms — Hard")]
+        [Export] public Array<PackedScene> HardMiddlePool { get; set; } = new();
+        [Export(PropertyHint.Range, "0,10,1")] public int HardRoomMin { get; set; } = 0;
+        [Export(PropertyHint.Range, "0,10,1")] public int HardRoomMax { get; set; } = 0;
+
+        [ExportCategory("Generation")]
         /// <summary>随机种子，0 = 每次随机。</summary>
         [Export] public int RandomSeed { get; set; } = 0;  
 
-        [ExportCategory("相机范围")]
+        [ExportCategory("Camera Limits")]
         [Export] public int CameraLimitTop { get; set; } = -1500;
         [Export] public int CameraLimitBottom { get; set; } = 1500;
 
-        [ExportCategory("节点路径")]
+        [ExportCategory("Node Paths")]
         [Export] public NodePath WorldNodePath { get; set; } = new NodePath("../World");
 
         /// <summary>关卡生成完毕后触发。</summary>
@@ -134,27 +146,34 @@ namespace Kuros.Managers
             if (BeginScene != null)
                 list.Add(BeginScene);
 
-            if (MiddleScenePool.Count > 0)
-            {
-                int count = rng.RandiRange(MinMiddleRooms, MaxMiddleRooms);
-                var available = new List<PackedScene>(MiddleScenePool);
-
-                for (int i = 0; i < count; i++)
-                {
-                    // 无重复抽取；池耗尽后重新放回
-                    if (available.Count == 0)
-                        available = new List<PackedScene>(MiddleScenePool);
-
-                    int idx = rng.RandiRange(0, available.Count - 1);
-                    list.Add(available[idx]);
-                    available.RemoveAt(idx);
-                }
-            }
+            // Easy → Normal → Hard 顺序，每档数量在 Min/Max 间随机
+            AppendRoomsFromPool(list, EasyMiddlePool,
+                rng.RandiRange(EasyRoomMin, EasyRoomMax), rng);
+            AppendRoomsFromPool(list, NormalMiddlePool,
+                rng.RandiRange(NormalRoomMin, NormalRoomMax), rng);
+            AppendRoomsFromPool(list, HardMiddlePool,
+                rng.RandiRange(HardRoomMin, HardRoomMax), rng);
 
             if (EndScene != null)
                 list.Add(EndScene);
 
             return list;
+        }
+
+        private static void AppendRoomsFromPool(List<PackedScene> list,
+            Array<PackedScene> pool, int count, RandomNumberGenerator rng)
+        {
+            if (pool.Count == 0 || count <= 0) return;
+
+            var available = new List<PackedScene>(pool);
+            for (int i = 0; i < count; i++)
+            {
+                if (available.Count == 0)
+                    available = new List<PackedScene>(pool);
+                int idx = rng.RandiRange(0, available.Count - 1);
+                list.Add(available[idx]);
+                available.RemoveAt(idx);
+            }
         }
 
         /// <summary>
