@@ -22,7 +22,6 @@ Category = "Consumable"
 MaxStackSize = 5
 AttributeEntries = Array[ExtResource("1_47noo")]([SubResource("Attribute_AttackPower")])
 WeaponSkillResources = Array[Resource]([ExtResource("3")])
-LevelCount = 0
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicPeakHeight = 100.0
 ThrowParabolicLandingYOffset = 250.0

@@ -29,14 +29,13 @@ shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
 
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
-size = Vector2(1000, 400)
+size = Vector2(340, 100)
 
 [sub_resource type="RectangleShape2D" id="TriggerShape_yahcm"]
-size = Vector2(350, 25)
+size = Vector2(550, 25)
 
 [node name="WeaponStabUmbrella" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_inoct")
@@ -45,12 +44,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_m4rsl")
-position = Vector2(0, 60)
-scale = Vector2(14, 3)
+position = Vector2(0, 10)
+scale = Vector2(4, 1)
 texture = ExtResource("4_0qmq6")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_4lmql")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("1_kyvej")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]

@@ -65,7 +65,7 @@ shader_parameter/rota_speed = 1.0000005225000006
 shader_parameter/curve_ci = 0.2000000095
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o1fls"]
-size = Vector2(400, 300)
+size = Vector2(180, 60)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_djioy"]
 radius = 250.0
@@ -73,7 +73,6 @@ radius = 250.0
 [node name="WeaponSlashBunnySword" type="CharacterBody2D"]
 z_index = 1
 y_sort_enabled = true
-scale = Vector2(0.5, 0.5)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_0inps")
@@ -82,12 +81,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_nqlfu")
-scale = Vector2(5.5, 1.2)
+scale = Vector2(2.5, 0.6)
 texture = SubResource("CompressedTexture2D_mhf4g")
 offset = Vector2(0, 8)
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_waoek")
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("5_8iife")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]

@@ -13,6 +13,9 @@ namespace Kuros.Actors.Heroes
     /// </summary>
     public partial class PlayerItemInteractionComponent : Node
     {
+        [Export(PropertyHint.Range, "0,200,1")]
+        public float PlacementMargin = 16f;
+
         private enum DropDisposition
         {
             Place,
@@ -320,8 +323,12 @@ namespace Kuros.Actors.Heroes
                 extractedFromInventory = true;
             }
 
-            var spawnPosition = ComputeSpawnPosition(disposition);
-            var entity = WorldItemSpawner.SpawnFromStack(this, extracted, spawnPosition);
+            var tempPos = ComputeDropPosition(disposition, null);
+            var entity = WorldItemSpawner.SpawnFromStack(this, extracted, tempPos);
+            if (entity is Node2D entityNode)
+            {
+                entityNode.GlobalPosition = ComputeDropPosition(disposition, entityNode);
+            }
 
             if (entity == null)
             {
@@ -357,12 +364,21 @@ namespace Kuros.Actors.Heroes
             return InventoryComponent.TryConsumeSelectedItem(_actor);
         }
 
-        private Vector2 ComputeSpawnPosition(DropDisposition disposition)
+        private Vector2 ComputeDropPosition(DropDisposition disposition, Node2D? spawnedEntity)
         {
             var origin = _actor?.GlobalPosition ?? Vector2.Zero;
             var direction = GetFacingDirection();
-            var offset = disposition == DropDisposition.Throw ? ThrowOffset : DropOffset;
-            return origin + new Vector2(direction.X * offset.X, offset.Y);
+
+            Vector2 baseOffset = disposition == DropDisposition.Throw ? ThrowOffset : DropOffset;
+            float halfWidth = baseOffset.X;
+            if (spawnedEntity != null)
+            {
+                var shape = GetPickableCollisionShape(spawnedEntity);
+                if (shape != null)
+                    halfWidth = GetCollisionHalfWidth(shape) + PlacementMargin + baseOffset.X;
+            }
+
+            return origin + new Vector2(direction.X * halfWidth, baseOffset.Y);
         }
 
         internal bool ExecutePickupAfterAnimation() => TryHandlePickup();
@@ -478,6 +494,17 @@ namespace Kuros.Actors.Heroes
         /// <summary>
         /// 纯几何 AABB 重叠检测。从两个 CollisionShape2D 计算全局包围盒并做相交测试。
         /// </summary>
+        /// <summary>
+        /// 从 CollisionShape2D 提取 X 轴半宽（用于放置偏移计算）。
+        /// </summary>
+        private static float GetCollisionHalfWidth(CollisionShape2D shape)
+        {
+            if (shape?.Shape == null) return 32f;
+            if (shape.Shape is RectangleShape2D rect) return rect.Size.X * 0.5f;
+            if (shape.Shape is CircleShape2D circle) return circle.Radius;
+            return 32f;
+        }
+
         private static bool AreCollisionShapesOverlapping(CollisionShape2D shapeA, CollisionShape2D shapeB)
         {
             if (shapeA.Shape == null || shapeB.Shape == null)

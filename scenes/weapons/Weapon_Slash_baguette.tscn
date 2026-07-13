@@ -29,14 +29,13 @@ shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1hj56"]
-size = Vector2(1000, 400)
+size = Vector2(300, 70)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_p6fpp"]
 radius = 250.0
 
 [node name="WeaponSlashBaguette" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_p6fpp")
@@ -45,12 +44,14 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_nqlfu")
-position = Vector2(0, 50)
-scale = Vector2(15, 3)
+position = Vector2(0, 15)
+rotation = -0.057595864
+scale = Vector2(5, 1)
 texture = ExtResource("4_em7lt")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_waoek")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("6_p6fpp")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]

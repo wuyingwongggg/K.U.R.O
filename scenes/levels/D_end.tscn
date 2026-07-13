@@ -164,7 +164,6 @@ LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="LoadingElevator" type="Node2D" parent="."]
-visible = false
 position = Vector2(3970, 480)
 script = ExtResource("7_ywdm1")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
@@ -195,7 +194,6 @@ position = Vector2(2640.5, 333.5)
 BattleArenaPath = NodePath("../../BattleArena")
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
@@ -214,7 +212,7 @@ shape = SubResource("RectangleShape2D_bb3cy")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(2850, 1340)
+position = Vector2(2850, 1380)
 shape = SubResource("RectangleShape2D_tl38j")
 debug_color = Color(0, 0, 0, 0.19607843)
 

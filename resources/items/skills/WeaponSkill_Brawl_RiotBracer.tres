@@ -9,7 +9,7 @@ script = ExtResource("1_vwwsf")
 Trigger = 1
 EffectScene = ExtResource("2_i83jg")
 PropertyOverrides = Dictionary[String, Variant]({
-"KnockbackDistance": 25.0
+"KnockbackDistance": 1000.0
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
@@ -18,10 +18,11 @@ script = ExtResource("2_2o5f0")
 SkillId = "WeaponSkill_Brawl_RiotBracer"
 DisplayName = "镇暴护腕攻击"
 AnimationName = "Weapon_Brawl_RiotBracer"
-DamageMultiplier = 0.5
 ShowHitboxDebug = false
 Description = "每次攻击到敌人时击退该敌人0.25m"
 Effects = Array[ExtResource("1_vwwsf")]([SubResource("Resource_2o5f0")])
-WarmupDuration = 0.17
-ActiveDuration = 0.66
-RecoveryDuration = 0.17
+WarmupDuration = 0.2
+ActiveDuration = 0.4
+RecoveryDuration = 0.2
+WarmupAnimationSpeed = 0.5
+RecoveryAnimationSpeed = 0.5

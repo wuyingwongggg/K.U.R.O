@@ -31,14 +31,13 @@ shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3jtwq"]
-size = Vector2(700, 500)
+size = Vector2(200, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_odbs7"]
 size = Vector2(250, 100)
 
 [node name="WeaponBrawlDiscoBall" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_odxds")
@@ -47,12 +46,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rrc52")
-position = Vector2(-4, 120)
-scale = Vector2(10, 4)
+position = Vector2(0, 45)
+scale = Vector2(3, 1.2)
 texture = SubResource("CompressedTexture2D_m1u32")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_2q28g")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("5_v2efu")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]
@@ -63,7 +63,7 @@ texture = ExtResource("5_v2efu")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 z_index = 1
-position = Vector2(0, -20)
+position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_3jtwq")
 
 [node name="AttackArea" type="Area2D" parent="."]

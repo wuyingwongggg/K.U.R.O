@@ -121,7 +121,7 @@ script = ExtResource("20_0ugu3")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("17_s72su")
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 0.0
 script = ExtResource("20_0ugu3")

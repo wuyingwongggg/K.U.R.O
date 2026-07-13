@@ -7,7 +7,6 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_7ktpk"]
 [ext_resource type="Texture2D" uid="uid://b2ayj5n4oq8xr" path="res://assets/furnitures/hotel_scene2/PlantA.png" id="6_gef8d"]
 
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_x8v8j")
 shader_parameter/softness = 0.5
@@ -28,7 +27,7 @@ size = Vector2(200, 200)
 size = Vector2(183, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(48.2353, 30)
+size = Vector2(48.2353, 38.52941)
 
 [node name="FurniturePlantA" type="Node2D"]
 z_index = 2
@@ -43,11 +42,11 @@ MinDamageVelocity = 0.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 20.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-Destructible = true
-HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
-MaxHP = 20.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -82,9 +81,8 @@ position = Vector2(6.5, 200)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(3.999998, 31)
+position = Vector2(3.999998, 16.5)
 scale = Vector2(3.4, 3.4)
 shape = SubResource("RectangleShape2D_jyvv2")
