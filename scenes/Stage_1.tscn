@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://btqx0751t5bx4"]
+[gd_scene load_steps=12 format=3 uid="uid://btqx0751t5bx4"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_givaq"]
 [ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_tbvpk"]
@@ -9,12 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://byv7ty32mj11t" path="res://scenes/levels/A_end.tscn" id="6_tbvpk"]
 [ext_resource type="PackedScene" uid="uid://cl1ki1csawpip" path="res://scenes/levels/A1.tscn" id="7_31t1p"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="8_r3qlf"]
-[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="9_5qe7e"]
-[ext_resource type="Resource" path="res://resources/builds/buildcore/ThrowCore.tres" id="10_kfrm2"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="11_31t1p"]
-[ext_resource type="Resource" path="res://resources/builds/buildcore/WaiterCore.tres" id="11_jdbxi"]
 [ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/heroes/P2.tscn" id="12_31t1p"]
-[ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="12_lxkk6"]
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_givaq")
@@ -44,7 +40,6 @@ EasyRoomMin = 1
 EasyRoomMax = 1
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("8_r3qlf")]
-CorePool = Array[ExtResource("9_5qe7e")]([ExtResource("10_kfrm2"), ExtResource("11_jdbxi"), ExtResource("12_lxkk6")])
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true

@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
@@ -10,6 +11,8 @@ namespace Kuros.Fx
     /// </summary>
     public partial class LaserBeamPlayerWeapon : Node2D
     {
+        public GameActor? Attacker { get; set; }
+
         [ExportCategory("Beam")]
         [Export] public float MaxLength = 3000f;
         [Export] public Color BeamColor = new Color(1f, 0.85f, 0.2f, 1f);
@@ -150,7 +153,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = enemy is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             if (Damage > 0)
-                enemy.TakeDamage(Damage, GlobalPosition);
+                enemy.TakeDamage(Damage, GlobalPosition, Attacker, DamageSource.AreaEffect);
 
             if (!alreadyInvincible)
             {

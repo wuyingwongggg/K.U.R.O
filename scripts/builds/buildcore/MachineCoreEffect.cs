@@ -1,6 +1,7 @@
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Core.Events;
 
 namespace Kuros.Builds.BuildCore
 {
@@ -12,15 +13,18 @@ namespace Kuros.Builds.BuildCore
     public partial class MachineCoreEffect : ActorEffect
     {
         [ExportCategory("Heat")]
-        [Export(PropertyHint.Range, "0,200,1")] public float MaxHeat = 100f;
-        [Export(PropertyHint.Range, "0,50,0.5")] public float MoveHeatRate = 3f;
-        [Export(PropertyHint.Range, "0,50,0.5")] public float AttackHeatGain = 15f;
-        [Export(PropertyHint.Range, "0,20,0.5")] public float DecayRate = 2f;
+        [Export(PropertyHint.Range, "0,200,1")] public float MaxHeat = 100f; // 最大热量
+        [Export(PropertyHint.Range, "0,50,0.5")] public float MoveHeatRate = 3f;  // 移动时每秒热量累积速度（基础值，速度越快累积越快）
+        [Export] public bool EnableAttackHeatGain = false; // 攻击命中时增加的热量
+        [Export(PropertyHint.Range, "0,50,0.5")] public float AttackHeatGain = 3f;
+        [Export(PropertyHint.Range, "0,20,0.5")] public float DecayRate = 6f; // 每秒热量衰减速度（非移动时）
+        [Export(PropertyHint.Range, "0,10,0.1")] public float DecayDelay = 0.5f;  // 非移动时热量衰减前的延迟时间
 
         [ExportCategory("Release")]
-        [Export(PropertyHint.Range, "0,5,0.1")] public float BuffDuration = 3f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float DamagePerHeat = 0.01f;
+        [Export(PropertyHint.Range, "1,200,1")] public float HeatDrainRate = 33f;
         [Export(PropertyHint.Range, "0,10,0.1")] public float ReleaseCooldown = 1f;
+        [Export] public bool DisableHeatGainDuringBuff = true;
 
         /// <summary>当前热量 (0-MaxHeat)，HUD 绑定读取。</summary>
         public float Heat { get; private set; }
@@ -28,8 +32,9 @@ namespace Kuros.Builds.BuildCore
         public bool IsReleasing { get; private set; }
 
         private float _releaseCooldownRemaining;
-        private float _buffRemaining;
+        private float _consumedHeat;
         private float _originalAttackDamage;
+        private float _decayTimer;
         private bool _buffActive;
         private bool _wasMovingLastFrame;
 
@@ -38,8 +43,10 @@ namespace Kuros.Builds.BuildCore
             Heat = 0f;
             IsReleasing = false;
             _releaseCooldownRemaining = 0f;
-            _buffRemaining = 0f;
+            _consumedHeat = 0f;
             _buffActive = false;
+
+            DamageEventBus.Subscribe(OnDamageDealt);
         }
 
         protected override void OnTick(double delta)
@@ -55,26 +62,39 @@ namespace Kuros.Builds.BuildCore
                     IsReleasing = false;
             }
 
-            // Buff 计时
+            // Buff 期间以固定速度消耗热量，热量归零时 Buff 结束
             if (_buffActive)
             {
-                _buffRemaining -= dt;
-                if (_buffRemaining <= 0f)
+                Heat = Mathf.Max(Heat - HeatDrainRate * dt, 0f);
+
+                if (Heat <= 0f)
                 {
                     Actor.AttackDamage = _originalAttackDamage;
                     _buffActive = false;
                 }
             }
 
-            // 热量累积：移动
-            bool moving = Actor.Velocity.Length() > 10f;
+            // 热量累积：移动，速度越快积攒越快
+            // Buff 期间是否禁用热量获取
+            if (DisableHeatGainDuringBuff && _buffActive)
+            {
+                _wasMovingLastFrame = false;
+                return;
+            }
+
+            float speed = Actor.Velocity.Length();
+            bool moving = speed > 10f;
             if (moving)
             {
-                Heat = Mathf.Min(Heat + MoveHeatRate * dt, MaxHeat);
+                _decayTimer = DecayDelay;
+                float speedMultiplier = 1.0f + Mathf.Max(speed - 500f, 0f) * 0.002f;
+                Heat = Mathf.Min(Heat + MoveHeatRate * speedMultiplier * dt, MaxHeat);
             }
-            else if (Heat > 0f && !IsReleasing)
+            else if (Heat > 0f && !IsReleasing && !_buffActive)
             {
-                Heat = Mathf.Max(Heat - DecayRate * dt, 0f);
+                _decayTimer -= dt;
+                if (_decayTimer <= 0f)
+                    Heat = Mathf.Max(Heat - DecayRate * dt, 0f);
             }
             _wasMovingLastFrame = moving;
         }
@@ -100,26 +120,34 @@ namespace Kuros.Builds.BuildCore
         {
             if (Heat <= 0f) return;
 
-            float consumed = Heat;
-            Heat = 0f;
+            _consumedHeat = Heat;
             IsReleasing = true;
             _releaseCooldownRemaining = ReleaseCooldown;
 
-            // 应用临时增伤 Buff
+            // 应用临时增伤 Buff（基于释放瞬间的热量），持续到热量归零
             if (!_buffActive)
             {
                 _originalAttackDamage = Actor.AttackDamage;
                 _buffActive = true;
             }
-            Actor.AttackDamage = _originalAttackDamage + _originalAttackDamage * consumed * DamagePerHeat;
-            _buffRemaining = BuffDuration;
+            Actor.AttackDamage = _originalAttackDamage + _originalAttackDamage * _consumedHeat * DamagePerHeat;
         }
 
         public override void OnRemoved()
         {
+            DamageEventBus.Unsubscribe(OnDamageDealt);
             if (_buffActive && Actor != null)
                 Actor.AttackDamage = _originalAttackDamage;
             base.OnRemoved();
+        }
+
+        private void OnDamageDealt(GameActor attacker, GameActor target, int damage)
+        {
+            if (!EnableAttackHeatGain || IsReleasing) return;
+            if (attacker != Actor) return;
+            if (DisableHeatGainDuringBuff && _buffActive) return;
+            _decayTimer = DecayDelay;
+            Heat = Mathf.Min(Heat + AttackHeatGain, MaxHeat);
         }
     }
 }

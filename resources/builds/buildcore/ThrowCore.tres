@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3 uid="uid://duea1v557tmn0"]
 
-[ext_resource type="Script" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/builds/ThrowCore.tscn" id="2"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://u5y51338u6l5" path="res://scenes/builds/ThrowCore.tscn" id="2"]
 
 [resource]
 script = ExtResource("1")

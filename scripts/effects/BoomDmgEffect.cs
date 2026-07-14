@@ -12,6 +12,9 @@ namespace Kuros.Fx
     /// </summary>
     public partial class BoomDmgEffect : Node2D
     {
+        /// <summary>伤害来源，由实例化方在 AddChild 前设置。</summary>
+        public GameActor? Attacker { get; set; }
+
         [ExportCategory("Damage")]
         [Export(PropertyHint.Range, "0,9999,1")] public int Damage { get; set; } = 5;
         [Export(PropertyHint.Range, "0,2000,1")] public float Radius { get; set; } = 400f;
@@ -67,7 +70,7 @@ namespace Kuros.Fx
                 foreach (var node in GetTree().GetNodesInGroup("world_items"))
                 {
                     if (node is Node2D item && IsWithinRadius(item, origin))
-                        DamageDispatcher.DealDamage(item, Damage, origin, null, DamageSource.AreaEffect, TargetableFactions.WorldItem);
+                        DamageDispatcher.DealDamage(item, Damage, origin, Attacker, DamageSource.AreaEffect, TargetableFactions.WorldItem);
                 }
             }
         }
@@ -81,7 +84,7 @@ namespace Kuros.Fx
                 return;
 
             // 先造成伤害（对玩家同时设置 _pendingHitKnockback = true）
-            actor.TakeDamage(Damage, origin, null);
+            actor.TakeDamage(Damage, origin, Attacker);
 
             // 计算击退速度
             float speed = KnockbackSpeed > 0f
