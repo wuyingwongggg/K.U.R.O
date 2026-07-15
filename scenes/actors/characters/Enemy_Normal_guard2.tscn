@@ -1,10 +1,11 @@
-[gd_scene load_steps=29 format=3 uid="uid://djio6ojcqw8yf"]
+[gd_scene load_steps=30 format=3 uid="uid://djio6ojcqw8yf"]
 
 [ext_resource type="Script" uid="uid://5imf5agux4ch" path="res://scripts/actors/enemies/EnemyNormalGuard2.cs" id="1_wixbd"]
 [ext_resource type="Resource" uid="uid://2txgxwswls2l" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_d5sdg"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="2_gkl6r"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_d5sdg"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_kwxxm"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_e0def"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="5_hayra"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="6_04vki"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="7_ncmem"]
@@ -70,6 +71,8 @@ show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
 scale = Vector2(10, 5)
 texture = ExtResource("4_kwxxm")
+script = ExtResource("5_e0def")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -121,10 +124,17 @@ script = ExtResource("19_gkl6r")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("18_wixbd")
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 0.0
 script = ExtResource("19_gkl6r")
+
+[node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(18.659986, -285.75998)
+rotation = -1.5481071
+scale = Vector2(0.99999994, 0.99999994)
+bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)

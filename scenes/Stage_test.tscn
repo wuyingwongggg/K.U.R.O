@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=49 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_v4xrh"]
 [ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="4_7yh4q"]
 [ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_dhx6f"]
-[ext_resource type="Resource" path="res://resources/builds/buildcore/ThrowCore.tres" id="4_kwrre"]
+[ext_resource type="Resource" uid="uid://duea1v557tmn0" path="res://resources/builds/buildcore/ThrowCore.tres" id="4_kwrre"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_0ipan"]
 [ext_resource type="Resource" path="res://resources/builds/buildcore/WaiterCore.tres" id="5_e5fdm"]
 [ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="5_s6mo5"]
@@ -38,6 +38,7 @@
 [ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="31_dhx6f"]
 [ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="32_0ipan"]
 [ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="32_6eerp"]
+[ext_resource type="PackedScene" uid="uid://bpjv2iuy8x0hw" path="res://scenes/actors/characters/Enemy_D1_netAdmin.tscn" id="38_e5fdm"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -259,6 +260,9 @@ position = Vector2(386, 184)
 
 [node name="WeaponThrowEmojiBomb2" parent="World" instance=ExtResource("20_mkebo")]
 position = Vector2(536, -1351)
+
+[node name="Enemy_D1_netAdmin" parent="World" instance=ExtResource("38_e5fdm")]
+position = Vector2(1295, 234)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

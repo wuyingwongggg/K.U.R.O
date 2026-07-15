@@ -347,6 +347,8 @@ namespace Kuros.Actors.Heroes
                 if (entity is RigidBodyWorldItemEntity rigidEntity)
                     rigidEntity.IsDisposableCopy = isThrowWeapon;
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
+                if (entity is Node2D eNode)
+                    eNode.ZIndex = extracted.Item.ThrowZIndex;
             }
 
             if (extractedFromInventory)

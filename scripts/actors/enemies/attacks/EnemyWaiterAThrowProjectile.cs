@@ -1,5 +1,7 @@
 using System;
 using Godot;
+using Kuros.Core;
+using Kuros.Core.Effects;
 using Kuros.Effects;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -34,6 +36,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         /// <summary>落点指示器预制体（可选）。设置后会在目标位置提前显示落点警告。</summary>
         [Export] public PackedScene? LandingIndicatorPrefab = null;
+
+        public GameActor? Attacker { get; set; }
 
         private Vector2 _startPos;
         private Vector2 _targetPos;
@@ -112,9 +116,17 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 if (scene == null) continue;
                 var fx = scene.Instantiate<Node>();
+
+                // ActorEffect（如 EmojiBoomEffect）：通过 ApplyEffect 启动生命周期
+                if (fx is ActorEffect actorEffect && Attacker?.EffectController != null)
+                {
+                    if (actorEffect is IWorldSpawnable worldSpawnable)
+                        worldSpawnable.WorldSpawnPosition = GlobalPosition;
+                    Attacker.ApplyEffect(actorEffect);
+                    continue;
+                }
+
                 GetParent()?.AddChild(fx);
-                // 若根节点本身是 Node2D，直接设置位置；
-                // 否则（根节点为 Node）找第一个 Node2D 子节点来设置（如 SpikeAttackEffect）
                 if (fx is Node2D fx2d)
                 {
                     fx2d.GlobalPosition = GlobalPosition;

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
-	public partial class EnemyD1CorpDoneAAttackController : EnemyAttackController
+	public partial class EnemyD1NetAdminAttackController : EnemyAttackController
 	{
 		[Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
-		[Export] public string PinballAttackName { get; set; } = "PinballAttack";
+		[Export] public string MultiMeleeAttackName { get; set; } = "MultiSimpleMeleeAttack";
 		[Export] public string LockdownAttackName { get; set; } = "LockdownAttack";
 
 		/// <summary>连续使用相同攻击时每次额外降低的权重百分比。</summary>
