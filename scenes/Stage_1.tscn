@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://btqx0751t5bx4"]
+[gd_scene load_steps=12 format=3 uid="uid://btqx0751t5bx4"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_givaq"]
 [ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_tbvpk"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://cel0dl6h07it8" path="res://scenes/levels/A_begin.tscn" id="5_1htdl"]
 [ext_resource type="PackedScene" uid="uid://byv7ty32mj11t" path="res://scenes/levels/A_end.tscn" id="6_tbvpk"]
 [ext_resource type="PackedScene" uid="uid://cl1ki1csawpip" path="res://scenes/levels/A1.tscn" id="7_31t1p"]
+[ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="8_r3qlf"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="11_31t1p"]
 [ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/heroes/P2.tscn" id="12_31t1p"]
 
@@ -34,9 +35,11 @@ BattleSceneManagerPath = NodePath("..")
 script = ExtResource("4_l5arx")
 BeginScene = ExtResource("5_1htdl")
 EndScene = ExtResource("6_tbvpk")
-MiddleScenePool = Array[PackedScene]([ExtResource("7_31t1p")])
-MinMiddleRooms = 1
-MaxMiddleRooms = 1
+EasyMiddlePool = Array[PackedScene]([ExtResource("7_31t1p")])
+EasyRoomMin = 1
+EasyRoomMax = 1
+
+[node name="BuildSelectionManager" parent="." instance=ExtResource("8_r3qlf")]
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true

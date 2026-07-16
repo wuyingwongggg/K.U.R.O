@@ -36,14 +36,13 @@ shader_parameter/highlight_interval = 1.00000002375
 load_path = "res://.godot/imported/钻头.png-2a47c7fe5d274a9cfe49d5c8ed85d08a.ctex"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g0q5t"]
-size = Vector2(1200, 400)
+size = Vector2(420, 130)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
 size = Vector2(550, 25)
 
 [node name="WeaponStabDrill" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_0qove")
@@ -52,12 +51,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_g0q5t")
-position = Vector2(0, 100)
-scale = Vector2(16, 4)
+position = Vector2(20, 40)
+scale = Vector2(5, 1.2)
 texture = SubResource("CompressedTexture2D_ywkyd")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_ywkyd")
+scale = Vector2(0.33, 0.33)
 texture = SubResource("CompressedTexture2D_1l2vw")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]
@@ -67,10 +67,11 @@ texture = SubResource("CompressedTexture2D_ie112")
 [node name="CollisionArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
-position = Vector2(0, 20)
+position = Vector2(5, 8)
 shape = SubResource("RectangleShape2D_g0q5t")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("RectangleShape2D_t6geh")

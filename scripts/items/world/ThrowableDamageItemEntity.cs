@@ -66,6 +66,12 @@ namespace Kuros.Items.World
                 return false;
             }
 
+            // 确认投掷物与敌人 HitArea 重叠
+            var enemyHitArea = target.GetNodeOrNull<Area2D>("Sprite2D/HitAreaMover/HitArea")
+                            ?? target.GetNodeOrNull<Area2D>("Sprite2D/HitArea");
+            if (enemyHitArea != null && !enemyHitArea.OverlapsBody(this))
+                return false;
+
             float impactSpeed = Mathf.Max(Velocity.Length(), PendingVelocity.Length());
             if (impactSpeed < MinImpactSpeed)
             {

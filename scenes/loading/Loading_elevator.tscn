@@ -453,7 +453,7 @@ shape = SubResource("RectangleShape2D_1rckx")
 disabled = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(0, 610)
+position = Vector2(0, 650)
 shape = SubResource("RectangleShape2D_1e411")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="AirWall"]
@@ -461,7 +461,7 @@ position = Vector2(950, 0)
 shape = SubResource("RectangleShape2D_5rppg")
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(0, -38.5)
+position = Vector2(0, -38)
 shape = SubResource("RectangleShape2D_h28jp")
 
 [node name="ExitArea" type="Area2D" parent="."]

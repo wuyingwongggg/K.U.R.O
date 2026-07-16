@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=51 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="Script" uid="uid://12wblt72y8xt" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4ht1x"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://dew4wgl7w576m" path="res://scenes/actors/etc/BrawlAttackEffect.tscn" id="11_6hy0m"]
 [ext_resource type="Script" uid="uid://d1g4amacs13a3" path="res://scripts/actors/heroes/states/PlayerFrozenState.cs" id="11_t3prk"]
 [ext_resource type="Script" uid="uid://ba1kd5qgh17ag" path="res://scripts/actors/heroes/states/PlayerRunState.cs" id="12_4ht1x"]
+[ext_resource type="Script" uid="uid://cp6avq81jilxn" path="res://scripts/actors/heroes/attacks/PlayerBrawlRiotBracerAttack.cs" id="12_eaiww"]
 [ext_resource type="PackedScene" uid="uid://qhytc6rh50pe" path="res://scenes/actors/etc/SlashAttackEffect.tscn" id="12_f18x1"]
 [ext_resource type="PackedScene" uid="uid://cw3ds501wucw4" path="res://scenes/actors/etc/HitH.tscn" id="12_van21"]
 [ext_resource type="PackedScene" uid="uid://1dmiw35p7g47" path="res://scenes/actors/etc/StabAttackEffectA.tscn" id="13_7xilr"]
@@ -51,7 +52,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vj0fg"]
-radius = 120.0
+radius = 180.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vj0fg"]
 size = Vector2(400, 600)
@@ -73,14 +74,15 @@ script = ExtResource("1_om6pm")
 WalkAnimationSpeed = 2.0
 RunAnimationSpeed = 3.0
 AttackArea = NodePath("AttackArea")
+HitInvincibilityDuration = 0.2
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DebugOverlayColor = Color(0, 1, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 100.0
-MaxHealth = 120
+AttackDamage = 10.0
+MaxHealth = 1200
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -142,8 +144,8 @@ skeleton_data_res = ExtResource("4_o4xwm")
 bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
-preview_time = 0.6666667
+preview_frame = false
+preview_time = 0.44
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -221,7 +223,9 @@ HitEffectLocalOffset = Vector2(0, -350)
 RequiredItemId = "Weapon_Brawl_riotGlove"
 
 [node name="BrawlRiotBracer" type="Node" parent="StateMachine/Attack"]
-script = ExtResource("9_13pt2")
+script = ExtResource("12_eaiww")
+DashSpeed = 2500.0
+RecoverySpeed = 0.0
 AttackId = "riot_bracer_melee_attack"
 DisplayName = "Riot Bracer Melee Attack"
 Description = "镇暴护腕专属攻击模板示例"
@@ -376,6 +380,8 @@ Inventory = NodePath("../Inventory")
 [node name="ItemInteraction" type="Node" parent="." node_paths=PackedStringArray("InventoryComponent")]
 script = ExtResource("19_t3prk")
 InventoryComponent = NodePath("../Inventory")
+DropOffset = Vector2(50, -100)
+ThrowOffset = Vector2(0, -10)
 InteractionAreaPath = NodePath("../GrabArea")
 
 [node name="ItemAttachment" type="Node" parent="." node_paths=PackedStringArray("Inventory")]

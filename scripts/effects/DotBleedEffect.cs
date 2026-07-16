@@ -115,7 +115,7 @@ namespace Kuros.Effects
 
                 int bleedDamage = Mathf.Max(1,
                     Mathf.RoundToInt(capturedTarget.CurrentHealth * DamagePercentPerSecond / 100f * TickInterval));
-                capturedTarget.TakeDamage(bleedDamage, Vector2.Zero);
+                capturedTarget.TakeDamage(bleedDamage, Vector2.Zero, Actor, DamageSource.EffectBonus);
 
                 if (capturedTarget.IsDeathSequenceActive || capturedTarget.IsDead)
                     CleanupBleed(capturedTarget);
@@ -137,7 +137,7 @@ namespace Kuros.Effects
             // 立即造成首次伤害
             int initialDamage = Mathf.Max(1,
                 Mathf.RoundToInt(target.CurrentHealth * DamagePercentPerSecond / 100f * TickInterval));
-            target.TakeDamage(initialDamage, Vector2.Zero);
+            target.TakeDamage(initialDamage, Vector2.Zero, Actor, DamageSource.EffectBonus);
         }
 
         private void CleanupBleed(GameActor target)

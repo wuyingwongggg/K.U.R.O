@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://cofm45kotvgto"]
+[gd_scene load_steps=30 format=3 uid="uid://cofm45kotvgto"]
 
 [ext_resource type="Script" uid="uid://b8q1vhuc5h8vx" path="res://scripts/actors/enemies/EnemyB1Fat.cs" id="1"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_otg7e"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="5"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_2sv5o"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_ao33d"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://b4v5ybpg1m84k" path="res://animations/spine/Enemy_B1_fat01.tres" id="6_2sv5o"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
@@ -57,7 +58,6 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 30
 MaxHealth = 200
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -69,6 +69,8 @@ show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
 scale = Vector2(20, 10)
 texture = ExtResource("5_2sv5o")
+script = ExtResource("5_ao33d")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -121,9 +123,16 @@ script = ExtResource("20_2sv5o")
 skeleton_data_res = ExtResource("6_2sv5o")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = false
-preview_time = 0.0
+preview_frame = true
+preview_time = 1.17
 script = ExtResource("20_2sv5o")
+
+[node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(-32.206936, -721.34863)
+rotation = -1.5865043
+scale = Vector2(0.9999999, 0.9999998)
+bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)

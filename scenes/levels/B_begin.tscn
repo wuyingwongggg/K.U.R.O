@@ -364,10 +364,10 @@ position = Vector2(2475, -536)
 position = Vector2(2216, 345)
 
 [node name="FurnitureSofaA_fwd" parent="." instance=ExtResource("20_xf8xq")]
-position = Vector2(3153, -51)
+position = Vector2(3153, 350)
 
 [node name="FurnitureSofaA_rwd" parent="." instance=ExtResource("21_av3q5")]
-position = Vector2(1259, -54)
+position = Vector2(1259, 350)
 
 [node name="Enemy_Normal_guard2" parent="." instance=ExtResource("3_gvdxe")]
 position = Vector2(-3115, 321)

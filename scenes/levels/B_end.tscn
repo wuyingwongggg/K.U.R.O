@@ -65,6 +65,7 @@ agent_radius = 80.0
 y_sort_enabled = true
 
 [node name="AreaSize" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AreaSize"]
 z_index = 10
@@ -195,7 +196,7 @@ shape = SubResource("RectangleShape2D_qcu5f")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(2820, 1200)
+position = Vector2(2820, 1240)
 shape = SubResource("RectangleShape2D_rvxy7")
 debug_color = Color(0, 0, 0, 0.19607843)
 
@@ -243,10 +244,10 @@ position = Vector2(1244, -501)
 position = Vector2(1960, 961)
 
 [node name="FurnitureSofaA_fwd" parent="." instance=ExtResource("16_3a114")]
-position = Vector2(-148, -3)
+position = Vector2(-148, 350)
 
 [node name="FurnitureSofaA_rwd" parent="." instance=ExtResource("17_g4yxj")]
-position = Vector2(-1758, 6)
+position = Vector2(-1758, 350)
 
 [node name="FurnitureChairA" parent="." instance=ExtResource("18_ukwhi")]
 position = Vector2(1621, -235)

@@ -18,7 +18,6 @@ script = ExtResource("2_wr56q")
 SkillId = "WeaponSkill_Stab_Drill"
 DisplayName = "钻头攻击"
 AnimationName = "Weapon_Stab_Drill"
-CooldownSeconds = 3.0
 ShowHitboxDebug = false
 Description = "攻击到敌人时击退该敌人1m并使其速度减少30%持续1秒"
 Effects = Array[ExtResource("1_7jkjn")]([SubResource("Resource_a5flt")])

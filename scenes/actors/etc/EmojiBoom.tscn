@@ -30,9 +30,9 @@
 [ext_resource type="Texture2D" uid="uid://ch02xd1jd0mfd" path="res://assets/objects/emoji_boom/时间轴 1_0027.png" id="28_kj7sd"]
 [ext_resource type="Texture2D" uid="uid://cypm3kp87w6yx" path="res://assets/objects/emoji_boom/时间轴 1_0028.png" id="29_jdkfe"]
 [ext_resource type="Texture2D" uid="uid://c0pm3cnldrgcq" path="res://assets/objects/emoji_boom/时间轴 1_0029.png" id="30_dixqr"]
-[ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="31_script"]
-[ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="32_31mlr"]
-[ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="33_xrqcq"]
+[ext_resource type="Script" uid="uid://cmg8g6kgr8yqd" path="res://scripts/effects/EmojiBoomEffect.cs" id="31_script"]
+[ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="32_boom_b"]
+[ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="33_boom_dmg"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3r03d"]
 animations = [{
@@ -132,13 +132,17 @@ animations = [{
 "speed": 25.0
 }]
 
-[node name="EmojiBoom" type="AnimatedSprite2D"]
+[node name="EmojiBoom" type="Node2D"]
 z_index = 2
 z_as_relative = false
 y_sort_enabled = true
 scale = Vector2(0.33, 0.33)
+script = ExtResource("31_script")
+BoomBScene = ExtResource("32_boom_b")
+BoomDmgScene = ExtResource("33_boom_dmg")
+EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
+Duration = 1.3
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_3r03d")
 autoplay = "default"
-script = ExtResource("31_script")
-SpawnOnDestroyScenes = [ExtResource("32_31mlr"), ExtResource("33_xrqcq")]
-DestroyDelay = 1.3

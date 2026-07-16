@@ -36,14 +36,13 @@ shader_parameter/highlight_interval = 1.00000002375
 load_path = "res://.godot/imported/甩棍.png-cb967a69ead333a0884aefc694f60152.ctex"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o1fls"]
-size = Vector2(650, 300)
+size = Vector2(240, 60)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_djioy"]
 radius = 200.0
 
 [node name="WeaponSlashExpandBaton" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_hnhuv")
@@ -52,12 +51,14 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_nqlfu")
-position = Vector2(0, 28)
-scale = Vector2(12, 1.2)
+position = Vector2(0, 5)
+rotation = -0.017453292
+scale = Vector2(4, 0.5)
 texture = SubResource("CompressedTexture2D_mhf4g")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_waoek")
+scale = Vector2(0.33, 0.33)
 texture = SubResource("CompressedTexture2D_hnhuv")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]

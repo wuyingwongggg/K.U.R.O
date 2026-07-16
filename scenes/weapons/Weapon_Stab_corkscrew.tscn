@@ -31,14 +31,13 @@ shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g0q5t"]
-size = Vector2(600, 400)
+size = Vector2(210, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
 size = Vector2(350, 25)
 
 [node name="WeaponStabCorkscrew" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_q4fla")
@@ -47,12 +46,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_g0q5t")
-position = Vector2(0, 40)
-scale = Vector2(6, 2)
+position = Vector2(0, 8)
+scale = Vector2(3, 1)
 texture = SubResource("CompressedTexture2D_ywkyd")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_ywkyd")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("5_gccxh")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]
@@ -62,6 +62,7 @@ texture = ExtResource("5_gccxh")
 [node name="CollisionArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
+position = Vector2(15, -2.5)
 shape = SubResource("RectangleShape2D_g0q5t")
 
 [node name="AttackArea" type="Area2D" parent="."]

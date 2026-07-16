@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://8ce54l6083nt"]
+[gd_scene load_steps=41 format=3 uid="uid://8ce54l6083nt"]
 
 [ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="6_walk_state"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="7_attack_state"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="8_hit_state"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="8_r5hc0"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="9_frozen_state"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="10_cooldown_state"]
 [ext_resource type="Script" uid="uid://gmfkjmmrq05b" path="res://scripts/actors/enemies/attacks/EnemyC1WaiterBAttackController.cs" id="10_st2e3"]
@@ -97,6 +98,8 @@ show_behind_parent = true
 material = SubResource("ShaderMaterial_eqcia")
 scale = Vector2(10, 5)
 texture = ExtResource("3_evlou")
+script = ExtResource("8_r5hc0")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -150,9 +153,16 @@ script = ExtResource("5_muxhp")
 skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = false
-preview_time = 2.3667
+preview_frame = true
+preview_time = 2.14
 script = ExtResource("5_muxhp")
+
+[node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(15.984737, -503.61563)
+rotation = -1.6302497
+scale = Vector2(0.9999999, 0.9999998)
+bone_name = "bone3"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(0, -600)
@@ -187,13 +197,13 @@ shape = SubResource("CircleShape2D_uohhx")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
+scale = Vector2(0.9999998, 0.9999998)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 80)
 shape = SubResource("RectangleShape2D_eyt4q")
 
 [node name="DashStopArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashStopArea"]
 position = Vector2(400, 0)
@@ -208,7 +218,6 @@ position = Vector2(600, 0)
 shape = SubResource("RectangleShape2D_m8hjw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 shape = SubResource("CircleShape2D_st2e3")
 
 [node name="Node2D" type="Node2D" parent="."]
@@ -219,6 +228,9 @@ position = Vector2(-96.9697, -621.21216)
 
 [node name="Marker2D2" type="Marker2D" parent="Node2D"]
 position = Vector2(784.8485, -1021.2122)
+
+[node name="Marker2D3" type="Marker2D" parent="Node2D"]
+position = Vector2(-250, -2290)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("4_state_machine")
@@ -275,9 +287,11 @@ SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
 metadata/attack_weight = 40.0
 
-[node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("15_ultbeam")
 BeamDuration = 5.0
+MoveNodes = [NodePath("../../../../OutlineLayer"), NodePath("../../../../SpineSprite"), NodePath("../../../../Sprite2D/HitArea")]
+MoveOffsetPx = 800.0
 AttackName = "UltimateBeamAttack"
 WarmupDuration = 1.5
 ActiveDuration = 1.1
@@ -291,8 +305,8 @@ AllowMultipleAnimationHits = true
 GrantedImmunities = 383
 IgnoreEnemyCollisionDuringAttack = true
 EffectScene = ExtResource("15_evlou")
-EffectOffset = Vector2(-100, -750)
 SpawnTiming = 1
+SpawnMarkers = [NodePath("../../../../Node2D/Marker2D3")]
 metadata/attack_weight = 0.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

@@ -36,14 +36,13 @@ shader_parameter/highlight_interval = 1.00000002375
 load_path = "res://.godot/imported/闸门刀.png-62da3b15c6dbcdb7dc0259889e21b21e.ctex"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofv0e"]
-size = Vector2(1800, 400)
+size = Vector2(620, 60)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ofv0e"]
 radius = 360.0
 
 [node name="WeaponSlashBarrierGate" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_64hvb")
@@ -52,12 +51,14 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_nqlfu")
-position = Vector2(0, 70)
-scale = Vector2(30, 4)
+position = Vector2(0, 20)
+rotation = -0.04363323
+scale = Vector2(8, 1.2)
 texture = SubResource("CompressedTexture2D_waoek")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_waoek")
+scale = Vector2(0.33, 0.33)
 texture = SubResource("CompressedTexture2D_aybeu")
 region_rect = Rect2(0, 424, 1832, 177)
 
@@ -68,7 +69,7 @@ texture = SubResource("CompressedTexture2D_ofv0e")
 [node name="CollisionArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
-position = Vector2(0, 40)
+position = Vector2(0, 12)
 shape = SubResource("RectangleShape2D_ofv0e")
 
 [node name="AttackArea" type="Area2D" parent="."]

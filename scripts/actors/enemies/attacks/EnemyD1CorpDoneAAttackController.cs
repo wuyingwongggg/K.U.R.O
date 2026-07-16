@@ -14,6 +14,10 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "0,50,1")]
 		public int FatiguePercentPerUse = 10;
 
+		/// <summary>疲劳惩罚后的最小权重百分比（不低于原始权重的此比例）。</summary>
+		[Export(PropertyHint.Range, "1,100,1")]
+		public int MinWeightPercent = 10;
+
 		public string CurrentAttackName { get; private set; } = string.Empty;
 
 		private readonly Dictionary<string, float> _originalWeights = new();
@@ -50,7 +54,9 @@ namespace Kuros.Actors.Enemies.Attacks
 				// 连续使用相同攻击：疲劳累计
 				_consecutiveSameCount++;
 				int reduction = _consecutiveSameCount * FatiguePercentPerUse;
-				float newWeight = Mathf.Max(GetOriginalWeight(attack.Name) * (100 - reduction) / 100f, 0f);
+				float originalWeight = GetOriginalWeight(attack.Name);
+				float floor = originalWeight * MinWeightPercent / 100f;
+				float newWeight = Mathf.Max(originalWeight * (100 - reduction) / 100f, floor);
 				TrySetAttackWeight(attack.Name, newWeight);
 			}
 			else

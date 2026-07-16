@@ -74,6 +74,7 @@ namespace Kuros.Items
         [Export(PropertyHint.Range, "100,2000,50")] public float ThrowHorizontalDistance { get; set; } = 500f;   // 投掷物在水平方向的飞行距离（像素），速度由此和ThrowParabolicDuration决定
         [Export(PropertyHint.Range, "-1000,1000,1")] public float ThrowParabolicLandingYOffset { get; set; } = 300f;    // 投掷物落地点相对于目标点的垂直偏移
         [Export(PropertyHint.Range, "0.1,60,0.1")] public float ThrowWeaponCooldown { get; set; } = 2.0f;              // 投掷武器冷却时间（秒）：仅对 IsThrowWeapon=true 的投掷武器生效
+        [Export(PropertyHint.Range, "-10,10,1")] public int ThrowZIndex { get; set; } = 3;                              // 投掷物飞行途中的 z_index
         /// <summary>
         /// 是否为家具：可投掷且非投掷武器。自动推导，无需在 .tres 中手动设置。
         /// </summary>

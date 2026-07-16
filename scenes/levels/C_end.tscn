@@ -209,7 +209,7 @@ shape = SubResource("RectangleShape2D_bb3cy")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(2850, 1166)
+position = Vector2(2850, 1205)
 shape = SubResource("RectangleShape2D_tl38j")
 debug_color = Color(0, 0, 0, 0.19607843)
 

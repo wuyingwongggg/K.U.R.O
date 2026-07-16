@@ -708,6 +708,9 @@ namespace Kuros.Actors.Enemies.Attacks
                     if (node2D is Kuros.Fx.IFacingDirectional facing)
                         facing.FacingRight = Enemy.FacingRight;
 
+                    if (node2D is EnemyWaiterAThrowProjectile projectile)
+                        projectile.Attacker = Enemy;
+
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;
                 }

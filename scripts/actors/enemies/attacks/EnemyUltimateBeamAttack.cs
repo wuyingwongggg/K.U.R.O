@@ -14,13 +14,18 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>激光束在 Active 阶段持续的时长（秒）。</summary>
         [Export(PropertyHint.Range, "0,60,0.1")] public float BeamDuration = 3.0f;
 
-
         [Export(PropertyHint.Range, "0.1,10,0.1")] public float InterruptFrozenDuration = 2.0f;
+
+        [ExportCategory("Warmup Node Movement")]
+        [Export] public NodePath[] MoveNodes { get; set; } = System.Array.Empty<NodePath>();
+        [Export(PropertyHint.Range, "1,2000,1")] public float MoveOffsetPx = 100f;
+
         private float _beamTimer;
         private bool _isInBeamPhase;
-        private bool _beamFinalized = false;
+        private bool _beamFinalized;
         public bool IsBeamFinished => _beamFinalized;
-
+        private float[] _moveNodeOrigY = System.Array.Empty<float>();
+        private Tween?[] _moveTweens = System.Array.Empty<Tween?>();
 
         protected override void OnWarmupStarted()
         {
@@ -28,6 +33,13 @@ namespace Kuros.Actors.Enemies.Attacks
             _beamFinalized = false;
             _isInBeamPhase = false;
             SubscribeDamageInterrupt();
+            SnapshotAndMove(-MoveOffsetPx, WarmupDuration);
+        }
+
+        protected override void OnRecoveryStarted()
+        {
+            base.OnRecoveryStarted();
+            MoveToOriginal(RecoveryDuration);
         }
 
         protected override void OnAttackFinished()
@@ -52,6 +64,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (!IsRunning || Enemy == null) return;
             UnsubscribeDamageInterrupt();
+            MoveToOriginal(0.1f);
             var frozenState = Enemy.StateMachine?.GetNodeOrNull<EnemyFrozenState>("Frozen");
             if (frozenState != null)
                 frozenState.FrozenDuration = InterruptFrozenDuration;
@@ -61,29 +74,25 @@ namespace Kuros.Actors.Enemies.Attacks
         protected override void OnActivePhase()
         {
             base.OnActivePhase();
-            _beamTimer     = BeamDuration;
+            _beamTimer = BeamDuration;
             _isInBeamPhase = true;
             _beamFinalized = false;
         }
 
-        /// <summary>Active 阶段计时器耗尽后，只要光束计时器尚未归零就保持挂起。</summary>
         protected override bool ShouldHoldActivePhase() => _isInBeamPhase;
 
         public override void _PhysicsProcess(double delta)
         {
             if (!IsRunning || Enemy == null) return;
 
-            // 停止移动
             Enemy.Velocity = Vector2.Zero;
 
-            // 持续面向玩家
             if (Player != null)
             {
                 bool playerIsRight = Player.GlobalPosition.X >= Enemy.GlobalPosition.X;
                 Enemy.FlipFacing(playerIsRight);
             }
 
-            // 倒计时光束持续时间（仅在 Active 阶段挂起期间）
             if (_isInBeamPhase)
             {
                 _beamTimer -= (float)delta;
@@ -92,6 +101,48 @@ namespace Kuros.Actors.Enemies.Attacks
                     _isInBeamPhase = false;
                     _beamFinalized = true;
                 }
+            }
+        }
+
+        private void SnapshotAndMove(float offsetY, float duration)
+        {
+            if (MoveNodes == null || MoveNodes.Length == 0 || Enemy == null) return;
+
+            _moveNodeOrigY = new float[MoveNodes.Length];
+            _moveTweens = new Tween?[MoveNodes.Length];
+
+            for (int i = 0; i < MoveNodes.Length; i++)
+            {
+                var node = GetNodeOrNull<Node2D>(MoveNodes[i]);
+                if (node == null) continue;
+
+                _moveNodeOrigY[i] = node.Position.Y;
+
+                var tween = node.CreateTween();
+                tween.TweenProperty(node, "position:y", _moveNodeOrigY[i] + offsetY, duration)
+                     .SetEase(Tween.EaseType.InOut);
+                _moveTweens[i] = tween;
+            }
+        }
+
+        private void MoveToOriginal(float duration)
+        {
+            if (MoveNodes == null || MoveNodes.Length == 0 || Enemy == null) return;
+
+            for (int i = 0; i < MoveNodes.Length && i < _moveTweens.Length; i++)
+            {
+                _moveTweens[i]?.Kill();
+                _moveTweens[i] = null;
+
+                var node = GetNodeOrNull<Node2D>(MoveNodes[i]);
+                if (node == null) continue;
+
+                if (i >= _moveNodeOrigY.Length) continue;
+
+                var tween = node.CreateTween();
+                tween.TweenProperty(node, "position:y", _moveNodeOrigY[i], duration)
+                     .SetEase(Tween.EaseType.InOut);
+                _moveTweens[i] = tween;
             }
         }
     }

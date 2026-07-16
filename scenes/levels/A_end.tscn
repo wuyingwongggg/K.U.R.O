@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://byv7ty32mj11t"]
+[gd_scene load_steps=22 format=3 uid="uid://byv7ty32mj11t"]
 
 [ext_resource type="Texture2D" uid="uid://dt0nmdyntreh8" path="res://assets/environments/scene_1_home/房间3背景.png" id="1_rmv6t"]
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_t2ifw"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://cofpy8nif8mac" path="res://assets/environments/scene_1_home/房间3背景2.png" id="6_3uxt7"]
 [ext_resource type="PackedScene" uid="uid://cgy13s0ewifos" path="res://scenes/environments/taxiSign.tscn" id="6_4di3j"]
 [ext_resource type="PackedScene" uid="uid://fym6u3tp6lve" path="res://scenes/objects/Moving_A_end_taxi.tscn" id="9_gw5dp"]
+[ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="10_245md"]
 [ext_resource type="Script" uid="uid://1rvj0kv60p00" path="res://scripts/environments/TaxiController.cs" id="10_taxi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_245md"]
@@ -35,6 +36,9 @@ size = Vector2(3000, 400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xhmyt"]
 size = Vector2(400, 3000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5rggn"]
+size = Vector2(200, 3000)
 
 [node name="AEnd" type="Node2D"]
 y_sort_enabled = true
@@ -136,6 +140,14 @@ shape = SubResource("RectangleShape2D_gw5dp")
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
 position = Vector2(-317, -9)
 shape = SubResource("RectangleShape2D_xhmyt")
+
+[node name="CorePickupZone" type="Area2D" parent="."]
+collision_mask = 4
+script = ExtResource("10_245md")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CorePickupZone"]
+position = Vector2(-2200, 0)
+shape = SubResource("RectangleShape2D_5rggn")
 
 [node name="TaxiSign" parent="." instance=ExtResource("6_4di3j")]
 position = Vector2(-2002, -728)

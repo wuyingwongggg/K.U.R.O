@@ -27,6 +27,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [ExportCategory("Effects")]
 		[Export] public StringName CooldownStateName = "CooldownFrozen";
+		[Export(PropertyHint.Range, "1,10,1")] public int KnockbackOnHitIndex = 3;
 
 		private const float PostCooldownDuration = 0.1f;
 
@@ -44,6 +45,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		private bool _pendingCooldownExit;
 		private float _dashTimeElapsed;
 		private bool _canAttemptKickAttack;
+		private int _animationHitCount;
 		private float _snapshotTimer = 0f;
 		private bool _waitingForSnapshot = false;
 
@@ -122,6 +124,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			base.OnAttackStarted();
 			_isDashing = false;
 			_dashFinalized = false;
+			_animationHitCount = 0;
 			_postAttackCooldown = 0f;
 			_pendingCooldownExit = false;
 			_dashTimeElapsed = 0f;
@@ -422,10 +425,12 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptKickAttack) return;
 
+			_animationHitCount++;
+
 			ApplyAttackAreaMaskOverride(_kickArea);
 			DealDamage(_kickArea!);
 
-			if (IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
+			if (_animationHitCount == KnockbackOnHitIndex && IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{
 				ApplyKickKnockback(Enemy.PlayerTarget);
 			}

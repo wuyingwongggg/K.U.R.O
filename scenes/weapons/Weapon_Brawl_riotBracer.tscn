@@ -63,14 +63,13 @@ shader_parameter/rota_speed = 1.0000005225000006
 shader_parameter/curve_ci = 0.2000000095
 
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
-size = Vector2(700, 400)
+size = Vector2(180, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
-size = Vector2(250, 100)
+size = Vector2(250, 150)
 
 [node name="WeaponBrawlRiotBracer" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_82c6d")
@@ -79,12 +78,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rrc52")
-position = Vector2(-4, 120)
-scale = Vector2(10, 4)
+position = Vector2(0, 50)
+scale = Vector2(3, 1.2)
 texture = ExtResource("4_blqw4")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_2q28g")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("3_82c6d")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]

@@ -29,14 +29,13 @@ shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
 
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
-size = Vector2(700, 400)
+size = Vector2(200, 130)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
 size = Vector2(250, 100)
 
 [node name="WeaponBrawlRiotGlove" type="CharacterBody2D"]
 z_index = 1
-scale = Vector2(0.33, 0.33)
 collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_psgt0")
@@ -45,12 +44,13 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rrc52")
-position = Vector2(-4, 120)
-scale = Vector2(10, 4)
+position = Vector2(0, 60)
+scale = Vector2(3, 1.2)
 texture = ExtResource("4_dcbdm")
 
 [node name="Outline" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_2q28g")
+scale = Vector2(0.33, 0.33)
 texture = ExtResource("5_altab")
 
 [node name="Sprite2D" type="Sprite2D" parent="Outline"]
@@ -61,10 +61,10 @@ texture = ExtResource("5_altab")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 z_index = 1
+position = Vector2(0, 10)
 shape = SubResource("BodyShape_rr6vl")
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]

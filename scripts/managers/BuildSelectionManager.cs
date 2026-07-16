@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Builds.BuildCore;
 using Kuros.Core.Effects;
 using Kuros.Systems;
 using Kuros.UI;
@@ -184,6 +185,7 @@ namespace Kuros.Managers
 
                 // 实例化核心机制的 ActorEffect
                 var chosenCore = FindCoreById(chosenEffect.EffectId);
+                ActorEffect? createdCoreEffect = null;
                 if (chosenCore?.CoreEffectScene != null && _boundPlayer?.EffectController != null)
                 {
                     var coreEffect = chosenCore.CoreEffectScene.Instantiate<ActorEffect>();
@@ -191,11 +193,17 @@ namespace Kuros.Managers
                     coreEffect.DisplayName = chosenCore.DisplayName;
                     coreEffect.Duration = 0f;
                     _boundPlayer.ApplyEffect(coreEffect);
+                    createdCoreEffect = coreEffect;
                 }
 
-                // 通知 CoreHUD 切换显示
+                // 通知 CoreHUD 切换显示，并注入 MachineCoreEffect 引用
                 var coreHUD = GetTree().Root.FindChild("CoreHUD", recursive: true, owned: false) as UI.CoreHUD;
-                coreHUD?.ShowFor(chosenEffect.BuildClass);
+                if (coreHUD != null)
+                {
+                    coreHUD.ShowFor(chosenEffect.BuildClass);
+                    if (createdCoreEffect is MachineCoreEffect machineCore)
+                        coreHUD.BindMachineCore(machineCore);
+                }
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                     CheckAndTriggerSelection(_boundPlayer.Score);
@@ -346,6 +354,7 @@ namespace Kuros.Managers
             // 恢复核心效果
             if (!string.IsNullOrWhiteSpace(_selectedCoreId))
             {
+                ActorEffect? restoredCoreEffect = null;
                 var core = FindCoreById(_selectedCoreId);
                 if (core?.CoreEffectScene != null)
                 {
@@ -354,11 +363,17 @@ namespace Kuros.Managers
                     coreEffect.DisplayName = core.DisplayName;
                     coreEffect.Duration = 0f;
                     player.ApplyEffect(coreEffect);
+                    restoredCoreEffect = coreEffect;
                 }
 
-                // 恢复 CoreHUD
+                // 恢复 CoreHUD，注入 MachineCoreEffect 引用
                 var coreHUD = GetTree().Root.FindChild("CoreHUD", recursive: true, owned: false) as UI.CoreHUD;
-                coreHUD?.ShowFor(_playerCoreClass ?? "");
+                if (coreHUD != null)
+                {
+                    coreHUD.ShowFor(_playerCoreClass ?? "");
+                    if (restoredCoreEffect is MachineCoreEffect machineCore)
+                        coreHUD.BindMachineCore(machineCore);
+                }
             }
 
             // 恢复已选的构筑效果（重新实例化，按记录的栈层数）

@@ -1,6 +1,7 @@
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Fx;
 using System;
 
 namespace Kuros.Effects
@@ -211,6 +212,9 @@ namespace Kuros.Effects
 
             var laser = LaserEffect.Instantiate<Node2D>();
             if (laser == null) return;
+
+            if (laser is LaserBeamPlayerWeapon weaponLaser)
+                weaponLaser.Attacker = Actor;
 
             GetTree()?.CurrentScene?.AddChild(laser);
             laser.GlobalPosition = _laserSpawnPoint.GlobalPosition;

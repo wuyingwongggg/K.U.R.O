@@ -16,6 +16,8 @@ namespace Kuros.Fx
     /// </summary>
     public partial class LaserBeamUltimate : Node2D
     {
+        public GameActor? Attacker { get; set; }
+
         // ── 导出参数 ──────────────────────────────────────────────
 
         [ExportCategory("Movement")]
@@ -179,7 +181,7 @@ namespace Kuros.Fx
 
             bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
-            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, null, TargetableFactions, AllowSelfDamage);
+            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, Attacker, TargetableFactions, AllowSelfDamage);
 
             if (!alreadyInvincible)
             {

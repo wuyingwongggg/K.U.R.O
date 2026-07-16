@@ -277,10 +277,10 @@ namespace Kuros.Items.World
 			}
 			if (_hitboxArea != null)
 			{
-				var hitboxEntered = new Callable(this, MethodName.OnHitboxBodyEntered);
-				if (_hitboxArea.IsConnected(Area2D.SignalName.BodyEntered, hitboxEntered))
+				var hitboxEntered = new Callable(this, MethodName.OnHitboxAreaEntered);
+				if (_hitboxArea.IsConnected(Area2D.SignalName.AreaEntered, hitboxEntered))
 				{
-					_hitboxArea.BodyEntered -= OnHitboxBodyEntered;
+					_hitboxArea.AreaEntered -= OnHitboxAreaEntered;
 				}
 			}
 		}
@@ -1019,42 +1019,51 @@ namespace Kuros.Items.World
 				return;
 			}
 
-			// 设置 Hitbox 的碰撞层和遮罩，确保可以检测到敌人（collision_layer = 2）
-			_hitboxArea.CollisionLayer = 0; // Hitbox 不占用碰撞层
-			_hitboxArea.CollisionMask = 1u << 1; // 检测第2层（敌人层）
+			// 设置 Hitbox 检测敌人的 HitArea（Area2D，默认 layer 1）
+			_hitboxArea.CollisionLayer = 0;
+			_hitboxArea.CollisionMask = 1u << 0;
 			_hitboxArea.Monitoring = true;
 			_hitboxArea.Monitorable = false;
 
-			_hitboxArea.BodyEntered += OnHitboxBodyEntered;
+			_hitboxArea.AreaEntered += OnHitboxAreaEntered;
 		}
 
 		/// <summary>
 		/// 当 Hitbox Area2D 检测到碰撞时调用（用于伤害检测，更可靠）
 		/// </summary>
-		private void OnHitboxBodyEntered(Node2D body)
+		private void OnHitboxAreaEntered(Area2D area)
 		{
-			// 只在已激活伤害检测时处理
 			if (!_impactArmed)
-			{
 				return;
-			}
 
-			// 检查碰撞的是否是 GameActor（敌人或NPC）
-			if (body is GameActor actor)
+			if (!string.Equals(area.Name, "HitArea", StringComparison.OrdinalIgnoreCase))
+				return;
+
+			var actor = ResolveActorFromArea(area);
+			if (actor == null || actor == LastDroppedBy)
+				return;
+
+			if (_hitActors.Contains(actor))
+				return;
+
+			if (_rigidBody != null)
 			{
-				if (actor == LastDroppedBy)
-					return;
-
-				if (_hitActors.Contains(actor))
-					return;
-
-				if (_rigidBody != null)
-				{
-					var velocity = _rigidBody.LinearVelocity;
-					if (velocity.Length() >= MinDamageVelocity)
-						TryDealImpactDamage(actor, velocity);
-				}
+				var velocity = _rigidBody.LinearVelocity;
+				if (velocity.Length() >= MinDamageVelocity)
+					TryDealImpactDamage(actor, velocity);
 			}
+		}
+
+		private static GameActor? ResolveActorFromArea(Area2D area)
+		{
+			Node? current = area;
+			while (current != null)
+			{
+				if (current is GameActor actor)
+					return actor;
+				current = current.GetParent();
+			}
+			return null;
 		}
 
 		private void OnBodyEntered(Node2D body)
@@ -1096,27 +1105,29 @@ namespace Kuros.Items.World
 		/// </summary>
 		private void OnRigidBodyEntered(Node body)
 		{
-			// 只在已激活伤害检测时处理
 			if (!_impactArmed)
-			{
 				return;
-			}
 
-			// 检查碰撞的是否是 GameActor（敌人或NPC）
-			if (body is GameActor actor)
+			if (body is not GameActor actor)
+				return;
+
+			if (actor == LastDroppedBy)
+				return;
+
+			if (_hitActors.Contains(actor))
+				return;
+
+			// 家具投掷路径：仍需确认投掷物与敌人 HitArea 重叠
+			var enemyHitArea = actor.GetNodeOrNull<Area2D>("Sprite2D/HitAreaMover/HitArea")
+			                    ?? actor.GetNodeOrNull<Area2D>("Sprite2D/HitArea");
+			if (enemyHitArea != null && _hitboxArea != null && !_hitboxArea.OverlapsArea(enemyHitArea))
+				return;
+
+			if (_rigidBody != null)
 			{
-				if (actor == LastDroppedBy)
-					return;
-
-				if (_hitActors.Contains(actor))
-					return;
-
-				if (_rigidBody != null)
-				{
-					var velocity = _rigidBody.LinearVelocity;
-					if (velocity.Length() >= MinDamageVelocity)
-						TryDealImpactDamage(actor, velocity);
-				}
+				var velocity = _rigidBody.LinearVelocity;
+				if (velocity.Length() >= MinDamageVelocity)
+					TryDealImpactDamage(actor, velocity);
 			}
 		}
 
@@ -1864,34 +1875,25 @@ namespace Kuros.Items.World
 
 				try
 				{
-					// 通用方式实例化，兼容 Node2D 和 ActorEffect
+					// 通用方式实例化，ActorEffect 优先（如 EmojiBoomEffect）
 					var node = entry.EffectScene.Instantiate();
 
-					if (node is Node2D node2D)
+					if (node is Kuros.Core.Effects.ActorEffect actorEffect)
 					{
-						// 视觉效果：在世界坐标生成，使用 RigidBody 的实际落点位置
-						GetParent()?.AddChild(node2D);
-						node2D.GlobalPosition = spawnPos;
-					}
-					else if (node is Kuros.Core.Effects.ActorEffect actorEffect)
-					{
-						// 使用 ItemEffectEntry 的方式来应用属性覆盖
 						entry.ApplyOverrides(actorEffect);
 
-						// 若效果支持落点定位，传入世界坐标
 						if (actorEffect is Kuros.Core.Effects.IWorldSpawnable worldSpawnable)
-						{
 							worldSpawnable.WorldSpawnPosition = spawnPos;
-						}
 
 						if (LastDroppedBy?.EffectController != null)
-						{
 							LastDroppedBy.ApplyEffect(actorEffect);
-						}
 						else
-						{
 							actorEffect.QueueFree();
-						}
+					}
+					else if (node is Node2D node2D)
+					{
+						GetParent()?.AddChild(node2D);
+						node2D.GlobalPosition = spawnPos;
 					}
 					else
 					{

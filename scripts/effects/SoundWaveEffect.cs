@@ -128,7 +128,7 @@ namespace Kuros.Effects
                         continue;
 
                     if (Damage > 0)
-                        enemy.TakeDamage(Damage, _coneOrigin);
+                        enemy.TakeDamage(Damage, _coneOrigin, Actor, DamageSource.AreaEffect);
                 }
             }
 

@@ -195,10 +195,10 @@ position = Vector2(-2, -300)
 position = Vector2(-2, 900)
 
 [node name="FurnitureSofaA_rwd" parent="." instance=ExtResource("10_gxs4n")]
-position = Vector2(298, -30)
+position = Vector2(300, 350)
 
 [node name="FurnitureSofaA_fwd" parent="." instance=ExtResource("11_au6lw")]
-position = Vector2(-302, -43)
+position = Vector2(-300, 350)
 
 [node name="FurnitureTableRoundB" parent="." instance=ExtResource("12_rm5pt")]
 position = Vector2(-1194, 350)
