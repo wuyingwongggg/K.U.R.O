@@ -40,6 +40,7 @@ namespace Kuros.Effects
             _area.CollisionMask = EnemiesLayerMask;
             _area.Monitoring = true;
             _area.BodyEntered += OnBodyEntered;
+            _area.BodyExited += OnBodyExited;
 
             // 等物理帧同步后扫描已在范围内的敌人
             CallDeferred(MethodName.InitialScan);
@@ -85,6 +86,22 @@ namespace Kuros.Effects
                 StunEnemy(enemy);
         }
 
+        private void OnBodyExited(Node2D body)
+        {
+            if (_cleaned) return;
+            if (body is GameActor enemy)
+                UnstunEnemy(enemy);
+        }
+
+        private void UnstunEnemy(GameActor enemy)
+        {
+            if (_cleaned) return;
+            if (!_stunnedEnemies.Contains(enemy)) return;
+            _stunnedEnemies.Remove(enemy);
+            enemy.RemoveEffect($"{_idPrefix}_{enemy.GetInstanceId()}");
+            enemy.FrozenStateRemainingTime = 0f;
+        }
+
         private void StunEnemy(GameActor enemy)
         {
             if (_cleaned) return;
@@ -119,7 +136,10 @@ namespace Kuros.Effects
             _cleaned = true;
 
             if (_area != null && IsInstanceValid(_area))
+            {
                 _area.BodyEntered -= OnBodyEntered;
+                _area.BodyExited -= OnBodyExited;
+            }
 
             foreach (var enemy in _stunnedEnemies)
             {

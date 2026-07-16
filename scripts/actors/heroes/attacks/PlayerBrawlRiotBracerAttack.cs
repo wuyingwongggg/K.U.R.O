@@ -62,8 +62,8 @@ namespace Kuros.Actors.Heroes.Attacks
                 {
                     _hasHitTarget = true;
                     _isDashing = false;
-                    _isSliding = RecoverySpeed > 0f;
-                    Player.Velocity = _isSliding ? _dashDirection * RecoverySpeed : Vector2.Zero;
+                    _isSliding = false;
+                    Player.Velocity = Vector2.Zero;
                     return;
                 }
 

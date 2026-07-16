@@ -490,6 +490,7 @@ EnableEditorPreview = true
 PreviewSkill = ExtResource("26_hitbox_preview_skill")
 
 [node name="EscapeHud" parent="." instance=ExtResource("24_tdm7a")]
+visible = false
 offset_top = -1737.4999
 offset_bottom = -1737.4999
 scale = Vector2(2.205, 2.205)

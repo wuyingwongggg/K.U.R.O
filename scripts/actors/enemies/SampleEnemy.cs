@@ -255,6 +255,13 @@ public partial class SampleEnemy : GameActor
 		}
 	}
 
+	protected virtual float GetFrozenRemainingTime()
+	{
+		if (StateMachine?.CurrentState is EnemyFrozenState frozenState)
+			return frozenState.GetRemainingTime();
+		return 0f;
+	}
+
 	private void UpdateDebugOverlayText()
 	{
 		string stateName = StateMachine?.CurrentState?.Name ?? "None";
@@ -263,10 +270,11 @@ public partial class SampleEnemy : GameActor
 		string cooldownInfo = "";
 
 		// 如果在Frozen状态，显示倒计时
-		if (stateName == "Frozen" && StateMachine?.CurrentState is EnemyFrozenState frozenState)
+		if (stateName == "Frozen")
 		{
-			float remainingTime = frozenState.GetRemainingTime();
-			frozenInfo = $" | Frozen: {remainingTime:F2}s";
+			float remainingTime = GetFrozenRemainingTime();
+			if (remainingTime > 0f)
+				frozenInfo = $" | Frozen: {remainingTime:F2}s";
 		}
 
 		// 如果在Attack状态，显示当前攻击模式

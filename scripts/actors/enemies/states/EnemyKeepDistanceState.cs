@@ -5,6 +5,8 @@ namespace Kuros.Actors.Enemies.States
 {
 	public partial class EnemyKeepDistanceState : EnemyState
 	{
+		[Export] public bool FlipFacing = true;
+
 		[ExportCategory("Obstacle Avoidance")]
 		[Export(PropertyHint.Range, "10,500,10")]
 		public float RaycastDistance = 100f;
@@ -68,7 +70,7 @@ namespace Kuros.Actors.Enemies.States
 
 			// 始终背对玩家，避免墙角速度突变导致翻转抽搐
 			Vector2 toPlayer = Player.GlobalPosition - Enemy.GlobalPosition;
-			if (Mathf.Abs(toPlayer.X) > 0.1f)
+			if (FlipFacing && Mathf.Abs(toPlayer.X) > 0.1f)
 				Enemy.FlipFacing(toPlayer.X < 0);
 
 			Vector2 preferredDirection = toPlayer.LengthSquared() > 0.01f

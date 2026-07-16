@@ -262,7 +262,7 @@ position = Vector2(386, 184)
 position = Vector2(536, -1351)
 
 [node name="Enemy_D1_netAdmin" parent="World" instance=ExtResource("38_e5fdm")]
-position = Vector2(1295, 234)
+position = Vector2(1006, 301)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10
