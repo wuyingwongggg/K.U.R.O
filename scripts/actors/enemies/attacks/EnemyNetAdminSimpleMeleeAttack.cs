@@ -66,7 +66,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 distance,
                 Mathf.Max(KnockbackDuration, 0.01f),
                 KnockbackSpeed,
-                Enemy.FacingRight ? Vector2.Right : Vector2.Left);
+                Enemy.FacingRight ? Vector2.Right : Vector2.Left,
+                area);
         }
 
         private Area2D? ResolveArea(NodePath path)

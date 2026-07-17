@@ -51,6 +51,7 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
         [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed = 0f;
+        [Export] public bool KnockbackFromHitPosition = false;
 
         [ExportCategory("Animation Sync")]
         [Export] public bool RequireAnimationHitTrigger = false;
@@ -74,9 +75,7 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "1,32,1")] public int WorldItemCollisionLayer = 1;
 
         [ExportCategory("Effect")]
-        [Export] public PackedScene? EffectScene = null;
-        /// <summary>额外特效场景，与 EffectScene 同时生成，共享相同的 SpawnMarkers/EffectOffset/IFacingDirectional 配置。</summary>
-        [Export] public Godot.Collections.Array<PackedScene> AdditionalEffects = new();
+        [Export] public Godot.Collections.Array<AttackEffectEntry> Effects { get; set; } = new();
         [Export] public Vector2 EffectOffset = Vector2.Zero;
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
         /// <summary>
@@ -84,6 +83,7 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 不为空时按数组顺序依次使用 Marker2D.GlobalPosition + EffectOffset，否则用敌人原点。
         /// </summary>
         [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
+        [Export] public bool FlipEffectWithFacing = false;
 
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
@@ -592,7 +592,7 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, float configuredSpeed, Vector2 fallbackDirection)
+        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, float configuredSpeed, Vector2 fallbackDirection, Area2D? attackArea = null)
         {
             if (Enemy == null || player == null)
             {
@@ -623,7 +623,20 @@ namespace Kuros.Actors.Enemies.Attacks
                 return false;
             }
 
-            Vector2 direction = player.GlobalPosition - Enemy.GlobalPosition;
+            Vector2 direction;
+            if (KnockbackFromHitPosition)
+            {
+                var area = attackArea ?? AttackArea;
+                var hitArea = player.HitArea;
+                Vector2 attackPos = GetShapeCenter(area) ?? area?.GlobalPosition ?? Enemy.GlobalPosition;
+                Vector2 hitPos = GetShapeCenter(hitArea) ?? hitArea?.GlobalPosition ?? player.GlobalPosition;
+                direction = hitPos - attackPos;
+            }
+            else
+            {
+                direction = player.GlobalPosition - Enemy.GlobalPosition;
+            }
+
             if (direction == Vector2.Zero)
             {
                 direction = fallbackDirection != Vector2.Zero
@@ -635,6 +648,13 @@ namespace Kuros.Actors.Enemies.Attacks
             player.Velocity = knockbackVelocity;
             ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);
             return true;
+        }
+
+        private static Vector2? GetShapeCenter(Area2D? area)
+        {
+            if (area == null) return null;
+            var shape = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            return shape?.GlobalPosition;
         }
 
         protected static void ApplyFrozenExternalDisplacement(SamplePlayer player, Vector2 velocity, float duration)
@@ -662,18 +682,20 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (Enemy == null) return;
 
-            SpawnSingleEffect(EffectScene);
-            foreach (var scene in AdditionalEffects)
-                SpawnSingleEffect(scene);
+            foreach (var entry in Effects)
+                SpawnSingleEffect(entry.Scene, entry);
         }
 
-        private void SpawnSingleEffect(PackedScene? scene)
+        private void SpawnSingleEffect(PackedScene? scene, AttackEffectEntry? entry = null)
         {
             if (scene == null) return;
 
             try
             {
                 var effect = scene.Instantiate();
+
+                if (entry != null)
+                    entry.ApplyOverrides(effect);
 
                 Vector2 adjustedOffset = EffectOffset;
                 if (!Enemy!.FacingRight && EffectOffset.X != 0)
@@ -708,6 +730,9 @@ namespace Kuros.Actors.Enemies.Attacks
                     if (node2D is Kuros.Fx.IFacingDirectional facing)
                         facing.FacingRight = Enemy.FacingRight;
 
+                    if (FlipEffectWithFacing && !Enemy.FacingRight)
+                        node2D.Scale = new Vector2(-node2D.Scale.X, node2D.Scale.Y);
+
                     if (node2D is EnemyWaiterAThrowProjectile projectile)
                         projectile.Attacker = Enemy;
 
@@ -731,5 +756,6 @@ namespace Kuros.Actors.Enemies.Attacks
                 GD.PushWarning($"[{AttackName}] 无法生成特效: {ex.Message}");
             }
         }
+
     }
 }

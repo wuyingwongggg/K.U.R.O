@@ -233,6 +233,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 metadata/attack_weight = 40.0
 

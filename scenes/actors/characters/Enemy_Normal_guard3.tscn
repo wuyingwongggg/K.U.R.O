@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://bj81vpm6lg1b8"]
+[gd_scene load_steps=38 format=3 uid="uid://bj81vpm6lg1b8"]
 
 [ext_resource type="Script" uid="uid://bjut5b8tdxsx2" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
 [ext_resource type="Resource" uid="uid://2txgxwswls2l" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_e1554"]
@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://c41bp3hlh4ix7" path="res://resources/effects/EnemyGuard3ThrowEffect.tscn" id="13_10g4w"]
 [ext_resource type="Script" uid="uid://bymxhmkwlyl21" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3MeleeAttack.cs" id="14_10g4w"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_e03sy"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_06rhn"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_m8cja"]
 [ext_resource type="PackedScene" uid="uid://cfm1idhycevph" path="res://scenes/actors/etc/BulletFire.tscn" id="15_u8m7i"]
 [ext_resource type="PackedScene" uid="uid://c1c74ekxu24m1" path="res://shaders/enemy_bullet.tscn" id="15_ulog8"]
@@ -54,6 +55,16 @@ size = Vector2(300, 600)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_3kv8y"]
+script = ExtResource("15_06rhn")
+Scene = ExtResource("13_10g4w")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_00bye"]
+script = ExtResource("15_06rhn")
+Scene = ExtResource("15_ulog8")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_Normal_guard3" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -224,7 +235,7 @@ RecoveryDuration = 0.33
 DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
-EffectScene = ExtResource("13_10g4w")
+Effects = Array[ExtResource("15_06rhn")]([SubResource("Resource_3kv8y")])
 EffectOffset = Vector2(0, -200)
 SpawnTiming = 1
 metadata/attack_weight = 60.0
@@ -240,7 +251,7 @@ DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
 GrantedImmunities = 24
-EffectScene = ExtResource("15_ulog8")
+Effects = Array[ExtResource("15_06rhn")]([SubResource("Resource_00bye")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0

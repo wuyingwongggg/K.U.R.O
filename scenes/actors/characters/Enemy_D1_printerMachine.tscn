@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://cpcvmvf2n5ahe"]
+[gd_scene load_steps=36 format=3 uid="uid://cpcvmvf2n5ahe"]
 
 [ext_resource type="Script" uid="uid://c27ux0mic6wyu" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://6waciqsaulrs" path="res://scripts/actors/enemies/attacks/EnemyD1PrinterMachineAttackController.cs" id="12_attack_ctrl"]
 [ext_resource type="PackedScene" uid="uid://ciwdkf08qw7ao" path="res://resources/effects/EnemyPrinterMachineMissile01AttackEffect.tscn" id="13_6yk7q"]
 [ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="13_throw"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_sm6sb"]
 [ext_resource type="PackedScene" uid="uid://b0s34oo0gj8op" path="res://shaders/enemy_paperBullet.tscn" id="15_6yk7q"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="15_melee"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_hit"]
@@ -55,6 +56,16 @@ size = Vector2(800, 800)
 [sub_resource type="CircleShape2D" id="CircleShape2D_collision"]
 radius = 300.0
 
+[sub_resource type="Resource" id="Resource_k1kh3"]
+script = ExtResource("14_sm6sb")
+Scene = ExtResource("13_6yk7q")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_v1b7h"]
+script = ExtResource("14_sm6sb")
+Scene = ExtResource("15_6yk7q")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
 [node name="Enemy_D1_printerMachine" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
 y_sort_enabled = true
@@ -89,7 +100,7 @@ show_behind_parent = true
 [node name="OutlineSpineSprite_Left" type="SpineSprite" parent="OutlineLayer"]
 modulate = Color(0.02, 0.02, 0.02, 0.85)
 show_behind_parent = true
-position = Vector2(-20, 0)
+position = Vector2(-5, 0)
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
@@ -100,7 +111,7 @@ script = ExtResource("7_spine_ctrl")
 [node name="OutlineSpineSprite_Right" type="SpineSprite" parent="OutlineLayer"]
 modulate = Color(0.02, 0.02, 0.02, 0.85)
 show_behind_parent = true
-position = Vector2(20, 0)
+position = Vector2(5, 0)
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
@@ -111,7 +122,7 @@ script = ExtResource("7_spine_ctrl")
 [node name="OutlineSpineSprite_Up" type="SpineSprite" parent="OutlineLayer"]
 modulate = Color(0.02, 0.02, 0.02, 0.85)
 show_behind_parent = true
-position = Vector2(0, -20)
+position = Vector2(0, -5)
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
@@ -122,7 +133,7 @@ script = ExtResource("7_spine_ctrl")
 [node name="OutlineSpineSprite_Down" type="SpineSprite" parent="OutlineLayer"]
 modulate = Color(0.02, 0.02, 0.02, 0.85)
 show_behind_parent = true
-position = Vector2(0, 20)
+position = Vector2(0, 5)
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
@@ -232,7 +243,7 @@ CooldownDurationMultiplier = 2.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-EffectScene = ExtResource("13_6yk7q")
+Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_k1kh3")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3"), NodePath("../../../../Node2D/Marker2D4")]
 metadata/attack_weight = 60.0
@@ -250,7 +261,7 @@ KnockbackSpeed = 2000.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
-EffectScene = ExtResource("15_6yk7q")
+Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_v1b7h")])
 EffectOffset = Vector2(400, -400)
 SpawnTiming = 1
 metadata/attack_weight = 40.0

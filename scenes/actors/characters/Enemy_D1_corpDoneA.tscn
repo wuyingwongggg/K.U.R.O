@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://bak7fmcnkgnjm"]
+[gd_scene load_steps=35 format=3 uid="uid://bak7fmcnkgnjm"]
 
 [ext_resource type="Script" uid="uid://bb00p1iq1pgyl" path="res://scripts/actors/enemies/EnemyD1CorpDoneA.cs" id="1_hglex"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_h8ewy"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://b73y4fylkvq5o" path="res://resources/effects/CubeData.tscn" id="13_4k14f"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="13_bcq2h"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_0em3l"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_xtsxx"]
 [ext_resource type="PackedScene" uid="uid://c6c3r3w6owctg" path="res://resources/effects/LockdownWallEffect.tscn" id="15_4k14f"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_cbamd"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="16_ox0f7"]
@@ -47,6 +48,16 @@ size = Vector2(800, 1000)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_ba0ub"]
+script = ExtResource("14_xtsxx")
+Scene = ExtResource("13_4k14f")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_xtsxx"]
+script = ExtResource("14_xtsxx")
+Scene = ExtResource("15_4k14f")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_D1_corpDoneA" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -124,7 +135,7 @@ script = ExtResource("6_jn4m8")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("5_scapk")
 preview_skin = "Default"
-preview_animation = "-- Empty --"
+preview_animation = "attack"
 preview_frame = true
 preview_time = 0.0
 script = ExtResource("6_jn4m8")
@@ -211,7 +222,6 @@ DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 PinballAreaPath = NodePath("../../../../Sprite2D/PinballAttackArea")
 PinballMinSpeed = 50.0
 SpeedDecayPerSecond = 600.0
-PinballDuration = 2.0
 AttackName = "PinballAttack"
 WarmupDuration = 0.5
 ActiveDuration = 2.2
@@ -234,7 +244,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
-EffectScene = ExtResource("13_4k14f")
+Effects = Array[ExtResource("14_xtsxx")]([SubResource("Resource_ba0ub")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0
@@ -249,7 +259,7 @@ RecoveryDuration = 0.8
 CooldownDurationMultiplier = 20.0
 DamageMultiplier = 0.0
 GrantedImmunities = 24
-EffectScene = ExtResource("15_4k14f")
+Effects = Array[ExtResource("14_xtsxx")]([SubResource("Resource_xtsxx")])
 metadata/attack_weight = 30.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

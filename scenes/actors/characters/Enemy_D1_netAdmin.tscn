@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://bpjv2iuy8x0hw"]
+[gd_scene load_steps=39 format=3 uid="uid://bpjv2iuy8x0hw"]
 
 [ext_resource type="Script" uid="uid://gdrtj0ygftu2" path="res://scripts/actors/enemies/EnemyD1NetAdmin.cs" id="1_1rlfu"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_keki5"]
@@ -16,8 +16,8 @@
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="12_m1er8"]
 [ext_resource type="Script" uid="uid://7d6816ae7728" path="res://scripts/actors/enemies/attacks/EnemyNetAdminSimpleMeleeAttack.cs" id="13_s0414"]
 [ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyLockdownAttack.cs" id="14_04qwn"]
-[ext_resource type="PackedScene" uid="uid://c08uxmi4ffstu" path="res://resources/effects/FireWall.tscn" id="15_8kwat"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="15_rmqvr"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="16_g3n2r"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_puybi"]
 [ext_resource type="Script" uid="uid://4afafb311eba" path="res://scripts/actors/enemies/states/EnemyNetAdminFrozenState.cs" id="17_nadmin_frozen"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="18_nkngv"]
@@ -59,6 +59,20 @@ size = Vector2(600, 700)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_keki5"]
+script = ExtResource("16_g3n2r")
+Scene = ExtResource("12_4s385")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_5ibm7"]
+script = ExtResource("16_g3n2r")
+Scene = ExtResource("15_rmqvr")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 1.0,
+"ShakeStrength": 20.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_D1_netAdmin" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 3
@@ -242,11 +256,12 @@ WarmupDuration = 2.0
 ActiveDuration = 0.3
 RecoveryDuration = 0.7
 CooldownDurationMultiplier = 3.0
-KnockbackDistance = 500.0
+KnockbackDistance = 300.0
+KnockbackDuration = 0.2
+KnockbackFromHitPosition = true
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-EffectScene = ExtResource("12_4s385")
-AdditionalEffects = Array[PackedScene]([ExtResource("15_rmqvr")])
+Effects = Array[ExtResource("16_g3n2r")]([SubResource("Resource_keki5"), SubResource("Resource_5ibm7")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D2/Marker2D")]
 metadata/attack_weight = 100.0
@@ -262,8 +277,6 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
-EffectScene = ExtResource("12_4s385")
-AdditionalEffects = Array[PackedScene]([null])
 SpawnTiming = 1
 SpawnMarkers = [null, null]
 metadata/attack_weight = 0.0
@@ -280,7 +293,6 @@ DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-EffectScene = ExtResource("15_8kwat")
 SpawnTiming = 1
 SpawnMarkers = [null]
 metadata/attack_weight = 0.0
