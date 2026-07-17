@@ -25,6 +25,7 @@ namespace Kuros.Systems.Cutscene
         /// <summary>目标缩放级别。1.0 = 100%（无缩放），0.5 = 50%（放大），2.0 = 200%（缩小）。若为 <= 0，则不改变缩放。</summary>
         [Export] public float TargetZoom { get; set; } = 0f;
 
+        [Export] public bool Instant { get; set; } = false;
         [Export] public float Duration { get; set; } = 1.0f;
 
         [Export] public Tween.EaseType Ease { get; set; } = Tween.EaseType.InOut;
@@ -94,7 +95,7 @@ namespace Kuros.Systems.Cutscene
             }
 
             // ── 普通单次移动模式 ─────────────────────────────────────────────────
-            if (ctx.IsSkipping || Duration <= 0f)
+            if (ctx.IsSkipping || Instant || Duration <= 0f)
             {
                 camera.GlobalPosition = target;
                 if (TargetZoom > 0f)
@@ -146,7 +147,7 @@ namespace Kuros.Systems.Cutscene
             var posBeforeFollow = camera.GlobalPosition;
 
             // Phase 1: 初始 Tween 移动到目标当前位置
-            if (Duration > 0f && !ctx.IsSkipping)
+            if (Duration > 0f && !ctx.IsSkipping && !Instant)
             {
                 var tweenInit = camera.CreateTween();
                 tweenInit.TweenProperty(camera, "global_position", targetNode.GlobalPosition, Duration)
@@ -165,9 +166,11 @@ namespace Kuros.Systems.Cutscene
                     return;
                 }
             }
-            else if (TargetZoom > 0f)
+            else
             {
-                camera.Zoom = new Vector2(TargetZoom, TargetZoom);
+                camera.GlobalPosition = targetNode.GlobalPosition;
+                if (TargetZoom > 0f)
+                    camera.Zoom = new Vector2(TargetZoom, TargetZoom);
             }
 
             // Phase 2: 每帧同步 GlobalPosition，持续 FollowDuration 秒
@@ -177,6 +180,8 @@ namespace Kuros.Systems.Cutscene
             {
                 if (GodotObject.IsInstanceValid(targetNode))
                     camera.GlobalPosition = targetNode.GlobalPosition;
+                if (TargetZoom > 0f)
+                    camera.Zoom = new Vector2(TargetZoom, TargetZoom);
                 await ctx.NextFrame();
             }
 

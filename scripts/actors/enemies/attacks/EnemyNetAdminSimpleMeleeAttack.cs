@@ -4,24 +4,25 @@ using Kuros.Core;
 namespace Kuros.Actors.Enemies.Attacks
 {
     /// <summary>
-    /// NetAdmin 专用 SimpleMeleeAttack。分离检测区和伤害区：
-    ///   DetectionArea — CanStart 时判断目标是否在范围内
-    ///   DamageArea    — 造成伤害和击退
-    /// 未配置时回退到 AttackArea。
+    /// NetAdmin 专用 SimpleMeleeAttack。分离检测区和伤害区。
+    /// Warmup 期间持续追踪玩家位置，使 DamageArea 对准目标。
     /// </summary>
     public partial class EnemyNetAdminSimpleMeleeAttack : EnemySimpleMeleeAttack
     {
         [Export] public NodePath DetectionAreaPath = new();
         [Export] public NodePath DamageAreaPath = new();
+        [Export] public bool TrackTargetDuringWarmup = false;
 
         private Area2D? _detectionArea;
         private Area2D? _damageArea;
+        private CollisionShape2D? _damageShape;
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
             _detectionArea = ResolveArea(DetectionAreaPath) ?? AttackArea;
             _damageArea = ResolveArea(DamageAreaPath) ?? AttackArea;
+            _damageShape = _damageArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
         }
 
         public override bool CanStart()
@@ -29,6 +30,23 @@ namespace Kuros.Actors.Enemies.Attacks
             if (!base.CanStart()) return false;
             if (Player == null) return false;
             return Player.IsHitByArea(_detectionArea);
+        }
+
+        public override void _PhysicsProcess(double delta)
+        {
+            if (TrackTargetDuringWarmup && IsRunning && Enemy != null && Player != null && _damageShape != null)
+            {
+                var playerShape = Player.HitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+                Vector2 playerTarget = playerShape?.GlobalPosition ?? Player.GlobalPosition;
+                Vector2 shapeOffset = _damageShape.GlobalPosition - Enemy.GlobalPosition;
+                Vector2 target = playerTarget - shapeOffset;
+                float step = Enemy.Speed * (float)delta;
+                Enemy.GlobalPosition = new Vector2(
+                    Mathf.MoveToward(Enemy.GlobalPosition.X, target.X, step),
+                    Mathf.MoveToward(Enemy.GlobalPosition.Y, target.Y, step));
+            }
+
+            base._PhysicsProcess(delta);
         }
 
         protected override void OnActivePhase()
