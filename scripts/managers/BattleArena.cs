@@ -211,11 +211,7 @@ namespace Kuros.Managers
             GameLogger.Info(nameof(BattleArena), $"战斗激活：检测到 {_trackedEnemies.Count} 个敌人，创建空气墙");
 
             // 找到相机管理器
-            var cameraZoneManager = GetTree().Root.GetNodeOrNull<CameraZoneManager>("BattleScene/CameraZoneManager");
-            if (cameraZoneManager == null)
-            {
-                cameraZoneManager = GetTree().Root.GetNodeOrNull<CameraZoneManager>("/root/BattleScene/CameraZoneManager");
-            }
+            var cameraZoneManager = GetTree().GetFirstNodeInGroup("camera_zone_manager") as CameraZoneManager;
 
             if (cameraZoneManager != null)
             {
