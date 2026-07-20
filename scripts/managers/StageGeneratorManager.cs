@@ -19,9 +19,11 @@ namespace Kuros.Managers
     [GlobalClass]
     public partial class StageGeneratorManager : Node
     {
-        [ExportCategory("Room Scenes")]
-        [Export] public PackedScene? BeginScene { get; set; }
-        [Export] public PackedScene? EndScene { get; set; }
+        [ExportCategory("Begin Room")]
+        [Export] public Array<PackedScene> BeginPool { get; set; } = new();
+
+        [ExportCategory("End Room")]
+        [Export] public Array<PackedScene> EndPool { get; set; } = new();
 
         [ExportCategory("Middle Rooms — Easy")]
         [Export] public Array<PackedScene> EasyMiddlePool { get; set; } = new();
@@ -143,8 +145,8 @@ namespace Kuros.Managers
         {
             var list = new List<PackedScene>();
 
-            if (BeginScene != null)
-                list.Add(BeginScene);
+            if (BeginPool.Count > 0)
+                list.Add(BeginPool[rng.RandiRange(0, BeginPool.Count - 1)]);
 
             // Easy → Normal → Hard 顺序，每档数量在 Min/Max 间随机
             AppendRoomsFromPool(list, EasyMiddlePool,
@@ -154,8 +156,8 @@ namespace Kuros.Managers
             AppendRoomsFromPool(list, HardMiddlePool,
                 rng.RandiRange(HardRoomMin, HardRoomMax), rng);
 
-            if (EndScene != null)
-                list.Add(EndScene);
+            if (EndPool.Count > 0)
+                list.Add(EndPool[rng.RandiRange(0, EndPool.Count - 1)]);
 
             return list;
         }

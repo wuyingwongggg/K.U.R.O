@@ -36,14 +36,10 @@ BattleSceneManagerPath = NodePath("..")
 
 [node name="StageGeneratorManager" type="Node" parent="."]
 script = ExtResource("6_gen")
-BeginScene = ExtResource("8_begin")
-EndScene = ExtResource("11_end")
+BeginPool = Array[PackedScene]([ExtResource("8_begin")])
+EndPool = Array[PackedScene]([ExtResource("11_end")])
 EasyMiddlePool = Array[PackedScene]([ExtResource("9_b1"), ExtResource("10_b2"), ExtResource("8_2l4aj")])
-EasyRoomMin = 1
-EasyRoomMax = 2
 NormalMiddlePool = Array[PackedScene]([ExtResource("10_3yw8j"), ExtResource("11_pvxkr")])
-NormalRoomMin = 1
-NormalRoomMax = 2
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("14_pvxkr")]
 
