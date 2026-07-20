@@ -31,6 +31,8 @@ namespace Kuros.Actors.Heroes
 
         private Node2D? _attachmentParent;
         private Sprite2D? _iconSprite;
+        private Node? _heldSceneInstance;
+        private string? _currentHoldScenePath;
         private GameActor? _actor;
         private Node? _spineSlotNode;
         private Node? _SpineSlotIconContainer;
@@ -194,6 +196,53 @@ namespace Kuros.Actors.Heroes
             AttachIconTo(_attachmentParent, texture);
         }
 
+        private void ShowItemScene(string scenePath)
+        {
+            if (scenePath == _currentHoldScenePath && _heldSceneInstance != null && GodotObject.IsInstanceValid(_heldSceneInstance))
+                return;
+
+            ClearHeldScene();
+
+            if (string.IsNullOrWhiteSpace(scenePath))
+                return;
+
+            var scene = ResourceLoader.Load<PackedScene>(scenePath, string.Empty, ResourceLoader.CacheMode.Ignore);
+            if (scene == null)
+            {
+                GD.PushWarning($"{Name}: 无法加载 HoldScene {scenePath}");
+                return;
+            }
+
+            var instance = scene.Instantiate();
+            if (instance == null) return;
+
+            Node? parent = (_SpineSlotIconContainer as Node) ?? _spineSlotNode ?? (Node?)ResolveActiveBoneNode() ?? (Node?)_attachmentParent ?? _actor;
+            if (parent == null)
+            {
+                instance.QueueFree();
+                return;
+            }
+
+            parent.AddChild(instance);
+
+            if (instance is Node2D node2D)
+            {
+                node2D.Position = BoneIconOffset;
+                node2D.Rotation = GetIconRotationRadians();
+                node2D.ZIndex = ZIndex;
+                node2D.ZAsRelative = true;
+                if (_actor != null && FlipWithFacing)
+                {
+                    var scale = node2D.Scale;
+                    scale.X = Mathf.Abs(scale.X) * (_actor.FacingRight ? 1f : -1f);
+                    node2D.Scale = scale;
+                }
+            }
+
+            _heldSceneInstance = instance;
+            _currentHoldScenePath = scenePath;
+        }
+
         private void OnItemRemoved(string itemId)
         {
             UpdateAttachmentIcon();
@@ -235,18 +284,28 @@ namespace Kuros.Actors.Heroes
 
             if (Inventory?.GetSelectedQuickBarStack()?.IsThrowOnCooldown == true)
             {
-                ShowItemIcon(null);
+                ClearHeldVisual();
                 return;
             }
             // 对于可投掷物(投掷类)：在IdleHolding、RunHolding状态显示
             // 对于不可投掷物(武器类)：在Idle、Run、Walk、Hit状态显示
             if (!ShouldShowHoldingItem(currentState))
             {
-                ShowItemIcon(null);  // 隐藏视觉，但Hitbox保留
+                ClearHeldVisual();  // 隐藏视觉，但Hitbox保留
                 return;
             }
 
-            ShowItemIcon(activeItem?.Icon);  // 显示视觉
+            // 优先使用场景，没有场景则回退到 Icon 纹理
+            if (!string.IsNullOrWhiteSpace(activeItem?.HoldScenePath))
+            {
+                ShowItemIcon(null);
+                ShowItemScene(activeItem!.HoldScenePath);
+            }
+            else
+            {
+                ClearHeldScene();
+                ShowItemIcon(activeItem?.Icon);
+            }
         }
 
         public Area2D? GetEquippedAttackArea()
@@ -450,6 +509,20 @@ namespace Kuros.Actors.Heroes
             _activeBoneNode = null;
             _iconUsesBoneTracking = false;
             _useSlotAnchorBinding = false;
+        }
+
+        private void ClearHeldScene()
+        {
+            if (_heldSceneInstance != null && GodotObject.IsInstanceValid(_heldSceneInstance))
+                _heldSceneInstance.QueueFree();
+            _heldSceneInstance = null;
+            _currentHoldScenePath = null;
+        }
+
+        private void ClearHeldVisual()
+        {
+            ShowItemIcon(null);
+            ClearHeldScene();
         }
 
         private void UpdateEquippedAttackArea(ItemDefinition? item)

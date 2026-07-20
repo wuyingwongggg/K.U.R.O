@@ -1,0 +1,135 @@
+[gd_scene load_steps=22 format=3 uid="uid://d2iyp7mlm7ap"]
+
+[ext_resource type="Script" uid="uid://cmg8g6kgr8yqd" path="res://scripts/effects/EmojiBoomEffect.cs" id="1_s0pwd"]
+[ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="2_nkf0k"]
+[ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="3_b2i5j"]
+[ext_resource type="Texture2D" uid="uid://cd24tjl6wpw4i" path="res://assets/objects/emoji_boom/时间轴 1_0000.png" id="4_me5wc"]
+[ext_resource type="Texture2D" uid="uid://cjgenixkf7n4e" path="res://assets/objects/emoji_boom/时间轴 1_0001.png" id="5_5nq0t"]
+[ext_resource type="Texture2D" uid="uid://3oai2ybjaj4f" path="res://assets/objects/emoji_boom/时间轴 1_0002.png" id="6_s1qb2"]
+[ext_resource type="Texture2D" uid="uid://bxl8nmokock1q" path="res://assets/objects/emoji_boom/时间轴 1_0003.png" id="7_dmffa"]
+[ext_resource type="Texture2D" uid="uid://s3uy5tc6o2g2" path="res://assets/objects/emoji_boom/时间轴 1_0017.png" id="21_g341m"]
+[ext_resource type="Texture2D" uid="uid://ceawnepcowvu2" path="res://assets/objects/emoji_boom/时间轴 1_0018.png" id="22_ehc38"]
+[ext_resource type="Texture2D" uid="uid://dcejgf55qig04" path="res://assets/objects/emoji_boom/时间轴 1_0019.png" id="23_yyqj8"]
+[ext_resource type="Texture2D" uid="uid://dvhwxr77r35hw" path="res://assets/objects/emoji_boom/时间轴 1_0020.png" id="24_ktgo6"]
+[ext_resource type="Texture2D" uid="uid://d306gkkompxnj" path="res://assets/objects/emoji_boom/时间轴 1_0021.png" id="25_y74yw"]
+[ext_resource type="Texture2D" uid="uid://c3rs8rf0ylgg1" path="res://assets/objects/emoji_boom/时间轴 1_0022.png" id="26_podt8"]
+[ext_resource type="Texture2D" uid="uid://brgc6t0kb4jo3" path="res://assets/objects/emoji_boom/时间轴 1_0023.png" id="27_gfl6s"]
+[ext_resource type="Texture2D" uid="uid://ck2nckhietay5" path="res://assets/objects/emoji_boom/时间轴 1_0024.png" id="28_ooasa"]
+[ext_resource type="Texture2D" uid="uid://ct1auxmuplppd" path="res://assets/objects/emoji_boom/时间轴 1_0025.png" id="29_d3k3j"]
+[ext_resource type="Texture2D" uid="uid://dy3cbk0jvlt0a" path="res://assets/objects/emoji_boom/时间轴 1_0026.png" id="30_mt21f"]
+[ext_resource type="Texture2D" uid="uid://ch02xd1jd0mfd" path="res://assets/objects/emoji_boom/时间轴 1_0027.png" id="31_jcwso"]
+[ext_resource type="Texture2D" uid="uid://cypm3kp87w6yx" path="res://assets/objects/emoji_boom/时间轴 1_0028.png" id="32_x5hbg"]
+[ext_resource type="Texture2D" uid="uid://c0pm3cnldrgcq" path="res://assets/objects/emoji_boom/时间轴 1_0029.png" id="33_2lwxr"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3r03d"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_me5wc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_5nq0t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_s1qb2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_g341m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_ehc38")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_yyqj8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_ktgo6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_y74yw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_podt8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_gfl6s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_ooasa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_d3k3j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_mt21f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_jcwso")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_x5hbg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="EmojiBoomHappy" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+scale = Vector2(0.33, 0.33)
+script = ExtResource("1_s0pwd")
+BoomBScene = ExtResource("2_nkf0k")
+BoomDmgScene = ExtResource("3_b2i5j")
+EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
+Duration = 1.3
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_3r03d")
+autoplay = "default"

@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://y5md3ha66s8t"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=11 format=3 uid="uid://y5md3ha66s8t"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_ab7ls"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_3eovc"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_1mahg"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_v34a1"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_8x5uu"]
-[ext_resource type="Texture2D" uid="uid://rrdy7mkpomkv" path="res://assets/furnitures/home_scene1/ChairOfficeA.png" id="6_ab7ls"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_65qhp"]
 
 [sub_resource type="Resource" id="Resource_ab7ls"]
@@ -39,7 +38,7 @@ script = ExtResource("7_65qhp")
 ItemId = "Furniture_A_ChairOfficeA"
 DisplayName = "办公座椅A"
 Description = "一次性投掷道具：办公座椅A"
-Icon = ExtResource("6_ab7ls")
+HoldScenePath = "uid://b73y4fylkvq5o"
 Category = "Furniture"
 Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
