@@ -1,20 +1,40 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=10 format=3 uid="uid://cmwneancnik65"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://cmwneancnik65"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_3xlkm"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_6ffm0"]
-[ext_resource type="PackedScene" uid="uid://cea0a3niswxg1" path="res://scenes/actors/etc/EmojiBoom.tscn" id="3_q0hkk"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_3xlkm"]
 [ext_resource type="Texture2D" uid="uid://cd24tjl6wpw4i" path="res://assets/objects/emoji_boom/时间轴 1_0000.png" id="4_q0hkk"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="6_ep3ds"]
+[ext_resource type="PackedScene" uid="uid://d2iyp7mlm7ap" path="res://scenes/actors/etc/EmojiBoom_happy.tscn" id="7_happy"]
+[ext_resource type="PackedScene" uid="uid://v4w40uxcfxem" path="res://scenes/actors/etc/EmojiBoom_neutral.tscn" id="8_neutral"]
+[ext_resource type="PackedScene" uid="uid://c5kj5kfho7gcf" path="res://scenes/actors/etc/EmojiBoom_scared.tscn" id="9_scared"]
 
 [sub_resource type="Resource" id="Attribute_AttackPower"]
 script = ExtResource("1_3xlkm")
 AttributeId = "attack_power"
 
-[sub_resource type="Resource" id="Resource_letw0"]
+[sub_resource type="Resource" id="Resource_happy"]
 script = ExtResource("2_6ffm0")
 Trigger = 4
-EffectScene = ExtResource("3_q0hkk")
+EffectScene = ExtResource("7_happy")
+RequiredFrameMin = 0
+RequiredFrameMax = 9
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_neutral"]
+script = ExtResource("2_6ffm0")
+Trigger = 4
+EffectScene = ExtResource("8_neutral")
+RequiredFrameMin = 10
+RequiredFrameMax = 19
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_scared"]
+script = ExtResource("2_6ffm0")
+Trigger = 4
+EffectScene = ExtResource("9_scared")
+RequiredFrameMin = 20
+RequiredFrameMax = 29
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_6ffm0"]
@@ -38,7 +58,7 @@ Category = "Weapon"
 Tags = Array[String](["tag_weapon", "build_guard", "tag_throw"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_3xlkm")]([SubResource("Attribute_AttackPower")])
-EffectEntries = Array[ExtResource("2_6ffm0")]([SubResource("Resource_letw0"), SubResource("Resource_6ffm0")])
+EffectEntries = Array[ExtResource("2_6ffm0")]([SubResource("Resource_happy"), SubResource("Resource_neutral"), SubResource("Resource_scared"), SubResource("Resource_6ffm0")])
 IsThrowable = true
 IsThrowWeapon = true
 ThrowStartOffset = Vector2(0, -250)
