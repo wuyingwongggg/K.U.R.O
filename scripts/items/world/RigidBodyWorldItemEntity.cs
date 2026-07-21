@@ -1844,6 +1844,7 @@ namespace Kuros.Items.World
 					{
 						// 隐藏后加入场景树，触发 Shader 编译，然后立刻销毁
 						node2D.Visible = false;
+						node2D.ProcessMode = ProcessModeEnum.Disabled;
 						AddChild(node2D);
 						node2D.QueueFree();
 					}

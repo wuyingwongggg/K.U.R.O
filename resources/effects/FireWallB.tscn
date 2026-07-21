@@ -88,10 +88,10 @@ offset = Vector2(0, -300)
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-59.333336, -227.08334)
+position = Vector2(40, -228)
 shape = SubResource("RectangleShape2D_lhwsv")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(3.72406, 19.936132)
-rotation = -0.43633232
+position = Vector2(-20, 20)
+rotation = 0.43633232
 shape = SubResource("RectangleShape2D_jxfbj")

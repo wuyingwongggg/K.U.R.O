@@ -1,25 +1,57 @@
-[gd_scene load_steps=12 format=3 uid="uid://bmk5chuwaohte"]
+[gd_scene load_steps=16 format=3 uid="uid://bmk5chuwaohte"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_iegjm"]
-[ext_resource type="Resource" uid="uid://y5md3ha66s8t" path="res://resources/items/Furniture_A_ChairOfficeA.tres" id="2_tu5df"]
+[ext_resource type="Resource" uid="uid://dn6b1dhc2enrf" path="res://resources/items/Furniture_A_CubeA.tres" id="2_iegjm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_oepov"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_11bag"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_0olc5"]
-[ext_resource type="Texture2D" uid="uid://rrdy7mkpomkv" path="res://assets/furnitures/home_scene1/ChairOfficeA.png" id="6_k3458"]
+[ext_resource type="Shader" uid="uid://c6esdptyi4vs3" path="res://shaders/materials/canvas_cube_faces.gdshader" id="7_0olc5"]
+[ext_resource type="Texture2D" uid="uid://bhpdfcmroc241" path="res://nothing.png" id="8_k3458"]
+[ext_resource type="Shader" uid="uid://dpj7cb1n0f80r" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="9_y3oxv"]
+[ext_resource type="Shader" uid="uid://bld8m4k2q7x1w" path="res://shaders/materials/canvas_cube_build.gdshader" id="10_xciwy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_oepov")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
-resource_local_to_scene = true
-shader = ExtResource("5_0olc5")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
-shader_parameter/outline_size = 32.0
-shader_parameter/alpha_threshold = 0.5
-shader_parameter/edge_softness = 0.12
-shader_parameter/preserve_fill = true
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cf8gp"]
+shader = ExtResource("7_0olc5")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges_size = 24
+shader_parameter/time_scale = 0.0
+shader_parameter/faces = PackedInt32Array(0, 1, 2, 3, 5, 4, 7, 6, 1, 5, 6, 2, 4, 0, 3, 7, 3, 2, 6, 7, 0, 4, 5, 1)
+shader_parameter/face_alpha = 0.9
+shader_parameter/face_color = Color(0.02, 0.06, 0.02, 1)
+shader_parameter/text_color = Color(0, 10.767732, 0, 1)
+shader_parameter/head_color = Color(0.7, 1, 0.8, 1)
+shader_parameter/text_columns = 10.0
+shader_parameter/text_rows = 10.0
+shader_parameter/scroll_speed = 0.6
+shader_parameter/flicker_rate = 0.01
+shader_parameter/rain_density = 0.7
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4ddkc"]
+shader = ExtResource("9_y3oxv")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
+shader_parameter/edges_size = 24
+shader_parameter/sofness = 0.075
+shader_parameter/time_scale = 0.0
+shader_parameter/briness_scale = 1.6
+shader_parameter/alpha = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u3pnw"]
+shader = ExtResource("10_xciwy")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
+shader_parameter/edges_size = 24
+shader_parameter/sofness = 0.1
+shader_parameter/time_scale = 0.0
+shader_parameter/briness_scale = 1.6
+shader_parameter/build_progress = 0.0
+shader_parameter/scanline_width = 0.025
+shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/edge_glow = 0.06
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxt0"]
 size = Vector2(250, 100)
@@ -34,7 +66,7 @@ size = Vector2(300, 165)
 z_index = 2
 y_sort_enabled = true
 script = ExtResource("1_iegjm")
-ItemDefinition = ExtResource("2_tu5df")
+ItemDefinition = ExtResource("2_iegjm")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
@@ -45,7 +77,6 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
 MaxHP = 20.0
-HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 
@@ -57,31 +88,55 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-position = Vector2(0, 20)
+position = Vector2(-6, 9)
 scale = Vector2(4, 2.5)
 texture = ExtResource("4_11bag")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
-material = SubResource("ShaderMaterial_5sin4")
+position = Vector2(0, -61.999996)
 scale = Vector2(0.33, 0.33)
-texture = ExtResource("6_k3458")
+texture = ExtResource("8_k3458")
+region_rect = Rect2(-80, -48, 776, 728)
 
-[node name="Sprite2D" type="Sprite2D" parent="RigidBody2D/Outline"]
-texture = ExtResource("6_k3458")
+[node name="FaceFill" type="Sprite2D" parent="RigidBody2D/Outline"]
+material = SubResource("ShaderMaterial_cf8gp")
+rotation = 0.36651915
+scale = Vector2(90, 90)
+texture = ExtResource("8_k3458")
+
+[node name="Wireframe" type="Sprite2D" parent="RigidBody2D/Outline"]
+modulate = Color(0, 0.78431374, 0, 1)
+self_modulate = Color(0, 0.78431374, 0, 1)
+material = SubResource("ShaderMaterial_4ddkc")
+rotation = 0.36651915
+scale = Vector2(90, 90)
+texture = ExtResource("8_k3458")
+
+[node name="BuildMask" type="Sprite2D" parent="RigidBody2D/Outline"]
+visible = false
+modulate = Color(0, 0.5176471, 0, 1)
+self_modulate = Color(0.19215687, 0.6627451, 0, 1)
+material = SubResource("ShaderMaterial_u3pnw")
+rotation = 0.36651915
+scale = Vector2(90, 90)
+texture = ExtResource("8_k3458")
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
 position = Vector2(0, -140)
 shape = SubResource("RectangleShape2D_mbxt0")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
 position = Vector2(0, -10)

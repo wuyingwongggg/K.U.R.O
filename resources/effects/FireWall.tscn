@@ -1,15 +1,21 @@
-[gd_scene load_steps=3 format=3 uid="uid://c08uxmi4ffstu"]
+[gd_scene load_steps=7 format=3 uid="uid://c08uxmi4ffstu"]
 
-[ext_resource type="PackedScene" uid="uid://b4qqpgiusbp7l" path="res://resources/effects/FireWallA.tscn" id="1_xf22n"]
-[ext_resource type="PackedScene" uid="uid://w4v8hptbjx0g" path="res://resources/effects/FireWallB.tscn" id="2_7qfoa"]
+[ext_resource type="Script" uid="uid://do0583rrhplo6" path="res://scripts/effects/FireWall.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://d3eu3r7uoaeex" path="res://scripts/effects/SceneSpawnEntry.cs" id="2_entry_script"]
+[ext_resource type="PackedScene" uid="uid://b4qqpgiusbp7l" path="res://resources/effects/FireWallA.tscn" id="3_a"]
+[ext_resource type="PackedScene" uid="uid://w4v8hptbjx0g" path="res://resources/effects/FireWallB.tscn" id="4_b"]
+
+[sub_resource type="Resource" id="SegmentA"]
+script = ExtResource("2_entry_script")
+Scene = ExtResource("3_a")
+Position = Vector2(127, -620)
+
+[sub_resource type="Resource" id="SegmentB"]
+script = ExtResource("2_entry_script")
+Scene = ExtResource("4_b")
+Position = Vector2(124, 460)
 
 [node name="FIreWall" type="Node2D"]
-z_index = 2
-y_sort_enabled = true
-scale = Vector2(-1, 1)
-
-[node name="FireWallA" parent="." instance=ExtResource("1_xf22n")]
-position = Vector2(127, -580)
-
-[node name="FireWallB" parent="." instance=ExtResource("2_7qfoa")]
-position = Vector2(124, 424)
+z_as_relative = false
+script = ExtResource("1_script")
+Segments = Array[ExtResource("2_entry_script")]([SubResource("SegmentA"), SubResource("SegmentB")])
