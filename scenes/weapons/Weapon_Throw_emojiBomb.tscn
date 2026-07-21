@@ -66,7 +66,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(200, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w57jh"]
-size = Vector2(190.00003, 382.00003)
+size = Vector2(200, 150)
 
 [node name="WeaponThrowEmojiBomb" type="Node2D"]
 z_index = 1
@@ -133,9 +133,8 @@ position = Vector2(-1.5, 1)
 shape = SubResource("RectangleShape2D_idk0v")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(3, 94)
+position = Vector2(0, 25)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_w57jh")

@@ -76,7 +76,7 @@ func import_items_from_csv() -> void:
 		_s_str(res,   "ItemId",      row, hm, "ItemId")
 		_s_str(res,   "DisplayName", row, hm, "DisplayName")
 		_s_str(res,   "Description", row, hm, "Description")
-		_s_str(res,   "BuildClass",  row, hm, "BuildClass")
+		# _s_str(res,   "BuildClass",  row, hm, "BuildClass")  # build 重做后已失效
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
 		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")

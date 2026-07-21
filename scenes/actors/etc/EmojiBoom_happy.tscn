@@ -1,7 +1,7 @@
 [gd_scene load_steps=22 format=3 uid="uid://d2iyp7mlm7ap"]
 
 [ext_resource type="Script" uid="uid://cmg8g6kgr8yqd" path="res://scripts/effects/EmojiBoomEffect.cs" id="1_s0pwd"]
-[ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="2_nkf0k"]
+[ext_resource type="PackedScene" uid="uid://dilq7kawig2v" path="res://scenes/actors/etc/BoomC.tscn" id="2_1umhh"]
 [ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="3_b2i5j"]
 [ext_resource type="Texture2D" uid="uid://cd24tjl6wpw4i" path="res://assets/objects/emoji_boom/时间轴 1_0000.png" id="4_me5wc"]
 [ext_resource type="Texture2D" uid="uid://cjgenixkf7n4e" path="res://assets/objects/emoji_boom/时间轴 1_0001.png" id="5_5nq0t"]
@@ -32,27 +32,6 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("6_s1qb2")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_dmffa")
 }, {
 "duration": 1.0,
 "texture": ExtResource("7_dmffa")
@@ -113,6 +92,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("33_2lwxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
 }],
 "loop": false,
 "name": &"default",
@@ -125,10 +110,15 @@ z_as_relative = false
 y_sort_enabled = true
 scale = Vector2(0.33, 0.33)
 script = ExtResource("1_s0pwd")
-BoomBScene = ExtResource("2_nkf0k")
+BoomScene = ExtResource("2_1umhh")
 BoomDmgScene = ExtResource("3_b2i5j")
+BoomDmgOverrides = Dictionary[String, Variant]({
+"Damage": 100,
+"KnockbackDistance": 1000.0,
+"Radius": 600.0
+})
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
-Duration = 1.3
+Duration = 1.0
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_3r03d")

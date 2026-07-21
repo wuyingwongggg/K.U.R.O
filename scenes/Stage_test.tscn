@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=52 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -35,9 +35,13 @@
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
-[ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="31_dhx6f"]
-[ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="32_0ipan"]
-[ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="32_6eerp"]
+[ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="38_4yi35"]
+[ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="39_aiwtm"]
+[ext_resource type="PackedScene" uid="uid://cbm0exjbphlq5" path="res://scenes/items/Furniture_A_lampFloorA.tscn" id="41_pa4j0"]
+[ext_resource type="PackedScene" uid="uid://c4obvq7v87hkp" path="res://scenes/items/Furniture_A_tableBedsideA.tscn" id="42_04vn4"]
+[ext_resource type="PackedScene" uid="uid://frx40xj4hkgp" path="res://scenes/items/Furniture_A_tableSquareB.tscn" id="43_oqamo"]
+[ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="44_6arh2"]
+[ext_resource type="PackedScene" uid="uid://ddi1sshkssyq" path="res://scenes/items/Furniture_B_cautionTape_side.tscn" id="45_w8qq3"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -251,14 +255,26 @@ ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
 
-[node name="FurnitureBedA" parent="World" instance=ExtResource("32_0ipan")]
-position = Vector2(-417, 638)
+[node name="FurnitureChairOfficeA" parent="World" instance=ExtResource("38_4yi35")]
+position = Vector2(-1245, 635)
 
-[node name="FurnitureChairB" parent="World" instance=ExtResource("31_dhx6f")]
-position = Vector2(-932, 646)
+[node name="FurnitureChairOfficeB" parent="World" instance=ExtResource("39_aiwtm")]
+position = Vector2(-1785, 576)
 
-[node name="FurnitureSofaB" parent="World" instance=ExtResource("32_6eerp")]
-position = Vector2(403, 696)
+[node name="FurnitureLampFloorA" parent="World" instance=ExtResource("41_pa4j0")]
+position = Vector2(-615, 695)
+
+[node name="FurnitureTableSquareB" parent="World" instance=ExtResource("43_oqamo")]
+position = Vector2(58, 591)
+
+[node name="FurnitureTableBedsideA" parent="World" instance=ExtResource("42_04vn4")]
+position = Vector2(-860, 554)
+
+[node name="FurnitureCautionTape_fwd" parent="World" instance=ExtResource("44_6arh2")]
+position = Vector2(798, 473)
+
+[node name="FurnitureCautionTape_side" parent="World" instance=ExtResource("45_w8qq3")]
+position = Vector2(1494, 613)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

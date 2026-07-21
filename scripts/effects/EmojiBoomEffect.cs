@@ -14,8 +14,13 @@ namespace Kuros.Effects
     /// </summary>
     public partial class EmojiBoomEffect : ActorEffect, IWorldSpawnable
     {
-        [Export] public PackedScene? BoomBScene { get; set; }
+        [Export] public PackedScene? BoomScene { get; set; }
         [Export] public PackedScene? BoomDmgScene { get; set; }
+
+        [Export]
+        public Godot.Collections.Dictionary<string, Variant> BoomSceneOverrides { get; set; } = new();
+        [Export]
+        public Godot.Collections.Dictionary<string, Variant> BoomDmgOverrides { get; set; } = new();
 
         public Vector2? WorldSpawnPosition { get; set; }
 
@@ -57,11 +62,11 @@ namespace Kuros.Effects
 
             var pos = GetGlobalPosition(this);
 
-            SpawnScene(BoomBScene, world, pos);
-            SpawnScene(BoomDmgScene, world, pos);
+            SpawnScene(BoomScene, world, pos, BoomSceneOverrides);
+            SpawnScene(BoomDmgScene, world, pos, BoomDmgOverrides);
         }
 
-        private void SpawnScene(PackedScene? scene, Node world, Vector2 pos)
+        private void SpawnScene(PackedScene? scene, Node world, Vector2 pos, Godot.Collections.Dictionary<string, Variant> overrides)
         {
             if (scene == null) return;
 
@@ -73,6 +78,13 @@ namespace Kuros.Effects
 
                 if (node2D is BoomDmgEffect boom)
                     boom.Attacker = Actor;
+
+                foreach (var pair in overrides)
+                {
+                    if (pair.Key == null) continue;
+                    try { node2D.Set(pair.Key, pair.Value); }
+                    catch (System.Exception ex) { GD.PushWarning($"[EmojiBoomEffect] override '{pair.Key}' failed: {ex.Message}"); }
+                }
             }
             else
             {

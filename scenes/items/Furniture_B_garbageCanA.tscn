@@ -7,7 +7,6 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_yc4gp"]
 [ext_resource type="Texture2D" uid="uid://ducw8p67xys6v" path="res://assets/furnitures/hotel_scene2/GarbageCan.png" id="6_g4u3o"]
 
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_5aous")
 shader_parameter/softness = 0.5
@@ -23,13 +22,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(191, 146)
+size = Vector2(150, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g4u3o"]
-size = Vector2(198, 600)
+size = Vector2(210, 160)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(59.117653, 30.588238)
+size = Vector2(200, 150)
 
 [node name="FurnitureGarbageCanA" type="Node2D"]
 z_index = 2
@@ -44,11 +43,11 @@ MinDamageVelocity = 0.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 20.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-Destructible = true
-HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
-MaxHP = 20.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -73,18 +72,15 @@ texture = ExtResource("6_g4u3o")
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(-0.5, 6)
+position = Vector2(0, -120)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(-2, 200)
 shape = SubResource("RectangleShape2D_g4u3o")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(1.4999979, 23)
-scale = Vector2(3.4, 3.4)
 shape = SubResource("RectangleShape2D_jyvv2")
