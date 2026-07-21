@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://d2iyp7mlm7ap"]
+[gd_scene load_steps=23 format=3 uid="uid://d2iyp7mlm7ap"]
 
 [ext_resource type="Script" uid="uid://cmg8g6kgr8yqd" path="res://scripts/effects/EmojiBoomEffect.cs" id="1_s0pwd"]
 [ext_resource type="PackedScene" uid="uid://dilq7kawig2v" path="res://scenes/actors/etc/BoomC.tscn" id="2_1umhh"]
@@ -21,7 +21,90 @@
 [ext_resource type="Texture2D" uid="uid://cypm3kp87w6yx" path="res://assets/objects/emoji_boom/时间轴 1_0028.png" id="32_x5hbg"]
 [ext_resource type="Texture2D" uid="uid://c0pm3cnldrgcq" path="res://assets/objects/emoji_boom/时间轴 1_0029.png" id="33_2lwxr"]
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_3r03d"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_1umhh"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_me5wc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_5nq0t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_s1qb2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_dmffa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_g341m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_ehc38")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_yyqj8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_ktgo6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_y74yw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_podt8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_gfl6s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_ooasa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_d3k3j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_mt21f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_jcwso")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_x5hbg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_2lwxr")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_aomo2"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -120,6 +203,11 @@ BoomDmgOverrides = Dictionary[String, Variant]({
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
 Duration = 1.0
 
+[node name="Sprite_whiten" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+sprite_frames = SubResource("SpriteFrames_1umhh")
+autoplay = "default"
+
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
-sprite_frames = SubResource("SpriteFrames_3r03d")
+sprite_frames = SubResource("SpriteFrames_aomo2")
 autoplay = "default"
