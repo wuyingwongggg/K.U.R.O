@@ -104,7 +104,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("33_srng7")
 }],
-"loop": true,
+"loop": false,
 "name": &"default",
 "speed": 25.0
 }]
@@ -115,13 +115,19 @@ z_as_relative = false
 y_sort_enabled = true
 scale = Vector2(0.33, 0.33)
 script = ExtResource("1_pyffd")
-BoomBScene = ExtResource("2_6p3fn")
+BoomScene = ExtResource("2_6p3fn")
 BoomDmgScene = ExtResource("3_clhpl")
+BoomSceneOverrides = Dictionary[String, Variant]({
+"scale": Vector2(0.5, 0.5)
+})
+BoomDmgOverrides = Dictionary[String, Variant]({
+"Damage": 20,
+"KnockbackDistance": 50.0,
+"Radius": 150.0
+})
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
 Duration = 1.0
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_3r03d")
 autoplay = "default"
-frame = 9
-frame_progress = 0.6874998
