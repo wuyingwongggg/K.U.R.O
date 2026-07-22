@@ -9,16 +9,18 @@ namespace Kuros.Controllers
     public partial class ShadowFollower : Sprite2D
     {
         [Export] public NodePath? TargetBone { get; set; }
+        [Export] public bool FollowBoneX { get; set; } = true;
+        [Export] public bool FollowBoneY { get; set; } = false;
 
         private Node2D? _boneNode;
         private Node2D? _spineSprite;
-        private float _initialBoneX;
-        private float _defaultShadowX;
+        private Vector2 _initialBonePos;
+        private Vector2 _defaultShadowPos;
         private bool _baselineCaptured;
 
         public override void _Ready()
         {
-            _defaultShadowX = Position.X;
+            _defaultShadowPos = Position;
 
             if (TargetBone != null && !TargetBone.IsEmpty)
             {
@@ -34,14 +36,15 @@ namespace Kuros.Controllers
 
             if (!_baselineCaptured)
             {
-                _initialBoneX = _boneNode.Position.X;
+                _initialBonePos = _boneNode.Position;
                 _baselineCaptured = true;
                 return;
             }
 
-            float spineScaleX = _spineSprite?.Scale.X ?? 1f;
-            float deltaX = (_boneNode.Position.X - _initialBoneX) * spineScaleX;
-            Position = new Vector2(_defaultShadowX + deltaX, Position.Y);
+            Vector2 boneDelta = (_boneNode.Position - _initialBonePos) * (_spineSprite?.Scale ?? Vector2.One);
+            float x = FollowBoneX ? _defaultShadowPos.X + boneDelta.X : _defaultShadowPos.X;
+            float y = FollowBoneY ? _defaultShadowPos.Y + boneDelta.Y : _defaultShadowPos.Y;
+            Position = new Vector2(x, y);
         }
     }
 }

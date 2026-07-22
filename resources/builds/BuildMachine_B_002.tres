@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://cguarqlknpx7b"]
+
+[ext_resource type="Texture2D" uid="uid://cyjh04f738fg5" path="res://assets/BuildIcon/Guard_II.png" id="1_ydpdl"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_e0ll1"]
+
+[resource]
+script = ExtResource("2_e0ll1")
+EffectId = "BuildMachine_B_002"
+DisplayName = "机械_热量释放_002"
+Description = "效果：2"
+BuildClass = "Machine"
+StatBonuses = Dictionary[String, float]({
+"speed": 20.0
+})
+Icon = ExtResource("1_ydpdl")
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

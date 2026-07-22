@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://b81xhi3r08vha"]
+[gd_scene load_steps=27 format=3 uid="uid://b81xhi3r08vha"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_1d0of"]
 [ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="2_vfp1h"]
@@ -7,7 +7,15 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_uc5id"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="6_ahq4c"]
 [ext_resource type="Texture2D" uid="uid://cd24tjl6wpw4i" path="res://assets/objects/emoji_boom/时间轴 1_0000.png" id="6_vfp1h"]
+[ext_resource type="Texture2D" uid="uid://cjgenixkf7n4e" path="res://assets/objects/emoji_boom/时间轴 1_0001.png" id="8_25grw"]
 [ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="8_n0uqx"]
+[ext_resource type="Texture2D" uid="uid://3oai2ybjaj4f" path="res://assets/objects/emoji_boom/时间轴 1_0002.png" id="9_sql12"]
+[ext_resource type="Texture2D" uid="uid://3qx8easdoh00" path="res://assets/objects/emoji_boom/时间轴 1_0004.png" id="10_n7vxr"]
+[ext_resource type="Texture2D" uid="uid://crsh7m8oim87y" path="res://assets/objects/emoji_boom/时间轴 1_0005.png" id="11_af73g"]
+[ext_resource type="Texture2D" uid="uid://bjhkcfsvmms8w" path="res://assets/objects/emoji_boom/时间轴 1_0006.png" id="12_njwgo"]
+[ext_resource type="Texture2D" uid="uid://760mjxq2r1su" path="res://assets/objects/emoji_boom/时间轴 1_0008.png" id="13_cn26s"]
+[ext_resource type="Texture2D" uid="uid://frs87ufjfuoy" path="res://assets/objects/emoji_boom/时间轴 1_0009.png" id="14_uelip"]
+[ext_resource type="Texture2D" uid="uid://cg7aibnohxiqi" path="res://assets/objects/emoji_boom/时间轴 1_0010.png" id="15_3ncya"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_idk0v"]
 shader = ExtResource("3_n0uqx")
@@ -28,6 +36,50 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2aaj6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_vfp1h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_25grw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_sql12")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_sql12")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_n7vxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_af73g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_njwgo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_njwgo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_cn26s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_uelip")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_3ncya")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_3ncya")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_g5wk3"]
 shader = ExtResource("8_n0uqx")
@@ -103,10 +155,11 @@ scale = Vector2(0.33, 0.33)
 texture = ExtResource("6_vfp1h")
 region_rect = Rect2(-50, -50, 750, 450)
 
-[node name="Sprite2D" type="Sprite2D" parent="RigidBody2D/Outline"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="RigidBody2D/Outline"]
 material = SubResource("ShaderMaterial_w57jh")
-texture = ExtResource("6_vfp1h")
-region_rect = Rect2(-50, -50, 750, 450)
+sprite_frames = SubResource("SpriteFrames_2aaj6")
+autoplay = "default"
+frame_progress = 0.80333364
 
 [node name="star1" type="Sprite2D" parent="RigidBody2D/Outline"]
 material = SubResource("ShaderMaterial_g5wk3")

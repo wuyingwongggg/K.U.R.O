@@ -8,6 +8,4 @@ script = ExtResource("1_tgq3f")
 Damage = 60
 Radius = 300.0
 KnockbackDistance = 100.0
-ShowDebugRadius = true
-DebugRadiusColor = Color(1, 0, 0, 1)
 TargetableFactions = 7

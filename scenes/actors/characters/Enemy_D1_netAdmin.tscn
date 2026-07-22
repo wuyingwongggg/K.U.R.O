@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://bpjv2iuy8x0hw"]
+[gd_scene load_steps=43 format=3 uid="uid://bpjv2iuy8x0hw"]
 
 [ext_resource type="Script" uid="uid://gdrtj0ygftu2" path="res://scripts/actors/enemies/EnemyD1NetAdmin.cs" id="1_1rlfu"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_keki5"]
@@ -6,9 +6,11 @@
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_rmqvr"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c7lg6iwearvh1" path="res://animations/spine/Enemy_D1_netAdmin.tres" id="5_56c2g"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://bkf1g0bi0mx1i" path="res://animations/spine/Enemy_D1_netAdmin_NoScreen.tres" id="6_5ibm7"]
+[ext_resource type="Shader" uid="uid://ccyngva3jw6ge" path="res://shaders/materials/radar_scanner.gdshader" id="6_brvl7"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="6_g3n2r"]
 [ext_resource type="Script" uid="uid://db1a6ab84d03" path="res://scripts/controllers/EnableShapeOnFrozen.cs" id="7_4s385"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="7_5ibm7"]
+[ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="7_q24rg"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="8_brvl7"]
 [ext_resource type="Script" uid="uid://ba8ab2b8783a1" path="res://scripts/actors/enemies/states/EnemyNetAdminWalkState.cs" id="9_netadmin_walk"]
 [ext_resource type="Script" uid="uid://bsaic48pnmkma" path="res://scripts/actors/enemies/attacks/EnemyD1NetAdminAttackController.cs" id="10_56c2g"]
@@ -43,6 +45,13 @@ metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 shader = ExtResource("3_s0414")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_abpte"]
+shader = ExtResource("6_brvl7")
+shader_parameter/speed = 2.0
+shader_parameter/line_color = Color(0, 0.8235294, 1, 0.8509804)
+shader_parameter/trail_color = Color(0, 1, 1, 0.2)
+shader_parameter/trail_length = 0.1
 
 [sub_resource type="RectangleShape2D" id="2"]
 size = Vector2(2400, 1000)
@@ -106,6 +115,16 @@ scale = Vector2(29.999996, 11.999998)
 texture = ExtResource("4_rmqvr")
 script = ExtResource("26_sf01")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+
+[node name="Radar" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_abpte")
+position = Vector2(0, -556)
+scale = Vector2(99.99999, 69.99999)
+texture = ExtResource("7_q24rg")
+script = ExtResource("26_sf01")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -211,7 +230,6 @@ scale = Vector2(0.9999998, 0.9999998)
 shape = SubResource("RectangleShape2D_s0414")
 
 [node name="Node2D" type="Node2D" parent="."]
-visible = false
 show_behind_parent = true
 scale = Vector2(0.9999997, 0.9999997)
 script = ExtResource("7_4s385")

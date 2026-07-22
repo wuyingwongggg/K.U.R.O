@@ -5,9 +5,9 @@
 
 [resource]
 script = ExtResource("1_wbi8y")
-EffectId = "BuildMachine_B_2"
-DisplayName = "机械_热量释放_2"
-Description = "效果：2"
+EffectId = "BuildMachine_B_003"
+DisplayName = "机械_热量释放_003"
+Description = "效果：3"
 BuildClass = "Machine"
 StatBonuses = Dictionary[String, float]({
 "attack_damage": 1.0,

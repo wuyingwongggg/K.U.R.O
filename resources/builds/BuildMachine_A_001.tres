@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bh73r5tnpb3qh"]
+
+[ext_resource type="Texture2D" uid="uid://lt17133enlt2" path="res://assets/BuildIcon/Machine_I.png" id="1_y2s14"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_4ae2h"]
+
+[resource]
+script = ExtResource("2_4ae2h")
+EffectId = "BuildMachine_A_001"
+DisplayName = "机械_热量累积强化_001"
+Description = "效果：1
+"
+BuildClass = "Machine"
+Icon = ExtResource("1_y2s14")
+metadata/_custom_type_script = "uid://3bb6nng4vb53"
