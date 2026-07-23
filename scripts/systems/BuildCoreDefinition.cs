@@ -16,6 +16,9 @@ namespace Kuros.Systems
         [ExportGroup("构筑")]
         [Export] public string BuildClass { get; set; } = string.Empty;
 
+        [ExportGroup("卡池过滤")]
+        [Export] public Godot.Collections.Array<string> AllowedEffectClasses { get; set; } = new();
+
         [ExportGroup("效果")]
         [Export] public PackedScene? CoreEffectScene { get; set; }
 

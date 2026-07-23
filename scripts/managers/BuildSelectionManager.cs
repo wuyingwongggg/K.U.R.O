@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Kuros.Actors.Enemies.Attacks;
 using Kuros.Actors.Heroes;
 using Kuros.Builds.BuildCore;
 using Kuros.Core.Effects;
@@ -280,43 +281,34 @@ namespace Kuros.Managers
             _pickedEffectIds[effectId] = currentStacks + 1;
             PickedEffectsChanged?.Invoke();
 
-            // 复杂效果：实例化 EffectScene 中的 ActorEffect
-            if (effect.EffectScene != null)
+            // 复杂效果：遍历 EffectEntries，每个 entry 自带 PropertyOverrides
+            if (effect.EffectEntries.Count > 0)
             {
-                var existing = _boundPlayer.EffectController.GetEffect(effectId);
-                if (existing != null)
+                bool isNew = _boundPlayer.EffectController.GetEffect(effectId) == null;
+                foreach (var entry in effect.EffectEntries)
                 {
-                    existing.Refresh(1);
-                    return;
+                    if (entry?.Scene == null) continue;
+                    if (isNew)
+                    {
+                        var instance = entry.InstantiateEffect();
+                        if (instance != null)
+                        {
+                            instance.EffectId = effectId;
+                            instance.DisplayName = effect.DisplayName;
+                            instance.Duration = 0f;
+                            _boundPlayer.ApplyEffect(instance);
+                        }
+                    }
+                    else
+                    {
+                        var existing = _boundPlayer.EffectController.GetEffect(effectId);
+                        existing?.Refresh(1);
+                    }
                 }
-
-                var instance = effect.EffectScene.Instantiate<ActorEffect>();
-                instance.EffectId = effectId;
-                instance.DisplayName = effect.DisplayName;
-                instance.Duration = 0f;
-                _boundPlayer.ApplyEffect(instance);
                 return;
             }
 
-            // 纯数值效果：BuildStatBonusEffect
-            if (effect.StatBonuses.Count > 0)
-            {
-                var existing = _boundPlayer.EffectController.GetEffect(effectId) as BuildStatBonusEffect;
-                if (existing != null)
-                {
-                    existing.Refresh(1);
-                    return;
-                }
-
-                var bonus = new BuildStatBonusEffect
-                {
-                    EffectId = effectId,
-                    DisplayName = effect.DisplayName,
-                    StatBonuses = new Godot.Collections.Dictionary<string, float>(effect.StatBonuses),
-                    Duration = 0f,
-                };
-                _boundPlayer.ApplyEffect(bonus);
-            }
+            // 所有效果统一由 EffectEntries 驱动（含 AttackEffectEntry.PropertyOverrides）
         }
 
         private List<BuildEffectDefinition> PickRandomEffects(int count)
@@ -387,13 +379,20 @@ namespace Kuros.Managers
 
                 for (int s = 0; s < stacks; s++)
                 {
-                    if (definition.EffectScene != null && s == 0)
+                    if (definition.EffectEntries.Count > 0 && s == 0)
                     {
-                        var instance = definition.EffectScene.Instantiate<ActorEffect>();
-                        instance.EffectId = effectId;
-                        instance.DisplayName = definition.DisplayName;
-                        instance.Duration = 0f;
-                        player.ApplyEffect(instance);
+                        foreach (var entry in definition.EffectEntries)
+                        {
+                            if (entry?.Scene == null) continue;
+                            var instance = entry.InstantiateEffect();
+                            if (instance != null)
+                            {
+                                instance.EffectId = effectId;
+                                instance.DisplayName = definition.DisplayName;
+                                instance.Duration = 0f;
+                                player.ApplyEffect(instance);
+                            }
+                        }
                         // 额外栈层：Refresh
                         for (int r = 1; r < stacks; r++)
                         {
@@ -402,25 +401,7 @@ namespace Kuros.Managers
                         }
                         break;
                     }
-                    else if (definition.StatBonuses.Count > 0)
-                    {
-                        if (s == 0)
-                        {
-                            var bonus = new BuildStatBonusEffect
-                            {
-                                EffectId = effectId,
-                                DisplayName = definition.DisplayName,
-                                StatBonuses = new Godot.Collections.Dictionary<string, float>(definition.StatBonuses),
-                                Duration = 0f,
-                            };
-                            player.ApplyEffect(bonus);
-                        }
-                        else
-                        {
-                            var existing = player.EffectController.GetEffect(effectId);
-                            existing?.Refresh(1);
-                        }
-                    }
+                    // 所有效果统一由 EffectEntries 驱动
                 }
             }
 
