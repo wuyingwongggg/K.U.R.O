@@ -177,8 +177,6 @@ namespace Kuros.Managers
                 return;
             }
             var window = _coreWindowScene.Instantiate<BuildSelectionWindow>();
-            if (window.TitleLabel != null)
-                window.TitleLabel.Text = "选择构筑核心";
 
             var canvasLayer = new CanvasLayer { Layer = 3 };
             GetTree().Root.AddChild(canvasLayer);

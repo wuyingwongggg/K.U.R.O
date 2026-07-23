@@ -8,43 +8,14 @@ namespace Kuros.UI
 {
     public partial class BuildSelectionWindow : Control
     {
-        [Export] public PanelContainer? Panel { get; set; }
-        [Export] public Label? TitleLabel { get; set; }
-        [Export] public Label? HintLabel { get; set; }
+        [Export] public PackedScene? CardTemplate { get; set; }
+        [Export] public Control? CardContainer { get; set; }
 
-        [Export] public VBoxContainer? Card0 { get; set; }
-        [Export] public TextureRect? Icon0 { get; set; }
-        [Export] public Label? NameLabel0 { get; set; }
-        [Export] public Label? BuildClassLabel0 { get; set; }
-        [Export] public Label? DescLabel0 { get; set; }
-
-        [Export] public VBoxContainer? Card1 { get; set; }
-        [Export] public TextureRect? Icon1 { get; set; }
-        [Export] public Label? NameLabel1 { get; set; }
-        [Export] public Label? BuildClassLabel1 { get; set; }
-        [Export] public Label? DescLabel1 { get; set; }
-
-        [Export] public VBoxContainer? Card2 { get; set; }
-        [Export] public TextureRect? Icon2 { get; set; }
-        [Export] public Label? NameLabel2 { get; set; }
-        [Export] public Label? BuildClassLabel2 { get; set; }
-        [Export] public Label? DescLabel2 { get; set; }
-
-        private VBoxContainer[] _cards = null!;
-        private TextureRect?[] _iconRects = null!;
-        private Label[] _nameLabels = null!;
-        private Label[] _buildClassLabels = null!;
-        private Label[] _descLabels = null!;
-
+        private List<BuildCard> _cards = new();
         private List<BuildEffectDefinition> _options = new();
         private Action<BuildEffectDefinition>? _onConfirmed;
         private int _selectedIndex;
         private bool _isOpen;
-
-        private readonly Color _highlightColor = new(0.2f, 0.4f, 0.7f, 0.7f);
-        private readonly Color _normalColor = new(0.1f, 0.1f, 0.15f, 0.5f);
-        private readonly Color _selectedTextColor = Colors.White;
-        private readonly Color _normalTextColor = new(0.7f, 0.7f, 0.7f, 1f);
 
         public override void _Ready()
         {
@@ -55,33 +26,7 @@ namespace Kuros.UI
 
         private void ResolveExports()
         {
-            TitleLabel ??= GetNodeOrNull<Label>("Panel/MainVBox/TitleLabel");
-            HintLabel ??= GetNodeOrNull<Label>("Panel/MainVBox/HintLabel");
-            Panel ??= GetNodeOrNull<PanelContainer>("Panel");
-
-            Card0 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card0");
-            Icon0 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card0/Icon0");
-            NameLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/NameLabel0");
-            BuildClassLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/BuildClassLabel0");
-            DescLabel0 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card0/DescLabel0");
-
-            Card1 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card1");
-            Icon1 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card1/Icon1");
-            NameLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/NameLabel1");
-            BuildClassLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/BuildClassLabel1");
-            DescLabel1 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card1/DescLabel1");
-
-            Card2 ??= GetNodeOrNull<VBoxContainer>("Panel/MainVBox/Cards/Card2");
-            Icon2 ??= GetNodeOrNull<TextureRect>("Panel/MainVBox/Cards/Card2/Icon2");
-            NameLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/NameLabel2");
-            BuildClassLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/BuildClassLabel2");
-            DescLabel2 ??= GetNodeOrNull<Label>("Panel/MainVBox/Cards/Card2/DescLabel2");
-
-            _cards = new[] { Card0!, Card1!, Card2! };
-            _iconRects = new TextureRect?[] { Icon0, Icon1, Icon2 };
-            _nameLabels = new[] { NameLabel0!, NameLabel1!, NameLabel2! };
-            _buildClassLabels = new[] { BuildClassLabel0!, BuildClassLabel1!, BuildClassLabel2! };
-            _descLabels = new[] { DescLabel0!, DescLabel1!, DescLabel2! };
+            CardContainer ??= GetNodeOrNull<Control>("Cards");
         }
 
         public void ShowWindow(List<BuildEffectDefinition> options, Action<BuildEffectDefinition> onConfirmed)
@@ -164,33 +109,53 @@ namespace Kuros.UI
 
         private void PopulateOptions()
         {
-            for (int i = 0; i < 3; i++)
+            foreach (var card in _cards)
+                card.QueueFree();
+            _cards.Clear();
+
+            if (CardTemplate == null || CardContainer == null) return;
+
+            int count = _options.Count;
+            float gap = 16f;
+            float totalWidth = CardContainer.Size.X;
+            float cardWidth = (totalWidth - gap * (count - 1)) / count;
+            float cardHeight = CardContainer.Size.Y;
+
+            for (int i = 0; i < count; i++)
             {
-                bool hasOption = i < _options.Count;
-                _cards[i].Visible = hasOption;
-
-                if (!hasOption) continue;
-
                 var effect = _options[i];
-                if (_iconRects[i] != null)
+                var card = CardTemplate.Instantiate<BuildCard>();
+                card.CardIndex = i;
+                card.NameLabel!.Text = effect.DisplayName;
+                card.DescLabel!.Text = effect.Description;
+                card.BuildClassLabel!.Text = !string.IsNullOrWhiteSpace(effect.BuildClass)
+                    ? $"[{GetBuildClassName(effect.BuildClass)}]"
+                    : "";
+                card.KeyLabel!.Text = $"[{i + 1}]";
+                if (card.Icon != null)
                 {
-                    _iconRects[i]!.Texture = effect.Icon;
-                    _iconRects[i]!.Visible = effect.Icon != null;
+                    card.Icon.Texture = effect.Icon;
+                    card.Icon.Visible = effect.Icon != null;
                 }
-                _nameLabels[i].Text = effect.DisplayName;
-                _descLabels[i].Text = effect.Description;
+                card.Confirmed += OnCardConfirmed;
 
-                string buildClass = effect.BuildClass;
-                if (!string.IsNullOrWhiteSpace(buildClass))
-                {
-                    string className = GetBuildClassName(buildClass);
-                    _buildClassLabels[i].Text = $"[{className}]";
-                }
-                else
-                {
-                    _buildClassLabels[i].Text = "";
-                }
+                float x = i * (cardWidth + gap);
+                card.Position = new Vector2(x, 0);
+                card.Size = new Vector2(cardWidth, cardHeight);
+                CardContainer.AddChild(card);
+                _cards.Add(card);
             }
+        }
+
+        private void OnCardConfirmed(int index)
+        {
+            ConfirmSelection(index);
+        }
+
+        private void UpdateHighlights()
+        {
+            for (int i = 0; i < _cards.Count; i++)
+                _cards[i].IsSelected = i == _selectedIndex;
         }
 
         private static readonly Dictionary<string, string> BuildClassDisplayNames = new()
@@ -206,29 +171,6 @@ namespace Kuros.UI
             if (BuildClassDisplayNames.TryGetValue(buildClass, out var name))
                 return name;
             return buildClass;
-        }
-
-        private void UpdateHighlights()
-        {
-            for (int i = 0; i < _options.Count; i++)
-            {
-                bool selected = i == _selectedIndex;
-                var panelStyle = new StyleBoxFlat
-                {
-                    BgColor = selected ? _highlightColor : _normalColor,
-                    BorderWidthLeft = selected ? 2 : 0,
-                    BorderWidthRight = selected ? 2 : 0,
-                    BorderWidthTop = selected ? 2 : 0,
-                    BorderWidthBottom = selected ? 2 : 0,
-                    BorderColor = selected ? new Color(0.5f, 0.7f, 1f, 0.9f) : Colors.Transparent,
-                    CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6,
-                    CornerRadiusBottomLeft = 6, CornerRadiusBottomRight = 6,
-                    ContentMarginLeft = 10, ContentMarginRight = 10,
-                    ContentMarginTop = 6, ContentMarginBottom = 6
-                };
-                _cards[i].AddThemeStyleboxOverride("panel", panelStyle);
-                _nameLabels[i].AddThemeColorOverride("font_color", selected ? _selectedTextColor : _normalTextColor);
-            }
         }
 
         private void ConfirmSelection(int index)

@@ -1,14 +1,12 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://knxfy6qhgaqq"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://knxfy6qhgaqq"]
 
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_yhl7s"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_8hbpg"]
 
 [resource]
-script = ExtResource("1")
-EffectId = "BuildWaiter_A_0"
-DisplayName = "宴会_血量回复_0"
-Description = "效果：0"
+script = ExtResource("2_8hbpg")
+EffectId = "BuildWaiter_A_001"
+DisplayName = "宴会_血量回复_001"
+Description = "效果：宴会_血量回复_001"
 BuildClass = "Waiter"
-StatBonuses = Dictionary[String, float]({
-"max_health": 10.0
-})
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

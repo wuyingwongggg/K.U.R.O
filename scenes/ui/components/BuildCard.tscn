@@ -1,0 +1,148 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8ft7n6uj1fja"]
+
+[ext_resource type="Script" uid="uid://dm6j0sg78twg8" path="res://scripts/ui/BuildCard.cs" id="1_script"]
+[ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://yyltx3u5ub5e" path="res://resources/ui/卡片.png" id="3_n2045"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_card"]
+shader = ExtResource("2_shader")
+shader_parameter/mouse_screen_pos = Vector2(0, 0)
+shader_parameter/hovering = 0.0
+shader_parameter/screen_scale = 1.0
+
+[node name="BuildCard" type="Control" node_paths=PackedStringArray("CardInner", "CardBg", "RarityGlow", "Icon", "KeyLabel", "NameLabel", "BuildClassLabel", "DescLabel", "ProgressLabel")]
+custom_minimum_size = Vector2(260, 340)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 260.0
+offset_bottom = 340.0
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_script")
+CardInner = NodePath("CardInner")
+CardBg = NodePath("CardInner/CardBg")
+RarityGlow = NodePath("CardInner/RarityGlow")
+Icon = NodePath("CardInner/Icon")
+KeyLabel = NodePath("CardInner/KeyLabel")
+NameLabel = NodePath("CardInner/NameLabel")
+BuildClassLabel = NodePath("CardInner/BuildClassLabel")
+DescLabel = NodePath("CardInner/DescLabel")
+ProgressLabel = NodePath("CardInner/ProgressLabel")
+
+[node name="CardInner" type="Control" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -15.464996
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="CardBg" type="TextureRect" parent="CardInner"]
+material = SubResource("ShaderMaterial_card")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_n2045")
+expand_mode = 4
+stretch_mode = 5
+
+[node name="RarityGlow" type="TextureRect" parent="CardInner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="CardInner"]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 74.0
+offset_bottom = 74.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="CardInner"]
+layout_mode = 1
+offset_left = 223.0
+offset_top = -2.0
+offset_right = 277.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(18.892157, 18.540012, 18.892157, 1)
+theme_override_font_sizes/font_size = 20
+text = "[1]"
+
+[node name="NameLabel" type="Label" parent="CardInner"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 38.0
+offset_top = -332.0
+offset_right = -42.0
+offset_bottom = -310.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 15
+text = "—"
+horizontal_alignment = 1
+
+[node name="BuildClassLabel" type="Label" parent="CardInner"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 183.0
+offset_top = -88.0
+offset_right = -27.0
+offset_bottom = -72.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.4, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="CardInner"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -67.0
+offset_right = -30.0
+offset_bottom = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="CardInner"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -14.0
+offset_right = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.45, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
