@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://c4qxu0dq6uedm"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3]
 
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_fv7eo"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+[ext_resource type="Script" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
@@ -9,4 +8,6 @@ EffectId = "BuildMachine_B_010"
 DisplayName = "延迟损伤"
 Description = "释放核心技能后的buff期间受到的所有伤害都会在buff结束时结算"
 BuildClass = "Machine"
+Rarity = "Epic"
 Weight = 5
+MaxStacks = 1

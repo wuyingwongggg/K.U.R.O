@@ -11,4 +11,5 @@ Description = "发动核心技能时允许获取热量，获取热量的倍率�
 BuildClass = "Machine"
 Rarity = 2
 Weight = 5
+MaxStacks = 1
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

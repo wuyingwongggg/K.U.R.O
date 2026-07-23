@@ -10,5 +10,6 @@ DisplayName = "热量回收"
 Description = "未发动核心技能时，若热量低于15%/30%，则以每秒15%/30%的速度自动恢复到15%/30%"
 BuildClass = "Machine"
 Rarity = 1
+Weight = 10
 MaxStacks = 2
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

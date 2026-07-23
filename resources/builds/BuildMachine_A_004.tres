@@ -9,5 +9,7 @@ EffectId = "BuildMachine_A_004"
 DisplayName = "降温延迟"
 Description = "延长热量自动衰减的延迟时间50% /75% /100%"
 BuildClass = "Machine"
+Rarity = 0
+Weight = 10
 MaxStacks = 3
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

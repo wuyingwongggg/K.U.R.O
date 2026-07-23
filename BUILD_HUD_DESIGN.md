@@ -1,64 +1,74 @@
 # BuildSelectionWindow 伪 3D 卡片 HUD
 
-## 当前问题
+## 当前状态
 
-[BuildSelectionWindow.cs](scripts/ui/BuildSelectionWindow.cs) 有 3 个硬伤：
+[BuildSelectionWindow.cs](scripts/ui/BuildSelectionWindow.cs) + [BuildSelectionWindow.tscn](scenes/ui/windows/BuildSelectionWindow.tscn)：3 张 `VBoxContainer` 卡片，Icon + 名称 + 标签 + 描述。键盘 1/2/3 或 ←→ + Enter 选择。
 
-1. **卡片数量写死 3** → Card0/Card1/Card2 各一套 export，未来 1 张/2 张/5 张场景无法扩展
-2. **卡片无独立节点** → 伪 3D shader 需要每张卡独立的 ShaderMaterial，当前 VBoxContainer 挂不了
-3. **稀有度无差异化** → StyleBoxFlat 换色无法表达 Common/Rare/Epic 的不同边框/光效/动画
+## 目标效果
 
-## 实施步骤
+类似 Balatro 的伪 3D 卡片：鼠标悬停时卡片倾斜并产生光照反射，移开恢复平直。点击或键盘确认选择。
 
-### Step 1：创建 `BuildCard.tscn`（卡片场景模板）— 最底层
+## 方案
 
-新文件：`scenes/ui/components/BuildCard.tscn` + `scripts/ui/BuildCard.cs`
+### 1. 卡片节点改造
+
+每张卡片从 `VBoxContainer` 替换为 `TextureRect`（或 `Control`）+ `pseudo_3d_card.gdshader`（项目中已有）：
 
 ```
-BuildCard (Control, 锚点展开)
-  ├── CardBg (TextureRect + ShaderMaterial)  ← pseudo_3d_card.gdshader
-  │     shader_param/hovering = 0.0
-  │     shader_param/mouse_screen_pos = Vector2(0, 0)
-  │     shader_param/screen_scale = 1.0
-  ├── RarityGlow (TextureRect)               ← 稀有度边框/光效，按 Rarity 换贴图
-  ├── Icon (TextureRect)
-  ├── KeyLabel (Label, "[1]")
-  ├── NameLabel (Label)
-  ├── BuildClassLabel (Label)
-  ├── DescLabel (Label)
-  └── ProgressLabel (Label)
+Card0 (TextureRect)
+  shader_material = ShaderMaterial(pseudo_3d_card.gdshader)
+  shader_param/mouse_uv = Vector2(0.5, 0.5)    ← 每帧更新
+  shader_param/card_texture = card_icon_texture
+  └── VBoxContainer
+        ├── Icon (TextureRect)
+        ├── NameLabel
+        ├── BuildClassLabel
+        └── DescLabel
 ```
 
-`BuildCard.cs` 职责：
-- 暴露 `Rarity`/`EffectId`/`IsHovered`/`IsSelected` 属性
-- `_Process` 中检测鼠标是否悬停，更新 `hovering` + `mouse_screen_pos` shader 参数
-- 稀有度切换时自动换 RarityGlow 贴图
+ShaderMaterial 放在卡片容器上作为背景，内容覆盖其上。
 
-### Step 2：重构 `BuildSelectionWindow.cs` + `.tscn`
+### 2. 鼠标驱动 3D 倾斜
 
-- 移除 Card0/Card1/Card2 硬编码 export
-- 新增：`[Export] public PackedScene? CardTemplate`
-- 新增：`[Export] public Control? CardContainer`（填卡片实例的容器）
-- `PopulateOptions()`：清空 CardContainer → 按 `_options.Count` 动态实例化 N 个 `BuildCard`
-- `_cards` 从 `VBoxContainer[3]` 改为 `List<BuildCard>`
+每张卡片在 `_Process` 中把鼠标屏幕坐标转换为相对于卡片的 UV（0,0=左上，1,1=右下），写入 shader：
 
-### Step 3：鼠标交互
+```csharp
+private void UpdateCardHover(int cardIndex)
+{
+    var card = _cards[cardIndex];
+    var mousePos = card.GetLocalMousePosition();
+    var uv = new Vector2(
+        mousePos.X / card.Size.X,
+        mousePos.Y / card.Size.Y
+    );
+    var mat = card.Material as ShaderMaterial;
+    mat?.SetShaderParameter("mouse_uv", uv);
+}
+```
 
-`BuildCard.cs` 内部处理 `_Input` 或 `gui_input` 信号 → 更新 shader → 点击时触发 `Confirmed` 信号。
+Shader 内部根据 `mouse_uv` 计算旋转矩阵，产生倾斜 + 光照高光效果。
 
-`BuildSelectionWindow` 订阅每个 `BuildCard.Confirmed` → `ConfirmSelection(index)`。
+### 3. 点击选择
 
-### Step 4：键盘保留 + 选择高亮
+`_Input` 中增加 `InputEventMouseButton` 处理，检测点击位置落在哪张卡片上 → `ConfirmSelection(index)`。
 
-- `ui_left/ui_right` 移动 `_selectedIndex`，`ui_accept/attack` 确认 → `ConfirmSelection`
-- `BuildCard.IsSelected = true` 时显示选中高亮效果（shader 额外参数或边框发光）
+### 4. 键盘保留
+
+现有键盘逻辑不变：`ui_left/ui_right` 移动高亮，`ui_accept/attack` 确认。
+
+### Shader 参数接口
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `mouse_uv` | vec2 | 鼠标在卡片上的归一化位置 (0-1) |
+| `card_texture` | sampler2D | 卡片正面纹理（Icon） |
+| `tilt_strength` | float | 倾斜强度（默认 0.3） |
+| `hover_scale` | float | 悬停时缩放（默认 1.05） |
 
 ### 涉及文件
 
-| 文件 | 改动 | 步骤 |
-|---|---|---|
-| `scenes/ui/components/BuildCard.tscn` | 新建 | Step 1 |
-| `scripts/ui/BuildCard.cs` | 新建 | Step 1 |
-| `scenes/ui/windows/BuildSelectionWindow.tscn` | 卡片容器改为动态加载 | Step 2 |
-| `scripts/ui/BuildSelectionWindow.cs` | 动态实例化 N 张 BuildCard，移除 Card0-2 | Step 2 |
-| `shaders/materials/pseudo_3d_card.gdshader` | 已有，不修改 | — |
+| 文件 | 改动 |
+|---|---|
+| `scenes/ui/windows/BuildSelectionWindow.tscn` | 卡片节点替换为 TextureRect + ShaderMaterial |
+| `scripts/ui/BuildSelectionWindow.cs` | 新增鼠标位置追踪、shader 参数更新、鼠标点击选择 |
+| `shaders/materials/pseudo_3d_card.gdshader` | 已有，按参数接口检查是否需要小幅调整 |
