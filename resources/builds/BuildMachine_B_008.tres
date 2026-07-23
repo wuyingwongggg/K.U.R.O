@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_script")
-EffectId = "BuildMachine_B_002"
-DisplayName = "缓速放热"
-Description = "减慢释放核心技能造成的热量衰减速度50%/75%/100%"
+EffectId = "BuildMachine_B_008"
+DisplayName = "热能闪避"
+Description = "释放核心技能后的buff期间，闪避不再消耗CD，而是消耗热量20/10"
 BuildClass = "Machine"
-Rarity = "Common"
+Rarity = "Rare"
 Weight = 10
-MaxStacks = 3
+MaxStacks = 2

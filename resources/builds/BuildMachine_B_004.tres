@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_script")
-EffectId = "BuildMachine_B_002"
-DisplayName = "缓速放热"
-Description = "减慢释放核心技能造成的热量衰减速度50%/75%/100%"
+EffectId = "BuildMachine_B_004"
+DisplayName = "热流冲击"
+Description = "释放核心技能后的buff期间，奔跑和闪避状态每秒都会对接触到的所有对象造成伤害20/30/40"
 BuildClass = "Machine"
 Rarity = "Common"
 Weight = 10

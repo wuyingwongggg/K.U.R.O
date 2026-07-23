@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_script")
-EffectId = "BuildMachine_B_002"
-DisplayName = "缓速放热"
-Description = "减慢释放核心技能造成的热量衰减速度50%/75%/100%"
+EffectId = "BuildMachine_B_007"
+DisplayName = "燃烧效率"
+Description = "释放核心技能后的攻击力加成提升50%/100%，但在buff期间持续衰减，最低衰减到50%/100%"
 BuildClass = "Machine"
-Rarity = "Common"
+Rarity = "Rare"
 Weight = 10
-MaxStacks = 3
+MaxStacks = 2

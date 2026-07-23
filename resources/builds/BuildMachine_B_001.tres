@@ -1,16 +1,13 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://ccquk34dj7pwx"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3]
 
-[ext_resource type="Texture2D" uid="uid://co2lxjpde2r5t" path="res://assets/BuildIcon/Guard_I.png" id="1_4r2dw"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_ytumr"]
+[ext_resource type="Script" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
 
 [resource]
-script = ExtResource("1_ytumr")
+script = ExtResource("1_script")
 EffectId = "BuildMachine_B_001"
-DisplayName = "机械_热量释放_001"
-Description = "效果：1"
+DisplayName = "快速放热"
+Description = "加快释放核心技能造成的热量衰减速度50%/75%/100%"
 BuildClass = "Machine"
-StatBonuses = Dictionary[String, float]({
-"attack_damage": 2.0
-})
-Icon = ExtResource("1_4r2dw")
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
+Rarity = "Common"
+Weight = 10
+MaxStacks = 3

@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=4 format=3 uid="uid://bh73r5tnpb3qh"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bh73r5tnpb3qh"]
 
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_4ae2h"]
 [ext_resource type="Texture2D" uid="uid://lt17133enlt2" path="res://assets/BuildIcon/Machine_I.png" id="1_y2s14"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_4ae2h"]
 
@@ -11,7 +10,7 @@ DisplayName = "战斗升温"
 Description = "允许通过攻击命中获取热量，每次命中获取3%/4%/5%热量
 "
 BuildClass = "Machine"
+Rarity = 0
+Weight = 10
 MaxStacks = 3
 Icon = ExtResource("1_y2s14")
-EffectEntries = Array[ExtResource("1_4ae2h")]([null])
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
