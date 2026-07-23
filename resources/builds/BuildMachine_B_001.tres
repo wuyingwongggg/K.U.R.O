@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bv677i4gn6b53"]
 
-[ext_resource type="Script" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_qvqjv"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,6 +9,5 @@ EffectId = "BuildMachine_B_001"
 DisplayName = "快速放热"
 Description = "加快释放核心技能造成的热量衰减速度50%/75%/100%"
 BuildClass = "Machine"
-Rarity = "Common"
-Weight = 10
 MaxStacks = 3
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

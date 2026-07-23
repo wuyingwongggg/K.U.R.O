@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=2 format=3 uid="uid://byv2j1g00wpw0"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://byv2j1g00wpw0"]
 
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_76pst"]
 
 [resource]
 script = ExtResource("1")
@@ -8,7 +9,4 @@ EffectId = "BuildThrow_A_0"
 DisplayName = "投掷_武器强化_0"
 Description = "效果：0"
 BuildClass = "Throw"
-StatBonuses = Dictionary[String, float]({
-"attack_damage": 2.0
-})
 metadata/_custom_type_script = "uid://3bb6nng4vb53"
