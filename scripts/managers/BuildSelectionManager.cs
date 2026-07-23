@@ -20,8 +20,6 @@ namespace Kuros.Managers
         /// <summary>构筑效果变动时触发（选择新效果、恢复效果等）。</summary>
         public event Action? PickedEffectsChanged;
 
-        private const string GenericBuildClass = BuildClassConstants.Generic;
-
         [ExportGroup("Thresholds")]
         [Export] public ScoreThresholdCurve? ThresholdCurve { get; set; }
 
@@ -31,8 +29,17 @@ namespace Kuros.Managers
         [ExportGroup("Effect Pool")]
         [Export] public Godot.Collections.Array<BuildEffectDefinition> EffectPool { get; set; } = new();
 
-        [ExportGroup("Core Trigger")]
-        [Export(PropertyHint.Range, "0,999999,1")] public int CoreTriggerScore = 0;
+        [ExportGroup("Rarity")]
+        /// <summary>稀有度权重倍率。Key: "Common"/"Rare"/"Epic"，默认 Common=3, Rare=1, Epic=0.3。</summary>
+        [Export] public Godot.Collections.Dictionary<string, float> RarityMultiplier { get; set; } = new()
+        {
+            { "Common", 3.0f },
+            { "Rare", 1.0f },
+            { "Epic", 0.3f },
+        };
+
+        /// <summary>未选核心时使用的默认构筑类别。空 = 不选核心不触发三选一。</summary>
+        [Export] public string DefaultBuildClass { get; set; } = "";
 
         [ExportGroup("Debug")]
         [Export] public bool DebugTrigger { get; set; }
@@ -126,8 +133,8 @@ namespace Kuros.Managers
             if (_isSelectionActive) return;
             if (ThresholdCurve == null) return;
 
-            // 必须选完核心才能进入效果三选一
-            if (!_coreSelected) return;
+            // 必须选完核心（或配置了 DefaultBuildClass）才能进入效果三选一
+            if (!_coreSelected && string.IsNullOrWhiteSpace(DefaultBuildClass)) return;
             if (EffectPool.Count == 0) return;
 
             int nextThreshold = ThresholdCurve.GetCumulativeScore(_triggerCount + 1);
@@ -315,27 +322,77 @@ namespace Kuros.Managers
         {
             var result = new List<BuildEffectDefinition>();
 
-            // 按核心类型 + Generic 过滤
-            var filtered = new List<BuildEffectDefinition>();
+            // 找到当前核心的 AllowedEffectClasses
+            var core = FindActiveCore();
+            // 确定过滤条件
+            var allowedClasses = core?.AllowedEffectClasses;
+            HashSet<string> allowedSet;
+            if (allowedClasses != null && allowedClasses.Count > 0)
+                allowedSet = new HashSet<string>(allowedClasses);
+            else if (!string.IsNullOrWhiteSpace(_playerCoreClass))
+                allowedSet = new HashSet<string> { _playerCoreClass };
+            else if (!string.IsNullOrWhiteSpace(DefaultBuildClass))
+                allowedSet = new HashSet<string> { DefaultBuildClass };
+            else
+                return result;
+
+            // 按 BuildClass 过滤 + MaxStacks 排除 + Rarity 加权（统一路径）
+            var candidates = new List<(BuildEffectDefinition effect, float cumulativeWeight)>();
+            float totalWeight = 0f;
+
             foreach (var effect in EffectPool)
             {
                 if (effect == null) continue;
-                if (string.IsNullOrWhiteSpace(_playerCoreClass)) continue;
-                if (effect.BuildClass == _playerCoreClass || effect.BuildClass == GenericBuildClass)
-                    filtered.Add(effect);
+                if (string.IsNullOrWhiteSpace(effect.BuildClass)) continue;
+                if (!allowedSet.Contains(effect.BuildClass)) continue;
+
+                _pickedEffectIds.TryGetValue(effect.EffectId, out int stacks);
+                if (effect.MaxStacks > 0 && stacks >= effect.MaxStacks)
+                    continue;
+
+                float mult = 1.0f;
+                RarityMultiplier?.TryGetValue(effect.Rarity.ToString(), out mult);
+                float w = effect.Weight * mult;
+                if (w <= 0f) continue;
+
+                totalWeight += w;
+                candidates.Add((effect, totalWeight));
             }
 
-            if (filtered.Count == 0) return result;
-            count = Mathf.Min(count, filtered.Count);
+            if (candidates.Count == 0) return result;
+            int pickCount = Mathf.Min(count, candidates.Count);
 
-            for (int i = 0; i < count; i++)
+            for (int p = 0; p < pickCount; p++)
             {
-                int j = _rng.Next(i, filtered.Count);
-                (filtered[i], filtered[j]) = (filtered[j], filtered[i]);
-                result.Add(filtered[i]);
+                float roll = (float)_rng.NextDouble() * totalWeight;
+                int idx = 0;
+                while (idx < candidates.Count && candidates[idx].cumulativeWeight < roll)
+                    idx++;
+                if (idx >= candidates.Count) idx = candidates.Count - 1;
+
+                var picked = candidates[idx].effect;
+                result.Add(picked);
+
+                // 移除已选，重新计算权重
+                float removedWeight = picked.Weight;
+                float removedMult = 1f;
+                RarityMultiplier?.TryGetValue(picked.Rarity.ToString(), out removedMult);
+                totalWeight -= removedWeight * removedMult;
+                candidates.RemoveAt(idx);
             }
 
             return result;
+        }
+
+        private BuildCoreDefinition? FindActiveCore()
+        {
+            if (string.IsNullOrWhiteSpace(_selectedCoreId)) return null;
+            foreach (var core in CorePool)
+            {
+                if (core?.CoreId == _selectedCoreId)
+                    return core;
+            }
+            return null;
         }
 
         /// <summary>跨场景恢复核心效果和所有已选构筑效果。</summary>

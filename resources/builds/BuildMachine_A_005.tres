@@ -9,4 +9,5 @@ EffectId = "BuildMachine_A_005"
 DisplayName = "惯性驱动"
 Description = "连续移动方向不变时热量获取速度递增50%/75%/100%，改变方向后重置"
 BuildClass = "Machine"
+MaxStacks = 3
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

@@ -10,5 +10,6 @@ EffectId = "BuildMachine_A_002"
 DisplayName = "扩容核心"
 Description = "热量上限提升30%/40%/50%"
 BuildClass = "Machine"
+MaxStacks = 3
 Icon = ExtResource("1_nh55g")
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

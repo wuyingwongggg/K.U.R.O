@@ -37,15 +37,19 @@
 
 ---
 
-### Phase 2：卡牌选择逻辑 — BuildSelectionManager
+**✅ 已完成**
 
 **依赖 Phase 1 数据到位**
 
-1. `PickRandomEffects()` 改为加权随机：
-   - 按 activeCore 的 `AllowedEffectClasses` 过滤
-   - 按 `effectiveWeight = Weight * RarityMultiplier[rarity]` 加权抽样
-   - 排除 `_pickedEffectIds[effectId] >= effect.MaxStacks` 的卡牌
-   - Shuffle 取 count 个
+✅ 1. `PickRandomEffects()` 改为加权随机：
+✅    - **有 activeCore 且 `AllowedEffectClasses` 非空**：按数组内容过滤，如 `["Machine", "Generic"]` 只出 Machine + Generic 卡
+✅    - **`AllowedEffectClasses` 为空或 null**：仅按 `_playerCoreClass` 过滤（不自动加 Generic）
+✅    - 按 `effectiveWeight = Weight * RarityMultiplier[rarity]` 加权抽样
+	 - `Weight`（卡牌级）：控制同类稀有度内部的相对概率。如两张 Common 卡 Weight=20 的比 Weight=10 的多出现一倍
+	 - `RarityMultiplier`（系统级）：控制不同稀有度之间的整体出现比例。如 Common×3, Epic×0.3 → Common 出现频率是 Epic 的 10 倍
+	 - 改单卡概率调 Weight，改整体稀有度分布调 RarityMultiplier，互不干扰
+✅    - 排除 `_pickedEffectIds[effectId] >= effect.MaxStacks` 的卡牌
+✅    - 加权抽样：累积权重法逐张抽取，抽一张移一张重算权重
 
 2. 新增 export `RarityMultiplier` Dictionary：
    ```csharp
@@ -57,6 +61,19 @@
 
 **涉及文件**：
 - `scripts/managers/BuildSelectionManager.cs`
+
+#### 可选增强：未选核心时默认卡池
+
+当前 `CheckAndTriggerSelection` 第 130 行要求 `_coreSelected == true`，不选核心永远不会触发三选一。如需支持不选核心也能获得卡牌：
+
+✅ 1. 新增 export `DefaultBuildClass`（默认空 = 保持旧行为）：
+   ```csharp
+   [Export] public string DefaultBuildClass { get; set; } = "";
+   ```
+✅ 2. `CheckAndTriggerSelection` 守卫改为：`if (!_coreSelected && string.IsNullOrWhiteSpace(DefaultBuildClass)) return;`
+✅ 3. `PickRandomEffects` 回退路径中，`_playerCoreClass` 为空时用 `DefaultBuildClass` 替代
+
+不影响已选核心的玩家，核心选择后 `_coreSelected = true`，走 AllowedEffectClasses 路径不变。
 
 ---
 
