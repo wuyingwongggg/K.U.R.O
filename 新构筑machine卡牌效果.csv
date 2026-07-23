@@ -1,5 +1,5 @@
 ﻿卡牌名称,卡牌ID,卡牌稀有度,构筑职业ID,构筑流派分类,效果,思路
-攻击生热,BuildMachine_A_001,Common,machine,热量累积强化,允许通过攻击命中获取热量，每次命中获取3%/4%/5%热量,
+战斗升温,BuildMachine_A_001,Common,machine,热量累积强化,允许通过攻击命中获取热量，每次命中获取3%/4%/5%热量,
 扩容核心,BuildMachine_A_002,Common,machine,热量累积强化,热量上限 提升30%/40%/50%,
 减容核心,BuildMachine_A_003,Common,machine,热量累积强化,热量上限 降低30%/40%/50%,
 降温延迟,BuildMachine_A_004,Common,machine,热量累积强化,延长热量自动衰减的延迟时间50% /75% /100%,

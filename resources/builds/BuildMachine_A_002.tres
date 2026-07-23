@@ -1,17 +1,14 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://cmuj2nvt6bdcc"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=4 format=3 uid="uid://cmuj2nvt6bdcc"]
 
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_52r4t"]
 [ext_resource type="Texture2D" uid="uid://xjyq8rkns3dh" path="res://assets/BuildIcon/Machine_II.png" id="1_nh55g"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_52r4t"]
 
 [resource]
 script = ExtResource("2_52r4t")
 EffectId = "BuildMachine_A_002"
-DisplayName = "机械_热量累积强化_003"
-Description = "效果：2"
+DisplayName = "扩容核心"
+Description = "热量上限提升30%/40%/50%"
 BuildClass = "Machine"
-StatBonuses = Dictionary[String, float]({
-"attack_damage": 1.0,
-"speed": 10.0
-})
 Icon = ExtResource("1_nh55g")
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

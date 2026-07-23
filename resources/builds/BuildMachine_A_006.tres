@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://dpspa5pca6by8"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_6bbx0"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_1gaxe"]
+
+[resource]
+script = ExtResource("2_1gaxe")
+EffectId = "BuildMachine_A_006"
+DisplayName = "热量回收"
+Description = "未发动核心技能时，若热量低于15%/30%，则以每秒15%/30%的速度自动恢复到15%/30%"
+BuildClass = "Machine"
+Rarity = 1
+metadata/_custom_type_script = "uid://3bb6nng4vb53"
