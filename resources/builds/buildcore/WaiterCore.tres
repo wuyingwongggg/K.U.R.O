@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3 uid="uid://b5spe72g4msa6"]
 
-[ext_resource type="Script" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/builds/WaiterCore.tscn" id="2"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://btf6tubgpkpq0" path="res://scenes/builds/WaiterCore.tscn" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -9,4 +9,5 @@ CoreId = "WaiterCore"
 DisplayName = "宴会协议核心"
 Description = "药剂：每过N秒后获取一针药剂，按下核心技能键消耗一针药剂恢复血量。"
 BuildClass = "Waiter"
+AllowedEffectClasses = Array[String](["Waiter"])
 CoreEffectScene = ExtResource("2")

@@ -10,6 +10,5 @@ DisplayName = "高速导热"
 Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，且非发动核心技能时的热量衰减速度提高75%/100%"
 BuildClass = "Machine"
 Rarity = 1
-Weight = 10
 MaxStacks = 2
 metadata/_custom_type_script = "uid://3bb6nng4vb53"
