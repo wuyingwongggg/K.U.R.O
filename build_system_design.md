@@ -1,173 +1,150 @@
-# 武器构筑系统设计文档 v4.0
+# Machine 构筑卡牌系统
+
+## 实施顺序（6 个 Phase，增量可测试）
 
 ---
 
-## 一、系统概述
+### Phase 1：数据层 — BuildEffectDefinition / BuildCoreDefinition 新字段
 
-构筑系统分为两个阶段：
+**只加字段，不改逻辑**
 
-| 阶段 | 名称 | 时机 | 内容 |
-|---|---|---|---|
-| 第一阶段 | 构筑核心（Build Core） | 游戏开局某个阶段 | N选1，选择一个核心，决定后续构筑方向 |
-| 第二阶段 | 构筑效果（Build Effect） | 分数三选一 / 宝箱 | 数值加成，仅出现与核心同类型 + 通用类型 |
+1. `BuildEffectDefinition.cs` 新增：
+   - `BuildBranch` (string)
+   - `BuildRarity` 枚举 (Common, Rare, Epic)
+   - `Rarity` (BuildRarity)
+   - `Weight` (int)
+   - `StackBonusValues` (string, 逗号分隔如 "5,10,15")
+   - `MaxStacks` (int, 0=自动推导)
+   - `EffectScene` → `EffectEntries` (Array\<AttackEffectEntry\>)
 
-**核心规则：一局游戏只能拥有一个构筑核心。选择后，所有后续构筑效果卡牌均过滤为该核心的 BuildClass + 通用类型。**
+2. `BuildCoreDefinition.cs` 新增：
+   - `AllowedEffectClasses` (Array\<string\>，如 ["Machine", "Generic"])
 
----
+3. 18 个 `resources/builds/BuildMachine_*.tres` 补上新字段（从 CSV 数据填充）
 
-## 二、构筑核心（Build Core）
+4. 3 个 `resources/builds/core/*.tres` 补上 `AllowedEffectClasses`
 
-### 设计定位
+**验证**：dotnet build + 打开 .tres 检查 Inspector 字段可见，编译时 `AttackEffectEntry` 引用正确
 
-- 获得一个额外的核心机制（非数值提升，而是行为改变）
-- 按下核心技能键触发
-- HUD 上显示核心相关 UI（热量槽 / 药剂计数等）
-- 一局游戏仅可选择一个
-
-### 核心列表
-
-#### Machine Core — 热量表
-
-**效果：** 攻击和移动时累计热量。按下核心技能键清空当前全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。
-
-**HUD：** 热量槽（0-100 条形图），随攻击/移动上涨，释放后清空。
-
-**流派 A（热量累积强化）：** 提升热量累积速度、热量上限
-**流派 B（热量释放强化）：** 提升释放后伤害倍率、持续时间
-
-#### Waiter Core — 药剂
-
-**效果：** 每过 N 秒获取一针药剂（有最大携带上限）。按下核心技能键消耗一针药剂恢复血量。
-
-**HUD：** 药剂计数（图标 + 数字），显示当前持有药剂数。
-
-**流派 A（血量回复强化）：** 提升药剂回复量、降低获取间隔
-**流派 B（血量扣除强化）：** 消耗药剂时额外对周围敌人造成基于消耗量的伤害
-
-#### Throw Core — 待定
-
-**流派 A（投掷类武器强化）：** 待定
-**流派 B（投掷类家具强化）：** 待定
+**涉及文件**：
+- `scripts/systems/BuildEffectDefinition.cs`
+- `scripts/systems/BuildCoreDefinition.cs`
+- `resources/builds/BuildMachine_*.tres` (18 个)
+- `resources/builds/core/*.tres` (3 个)
 
 ---
 
-## 三、构筑效果（Build Effect）
+### Phase 2：卡牌选择逻辑 — BuildSelectionManager
 
-### 设计定位
+**依赖 Phase 1 数据到位**
 
-- 数值微调型，围绕核心流派叠加
-- 三选一弹窗 + 宝箱获取
-- 过滤规则：已选核心的 BuildClass + 通用类型（BuildClass="Generic"）
+1. `PickRandomEffects()` 改为加权随机：
+   - 按 activeCore 的 `AllowedEffectClasses` 过滤
+   - 按 `effectiveWeight = Weight * RarityMultiplier[rarity]` 加权抽样
+   - 排除 `_pickedEffectIds[effectId] >= effect.MaxStacks` 的卡牌
+   - Shuffle 取 count 个
 
-### 命名规范
+2. 新增 export `RarityMultiplier` Dictionary：
+   ```csharp
+   [Export] public Godot.Collections.Dictionary<string, float> RarityMultiplier { get; set; }
+   ```
+   默认：`{"Common": 3.0, "Rare": 1.0, "Epic": 0.3}`
 
-`Build{构筑类型}_{流派}_{序号}`
+3. `ApplyEffectBonuses()` 中 EffectScene 逻辑改为遍历 EffectEntries
 
-示例：
-- `BuildMachine_A_0` — Machine 核心，流派 A（热量累积），第 0 个效果
-- `BuildWaiter_B_2` — Waiter 核心，流派 B（血量扣除），第 2 个效果
-- `BuildGeneric_X_0` — 通用效果，任何核心均可出现
+**验证**：加权随机分布合理、MaxStacks 到期卡牌不再出现、MachineCore 下不出现 Waiter/Throw 卡牌
 
-### 三选一规则
-
-1. 从效果池中筛选：`effect.BuildClass == _playerCore.BuildClass || effect.BuildClass == "Generic"`
-2. 从筛选结果中随机抽取 3 个
-3. 三张卡片可来自同一流派
+**涉及文件**：
+- `scripts/managers/BuildSelectionManager.cs`
 
 ---
 
-## 四、得分系统
+### Phase 3：效果应用 — BuildStatBonusEffect 堆叠
 
-### 得分来源
+**依赖 Phase 1 数据到位，Phase 2 堆叠追踪完成**
 
-| 来源 | 得分 |
-|---|---|
-| 击杀普通敌人 | +10分 |
-| 击杀精英敌人 | +50分 |
-| 击杀Boss | +100分 |
+1. `BuildStatBonusEffect.OnApply()` 从调用方接收当前 stackCount
+2. 解析 `StackBonusValues`，按 `stackCount - 1` 索引取值
+3. 计算 `effectiveValue = baseValue * (1 + tierValue / 100)`
+4. `BuildSelectionManager.ApplyEffectBonuses()` 传入 stackCount
 
-### 触发机制
+**验证**：同一卡牌选第 2、3 次时 Stat 增幅递增（5% → 10% → 15%）
+
+**涉及文件**：
+- `scripts/core/effects/BuildStatBonusEffect.cs`
+- `scripts/managers/BuildSelectionManager.cs`（小改，传入 stackCount）
+
+---
+
+### Phase 4：CSV 导出 — ExportCsv.gd
+
+**依赖 Phase 1 数据到位**
+
+1. 新增 `_export_builds()` 方法
+2. 读取 `resources/builds/*.tres`
+3. 序列化 `EffectEntries` 的 Scene 路径 + PropertyOverrides 文本
+4. 输出 `data/builds.csv`，列头动态扩展 EffectScene_N / EffectOverrides_N
+5. `_run()` 中补上 `_export_builds()` 调用
+
+**验证**：运行导出 → `data/builds.csv` 生成，字段完整
+
+**涉及文件**：
+- `scripts/tools/ExportCsv.gd`
+
+---
+
+### Phase 5：CSV 导入 — ImportCsv.gd
+
+**依赖 Phase 4 CSV 格式稳定**
+
+1. 新增 `import_builds_from_csv()` 方法
+2. 读取 `data/builds.csv`
+3. 解析 EffectScene_N / EffectOverrides_N 列，重建 `AttackEffectEntry` 数组
+4. 回写对应 `.tres` 文件
+5. `import_all()` 中补上 `import_builds_from_csv()` 调用
+
+**验证**：修改 CSV 数值 → 运行导入 → `.tres` 文件字段更新
+
+**涉及文件**：
+- `scripts/tools/ImportCsv.gd`
+
+---
+
+### Phase 6：18 张 Machine 卡牌的 .tres 批量生成
+
+**依赖 Phase 1-3 完成**
+
+1. 从 `新构筑machine卡牌效果.csv` 批量生成 18 个 `BuildMachine_*.tres`
+2. 每个 `.tres` 填充：EffectId, DisplayName, BuildBranch, Rarity, Weight, StackBonusValues
+3. EffectEntries 暂时留空（需要 Phase 3 完成后逐个挂载效果场景）
+
+**验证**：18 个 .tres 在 Inspector 中字段正确，BuildSelectionManager 能加载并随机选卡
+
+**涉及文件**：
+- `resources/builds/BuildMachine_*.tres` (18 个，新建或覆盖)
+
+---
+
+### 依赖关系图
 
 ```
-每积累 200分 → 触发一次三选一弹窗
-全程预期触发次数 ≈ 8次（5场景标准流程）
+Phase 1 (数据层)
+  ├── Phase 2 (选择逻辑)
+  │     └── Phase 3 (效果堆叠)
+  ├── Phase 4 (CSV 导出)
+  │     └── Phase 5 (CSV 导入)
+  └── Phase 6 (.tres 批量生成)
 ```
 
----
+Phase 2 和 Phase 4 可以并行。Phase 3 依赖 Phase 2。Phase 5 依赖 Phase 4。Phase 6 可最早开始（与 Phase 2 并行），涉及文件最多但逻辑最简单。
 
-## 五、挑战宝箱系统
+### 总计
 
-- 每个关卡 **50-60%概率** 出现挑战
-- 完成挑战必定开箱，失败无惩罚
-- 宝箱给予构筑效果（同样过滤为核心类型 + 通用）
-- 宝箱给出的构筑效果不计入得分触发计数
-
----
-
-## 六、六种构筑概览
-
-| 构筑ID | 构筑名称 | 对应场景 | 核心机制 |
-|---|---|---|---|
-| Build_Machine | 机械协议 | 场景2 | 热量表 — 累计热量释放增伤 |
-| Build_Waiter | 宴会协议 | 场景3 | 药剂 — 周期性获取药剂回血 |
-| Build_Throw | 投掷协议 | 场景4 | 待定 |
-| Build_4 | 待定 | 场景5 | 待定 |
-| Build_5 | 待定 | 场景6 | 待定 |
-| Build_General | 通用协议 | 全场景 | 无核心机制，通用数值加成 |
-
----
-
-## 七、数值膨胀控制
-
-### 构筑效果侧
-
-- 每种效果叠加上限 4-6 次（由 MaxStacks 控制）
-- 数值提升控制在基础值 5-10% 以内
-
-### 敌人成长侧
-
-| 场景 | 血量倍率 | 伤害倍率 |
+| Phase | 改动文件数 | 复杂度 |
 |---|---|---|
-| 场景1 | ×1.0 | ×1.0 |
-| 场景2 | ×1.3 | ×1.2 |
-| 场景3 | ×1.6 | ×1.4 |
-| 场景4 | ×2.0 | ×1.7 |
-| 场景5 | ×2.5 | ×2.0 |
-
----
-
-## 八、数值体系（×10扩大基数）
-
-### 构筑效果固定值参考范围
-
-| 效果类型 | 推荐固定值 | 叠加上限 | 总计最大增益 |
-|---|---|---|---|
-| 基础伤害 | +2点 | 6次 | +12点 |
-| 武器伤害 | +5点 | 5次 | +25点 |
-| 攻击速度 | +0.05 | 4次 | +0.20 |
-| 回血量 | +1点 | 4次 | +4点 |
-| 冷却时间 | -0.3秒 | 4次 | -1.2秒 |
-
-### 伤害公式
-
-```
-实际伤害 = round((B + W×N) × MT)
-
-B   玩家基础攻击（10-100）
-W   武器伤害（20-100）
-N   攻击段数（1-5）
-MT  武器类型倍率
-	拳击类 × 1.3 / 挥砍类 × 1.1 / 戳刺类 × 1.0 / 投掷类 × 0.8
-```
-
----
-
-## 九、待确认事项
-
-- [ ] 构筑核心出现的具体时机（第几个场景 / 分数门槛）
-- [ ] N选1 的 N 是多少（3 还是 4）
-- [ ] Throw 核心的具体机制设计
-- [ ] 核心技能键的按键绑定
-- [ ] 通用类型（Generic）包含哪些效果
-- [ ] 宝箱构筑效果是否和三选一共用同一效果池
-- [ ] 玩家基础攻击 B 的成长路径
+| 1 | ~25 个（2 C# + 18 tres + 3 core tres） | 低（纯加字段） |
+| 2 | 1 个 C# | 中（核心算法） |
+| 3 | 2 个 C# | 低（数学计算） |
+| 4 | 1 个 GDScript | 中（序列化逻辑） |
+| 5 | 1 个 GDScript | 中（反序列化逻辑） |
+| 6 | 18 个 .tres | 低（机械化生成） |
