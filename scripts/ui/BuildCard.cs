@@ -49,53 +49,91 @@ namespace Kuros.UI
 
         private bool _isHovered;
         private ShaderMaterial? _shaderMat;
+        private TextureRect? _displayRect;
+        private SubViewport? _subViewport;
         private static readonly Vector2 ReferenceSize = new(500, 340);
         private float _currentRotY;
         private float _currentRotX;
         private float _currentHoverScale = 1f;
 
+        [Export(PropertyHint.Range, "10,170,1")]
+        public float MaxTiltFov { get; set; } = 30f;
+
         public void ApplyCardScale()
         {
             float ratio = Mathf.Min(Size.X / ReferenceSize.X, 1f);
-            if (NameLabel != null)
-                NameLabel.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(30 * ratio));
-            if (KeyLabel != null)
-                KeyLabel.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(20 * ratio));
-            if (BuildClassLabel != null)
-                BuildClassLabel.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
-            if (DescLabel != null)
-                DescLabel.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
-            if (ProgressLabel != null)
-                ProgressLabel.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(10 * ratio));
+            NameLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(30 * ratio));
+            KeyLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(20 * ratio));
+            BuildClassLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
+            DescLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
+            ProgressLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(10 * ratio));
+        }
+
+        public void SyncViewportSize()
+        {
+            if (_subViewport == null) return;
+            _subViewport.Size = new Vector2I(Mathf.RoundToInt(Size.X), Mathf.RoundToInt(Size.Y));
         }
 
         public override void _Ready()
         {
-            var hoverTarget = CardInner ?? this;
-            hoverTarget.MouseEntered += () => { _isHovered = true; ZIndex = 1; };
-            hoverTarget.MouseExited += () => { _isHovered = false; ZIndex = 0; };
             ResolveExports();
+
+            // Steal shader from CardBg, clear from all children (rendered raw into viewport)
             _shaderMat = CardBg?.Material as ShaderMaterial;
             if (_shaderMat != null)
             {
                 _shaderMat = (ShaderMaterial)_shaderMat.Duplicate(true);
-                CardBg!.Material = _shaderMat;
-                if (RarityGlow != null) RarityGlow.Material = _shaderMat;
-                if (Icon != null) Icon.Material = _shaderMat;
+                CardBg!.Material = null;
+                if (RarityGlow != null) RarityGlow.Material = null;
+                if (Icon != null) Icon.Material = null;
             }
+
+            // Create SubViewport and move CardInner into it
+            _subViewport = new SubViewport
+            {
+                Name = "CardViewport",
+                TransparentBg = true,
+                Size = new Vector2I(Mathf.RoundToInt(Size.X), Mathf.RoundToInt(Size.Y)),
+            };
+            AddChild(_subViewport);
+
+            if (CardInner != null)
+            {
+                RemoveChild(CardInner);
+                _subViewport.AddChild(CardInner);
+                CardInner.SetAnchorsPreset(LayoutPreset.FullRect);
+            }
+
+            // DisplayRect shows the rendered viewport texture with shader
+            _displayRect = new TextureRect
+            {
+                Name = "DisplayRect",
+                MouseFilter = MouseFilterEnum.Stop,
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                StretchMode = TextureRect.StretchModeEnum.Scale,
+                Texture = _subViewport.GetTexture(),
+                Material = _shaderMat,
+            };
+            _displayRect.SetAnchorsPreset(LayoutPreset.FullRect);
+            _displayRect.MouseEntered += () => { _isHovered = true; ZIndex = 1; };
+            _displayRect.MouseExited += () => { _isHovered = false; ZIndex = 0; };
+            _displayRect.GuiInput += OnDisplayRectGuiInput;
+            AddChild(_displayRect);
+
             ApplyEnabledState();
         }
 
         public override void _Process(double delta)
         {
-            if (!_enabled || CardInner == null) return;
+            if (!_enabled || _displayRect == null) return;
 
             float targetRotY = 0f, targetRotX = 0f, targetScale = 1f;
 
             if (_isHovered)
             {
-                var pos = CardInner.GetLocalMousePosition();
-                var size = CardInner.Size;
+                var pos = _displayRect.GetLocalMousePosition();
+                var size = _displayRect.Size;
                 if (size.X > 0 && size.Y > 0)
                 {
                     float u = Mathf.Clamp(pos.X / size.X, 0f, 1f);
@@ -114,12 +152,13 @@ namespace Kuros.UI
             _shaderMat?.SetShaderParameter("rot_y_deg", _currentRotY);
             _shaderMat?.SetShaderParameter("rot_x_deg", _currentRotX);
 
-            if (CardInner != null)
-            {
-                CardInner.PivotOffset = CardInner.Size / 2f;
-                CardInner.Scale = new Vector2(_currentHoverScale, _currentHoverScale);
-                CardInner.Position = new Vector2(_currentRotY * 0.4f, _currentRotX * 0.4f);
-            }
+            float tiltMag = Mathf.Clamp(
+                Mathf.Sqrt(_currentRotY * _currentRotY + _currentRotX * _currentRotX) / TiltStrength, 0f, 1f);
+            float fov = Mathf.Lerp(170f, MaxTiltFov, tiltMag);
+            _shaderMat?.SetShaderParameter("fov", fov);
+
+            _displayRect.PivotOffset = _displayRect.Size / 2f;
+            _displayRect.Scale = new Vector2(_currentHoverScale, _currentHoverScale);
 
             bool atRest = !_isHovered
                 && Mathf.Abs(_currentRotY) < 0.05f
@@ -130,15 +169,11 @@ namespace Kuros.UI
                 _currentRotY = 0f;
                 _currentRotX = 0f;
                 _currentHoverScale = 1f;
-                if (CardInner != null)
-                {
-                    CardInner.Position = Vector2.Zero;
-                    CardInner.Scale = Vector2.One;
-                }
+                _displayRect.Scale = Vector2.One;
             }
         }
 
-        public override void _GuiInput(InputEvent @event)
+        private void OnDisplayRectGuiInput(InputEvent @event)
         {
             if (!_enabled) return;
             if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
@@ -161,11 +196,8 @@ namespace Kuros.UI
                 _currentRotY = 0f;
                 _currentRotX = 0f;
                 _currentHoverScale = 1f;
-                if (CardInner != null)
-                {
-                    CardInner.Position = Vector2.Zero;
-                    CardInner.Scale = Vector2.One;
-                }
+                if (_displayRect != null)
+                    _displayRect.Scale = Vector2.One;
                 _shaderMat?.SetShaderParameter("rot_y_deg", 0f);
                 _shaderMat?.SetShaderParameter("rot_x_deg", 0f);
             }
@@ -174,14 +206,14 @@ namespace Kuros.UI
         private void ResolveExports()
         {
             CardInner ??= GetNodeOrNull<Control>("CardInner");
-            CardBg ??= GetNodeOrNull<TextureRect>("CardBg");
-            RarityGlow ??= GetNodeOrNull<TextureRect>("RarityGlow");
-            Icon ??= GetNodeOrNull<TextureRect>("Icon");
-            KeyLabel ??= GetNodeOrNull<Label>("KeyLabel");
-            NameLabel ??= GetNodeOrNull<Label>("NameLabel");
-            BuildClassLabel ??= GetNodeOrNull<Label>("BuildClassLabel");
-            DescLabel ??= GetNodeOrNull<Label>("DescLabel");
-            ProgressLabel ??= GetNodeOrNull<Label>("ProgressLabel");
+            CardBg ??= GetNodeOrNull<TextureRect>("CardInner/CardBg");
+            RarityGlow ??= GetNodeOrNull<TextureRect>("CardInner/RarityGlow");
+            Icon ??= GetNodeOrNull<TextureRect>("CardInner/Icon");
+            KeyLabel ??= GetNodeOrNull<Label>("CardInner/KeyLabel");
+            NameLabel ??= GetNodeOrNull<Label>("CardInner/NameLabel");
+            BuildClassLabel ??= GetNodeOrNull<Label>("CardInner/BuildClassLabel");
+            DescLabel ??= GetNodeOrNull<Label>("CardInner/DescLabel");
+            ProgressLabel ??= GetNodeOrNull<Label>("CardInner/ProgressLabel");
         }
     }
 }

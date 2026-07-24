@@ -30,6 +30,7 @@ NameLabel = NodePath("CardInner/NameLabel")
 BuildClassLabel = NodePath("CardInner/BuildClassLabel")
 DescLabel = NodePath("CardInner/DescLabel")
 ProgressLabel = NodePath("CardInner/ProgressLabel")
+TiltStrength = 30.0
 HoverScale = 1.3
 metadata/_edit_use_anchors_ = true
 
@@ -87,10 +88,10 @@ metadata/_edit_use_anchors_ = true
 [node name="KeyLabel" type="Label" parent="CardInner"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.82
-anchor_top = 0.01
-anchor_right = 0.98
-anchor_bottom = 0.09
+anchor_left = 0.85
+anchor_top = 0.05
+anchor_right = 0.95
+anchor_bottom = 0.1
 offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
@@ -100,14 +101,15 @@ theme_override_font_sizes/font_size = 20
 text = "[1]"
 horizontal_alignment = 2
 vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="NameLabel" type="Label" parent="CardInner"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.25
-anchor_top = 0.01
+anchor_top = 0.04
 anchor_right = 0.75
-anchor_bottom = 0.09
+anchor_bottom = 0.1
 offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0

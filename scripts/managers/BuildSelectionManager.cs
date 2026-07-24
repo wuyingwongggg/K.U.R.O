@@ -182,9 +182,11 @@ namespace Kuros.Managers
             }
             var window = _coreWindowScene.Instantiate<BuildSelectionWindow>();
 
-            var canvasLayer = new CanvasLayer { Layer = 3 };
+            var canvasLayer = new CanvasLayer { Layer = 2 };
             GetTree().Root.AddChild(canvasLayer);
             canvasLayer.AddChild(window);
+
+            window.TreeExiting += () => _isSelectionActive = false;
 
             window.ShowWindow(options, chosenEffect =>
             {
@@ -253,9 +255,7 @@ namespace Kuros.Managers
         {
             if (_boundPlayer == null || !IsInstanceValid(_boundPlayer)) return;
 
-            GD.Print($"[BuildSelection] CardsPerSelection = {CardsPerSelection}");
             var options = PickRandomEffects(CardsPerSelection);
-            GD.Print($"[BuildSelection] PickRandomEffects returned {options.Count} cards");
             if (options.Count == 0) return;
 
             _isSelectionActive = true;
@@ -263,9 +263,11 @@ namespace Kuros.Managers
             _windowScene ??= GD.Load<PackedScene>("res://scenes/ui/windows/BuildSelectionWindow.tscn");
             var window = _windowScene.Instantiate<BuildSelectionWindow>();
 
-            var canvasLayer = new CanvasLayer { Layer = 3 };
+            var canvasLayer = new CanvasLayer { Layer = 2 };
             GetTree().Root.AddChild(canvasLayer);
             canvasLayer.AddChild(window);
+
+            window.TreeExiting += () => _isSelectionActive = false;
 
             window.ShowWindow(options, chosenEffect =>
             {
@@ -363,10 +365,8 @@ namespace Kuros.Managers
                 candidates.Add((effect, totalWeight));
             }
 
-            GD.Print($"[BuildSelection] PickRandomEffects: requested={count}, candidates={candidates.Count}, allowedSet=[{string.Join(",", allowedSet)}]");
             if (candidates.Count == 0) return result;
             int pickCount = Mathf.Min(count, candidates.Count);
-            GD.Print($"[BuildSelection] PickRandomEffects: pickCount={pickCount}");
 
             for (int p = 0; p < pickCount; p++)
             {

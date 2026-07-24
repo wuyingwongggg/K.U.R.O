@@ -7,7 +7,7 @@ shader_type canvas_item;
 
 uniform bool cull_backface = true;
 uniform bool use_front = true;
-uniform float fov : hint_range(1, 179) = 90.0;
+uniform float fov : hint_range(1, 179) = 1.0;
 uniform float rot_y_deg : hint_range(-360, 360) = 0.0;
 uniform float rot_x_deg : hint_range(-360, 360) = 0.0;
 uniform float inset : hint_range(0, 1) = 0.0;

@@ -79,6 +79,11 @@ namespace Kuros.UI
 
             if (@event is InputEventKey keyEvent && keyEvent.Pressed)
             {
+                if (keyEvent.Keycode == Key.Escape)
+                {
+                    CloseWindow();
+                    return;
+                }
                 int numKey = (int)(keyEvent.Keycode - Key.Key1);
                 if (numKey >= 0 && numKey < _options.Count)
                 {
@@ -100,7 +105,7 @@ namespace Kuros.UI
                 return;
             }
 
-            if (@event.IsActionPressed("ui_accept") || @event.IsActionPressed("attack"))
+            if (@event.IsActionPressed("ui_accept"))
             {
                 ConfirmSelection(_selectedIndex);
                 return;
@@ -118,7 +123,6 @@ namespace Kuros.UI
             int count = _options.Count;
             float gap = 16f;
             float totalWidth = CardContainer.Size.X;
-            GD.Print($"[PopulateOptions] CardContainer.Size={CardContainer.Size}, count={count}");
             float cardWidth = (totalWidth - gap * (count - 1)) / count;
             float cardHeight = Mathf.Min(cardWidth * (340f / 260f), CardContainer.Size.Y);
             float cardY = (CardContainer.Size.Y - cardHeight) / 2f;
@@ -145,6 +149,7 @@ namespace Kuros.UI
                 CardContainer.AddChild(card);
                 card.Position = new Vector2(x, cardY);
                 card.Size = new Vector2(cardWidth, cardHeight);
+                card.SyncViewportSize();
                 card.ApplyCardScale();
                 _cards.Add(card);
             }
