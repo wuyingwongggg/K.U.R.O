@@ -7,7 +7,7 @@
 script = ExtResource("1")
 CoreId = "ThrowCore"
 DisplayName = "投掷协议核心"
-Description = "投掷：进入投掷状态时显示指示器（MainCharacter.HitboxEditorPreview），按下核心技能键在指示器位置生成一个一次性投掷道具。"
+Description = "投掷：进入投掷状态时显示指示器，按下核心技能键在指示器位置生成一个一次性投掷道具。"
 BuildClass = "Throw"
 AllowedEffectClasses = Array[String](["Throw"])
 CoreEffectScene = ExtResource("2")

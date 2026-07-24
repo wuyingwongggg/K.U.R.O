@@ -38,6 +38,10 @@ namespace Kuros.Managers
             { "Epic", 0.3f },
         };
 
+        /// <summary>每次选择的卡牌数量。</summary>
+        [Export(PropertyHint.Range, "2,10,1")]
+        public int CardsPerSelection { get; set; } = 3;
+
         /// <summary>未选核心时使用的默认构筑类别。空 = 不选核心不触发三选一。</summary>
         [Export] public string DefaultBuildClass { get; set; } = "";
 
@@ -249,7 +253,9 @@ namespace Kuros.Managers
         {
             if (_boundPlayer == null || !IsInstanceValid(_boundPlayer)) return;
 
-            var options = PickRandomEffects(3);
+            GD.Print($"[BuildSelection] CardsPerSelection = {CardsPerSelection}");
+            var options = PickRandomEffects(CardsPerSelection);
+            GD.Print($"[BuildSelection] PickRandomEffects returned {options.Count} cards");
             if (options.Count == 0) return;
 
             _isSelectionActive = true;
@@ -357,8 +363,10 @@ namespace Kuros.Managers
                 candidates.Add((effect, totalWeight));
             }
 
+            GD.Print($"[BuildSelection] PickRandomEffects: requested={count}, candidates={candidates.Count}, allowedSet=[{string.Join(",", allowedSet)}]");
             if (candidates.Count == 0) return result;
             int pickCount = Mathf.Min(count, candidates.Count);
+            GD.Print($"[BuildSelection] PickRandomEffects: pickCount={pickCount}");
 
             for (int p = 0; p < pickCount; p++)
             {

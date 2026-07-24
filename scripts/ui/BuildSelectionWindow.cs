@@ -37,14 +37,20 @@ namespace Kuros.UI
             _onConfirmed = onConfirmed;
             _selectedIndex = 0;
 
-            PopulateOptions();
-            UpdateHighlights();
             Visible = true;
             ProcessMode = ProcessModeEnum.Always;
             SetProcessInput(true);
             _isOpen = true;
 
             PauseManager.Instance.PushPause();
+
+            CallDeferred(nameof(DeferredPopulate));
+        }
+
+        private void DeferredPopulate()
+        {
+            PopulateOptions();
+            UpdateHighlights();
         }
 
         public void CloseWindow()
@@ -73,17 +79,11 @@ namespace Kuros.UI
 
             if (@event is InputEventKey keyEvent && keyEvent.Pressed)
             {
-                switch (keyEvent.Keycode)
+                int numKey = (int)(keyEvent.Keycode - Key.Key1);
+                if (numKey >= 0 && numKey < _options.Count)
                 {
-                    case Key.Key1 when _options.Count > 0:
-                        ConfirmSelection(0);
-                        return;
-                    case Key.Key2 when _options.Count > 1:
-                        ConfirmSelection(1);
-                        return;
-                    case Key.Key3 when _options.Count > 2:
-                        ConfirmSelection(2);
-                        return;
+                    ConfirmSelection(numKey);
+                    return;
                 }
             }
 
@@ -118,8 +118,10 @@ namespace Kuros.UI
             int count = _options.Count;
             float gap = 16f;
             float totalWidth = CardContainer.Size.X;
+            GD.Print($"[PopulateOptions] CardContainer.Size={CardContainer.Size}, count={count}");
             float cardWidth = (totalWidth - gap * (count - 1)) / count;
-            float cardHeight = CardContainer.Size.Y;
+            float cardHeight = Mathf.Min(cardWidth * (340f / 260f), CardContainer.Size.Y);
+            float cardY = (CardContainer.Size.Y - cardHeight) / 2f;
 
             for (int i = 0; i < count; i++)
             {
@@ -140,9 +142,10 @@ namespace Kuros.UI
                 card.Confirmed += OnCardConfirmed;
 
                 float x = i * (cardWidth + gap);
-                card.Position = new Vector2(x, 0);
-                card.Size = new Vector2(cardWidth, cardHeight);
                 CardContainer.AddChild(card);
+                card.Position = new Vector2(x, cardY);
+                card.Size = new Vector2(cardWidth, cardHeight);
+                card.ApplyCardScale();
                 _cards.Add(card);
             }
         }
