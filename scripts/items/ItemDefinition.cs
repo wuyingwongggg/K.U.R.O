@@ -22,6 +22,7 @@ namespace Kuros.Items
 
         [ExportGroup("Presentation")]
         [Export] public Texture2D? Icon { get; set; }
+        [Export(PropertyHint.File, "*.tscn")] public string HoldScenePath { get; set; } = string.Empty;
         [Export] public string Category { get; set; } = "General";
         [Export] public Godot.Collections.Array<string> Tags
         {

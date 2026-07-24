@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://b588lubx5fo62"]
+[gd_scene load_steps=37 format=3 uid="uid://b588lubx5fo62"]
 
 [ext_resource type="Script" uid="uid://2xun813bp5ef" path="res://scripts/actors/enemies/EnemyD1CorpDoneB.cs" id="1_3o8by"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_fm7ty"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://b73y4fylkvq5o" path="res://resources/effects/CubeData.tscn" id="13_x3mw2"]
 [ext_resource type="PackedScene" uid="uid://c08uxmi4ffstu" path="res://resources/effects/FireWall.tscn" id="14_3o8by"]
 [ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyLockdownAttack.cs" id="14_7lyje"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_fm7ty"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_8btli"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="17_70v8o"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="18_8mvh2"]
@@ -52,6 +53,21 @@ size = Vector2(300, 600)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_nehjm"]
+script = ExtResource("14_fm7ty")
+Scene = ExtResource("13_x3mw2")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_fm7ty"]
+script = ExtResource("14_fm7ty")
+Scene = ExtResource("13_x3mw2")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_oluqs"]
+script = ExtResource("14_fm7ty")
+Scene = ExtResource("14_3o8by")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_D1_corpDoneB" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -148,6 +164,7 @@ z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -156,6 +173,7 @@ position = Vector2(1500, 0)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 collision_mask = 4
 monitorable = false
@@ -175,6 +193,7 @@ scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(0, 130)
@@ -226,7 +245,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
-EffectScene = ExtResource("13_x3mw2")
+Effects = Array[ExtResource("14_fm7ty")]([SubResource("Resource_nehjm")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3")]
 metadata/attack_weight = 30.0
@@ -243,7 +262,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 8
-EffectScene = ExtResource("13_x3mw2")
+Effects = Array[ExtResource("14_fm7ty")]([SubResource("Resource_fm7ty")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0
@@ -260,9 +279,10 @@ DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-EffectScene = ExtResource("14_3o8by")
+Effects = Array[ExtResource("14_fm7ty")]([SubResource("Resource_oluqs")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D4")]
+FlipEffectWithFacing = true
 metadata/attack_weight = 30.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

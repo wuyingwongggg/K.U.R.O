@@ -1,17 +1,21 @@
-[gd_scene load_steps=12 format=3 uid="uid://c0oyd0psq7fe1"]
+[gd_scene load_steps=13 format=3 uid="uid://c0oyd0psq7fe1"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kw1ju"]
 [ext_resource type="Resource" uid="uid://bk5qofm73s8f2" path="res://resources/items/Furniture_B_CautionTape_fwd.tres" id="2_kw1ju"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kaxmn"]
-[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_o7bd3"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_jstfe"]
 [ext_resource type="Texture2D" uid="uid://djwqphcob6hvw" path="res://assets/furnitures/hotel_scene2/CautionTape_fwd.png" id="6_kw1ju"]
-
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_kaxmn")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qvcvh"]
+load_path = "res://.godot/imported/影子.png-ff14a7a2861f691fc06fc4544603034d.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_kw1ju"]
+load_path = "res://.godot/imported/影子.png-ff14a7a2861f691fc06fc4544603034d.ctex"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_jstfe")
@@ -22,13 +26,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kw1ju"]
-size = Vector2(143, 625)
+size = Vector2(100, 350)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(200, 600)
+size = Vector2(160, 610)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(34.705883, 182.79413)
+size = Vector2(150, 600)
 
 [node name="FurnitureCautionTape_fwd" type="Node2D"]
 z_index = 2
@@ -43,11 +47,11 @@ MinDamageVelocity = 0.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 20.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-Destructible = true
-HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
-MaxHP = 20.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -57,10 +61,15 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-position = Vector2(-26.999998, 118.99999)
-rotation = -0.101229094
-scale = Vector2(1.5, 12)
-texture = ExtResource("4_o7bd3")
+position = Vector2(-22, 376)
+scale = Vector2(2, 1.5)
+texture = SubResource("CompressedTexture2D_qvcvh")
+
+[node name="Shadow" type="Sprite2D" parent="RigidBody2D/Shadow"]
+material = SubResource("ShaderMaterial_aa7cv")
+position = Vector2(-14.999998, -332.00003)
+rotation = -0.12217305
+texture = SubResource("CompressedTexture2D_kw1ju")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_5sin4")
@@ -73,18 +82,17 @@ texture = ExtResource("6_kw1ju")
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(-9.5, 119.5)
+position = Vector2(-30, -120)
 shape = SubResource("RectangleShape2D_kw1ju")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(-10, 200)
+position = Vector2(-30, 120)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(-26.999998, 136.25)
-scale = Vector2(3.4, 3.4)
+position = Vector2(-30, 120)
 shape = SubResource("RectangleShape2D_jyvv2")

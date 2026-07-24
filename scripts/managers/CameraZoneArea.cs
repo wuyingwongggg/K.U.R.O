@@ -129,8 +129,7 @@ namespace Kuros.Managers
             if (_cameraZoneManager != null && IsInstanceValid(_cameraZoneManager))
                 return _cameraZoneManager;
 
-            // 从场景树根节点向下查找 CameraZoneManager
-            _cameraZoneManager = GetTree().Root.GetNodeOrNull<CameraZoneManager>("BattleScene/CameraZoneManager");
+            _cameraZoneManager = GetTree().GetFirstNodeInGroup("camera_zone_manager") as CameraZoneManager;
             if (_cameraZoneManager == null)
                 GameLogger.Warn(nameof(CameraZoneArea), $"[{ZoneName}] 未找到 CameraZoneManager，相机区域不会切换。");
 

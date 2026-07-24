@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using Kuros.Actors.Enemies.Attacks;
+using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -13,9 +14,15 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string SkillAnimation = "skill";
 		[Export] public string Skill2Animation = "skill2";
 		[Export] public string HitAnimation = "hit";
-		[Export] public string StunAnimation = "stun";
+		[Export] public string StunAnimation = "stun2";
+		[Export] public string DownAnimation = "down";
+		[Export] public string UpAnimation = "up";
 		[Export] public string DieAnimation = "death";
 		[Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float WalkLoopStart = 0.5f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float WalkLoopEnd = 1.5f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float WalkPartStart = 1.51f;
+        [Export(PropertyHint.Range, "0,5,0.01")] public float WalkPartEnd = 2f;
 		private EnemyD1NetAdminAttackController? _attackController;
 		private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
 		private Node? _spineControllerNode;
@@ -63,10 +70,11 @@ namespace Kuros.Actors.Enemies.Animation
 			}
 
 			string stateName = Enemy.StateMachine.CurrentState.Name;
+
 			switch (stateName)
 			{
 				case "Walk":
-					PlayLoopIfNeeded("Walk", WalkAnimation, WalkMixDuration);
+					HandleWalkAnimation();
 					break;
 				case "Hit":
 					PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
@@ -75,11 +83,11 @@ namespace Kuros.Actors.Enemies.Animation
 					PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);
 					break;
 				case "Frozen":
-					PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
+					HandleFrozenAnimation();
 					break;
 				case "KeepDistance":
-                    PlayLoopIfNeeded("KeepDistance", WalkAnimation, WalkMixDuration, KeepDistanceTimeScale);
-                    break;
+					HandleKeepDistanceAnimation();
+					break;
 				case "Dead":
 					PlayEmptyIfNeeded();
 					break;
@@ -88,6 +96,47 @@ namespace Kuros.Actors.Enemies.Animation
 					break;
 				default:
 					PlayIdle();
+					break;
+			}
+		}
+
+		private void HandleWalkAnimation()
+		{
+			var walkState = Enemy?.StateMachine?.CurrentState as EnemyNetAdminWalkState;
+			if (walkState != null && walkState.IsStopping)
+				PlayPartOnceIfNeeded("WalkPart", WalkAnimation, WalkPartStart, WalkPartEnd, WalkMixDuration);
+			else
+				PlayPartLoopIfNeeded("Walk", WalkAnimation, WalkLoopStart, WalkLoopEnd, WalkMixDuration);
+		}
+
+		private void HandleKeepDistanceAnimation()
+		{
+			var walkState = Enemy?.StateMachine?.CurrentState as EnemyNetAdminWalkState;
+			if (walkState != null && walkState.IsStopping)
+				PlayPartOnceIfNeeded("WalkPart", WalkAnimation, WalkPartStart, WalkPartEnd, WalkMixDuration);
+			else
+				PlayPartLoopIfNeeded("KeepDistance", WalkAnimation, WalkLoopStart, WalkLoopEnd, WalkMixDuration, KeepDistanceTimeScale);
+		}
+
+		private void HandleFrozenAnimation()
+		{
+			var frozenState = Enemy?.StateMachine?.CurrentState as EnemyNetAdminFrozenState;
+			if (frozenState == null)
+			{
+				PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
+				return;
+			}
+
+			switch (frozenState.CurrentPhase)
+			{
+				case EnemyNetAdminFrozenState.StunPhase.Down:
+					PlayOnceIfNeeded("Down", DownAnimation, HitMixDuration);
+					break;
+				case EnemyNetAdminFrozenState.StunPhase.Loop:
+					PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
+					break;
+				case EnemyNetAdminFrozenState.StunPhase.Up:
+					PlayOnceIfNeeded("Up", UpAnimation, HitMixDuration);
 					break;
 			}
 		}

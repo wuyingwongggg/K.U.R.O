@@ -35,19 +35,30 @@ namespace Kuros.Actors.Enemies.Attacks
 
         private Node2D? _templateNode;
         private RandomNumberGenerator _rng = new RandomNumberGenerator();
+        private GameActor? _attacker;
 
         public override void _Ready()
         {
             _rng.Randomize();
 
-            // 获取模板节点（用于克隆）
             if (!TemplateNodePath.IsEmpty)
-            {
                 _templateNode = GetNodeOrNull<Node2D>(TemplateNodePath);
-            }
 
-            // 推迟一帧生成碟子，确保特效的 GlobalPosition 已被正确设置
+            _attacker = FindAttacker();
+
             CallDeferred(nameof(SpawnProjectiles));
+        }
+
+        private GameActor? FindAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return null;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("enemies") && child is GameActor ga)
+                    return ga;
+            }
+            return null;
         }
 
         /// <summary>
@@ -60,16 +71,19 @@ namespace Kuros.Actors.Enemies.Attacks
 
             for (int i = 0; i < ProjectileCount; i++)
             {
-                float angle = angleStep * i + _rng.Randf() * 5f;  // 加入少量随机扰动
+                if (_attacker == null || !GodotObject.IsInstanceValid(_attacker) || _attacker.IsDead || _attacker.IsDeathSequenceActive)
+                {
+                    QueueFree();
+                    return;
+                }
+
+                float angle = angleStep * i + _rng.Randf() * 5f;
                 Vector2 direction = Vector2.FromAngle(Mathf.DegToRad(angle));
 
                 SpawnSingleProjectile(direction);
 
-                // 如果设置了发射间隔，等待后再生成下一个碟子
                 if (i < ProjectileCount - 1 && SpawnIntervalPerProjectile > 0.01f)
-                {
                     await Task.Delay((int)(SpawnIntervalPerProjectile * 1000));
-                }
             }
         }
 
@@ -112,25 +126,10 @@ namespace Kuros.Actors.Enemies.Attacks
             GetParent()?.AddChild(projectileNode);
             projectileNode.GlobalPosition = GlobalPosition;
 
-            // Effect 和 Enemy 是同级节点，需先到父级再遍历子节点查找
-            GameActor? attacker = null;
-            var parent = GetParent();
-            if (parent != null)
-            {
-                foreach (var child in parent.GetChildren())
-                {
-                    if (child.IsInGroup("enemies") && child is GameActor ga)
-                    {
-                        attacker = ga;
-                        break;
-                    }
-                }
-            }
-            // 配置发射方向
             if (projectileNode is EnemyWaiterA02ProjectileInstance projectile)
             {
-                if (attacker != null)
-                    projectile.SetAttacker(attacker);
+                if (_attacker != null)
+                    projectile.SetAttacker(_attacker);
                 projectile.SetDirectionAndDistance(direction, projectile.ProjectileDistance);
             }
             else
@@ -138,8 +137,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 var instance = projectileNode.GetNodeOrNull<EnemyWaiterA02ProjectileInstance>(".");
                 if (instance != null)
                 {
-                    if (attacker != null)
-                        instance.SetAttacker(attacker);
+                    if (_attacker != null)
+                        instance.SetAttacker(_attacker);
                     instance.SetDirectionAndDistance(direction, instance.ProjectileDistance);
                 }
             }

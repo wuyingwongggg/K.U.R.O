@@ -21,7 +21,9 @@ namespace Kuros.Items.Effects
     {
         [Export] public ItemEffectTrigger Trigger { get; set; } = ItemEffectTrigger.OnPickup;
         [Export] public PackedScene? EffectScene { get; set; }
-        [Export(PropertyHint.MultilineText)] public string Notes { get; set; } = string.Empty; 
+        [Export] public int RequiredFrameMin { get; set; } = -1;
+        [Export] public int RequiredFrameMax { get; set; } = -1;
+        [Export(PropertyHint.MultilineText)] public string Notes { get; set; } = string.Empty;
         [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();// 用于在实例化效果时覆盖默认属性值
 
         public ActorEffect? InstantiateEffect()

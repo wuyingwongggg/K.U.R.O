@@ -278,7 +278,7 @@ namespace Kuros.Systems.Cutscene
             Camera.GlobalPosition  = gpos;
 
             // 锁定 CameraZoneManager，防止玩家 ProcessMode.Disabled 导致区域误退出
-            _cameraZoneManager ??= GetTree().Root.GetNodeOrNull<CameraZoneManager>("BattleScene/CameraZoneManager");
+            _cameraZoneManager ??= GetTree().GetFirstNodeInGroup("camera_zone_manager") as CameraZoneManager;
             _cameraZoneManager?.LockZone();
         }
 

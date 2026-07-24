@@ -30,6 +30,7 @@ func _initialize() -> void:
 func _run() -> void:
 	print("[ExportCsv] Starting export...")
 	_export_items()
+	_export_skills()
 	_export_loot()
 	_export_characters()
 	print("[ExportCsv] All exports completed.")
@@ -45,7 +46,8 @@ func _export_items() -> void:
 
 	var headers := [
 		"file", "ItemId", "DisplayName", "Description", "Category", "Tags",
-		"MaxStackSize", "BuildClass", "IsThrowable", "IsThrowWeapon",
+		"MaxStackSize", # "BuildClass" -- build 重做后已失效
+		"IsThrowable", "IsThrowWeapon",
 		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
 		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
 		"attack_power", "SkillRefs"
@@ -87,7 +89,7 @@ func _export_items() -> void:
 			_str(str(r.get("Category", ""))),
 			_arr_str(str(r.get("Tags", ""))),
 			str(r.get("MaxStackSize", "1")),
-			_str(str(r.get("BuildClass", ""))),
+			# _str(str(r.get("BuildClass", ""))),  # build 重做后已失效
 			str(r.get("IsThrowable", "false")),
 			str(r.get("IsThrowWeapon", "false")),
 			_vec2_str(str(r.get("ThrowStartOffset", "Vector2(0, -400)"))),

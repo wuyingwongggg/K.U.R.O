@@ -22,6 +22,7 @@ ItemId = "Weapon_Throw_GravityGrenade"
 DisplayName = "引力手雷"
 Description = "机械类投掷武器：引力手雷"
 Icon = ExtResource("3_ecuim")
+HoldScenePath = "uid://cygdm8ytn5cv5"
 Category = "Weapon"
 Tags = Array[String](["tag_weapon", "build_machine", "tag_throw"])
 MaxStackSize = 1

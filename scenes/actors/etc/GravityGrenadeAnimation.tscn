@@ -1,0 +1,46 @@
+[gd_scene load_steps=10 format=3 uid="uid://cygdm8ytn5cv5"]
+
+[ext_resource type="Texture2D" uid="uid://d1usjxjiudamt" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0000.png" id="1_vlqpw"]
+[ext_resource type="Texture2D" uid="uid://bq7rg3gliev5p" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0001.png" id="2_hn4yn"]
+[ext_resource type="Texture2D" uid="uid://du5tn5qnjswon" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0002.png" id="3_fwn4v"]
+[ext_resource type="Texture2D" uid="uid://cnfjlk2sr78ea" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0003.png" id="4_7nwsl"]
+[ext_resource type="Texture2D" uid="uid://40s453nahabi" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0004.png" id="5_h30s1"]
+[ext_resource type="Texture2D" uid="uid://cwli4dy5frrx2" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0005.png" id="6_jq2fx"]
+[ext_resource type="Texture2D" uid="uid://chdw3wmn8aujj" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0006.png" id="7_hdg56"]
+[ext_resource type="Texture2D" uid="uid://dqhcsrdtv78yb" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0007.png" id="8_14hkg"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_i7plp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_vlqpw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_hn4yn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_fwn4v")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_7nwsl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_h30s1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_jq2fx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_hdg56")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_14hkg")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="GravityGrenadeAnimation" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_i7plp")
+autoplay = "default"

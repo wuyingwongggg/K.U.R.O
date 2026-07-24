@@ -13,18 +13,18 @@ namespace Kuros.Builds.BuildCore
     public partial class MachineCoreEffect : ActorEffect
     {
         [ExportCategory("Heat")]
-        [Export(PropertyHint.Range, "0,200,1")] public float MaxHeat = 100f; // 最大热量
+        [Export(PropertyHint.Range, "0,500,1")] public float MaxHeat = 100f; // 最大热量
         [Export(PropertyHint.Range, "0,50,0.5")] public float MoveHeatRate = 3f;  // 移动时每秒热量累积速度（基础值，速度越快累积越快）
         [Export] public bool EnableAttackHeatGain = false; // 攻击命中时增加的热量
-        [Export(PropertyHint.Range, "0,50,0.5")] public float AttackHeatGain = 3f;
-        [Export(PropertyHint.Range, "0,20,0.5")] public float DecayRate = 6f; // 每秒热量衰减速度（非移动时）
-        [Export(PropertyHint.Range, "0,10,0.1")] public float DecayDelay = 0.5f;  // 非移动时热量衰减前的延迟时间
+        [Export(PropertyHint.Range, "0,50,0.5")] public float AttackHeatGain = 3f; // 攻击命中时增加的热量（每次命中）
+        [Export(PropertyHint.Range, "0,50,0.5")] public float DecayRate = 6f; // 每秒热量衰减速度（非移动时）
+        [Export(PropertyHint.Range, "0,50,0.1")] public float DecayDelay = 0.5f;  // 非移动时热量衰减前的延迟时间
 
         [ExportCategory("Release")]
         [Export(PropertyHint.Range, "0,5,0.01")] public float DamagePerHeat = 0.01f;
         [Export(PropertyHint.Range, "1,200,1")] public float HeatDrainRate = 33f;
-        [Export(PropertyHint.Range, "0,10,0.1")] public float ReleaseCooldown = 1f;
-        [Export] public bool DisableHeatGainDuringBuff = true;
+        [Export(PropertyHint.Range, "0,10,0.1")] public float ReleaseCooldown = 1f; 
+        [Export] public bool DisableHeatGainDuringBuff = true; // Buff 期间是否禁用热量获取（移动/攻击命中）
 
         /// <summary>当前热量 (0-MaxHeat)，HUD 绑定读取。</summary>
         public float Heat { get; private set; }

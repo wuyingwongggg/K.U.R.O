@@ -22,13 +22,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxt0"]
-size = Vector2(300, 250)
+size = Vector2(250, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(320.5, 600)
+size = Vector2(310, 175)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(307, 165)
+size = Vector2(300, 165)
 
 [node name="FurnitureChairOfficeA" type="Node2D"]
 z_index = 2
@@ -43,11 +43,11 @@ MinDamageVelocity = 0.0
 StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
+Destructible = true
+MaxHP = 20.0
+HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-Destructible = true
-HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
-MaxHP = 20.0
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -72,18 +72,17 @@ texture = ExtResource("6_f6xom")
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, -80)
+position = Vector2(0, -150)
 shape = SubResource("RectangleShape2D_mbxt0")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 200)
+position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(1.5, -12.5)
+position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_jyvv2")

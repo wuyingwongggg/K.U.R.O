@@ -51,6 +51,7 @@ script = ExtResource("3_fadeout")
 FadeOutDuration = 1.5
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1, 0.8)
 texture = ExtResource("1_a1x33")
 
 [node name="Smoke" type="GPUParticles2D" parent="."]

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+EffectId = "BuildMachine_B_004"
+DisplayName = "热流冲击"
+Description = "释放核心技能后的buff期间，奔跑和闪避状态每秒都会对接触到的所有对象造成伤害20/30/40"
+BuildClass = "Machine"
+Rarity = "Common"
+Weight = 10
+MaxStacks = 3

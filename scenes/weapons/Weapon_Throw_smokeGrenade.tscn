@@ -34,10 +34,10 @@ shader_parameter/highlight_interval = 1.00000002375
 load_path = "res://.godot/imported/镇暴烟雾弹.png-b80efcda555d63963e6d6a6ac6720b90.ctex"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_idk0v"]
-size = Vector2(200, 200)
+size = Vector2(250, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w57jh"]
-size = Vector2(190.00003, 382.00003)
+size = Vector2(200, 150)
 
 [node name="WeaponThrowSmokeGrenade" type="Node2D"]
 z_index = 1
@@ -50,6 +50,7 @@ ThrowDamage = 0.0
 MinDamageVelocity = 0.0
 KnockbackForce = 0.0
 StopOnHit = true
+DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.5
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
@@ -81,13 +82,10 @@ region_rect = Rect2(-50, -50, 750, 450)
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(-1.5, 1)
 shape = SubResource("RectangleShape2D_idk0v")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(3, 94)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_w57jh")

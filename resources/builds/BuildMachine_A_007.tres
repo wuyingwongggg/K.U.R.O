@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://buttph60k4s2l"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_5oiv2"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_3ve0c"]
+
+[resource]
+script = ExtResource("2_3ve0c")
+EffectId = "BuildMachine_A_007"
+DisplayName = "高速导热"
+Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，且非发动核心技能时的热量衰减速度提高75%/100%"
+BuildClass = "Machine"
+Rarity = 1
+MaxStacks = 2
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

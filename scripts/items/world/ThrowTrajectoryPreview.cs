@@ -23,6 +23,8 @@ namespace Kuros.Items.World
 
         // ─── 轨迹线样式 ───────────────────────────────────────────────────────────
         [ExportGroup("Trajectory Style")]
+        /// <summary>水平距离倍率（调整轨迹落点远近）</summary>
+        [Export(PropertyHint.Range, "0.5,5,0.1")] public float HorizontalDistanceMultiplier { get; set; } = 2.2f;
         /// <summary>轨迹点颜色</summary>
         [Export] public Color TrailColor { get; set; } = new Color(1f, 0.85f, 0.2f, 0.8f);
         /// <summary>轨迹点半径（像素）</summary>
@@ -253,7 +255,7 @@ namespace Kuros.Items.World
             float startLocalY = (p.ThrowOffset.Y + p.ThrowStartOffset.Y) * scaleComp;
             float landingY = startLocalY + p.LandingYOffset * scaleComp;
 
-            float totalDX = p.HorizontalDistance * facingX * scaleComp * 2f;
+            float totalDX = p.HorizontalDistance * facingX * scaleComp * HorizontalDistanceMultiplier;
             float peakH = p.PeakHeight * scaleComp;
             float duration = (float)p.Duration;
 

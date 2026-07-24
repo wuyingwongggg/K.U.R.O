@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+EffectId = "BuildMachine_B_002"
+DisplayName = "缓速放热"
+Description = "减慢释放核心技能造成的热量衰减速度50%/75%/100%"
+BuildClass = "Machine"
+Rarity = "Common"
+Weight = 10
+MaxStacks = 3

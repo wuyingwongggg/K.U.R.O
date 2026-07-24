@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://c4t4pikfy3acp"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_o3ttk"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_be272"]
+
+[resource]
+script = ExtResource("2_be272")
+EffectId = "BuildWaiter_A_003"
+DisplayName = "宴会_血量回复_003"
+Description = "效果：宴会_血量回复_003"
+BuildClass = "Waiter"
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

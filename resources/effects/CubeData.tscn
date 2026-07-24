@@ -58,6 +58,7 @@ Duration = 0.8
 BuildDuration = 1.0
 DespawnDuration = 0.1
 DestroyEffect = ExtResource("2_uj88d")
+TargetableFactions = 1
 
 [node name="FaceFill" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_faces")

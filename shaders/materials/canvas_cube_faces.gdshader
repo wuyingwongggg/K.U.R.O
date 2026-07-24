@@ -147,6 +147,8 @@ void fragment() {
         if (!rasterize_face(p, fi, time_rot, face_uv, brightness))
             continue;
 
+        face_uv = vec2(1.0 - face_uv.x, 1.0 - face_uv.y);
+
         // 字符网格（横向滚动）
         float cols = text_columns;
         float rows = text_rows;

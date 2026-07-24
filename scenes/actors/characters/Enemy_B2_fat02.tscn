@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://wrebd662va23"]
+[gd_scene load_steps=34 format=3 uid="uid://wrebd662va23"]
 
 [ext_resource type="Script" uid="uid://dklt5k3rq7qjb" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
 [ext_resource type="Resource" uid="uid://d2yxetxicyb1b" path="res://resources/loot/Enemy_B_NormalDrops.tres" id="2_ooggc"]
@@ -13,9 +13,11 @@
 [ext_resource type="Script" uid="uid://cmnxe0hpulqnx" path="res://scripts/actors/enemies/attacks/EnemySmashAttack.cs" id="10_6yc1u"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="12_daw10"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="13_ey01n"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="13_s42mu"]
 [ext_resource type="PackedScene" uid="uid://3o6u0oms7vm6" path="res://shaders/smash_effect.tscn" id="14_6yc1u"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="14_rru7p"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="15_3ftbl"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="15_3u4qs"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="16_23m8e"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="17_oq0qc"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_qelwu"]
@@ -45,6 +47,20 @@ radius = 600.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_xrpf5"]
 radius = 200.0
+
+[sub_resource type="Resource" id="Resource_kl8y6"]
+script = ExtResource("13_s42mu")
+Scene = ExtResource("14_6yc1u")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_y4iv0"]
+script = ExtResource("13_s42mu")
+Scene = ExtResource("15_3u4qs")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 1.0,
+"ShakeStrength": 15.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_B2_fat02" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -214,9 +230,10 @@ KnockbackDistance = 500.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
 GrantedImmunities = 26
 IgnoreEnemyCollisionDuringAttack = true
-EffectScene = ExtResource("14_6yc1u")
+Effects = Array[ExtResource("13_s42mu")]([SubResource("Resource_kl8y6"), SubResource("Resource_y4iv0")])
 EffectOffset = Vector2(250, 0)
 SpawnTiming = 1
 metadata/attack_weight = 60.0
@@ -232,6 +249,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 1000.0
 RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 metadata/attack_weight = 40.0
 

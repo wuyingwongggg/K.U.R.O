@@ -72,6 +72,7 @@ namespace Kuros.Managers
                     GameLogger.Warn(nameof(CameraZoneManager), "未找到玩家节点，将在首次区域进入时自动查找。");
             }
 
+            AddToGroup("camera_zone_manager");
             GameLogger.Info(nameof(CameraZoneManager), "相机区域管理器已初始化（动态区域注册模式）");
         }
 

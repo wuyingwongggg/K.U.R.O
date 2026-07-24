@@ -65,7 +65,7 @@ namespace Kuros.Actors.Heroes.States
 			// 检查投掷按键
 			if (Input.IsActionJustPressed("throw"))
 			{
-				//GD.Print($"[PlayerIdleHoldingState] 投掷按键被按下");
+				CaptureThrowFrame();
 				ChangeState("Throw");
 				return;
 			}
@@ -89,6 +89,7 @@ namespace Kuros.Actors.Heroes.States
 			// 检查攻击按键
 			if (IsAttackTriggered() && Actor.AttackTimer <= 0)
 			{
+CaptureThrowFrame();
               	Player.RequestAttackFromState(Name);
                 ChangeState("Throw");
                 return;
@@ -98,6 +99,15 @@ namespace Kuros.Actors.Heroes.States
 			Actor.Velocity = Actor.Velocity.MoveToward(Vector2.Zero, Actor.Speed * 2 * (float)delta);
 			Actor.MoveAndSlide();
 			Actor.ClampPositionToScreen();
+		}
+
+		private void CaptureThrowFrame()
+		{
+			// 直接在场景树中查找 hold 动画节点，不依赖 PlayerItemAttachment 缓存
+			var sprite = Player.FindChild("EmojiBoomAnimation", recursive: true, owned: false) as AnimatedSprite2D;
+			int frame = sprite?.Frame ?? -1;
+			if (_interaction != null)
+				_interaction.PendingThrowFrame = frame;
 		}
 	}
 }

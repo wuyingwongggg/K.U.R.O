@@ -30,6 +30,7 @@ namespace Kuros.Actors.Heroes
         [Export] public string ThrowStateName { get; set; } = "Throw";
         [Export] public NodePath? InteractionAreaPath { get; set; }
         [Export(PropertyHint.Range, "50,500,10")] public float PickupRange = 150f; // 拾取范围（像素）
+        public int PendingThrowFrame { get; set; } = -1;
 
         private GameActor? _actor;
         private Area2D? _interactionArea;
@@ -345,7 +346,11 @@ namespace Kuros.Actors.Heroes
             if (disposition == DropDisposition.Throw)
             {
                 if (entity is RigidBodyWorldItemEntity rigidEntity)
+                {
                     rigidEntity.IsDisposableCopy = isThrowWeapon;
+                    rigidEntity.ThrowHoldFrame = PendingThrowFrame;
+                    PendingThrowFrame = -1;
+                }
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
                 if (entity is Node2D eNode)
                     eNode.ZIndex = extracted.Item.ThrowZIndex;

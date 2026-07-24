@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bhw6g0qv1c1ix"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_77l4c"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_pn44j"]
+
+[resource]
+script = ExtResource("2_pn44j")
+EffectId = "BuildMachine_A_008"
+DisplayName = "灼热反馈"
+Description = "热量若突破当前的100%/90%，则每次攻击时造成灼烧，持续3秒且重复施加后覆盖伤害和持续时间
+"
+BuildClass = "Machine"
+Rarity = 1
+Weight = 10
+MaxStacks = 2
+metadata/_custom_type_script = "uid://3bb6nng4vb53"

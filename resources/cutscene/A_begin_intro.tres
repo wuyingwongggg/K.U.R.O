@@ -21,6 +21,6 @@ metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 [resource]
 script = ExtResource("2_gqujs")
 SequenceId = "A_begin_intro"
-Steps = Array[ExtResource("1_wjjip")]([SubResource("Resource_84lnv"), SubResource("Resource_mlsay"), null])
+Steps = Array[ExtResource("1_wjjip")]([SubResource("Resource_84lnv"), SubResource("Resource_mlsay")])
 TakeOverCamera = true
 metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

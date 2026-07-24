@@ -144,8 +144,8 @@ skeleton_data_res = ExtResource("4_o4xwm")
 bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = false
-preview_time = 0.44
+preview_frame = true
+preview_time = 0.0
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -167,10 +167,9 @@ bone_name = "Upper Body"
 shape = SubResource("CircleShape2D_vj0fg")
 
 [node name="HitArea" type="Area2D" parent="."]
-scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
-position = Vector2(6.0606065, -515.15155)
+position = Vector2(0, -500)
 shape = SubResource("RectangleShape2D_vj0fg")
 
 [node name="AttackArea" type="Area2D" parent="."]
@@ -490,6 +489,7 @@ EnableEditorPreview = true
 PreviewSkill = ExtResource("26_hitbox_preview_skill")
 
 [node name="EscapeHud" parent="." instance=ExtResource("24_tdm7a")]
+visible = false
 offset_top = -1737.4999
 offset_bottom = -1737.4999
 scale = Vector2(2.205, 2.205)
@@ -499,6 +499,7 @@ visible = false
 z_index = 10
 y_sort_enabled = true
 script = ExtResource("43_throwpreview")
+HorizontalDistanceMultiplier = 2.1
 TrailColor = Color(1, 1, 1, 1)
 DotRadius = 20.0
 DotStep = 1

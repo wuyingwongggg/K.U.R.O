@@ -12,8 +12,12 @@ namespace Kuros.Core.Effects
         [Export]
         public Dictionary<string, float> StatBonuses { get; set; } = new();
 
+        /// <summary>每次 Refresh 时的倍率增量（0.25 = 第2次选+25%, 第3次选+50%）。</summary>
+        [Export(PropertyHint.Range, "0,2,0.01")] public float StackMultiplier { get; set; } = 0.25f;
+
         private readonly Dictionary<string, float> _originals = new();
         private bool _captured;
+        private int _refreshCount;
 
         protected override void OnApply()
         {
@@ -22,12 +26,15 @@ namespace Kuros.Core.Effects
                 SaveOriginals();
                 _captured = true;
             }
-            ApplyDeltas();
+            _refreshCount = 0;
+            ApplyDeltas(1f);
         }
 
         protected override void OnStackRefreshed()
         {
-            ApplyDeltas();
+            _refreshCount++;
+            float scale = 1f + _refreshCount * StackMultiplier;
+            ApplyDeltas(scale);
         }
 
         public override void OnRemoved()
@@ -43,13 +50,13 @@ namespace Kuros.Core.Effects
                 _originals[kvp.Key] = kvp.Value.GetOriginal(Actor);
         }
 
-        private void ApplyDeltas()
+        private void ApplyDeltas(float scale)
         {
             if (Actor == null) return;
             foreach (var kvp in StatBonuses)
             {
                 if (StatOp.Registry.TryGetValue(kvp.Key, out var op))
-                    op.Apply(Actor, kvp.Value);
+                    op.Apply(Actor, kvp.Value * scale);
             }
         }
 

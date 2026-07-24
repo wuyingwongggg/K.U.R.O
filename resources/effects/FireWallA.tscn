@@ -84,10 +84,10 @@ texture = ExtResource("2_tbjep")
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(4.8424683, 124.27111)
-rotation = 0.3490658
+position = Vector2(-5, 125)
+rotation = -0.34906584
 shape = SubResource("RectangleShape2D_55rvv")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-44, 194)
+position = Vector2(44, 195)
 shape = SubResource("RectangleShape2D_jdtr2")

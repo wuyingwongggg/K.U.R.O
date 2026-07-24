@@ -23,6 +23,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "0,5,0.01")] public float MinBounceTimeBeforeDamage = 0f;
 		[Export] public bool AllowWallBounce = true;
 
+		public bool IsStopping { get; private set; }
+
 		private Area2D? _detectionArea;
 		private bool _isDashing;
 		private Vector2 _dashDirection = Vector2.Right;
@@ -52,6 +54,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackStarted()
 		{
 			base.OnAttackStarted();
+			IsStopping = false;
 			_isDashing = false;
 			_bounceCount = 0;
 			_bounceCooldownRemaining = 0f;
@@ -276,6 +279,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		private void FinishDash()
 		{
 			if (Enemy == null) return;
+			IsStopping = true;
 			_isDashing = false;
 			Enemy.Velocity = Vector2.Zero;
 			ForceEnterRecoveryPhase();

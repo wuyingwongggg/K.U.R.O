@@ -27,6 +27,10 @@ namespace Kuros.Fx
         /// </summary>
         [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed { get; set; } = 2000f;
 
+        [ExportCategory("Debug")]
+        [Export] public bool ShowDebugRadius { get; set; } = false;
+        [Export] public Color DebugRadiusColor { get; set; } = new Color(1f, 0f, 0f, 0.5f);
+
         [ExportCategory("Targets")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
@@ -34,12 +38,25 @@ namespace Kuros.Fx
 
         public override void _Ready()
         {
+            if (ShowDebugRadius)
+                QueueRedraw();
             Callable.From(Execute).CallDeferred();
         }
 
-        private void Execute()
+        public override void _Draw()
+        {
+            if (!ShowDebugRadius) return;
+            DrawCircle(Vector2.Zero, Radius, DebugRadiusColor);
+        }
+
+        private async void Execute()
         {
             ApplyExplosion();
+            if (ShowDebugRadius)
+            {
+                var timer = GetTree().CreateTimer(1.0);
+                await ToSignal(timer, SceneTreeTimer.SignalName.Timeout);
+            }
             QueueFree();
         }
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://ba8fktvib2e1o"]
+[gd_scene load_steps=33 format=3 uid="uid://ba8fktvib2e1o"]
 
 [ext_resource type="Script" uid="uid://e0dl460gdllx" path="res://scripts/actors/enemies/EnemyC2WaiterA02.cs" id="1_n7wqi"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4msjm"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://1ysv463wivf5" path="res://resources/effects/EnemyWaiterA02WheelAttackEffect.tscn" id="12_kjt0o"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="13_a0san"]
 [ext_resource type="Script" uid="uid://ckc4yud52bmag" path="res://scripts/actors/enemies/states/EnemyAssistState.cs" id="14_0xfei"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_nf2mn"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="15_plwgt"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="16_20ym2"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="17_8l6xl"]
@@ -31,7 +32,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cc1qw"]
-size = Vector2(1200, 800)
+size = Vector2(1200, 500)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q6o81"]
 radius = 1024.0
@@ -44,6 +45,11 @@ size = Vector2(300, 800)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_yski7"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_u2rds"]
+script = ExtResource("14_nf2mn")
+Scene = ExtResource("12_kjt0o")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_C2_waiterA02" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -205,7 +211,7 @@ DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-EffectScene = ExtResource("12_kjt0o")
+Effects = Array[ExtResource("14_nf2mn")]([SubResource("Resource_u2rds")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 60.0

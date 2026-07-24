@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3 uid="uid://wqcdwpyo1nji"]
+[gd_scene load_steps=49 format=3 uid="uid://wqcdwpyo1nji"]
 
 [ext_resource type="Script" uid="uid://byhv4hxerfcr8" path="res://scripts/actors/enemies/EnemyB1Thin.cs" id="1_grl5w"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -23,11 +23,13 @@
 [ext_resource type="PackedScene" uid="uid://b3e6c8gckfrwh" path="res://resources/effects/smash_effect_small.tscn" id="17_4488g"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18"]
 [ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="18_dknnn"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="18_iwg3l"]
 [ext_resource type="Script" uid="uid://dgmp6fiocpyam" path="res://scripts/actors/enemies/states/EnemyDashBackState.cs" id="19_h8apo"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://ctc3e5rj67keh" path="res://animations/spine/Enemy_B1_thin.tres" id="20_5i0uy"]
 [ext_resource type="Script" uid="uid://cj62qyo1gko88" path="res://scripts/actors/enemies/states/EnemySpawnState.cs" id="20_ie6to"]
 [ext_resource type="Script" uid="uid://bs7o138nymdt8" path="res://scripts/actors/enemies/states/EnemyCloseInState.cs" id="20_lfvdk"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="21_8xfgw"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="21_33td2"]
 [ext_resource type="Script" uid="uid://ltskqlwtnh6c" path="res://scripts/actors/enemies/animation/EnemyB1ThinSpineAnimationController.cs" id="22_8xfgw"]
 [ext_resource type="Script" uid="uid://cdjlv11ra7aby" path="res://scripts/actors/enemies/attacks/EnemyB1ThinAttackController.cs" id="23_1hw8y"]
 [ext_resource type="Script" uid="uid://dpokyaabbcwwl" path="res://scripts/controllers/EnemyThinSkillSpawnManager.cs" id="25_fkymf"]
@@ -67,6 +69,25 @@ size = Vector2(650, 400)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_l3qmk"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_33td2"]
+script = ExtResource("18_iwg3l")
+Scene = ExtResource("18_dknnn")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_7c3of"]
+script = ExtResource("18_iwg3l")
+Scene = ExtResource("17_4488g")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_nb4oj"]
+script = ExtResource("18_iwg3l")
+Scene = ExtResource("21_33td2")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 1.0,
+"ShakeStrength": 15.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l3qmk"]
 size = Vector2(320, 180)
@@ -269,9 +290,9 @@ KnockbackDistance = 30.0
 KnockbackDuration = 0.1
 KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-EffectScene = ExtResource("17_4488g")
-AdditionalEffects = Array[PackedScene]([ExtResource("18_dknnn")])
+Effects = Array[ExtResource("18_iwg3l")]([SubResource("Resource_33td2"), SubResource("Resource_7c3of"), SubResource("Resource_nb4oj")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 40.0

@@ -1,173 +1,251 @@
-# 武器构筑系统设计文档 v4.0
+# Machine 构筑卡牌系统
+
+## 实施顺序（6 个 Phase，增量可测试）
 
 ---
 
-## 一、系统概述
+### Phase 1：数据层 — 字段定义 + 适配现有逻辑
 
-构筑系统分为两个阶段：
+**✅ 已完成**
 
-| 阶段 | 名称 | 时机 | 内容 |
-|---|---|---|---|
-| 第一阶段 | 构筑核心（Build Core） | 游戏开局某个阶段 | N选1，选择一个核心，决定后续构筑方向 |
-| 第二阶段 | 构筑效果（Build Effect） | 分数三选一 / 宝箱 | 数值加成，仅出现与核心同类型 + 通用类型 |
+1. `BuildEffectDefinition.cs`：
+   - 新增 `BuildRarity` 枚举 (Common, Rare, Epic)
+   - 新增 `Rarity` (BuildRarity)
+   - 新增 `Weight` (int)
+   - 新增 `MaxStacks` (int)
+   - `EffectScene` → `EffectEntries` (Array\<AttackEffectEntry\>)
+   - 移除 `StatBonuses`（统一进 EffectEntries 的 PropertyOverrides）
+   - 移除 `BuildBranch`（冗余，EffectId 前缀已编码流派）
+   - ExportGroup 改为英文
 
-**核心规则：一局游戏只能拥有一个构筑核心。选择后，所有后续构筑效果卡牌均过滤为该核心的 BuildClass + 通用类型。**
+2. `BuildCoreDefinition.cs`：
+   - 新增 `AllowedEffectClasses` (Array\<string\>，如 ["Machine", "Generic"])
 
----
+3. `BuildSelectionManager.cs`（适配新字段，已随 Phase 1 完成）：
+   - 所有 `effect.EffectScene` → 遍历 `effect.EffectEntries` + `entry.InstantiateEffect()`
+   - 移除 `effect.StatBonuses.Count > 0` 代码路径（两处：ApplyEffectBonuses + RestoreBuildState）
+   - 新增 `using Kuros.Actors.Enemies.Attacks` 引用
 
-## 二、构筑核心（Build Core）
+4. 待后续完成：18 个 `resources/builds/BuildMachine_*.tres` + 3 个 `resources/builds/core/*.tres` 补上新字段（Phase 6）
 
-### 设计定位
+**验证**：dotnet build 0 error，Inspector 新字段可见
 
-- 获得一个额外的核心机制（非数值提升，而是行为改变）
-- 按下核心技能键触发
-- HUD 上显示核心相关 UI（热量槽 / 药剂计数等）
-- 一局游戏仅可选择一个
-
-### 核心列表
-
-#### Machine Core — 热量表
-
-**效果：** 攻击和移动时累计热量。按下核心技能键清空当前全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。
-
-**HUD：** 热量槽（0-100 条形图），随攻击/移动上涨，释放后清空。
-
-**流派 A（热量累积强化）：** 提升热量累积速度、热量上限
-**流派 B（热量释放强化）：** 提升释放后伤害倍率、持续时间
-
-#### Waiter Core — 药剂
-
-**效果：** 每过 N 秒获取一针药剂（有最大携带上限）。按下核心技能键消耗一针药剂恢复血量。
-
-**HUD：** 药剂计数（图标 + 数字），显示当前持有药剂数。
-
-**流派 A（血量回复强化）：** 提升药剂回复量、降低获取间隔
-**流派 B（血量扣除强化）：** 消耗药剂时额外对周围敌人造成基于消耗量的伤害
-
-#### Throw Core — 待定
-
-**流派 A（投掷类武器强化）：** 待定
-**流派 B（投掷类家具强化）：** 待定
+**涉及文件**：
+- `scripts/systems/BuildEffectDefinition.cs` ✅
+- `scripts/systems/BuildCoreDefinition.cs` ✅
+- `scripts/managers/BuildSelectionManager.cs` ✅
 
 ---
 
-## 三、构筑效果（Build Effect）
+**✅ 已完成**
 
-### 设计定位
+**依赖 Phase 1 数据到位**
 
-- 数值微调型，围绕核心流派叠加
-- 三选一弹窗 + 宝箱获取
-- 过滤规则：已选核心的 BuildClass + 通用类型（BuildClass="Generic"）
+✅ 1. `PickRandomEffects()` 改为加权随机：
+✅    - **有 activeCore 且 `AllowedEffectClasses` 非空**：按数组内容过滤，如 `["Machine", "Generic"]` 只出 Machine + Generic 卡
+✅    - **`AllowedEffectClasses` 为空或 null**：仅按 `_playerCoreClass` 过滤（不自动加 Generic）
+✅    - 按 `effectiveWeight = Weight * RarityMultiplier[rarity]` 加权抽样
+	 - `Weight`（卡牌级）：控制同类稀有度内部的相对概率。如两张 Common 卡 Weight=20 的比 Weight=10 的多出现一倍
+	 - `RarityMultiplier`（系统级）：控制不同稀有度之间的整体出现比例。如 Common×3, Epic×0.3 → Common 出现频率是 Epic 的 10 倍
+	 - 改单卡概率调 Weight，改整体稀有度分布调 RarityMultiplier，互不干扰
+✅    - 排除 `_pickedEffectIds[effectId] >= effect.MaxStacks` 的卡牌
+✅    - 加权抽样：累积权重法逐张抽取，抽一张移一张重算权重
 
-### 命名规范
+2. 新增 export `RarityMultiplier` Dictionary：
+   ```csharp
+   [Export] public Godot.Collections.Dictionary<string, float> RarityMultiplier { get; set; }
+   ```
+   默认：`{"Common": 3.0, "Rare": 1.0, "Epic": 0.3}`
 
-`Build{构筑类型}_{流派}_{序号}`
+**验证**：加权随机分布合理、MaxStacks 到期卡牌不再出现、MachineCore 下不出现 Waiter/Throw 卡牌
 
-示例：
-- `BuildMachine_A_0` — Machine 核心，流派 A（热量累积），第 0 个效果
-- `BuildWaiter_B_2` — Waiter 核心，流派 B（血量扣除），第 2 个效果
-- `BuildGeneric_X_0` — 通用效果，任何核心均可出现
+**涉及文件**：
+- `scripts/managers/BuildSelectionManager.cs`
 
-### 三选一规则
+#### 可选增强：未选核心时默认卡池
 
-1. 从效果池中筛选：`effect.BuildClass == _playerCore.BuildClass || effect.BuildClass == "Generic"`
-2. 从筛选结果中随机抽取 3 个
-3. 三张卡片可来自同一流派
+当前 `CheckAndTriggerSelection` 第 130 行要求 `_coreSelected == true`，不选核心永远不会触发三选一。如需支持不选核心也能获得卡牌：
+
+✅ 1. 新增 export `DefaultBuildClass`（默认空 = 保持旧行为）：
+   ```csharp
+   [Export] public string DefaultBuildClass { get; set; } = "";
+   ```
+✅ 2. `CheckAndTriggerSelection` 守卫改为：`if (!_coreSelected && string.IsNullOrWhiteSpace(DefaultBuildClass)) return;`
+✅ 3. `PickRandomEffects` 回退路径中，`_playerCoreClass` 为空时用 `DefaultBuildClass` 替代
+
+不影响已选核心的玩家，核心选择后 `_coreSelected = true`，走 AllowedEffectClasses 路径不变。
 
 ---
 
-## 四、得分系统
+### Phase 3：效果应用 — 常规基础数值由BuildStatBonusEffect 堆叠
 
-### 得分来源
+**✅ 已完成**
 
-| 来源 | 得分 |
+1. ✅ 效果由 `EffectEntries` 的 PropertyOverrides 驱动（含 `BuildStatBonusEffect.StatBonuses`）
+2. ✅ `BuildStatBonusEffect` 新增 `StackMultiplier` export（默认 0.25）
+3. ✅ **`BuildStatBonusEffect` 不是必经路径**——`EffectEntries[0].Scene` 是自由 export，指向什么就是什么：
+   - 纯数值卡 → BuildStatBonusEffect.tscn（改 GameActor 属性，服务于未来 Normal/Generic）
+   - 条件卡 → 自定义 ActorEffect 脚本（如 MachineAttackHeat.tscn，直接访问 MachineCoreEffect）
+   - 生成卡 → 自定义脚本（如 MachineFlameRing.tscn，生成场景 + BoomDmg）
+   - 18 张 Machine 卡全部是 MachineCore 专属属性/条件触发，**不会用到 BuildStatBonusEffect**
+4. ✅ `OnApply`：`_refreshCount=0, scale=1.0`（首次选卡 = 基础值）
+4. ✅ `OnStackRefreshed`：`_refreshCount++, scale = 1 + _refreshCount × StackMultiplier`
+5. ✅ 第 2 次选 scale=1.25，第 3 次选 scale=1.50（StackMultiplier=0.25 时）
+6. ✅ `AllowableEffectClasses` 为空 → 自动退回到 `_playerCoreClass`
+7. ✅ `MaxStacks` 到期 → Phase 2 已在 PickRandomEffects 中排除
+
+**验证**：同一卡牌选到第 N 次时效果数值递增
+
+**涉及文件**：
+- `scripts/core/effects/BuildStatBonusEffect.cs` ✅
+- `resources/effects/BuildStatBonusEffect.tscn` ✅（新建，供 EffectEntries[0].Scene 引用）
+- `scripts/managers/BuildSelectionManager.cs`（无需改动，Refresh 已在 Phase 1 接入）
+
+---
+
+### Phase 4：18 张 Machine 卡牌 + 3 个 Core 的 .tres 批量生成
+
+**依赖 Phase 1-3 完成，数据模型已稳定**
+
+#### 现状：已有 13 个 .tres，存在以下问题
+
+| 问题 | 涉及文件 |
 |---|---|
-| 击杀普通敌人 | +10分 |
-| 击杀精英敌人 | +50分 |
-| 击杀Boss | +100分 |
+| 缺少 `Rarity` | 全部 13 个 |
+| 缺少 `Weight` | 全部 13 个 |
+| `DisplayName`/`Description` 为占位文本 | B_001, B_002, B_003 |
+| 残留废弃 `StatBonuses`（Phase 1 已移除） | B_001, B_003 |
+| `EffectEntries[0]` 为 null | A_001 |
+| 缺少 `EffectEntries` | 多数 A 系列 |
+| 缺少 `Icon` | A_005 等 |
 
-### 触发机制
+#### MaxStacks 按稀有度
 
-```
-每积累 200分 → 触发一次三选一弹窗
-全程预期触发次数 ≈ 8次（5场景标准流程）
-```
+| Rarity | MaxStacks |
+|---|---|
+| Common | 3 |
+| Rare | 2 |
+| Epic | 1 |
 
----
+#### 修复步骤（已有 13 个）
 
-## 五、挑战宝箱系统
+1. 补 `Rarity`（从 CSV）：A_001-A_004,B_001-B_004=Common / A_005-A_007,B_005-B_007=Rare / A_008-A_009,B_008-B_009=Epic
+2. 补 `Weight`：Common=10, Rare=10, Epic=5
+3. 补 `MaxStacks`：Common=3, Rare=2, Epic=1
+4. 修正 `DisplayName`/`Description`（B_001-B_003 当前是占位文本）
+5. 移除废弃 `StatBonuses`（B_001, B_003），改为 `EffectEntries`
+6. 修复 `EffectEntries[0]` 为 null（A_001）
+7. 统一 `EffectEntries`：每张卡一个 entry，Scene 指向各自专属的 ActorEffect 场景
 
-- 每个关卡 **50-60%概率** 出现挑战
-- 完成挑战必定开箱，失败无惩罚
-- 宝箱给予构筑效果（同样过滤为核心类型 + 通用）
-- 宝箱给出的构筑效果不计入得分触发计数
+#### 效果脚本目录约定
 
----
-
-## 六、六种构筑概览
-
-| 构筑ID | 构筑名称 | 对应场景 | 核心机制 |
-|---|---|---|---|
-| Build_Machine | 机械协议 | 场景2 | 热量表 — 累计热量释放增伤 |
-| Build_Waiter | 宴会协议 | 场景3 | 药剂 — 周期性获取药剂回血 |
-| Build_Throw | 投掷协议 | 场景4 | 待定 |
-| Build_4 | 待定 | 场景5 | 待定 |
-| Build_5 | 待定 | 场景6 | 待定 |
-| Build_General | 通用协议 | 全场景 | 无核心机制，通用数值加成 |
-
----
-
-## 七、数值膨胀控制
-
-### 构筑效果侧
-
-- 每种效果叠加上限 4-6 次（由 MaxStacks 控制）
-- 数值提升控制在基础值 5-10% 以内
-
-### 敌人成长侧
-
-| 场景 | 血量倍率 | 伤害倍率 |
+| 卡类 | 脚本路径 | 场景路径 |
 |---|---|---|
-| 场景1 | ×1.0 | ×1.0 |
-| 场景2 | ×1.3 | ×1.2 |
-| 场景3 | ×1.6 | ×1.4 |
-| 场景4 | ×2.0 | ×1.7 |
-| 场景5 | ×2.5 | ×2.0 |
+| Machine | `scripts/builds/machine/` | `scenes/builds/machine/` |
+| Waiter（未来） | `scripts/builds/waiter/` | `scenes/builds/waiter/` |
+| Throw（未来） | `scripts/builds/throw/` | `scenes/builds/throw/` |
+| Normal/Generic | `scripts/builds/normal/` | `scenes/builds/normal/` |
+
+每个条件卡一张专属 `.tscn` + `.cs`，如：
+```
+scripts/builds/machine/MachineAttackHeat.cs   → 战斗升温
+scenes/builds/machine/MachineAttackHeat.tscn
+```
+
+#### 新增（缺失 5 张）
+
+CSV 共 18 张，现有 13 张（A_001-A_010 多了一张 A_010），需补 B_004-B_009（6 张），A_010 按需保留或删除。
+
+#### Core .tres（3 个）
+
+补上 `AllowedEffectClasses`：MachineCore → `["Machine", "Generic"]`
+
+**验证**：18 张 .tres 字段完整，Inspector 可读，BuildSelectionManager 正常加载
+
+**涉及文件**：
+- `resources/builds/BuildMachine_A_*.tres` (10 个，修复)
+- `resources/builds/BuildMachine_B_*.tres` (9 个，3 个修复 + 6 个新建)
+- `resources/builds/core/*.tres` (3 个)
 
 ---
 
-## 八、数值体系（×10扩大基数）
+### Phase 5：CSV 导出 — ExportCsv.gd
 
-### 构筑效果固定值参考范围
+**依赖 Phase 4，数据模型和 .tres 已稳定**
 
-| 效果类型 | 推荐固定值 | 叠加上限 | 总计最大增益 |
+1. 新增 `_export_builds()` 方法，读取 `resources/builds/*.tres`
+2. 先扫一遍所有卡牌取最大 `EffectEntries` 数量 N，动态生成列头
+3. CSV 列：
+   ```
+   file, EffectId, DisplayName, Description, BuildClass, Rarity, Weight, MaxStacks,
+   EffectScene_1, EffectOverrides_1, ..., EffectScene_N, EffectOverrides_N
+   ```
+4. PropertyOverrides 序列化格式：`"key1=val1;key2=val2"`（`;` 分条目 → `=` 拆 key:value）
+5. `_run()` 中补上 `_export_builds()` 调用
+
+**验证**：运行导出 → `data/builds.csv` 生成，列头按最大 N 动态扩展
+
+**涉及文件**：
+- `scripts/tools/ExportCsv.gd`
+
+---
+
+### Phase 6：CSV 导入 — ImportCsv.gd
+
+**依赖 Phase 5 CSV 格式稳定**
+
+1. 新增 `import_builds_from_csv()` 方法，读取 `data/builds.csv`
+2. 按列名 `EffectScene_N` / `EffectOverrides_N` 匹配，重建 `AttackEffectEntry` 数组
+3. EffectOverrides 反序列化：`"key1=val1;key2=val2"` → split `;` → split `=` → `effect.Set(key, value)`
+4. 回写对应 `.tres` 文件
+5. `import_all()` 中补上 `import_builds_from_csv()` 调用
+
+**验证**：修改 CSV → 导入 → `.tres` 同步更新
+
+**涉及文件**：
+- `scripts/tools/ImportCsv.gd`
+
+---
+
+### 依赖关系图
+
+```
+Phase 1 (数据层) ──→ Phase 2 (选择逻辑) ──→ Phase 3 (效果堆叠)
+											  │
+											  ▼
+									   Phase 4 (.tres 生成)
+											  │
+									┌─────────┴─────────┐
+									▼                   ▼
+							  Phase 5 (CSV 导出)  Phase 6 (CSV 导入)
+```
+
+Phase 1→2→3→4 严格顺序。Phase 5/6 在 4 之后。Phase 7 独立于其他 Phase，可随时实施。
+
+### 总计
+
+| Phase | 改动文件数 | 复杂度 | 状态 |
 |---|---|---|---|
-| 基础伤害 | +2点 | 6次 | +12点 |
-| 武器伤害 | +5点 | 5次 | +25点 |
-| 攻击速度 | +0.05 | 4次 | +0.20 |
-| 回血量 | +1点 | 4次 | +4点 |
-| 冷却时间 | -0.3秒 | 4次 | -1.2秒 |
-
-### 伤害公式
-
-```
-实际伤害 = round((B + W×N) × MT)
-
-B   玩家基础攻击（10-100）
-W   武器伤害（20-100）
-N   攻击段数（1-5）
-MT  武器类型倍率
-	拳击类 × 1.3 / 挥砍类 × 1.1 / 戳刺类 × 1.0 / 投掷类 × 0.8
-```
+| 1 | 3 C# | 低（加字段 + 适配） | ✅ |
+| 2 | 1 C# | 中（核心算法） | ✅ |
+| 3 | 1 C# + 1 tscn | 低（堆叠缩放） | ✅ |
+| 4 | 18 tres + 3 core tres | 低（机械化生成） | ⬜ |
+| 5 | 1 GDScript | 中（序列化） | ⬜ |
+| 6 | 1 GDScript | 中（反序列化） | ⬜ |
+| 7 | 1 C# + 1 tscn + 1 shader | 中（UI 伪 3D 卡片） | ⬜ |
 
 ---
 
-## 九、待确认事项
+### Phase 7：BuildSelectionWindow 伪 3D 卡片 HUD
 
-- [ ] 构筑核心出现的具体时机（第几个场景 / 分数门槛）
-- [ ] N选1 的 N 是多少（3 还是 4）
-- [ ] Throw 核心的具体机制设计
-- [ ] 核心技能键的按键绑定
-- [ ] 通用类型（Generic）包含哪些效果
-- [ ] 宝箱构筑效果是否和三选一共用同一效果池
-- [ ] 玩家基础攻击 B 的成长路径
+**独立于其他 Phase，可随时实施。详见 [BUILD_HUD_DESIGN.md](BUILD_HUD_DESIGN.md)。**
+
+核心改动：
+- 3 张卡片从 `VBoxContainer` 改为 `ColorRect` + `pseudo_3d_card.gdshader`
+- 鼠标悬停驱动 shader 的伪 3D 倾斜 + 光照
+- 保留键盘选择（1/2/3、←→、Enter）
+
+**涉及文件**：
+- `scenes/ui/windows/BuildSelectionWindow.tscn`
+- `scripts/ui/BuildSelectionWindow.cs`
+- `shaders/materials/pseudo_3d_card.gdshader`（已存在）

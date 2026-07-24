@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_8dmfr"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_i4xrv"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_7wwgg"]
-[ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_ihxlc"]
+[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="5_8dmfr"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_eushn"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="6_8dmfr"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_ekq4s"]
@@ -22,16 +22,18 @@ Notes = "小型家具：减速30%
 "
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
-[sub_resource type="Resource" id="Resource_mqy4i"]
-script = ExtResource("2_i4xrv")
-Trigger = 4
-EffectScene = ExtResource("4_ihxlc")
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
-
 [sub_resource type="Resource" id="Resource_1qp51"]
 script = ExtResource("2_i4xrv")
 Trigger = 4
 EffectScene = ExtResource("5_eushn")
+Notes = "相机震动"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_i4xrv"]
+script = ExtResource("2_i4xrv")
+Trigger = 4
+EffectScene = ExtResource("5_8dmfr")
+Notes = "破坏特效"
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [resource]
@@ -40,11 +42,12 @@ ItemId = "Furniture_A_CubeA"
 DisplayName = "立方体"
 Description = "一次性投掷道具：立方体A"
 Icon = ExtResource("6_8dmfr")
+HoldScenePath = "uid://fuffcmwrnlqr"
 Category = "Furniture"
 Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_8dmfr")]([SubResource("Resource_ab7ls")])
-EffectEntries = Array[ExtResource("2_i4xrv")]([SubResource("Resource_6f3qv"), SubResource("Resource_mqy4i"), SubResource("Resource_1qp51")])
+EffectEntries = Array[ExtResource("2_i4xrv")]([SubResource("Resource_6f3qv"), SubResource("Resource_1qp51"), SubResource("Resource_i4xrv")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicDuration = 0.4

@@ -73,6 +73,10 @@ namespace Kuros.Fx
         /// <summary>单个粒子最长飞行阶段时长（秒）。</summary>
         [Export(PropertyHint.Range, "0.01,10,0.01")] public float MaxLifetime = 1.5f;
 
+        [ExportCategory("Toggle")]
+        [Export] public bool EnableParticles = true;
+        [Export] public bool EnableCenterEffect = true;
+
         [ExportCategory("Auto")]
         /// <summary>加入场景树时自动播放。设为 false 时需手动调用 Play()。</summary>
         [Export] public bool AutoPlay = true;
@@ -138,7 +142,7 @@ namespace Kuros.Fx
         /// </summary>
         private void SpawnCenterEffect()
         {
-            if (CenterEffect == null) return;
+            if (!EnableCenterEffect || CenterEffect == null) return;
             var parent = GetParent();
             if (parent == null) return;
 
@@ -172,7 +176,7 @@ namespace Kuros.Fx
         /// </summary>
         private void SpawnParticle()
         {
-            if (ParticleScene == null) return;
+            if (!EnableParticles || ParticleScene == null) return;
             var parent = GetParent();
             if (parent == null) return;
 

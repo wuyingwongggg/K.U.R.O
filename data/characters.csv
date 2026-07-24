@@ -1,11 +1,13 @@
 file,Speed,AttackDamage,AttackCooldown,MaxHealth
-Enemy_B1_fat,,30,,200
+Enemy_B1_fat,,,,200
 Enemy_B1_thin,400.0,40.0,,600
 Enemy_B2_fat02,,30,,180
 Enemy_C1_waiterA,,10.0,,100
 Enemy_C1_waiterB,600.0,50.0,,800
 Enemy_C2_waiterA02,,20.0,,120
 Enemy_D1_corpDoneA,,10.0,,150
+Enemy_D1_corpDoneB,,10.0,,150
+Enemy_D1_netAdmin,350.0,60.0,,1500
 Enemy_D1_printerMachine,400.0,0.0,,100
 Enemy_Normal_guard1,350.0,20.0,,180
 Enemy_Normal_guard2,350.0,20.0,,150

@@ -66,6 +66,7 @@ namespace Kuros.Items.World
 		[Export] public string DestructionAnimationName { get; set; } = "destroy"; // 销毁动画名称
 		[Export] public float DestructionAnimationDuration { get; set; } = 0.5f; // 销毁动画时长（如果动画播放器不存在，使用固定时长）
 		[Export(PropertyHint.Range, "0.01,10,0.01")] public float LandingHideDelay { get; set; } = 2.0f; // 落点处隐藏延迟（秒）：投掷武器落地后隐藏视觉的等待时间；到达 ThrowWeaponCooldown 后才归还背包并销毁节点
+		public int ThrowHoldFrame { get; set; } = -1;
 
 		[ExportCategory("Health")]
 		[Export] public bool Destructible { get; set; } = false;
@@ -1843,6 +1844,7 @@ namespace Kuros.Items.World
 					{
 						// 隐藏后加入场景树，触发 Shader 编译，然后立刻销毁
 						node2D.Visible = false;
+						node2D.ProcessMode = ProcessModeEnum.Disabled;
 						AddChild(node2D);
 						node2D.QueueFree();
 					}
@@ -1872,6 +1874,14 @@ namespace Kuros.Items.World
 			foreach (var entry in ItemDefinition.GetEffectEntries(ItemEffectTrigger.OnThrowDestroy))
 			{
 				if (entry?.EffectScene == null) continue;
+
+				if (ThrowHoldFrame >= 0)
+				{
+					if (entry.RequiredFrameMin >= 0 && ThrowHoldFrame < entry.RequiredFrameMin)
+						continue;
+					if (entry.RequiredFrameMax >= 0 && ThrowHoldFrame > entry.RequiredFrameMax)
+						continue;
+				}
 
 				try
 				{

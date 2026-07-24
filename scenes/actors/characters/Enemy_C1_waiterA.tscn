@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://bvps5t0s8owhw"]
+[gd_scene load_steps=35 format=3 uid="uid://bvps5t0s8owhw"]
 
 [ext_resource type="Script" uid="uid://b80phh0fm2xdj" path="res://scripts/actors/enemies/EnemyC1WaiterA.cs" id="1_cc1qw"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_thw4a"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://btu15dulpf6bd" path="res://resources/effects/EnemyWaiterAThrowEffect.tscn" id="12_sycgy"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="13_l8adk"]
 [ext_resource type="Script" uid="uid://ckc4yud52bmag" path="res://scripts/actors/enemies/states/EnemyAssistState.cs" id="14_cc1qw"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_ikeql"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_k0i03"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_8u1h6"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="16_rwl2c"]
@@ -38,7 +39,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cc1qw"]
-size = Vector2(1200, 800)
+size = Vector2(1200, 500)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q6o81"]
 radius = 1024.0
@@ -51,6 +52,11 @@ size = Vector2(300, 800)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_yski7"]
 radius = 180.0
+
+[sub_resource type="Resource" id="Resource_pu5dh"]
+script = ExtResource("14_ikeql")
+Scene = ExtResource("12_sycgy")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_C1_waiterA" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -130,7 +136,7 @@ skeleton_data_res = ExtResource("7_cc1qw")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.0
+preview_time = 0.0
 script = ExtResource("23_spine_controller")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -203,7 +209,7 @@ RecoveryDuration = 0.65
 CooldownDurationMultiplier = 3.0
 DamageMultiplier = 0.0
 GrantedImmunities = 16
-EffectScene = ExtResource("12_sycgy")
+Effects = Array[ExtResource("14_ikeql")]([SubResource("Resource_pu5dh")])
 EffectOffset = Vector2(0, -500)
 SpawnTiming = 1
 metadata/attack_weight = 100.0

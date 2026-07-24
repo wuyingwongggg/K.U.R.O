@@ -7,8 +7,8 @@ using Kuros.Actors.Heroes.Attacks;
 namespace Kuros.Effects
 {
     /// <summary>
-    /// 攻击时击退敌人的效果。
-    /// 当携带此效果的角色攻击敌人时，敌人会被物理击退，自动与场景碰撞停止。
+    /// 攻击时击退目标的效果。
+    /// 当携带此效果的角色攻击目标时，目标会被物理击退，自动与场景碰撞停止。
     /// 搭配 ItemDefinition 的 OnEquip 触发器使用。
     /// </summary>
     [GlobalClass]
