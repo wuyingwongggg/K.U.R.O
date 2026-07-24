@@ -13,6 +13,8 @@ namespace Kuros.Managers
 	{
 		// 单例实例
 		public static UIManager Instance { get; private set; } = null!;
+		/// <summary>鼠标悬停在任何 UI 交互区域时为 true，游戏层应忽略攻击输入。/summary>
+		public static bool IsMouseOverUI { get; set; }
 
 		// UI场景路径
 		private const string BATTLE_HUD_PATH = "res://scenes/ui/hud/BattleHUD.tscn";
@@ -329,6 +331,19 @@ namespace Kuros.Managers
 		public void UnloadItemObtainedPopup()
 		{
 			UnloadUI("ItemObtainedPopup");
+		}
+		public static void RegisterInteractiveChildren(Node parent)
+		{
+			foreach (var child in parent.GetChildren())
+			{
+				if (child is BaseButton || child is Slider)
+				{
+					var ctrl = (Control)child;
+					ctrl.MouseEntered += () => IsMouseOverUI = true;
+					ctrl.MouseExited += () => IsMouseOverUI = false;
+				}
+				RegisterInteractiveChildren(child);
+			}
 		}
 	}
 
