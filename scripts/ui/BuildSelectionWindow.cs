@@ -35,7 +35,7 @@ namespace Kuros.UI
 
             _options = options;
             _onConfirmed = onConfirmed;
-            _selectedIndex = 0;
+            _selectedIndex = -1;
 
             Visible = true;
             ProcessMode = ProcessModeEnum.Always;
@@ -76,14 +76,10 @@ namespace Kuros.UI
         public override void _Input(InputEvent @event)
         {
             if (!_isOpen) return;
+            if (PauseManager.Instance.PauseCount > 1) return;
 
             if (@event is InputEventKey keyEvent && keyEvent.Pressed)
             {
-                if (keyEvent.Keycode == Key.Escape)
-                {
-                    CloseWindow();
-                    return;
-                }
                 int numKey = (int)(keyEvent.Keycode - Key.Key1);
                 if (numKey >= 0 && numKey < _options.Count)
                 {
@@ -151,6 +147,7 @@ namespace Kuros.UI
                 card.Size = new Vector2(cardWidth, cardHeight);
                 card.SyncViewportSize();
                 card.ApplyCardScale();
+                card.ApplyRarityVisuals(effect.Rarity);
                 _cards.Add(card);
             }
         }

@@ -7,7 +7,7 @@ namespace Kuros.Systems
     /// <summary>
     /// 构筑效果定义（三选一弹窗中的可选项）。
     /// </summary>
-    public enum BuildRarity { Common, Rare, Epic }
+    public enum BuildRarity { Common, Rare, Epic, Core }
 
     [GlobalClass]
     public partial class BuildEffectDefinition : Resource
