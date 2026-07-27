@@ -1,0 +1,130 @@
+[gd_scene load_steps=29 format=3 uid="uid://c8c450masc7f5"]
+
+[ext_resource type="Texture2D" uid="uid://bifkxv7ctwotp" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="1_e3eln"]
+[ext_resource type="Texture2D" uid="uid://caku8scp3mglw" path="res://assets/objects/drone/drone_base/时间轴 1_0001.png" id="2_chg0d"]
+[ext_resource type="Texture2D" uid="uid://drirluynqs4b5" path="res://assets/objects/drone/drone_base/时间轴 1_0002.png" id="3_0ymaj"]
+[ext_resource type="Texture2D" uid="uid://kuorm43vhtjw" path="res://assets/objects/drone/drone_base/时间轴 1_0003.png" id="4_xh1uh"]
+[ext_resource type="Texture2D" uid="uid://c1vrg5ca1lclj" path="res://assets/objects/drone/drone_base/时间轴 1_0004.png" id="5_7qjmh"]
+[ext_resource type="Texture2D" uid="uid://bfgctgk2ejuj5" path="res://assets/objects/drone/drone_base/时间轴 1_0005.png" id="6_jj05g"]
+[ext_resource type="Texture2D" uid="uid://gpnni6c15mg0" path="res://assets/objects/drone/drone_base/时间轴 1_0006.png" id="7_4ugwn"]
+[ext_resource type="Texture2D" uid="uid://j5dguirc6jd1" path="res://assets/objects/drone/drone_base/时间轴 1_0007.png" id="8_fyvpa"]
+[ext_resource type="Texture2D" uid="uid://dxea8qiov0jw5" path="res://assets/objects/drone/drone_base/时间轴 1_0008.png" id="9_lyvko"]
+[ext_resource type="Texture2D" uid="uid://c2g5tv77mdu13" path="res://assets/objects/drone/drone_base/时间轴 1_0009.png" id="10_q7nuu"]
+[ext_resource type="Texture2D" uid="uid://rxr47btji3bu" path="res://assets/objects/drone/drone_base/时间轴 1_0010.png" id="11_jwd4t"]
+[ext_resource type="Texture2D" uid="uid://b63o3ncuuvekb" path="res://assets/objects/drone/drone_base/时间轴 1_0011.png" id="12_427f3"]
+[ext_resource type="Texture2D" uid="uid://dpdjme44p27rb" path="res://assets/objects/drone/drone_effect/时间轴 1_0000.png" id="13_hed5m"]
+[ext_resource type="Texture2D" uid="uid://dkyfmn8k1bbdq" path="res://assets/objects/drone/drone_effect/时间轴 1_0001.png" id="14_ol0io"]
+[ext_resource type="Texture2D" uid="uid://cjy6ialtptfeg" path="res://assets/objects/drone/drone_effect/时间轴 1_0002.png" id="15_murw0"]
+[ext_resource type="Texture2D" uid="uid://pu7h8c13uetm" path="res://assets/objects/drone/drone_effect/时间轴 1_0003.png" id="16_qqve3"]
+[ext_resource type="Texture2D" uid="uid://jq8jgye88nwd" path="res://assets/objects/drone/drone_effect/时间轴 1_0004.png" id="17_xp3x7"]
+[ext_resource type="Texture2D" uid="uid://cyg5yq4mqtypu" path="res://assets/objects/drone/drone_effect/时间轴 1_0005.png" id="18_lj5o6"]
+[ext_resource type="Texture2D" uid="uid://cx3y75s2lxqqd" path="res://assets/objects/drone/drone_effect/时间轴 1_0006.png" id="19_msqwv"]
+[ext_resource type="Texture2D" uid="uid://cpv5a36ivrm2j" path="res://assets/objects/drone/drone_effect/时间轴 1_0007.png" id="20_gtxjn"]
+[ext_resource type="Texture2D" uid="uid://ck688ggmldnf2" path="res://assets/objects/drone/drone_effect/时间轴 1_0008.png" id="21_8qein"]
+[ext_resource type="Texture2D" uid="uid://dx6mev4qmpajs" path="res://assets/objects/drone/drone_effect/时间轴 1_0009.png" id="22_vxthw"]
+[ext_resource type="Texture2D" uid="uid://bgrbnrps4jhe7" path="res://assets/objects/drone/drone_effect/时间轴 1_0010.png" id="23_ch74u"]
+[ext_resource type="Texture2D" uid="uid://re425yu1yrte" path="res://assets/objects/drone/drone_effect/时间轴 1_0011.png" id="24_quk2w"]
+[ext_resource type="Texture2D" uid="uid://dj7mt3uqtpoyo" path="res://assets/objects/drone/drone_effect/时间轴 1_0012.png" id="25_l88pk"]
+[ext_resource type="Texture2D" uid="uid://lr2ixu1faoti" path="res://assets/objects/drone/drone_effect/时间轴 1_0013.png" id="26_q1wlm"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_q6hc6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_e3eln")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_chg0d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_0ymaj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_xh1uh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_7qjmh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_jj05g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_4ugwn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_fyvpa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_lyvko")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_q7nuu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_jwd4t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_427f3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_nv1b5"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_hed5m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_ol0io")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_murw0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_qqve3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_xp3x7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_lj5o6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_msqwv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_gtxjn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_8qein")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_vxthw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_ch74u")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_quk2w")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_l88pk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_q1wlm")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="DroneBase" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_q6hc6")
+autoplay = "default"
+
+[node name="DroneEffect" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_nv1b5")
+autoplay = "default"

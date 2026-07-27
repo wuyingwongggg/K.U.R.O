@@ -7,6 +7,7 @@ radius = 300.0
 
 [node name="StunEnemiesEffect" type="Node"]
 script = ExtResource("1_stun_script")
+EffectId = "b9e41ff2-bb72-455a-bf22-22eb2e6df8eb"
 DisplayName = "眩晕"
 Description = "敌人进入范围后眩晕直到效果结束"
 

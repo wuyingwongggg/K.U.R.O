@@ -165,7 +165,7 @@ namespace Kuros.Actors.Enemies.Animation
 					return;
 				}
 
-				if (attackName.Equals(controller.LockdownAttackName, _comparison))
+				if (attackName.Equals(controller.UltimateAttackName, _comparison))
 				{
 					PlayOnceIfNeeded("Skill2", Skill2Animation, SkillMixDuration);
 					return;

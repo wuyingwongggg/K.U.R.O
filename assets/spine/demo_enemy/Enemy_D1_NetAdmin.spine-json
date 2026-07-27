@@ -10925,6 +10925,9 @@
 					{ "slot": "036", "offset": 5 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 1, "name": "hit" }
 		]
 	},
 	"skill2": {
@@ -13400,6 +13403,9 @@
 					{ "slot": "036", "offset": 5 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 2.5, "name": "hit" }
 		]
 	},
 	"stun1": {

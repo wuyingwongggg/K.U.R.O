@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="8_fsm"]
 [ext_resource type="Script" uid="uid://dy6nxg6ncc1dl" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="9_idle"]
 [ext_resource type="Script" uid="uid://ca6my22csxkmt" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_walk"]
-[ext_resource type="Script" uid="uid://bniicdf3jtich" path="res://scripts/actors/enemies/states/EnemyWaiterAAttackState.cs" id="11_attack_state"]
+[ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="11_k1kh3"]
 [ext_resource type="Script" uid="uid://6waciqsaulrs" path="res://scripts/actors/enemies/attacks/EnemyD1PrinterMachineAttackController.cs" id="12_attack_ctrl"]
 [ext_resource type="PackedScene" uid="uid://ciwdkf08qw7ao" path="res://resources/effects/EnemyPrinterMachineMissile01AttackEffect.tscn" id="13_6yk7q"]
 [ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="13_throw"]
@@ -226,7 +226,7 @@ script = ExtResource("9_idle")
 script = ExtResource("10_walk")
 
 [node name="Attack" type="Node" parent="StateMachine"]
-script = ExtResource("11_attack_state")
+script = ExtResource("11_k1kh3")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("12_attack_ctrl")
@@ -293,6 +293,7 @@ script = ExtResource("22_freeze")
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("23_anim_ctrl")
+StunAnimation = "idle"
 SpineSpritePath = NodePath("../SpineSprite")
 AttackMixDuration = 0.2
 SkillMixDuration = 0.1

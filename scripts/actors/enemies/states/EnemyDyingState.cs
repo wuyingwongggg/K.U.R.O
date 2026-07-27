@@ -16,6 +16,7 @@ namespace Kuros.Actors.Enemies.States
         {
             _timer = DeathDuration;
             Enemy.AttackTimer = 0f;
+            _effectSpawned = false;
 
             // 禁用敌人碰撞体
             Enemy.DisableCollisionShape();
@@ -38,9 +39,22 @@ namespace Kuros.Actors.Enemies.States
             _timer -= (float)delta;
             if (_timer <= 0f)
             {
+                if (!_effectSpawned)
+                {
+                    _effectSpawned = true;
+                    if (Enemy.DeathEffect != null)
+                    {
+                        var effect = Enemy.DeathEffect.Instantiate<Node2D>();
+                        Enemy.GetParent()?.AddChild(effect);
+                        effect.GlobalPosition = Enemy.GlobalPosition;
+                        effect.Scale = new Vector2(Enemy.FacingRight ? 1f : -1f, 1f);
+                    }
+                }
                 ChangeState("Dead");
             }
         }
+
+        private bool _effectSpawned;
     }
 }
 

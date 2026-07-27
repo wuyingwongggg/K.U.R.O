@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://crgx4p2iyoqn4"]
+
+[node name="DroneSpawnEffect" type="Node2D"]

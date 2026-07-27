@@ -1413,6 +1413,16 @@ namespace Kuros.Items.World
 		/// <summary>
 		/// 飞行中击中敌人时销毁自身并生成特效
 		/// </summary>
+		public void TriggerDestruction()
+		{
+			if (_isDestroying || !_impactArmed) return;
+			_impactArmed = false;
+			if (_hitboxArea != null) _hitboxArea.Monitoring = false;
+			if (_inFlight)
+				DestroyItemOnImpact();
+			else
+				DestroyItem();
+		}
 		private void DestroyItemOnImpact()
 		{
 			if (_isDestroying)
@@ -1902,6 +1912,7 @@ namespace Kuros.Items.World
 					}
 					else if (node is Node2D node2D)
 					{
+						entry.ApplyOverrides(node2D);
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 					}
@@ -1961,7 +1972,8 @@ namespace Kuros.Items.World
 						var node = entry.EffectScene.Instantiate();
 						if (node is Node2D node2D)
 						{
-							var worldNode = GetTree().CurrentScene?.GetNodeOrNull<Node>("World")
+							entry.ApplyOverrides(node2D);
+								var worldNode = GetTree().CurrentScene?.GetNodeOrNull<Node>("World")
 								?? GetTree().CurrentScene;
 							worldNode?.AddChild(node2D);
 							node2D.GlobalPosition = spawnPos;

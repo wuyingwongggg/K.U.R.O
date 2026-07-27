@@ -38,6 +38,7 @@ namespace Kuros.Actors.Enemies.States
             var freezeEffect = Enemy.EffectController?.GetEffect<FreezeEffect>();
             if (freezeEffect != null)
             {
+                _savedFrozenRemainingTime = 0f;
                 ChangeState(freezeEffect.FrozenStateName);
                 return;
             }
@@ -45,7 +46,6 @@ namespace Kuros.Actors.Enemies.States
             // 若之前是从Frozen进入，且Frozen仍有剩余时长，则恢复Frozen
             if (_savedFrozenRemainingTime > 0f)
             {
-                // 恢复到Frozen状态，由Frozen.Enter()从Enemy.FrozenStateRemainingTime恢复时长
                 Enemy.FrozenStateRemainingTime = _savedFrozenRemainingTime;
                 ChangeState("Frozen");
                 _savedFrozenRemainingTime = 0f;
