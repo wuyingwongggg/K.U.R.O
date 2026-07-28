@@ -8,8 +8,8 @@
 ```
 效果（伤害/击退/眩晕/...）
   → 统一入口（GameActor 公开方法）
-    → GameActor 内部守门（CanBeAffected / ActiveImmunities）
-      → 执行
+	→ GameActor 内部守门（CanBeAffected / ActiveImmunities）
+	  → 执行
 ```
 
 ---
@@ -74,11 +74,11 @@ public ImmunityFlags ActiveImmunities { get; set; }
 // 同步形状查询
 var query = new PhysicsShapeQueryParameters2D
 {
-    Shape = shape,
-    Transform = shape.GlobalTransform,
-    CollisionMask = TargetCollisionMask,     // 导出配置，不写死
-    CollideWithAreas = true,
-    CollideWithBodies = false
+	Shape = shape,
+	Transform = shape.GlobalTransform,
+	CollisionMask = TargetCollisionMask,     // 导出配置，不写死
+	CollideWithAreas = true,
+	CollideWithBodies = false
 };
 spaceState.IntersectShape(query);
 
@@ -103,6 +103,18 @@ area.BodyEntered += OnBodyEntered;
 | BlackHoleEffect 吸引 | `GetNodesInGroup` + `DistanceTo` | `IntersectShape` |
 | SoundWaveEffect | `GetNodesInGroup` + `DistanceTo` | `IntersectShape` |
 | TeleportStrikeEffect | `GetNodesInGroup` + `DistanceToSegment` | `IntersectShape` |
+
+### 当前实施难点：WorldItem 的 IntersectShape 检测
+
+以上效果迁移至 `IntersectShape` 时，WorldItem 阵营无法被正确检测。根因是 WorldItem 的碰撞结构不统一：
+
+| WorldItem 类型 | 基类 | 碰撞方式 | IntersectShape 问题 |
+|---|---|---|---|
+| WorldItemEntity | `CharacterBody2D` | `BodyCollisionLayer = 0`（身体碰撞层关闭），通过 `TriggerArea`（Area2D, layer 2）交互 | Body 查询找不到（层 0），Area 查询需沿树找 `world_items` 组 |
+| RigidBodyWorldItemEntity | `Node2D` | Area2D 子节点 | 非物理体，Body 查询完全找不到 |
+| DestructibleObject | `StaticBody2D` 子节点 | `StaticBody2D` + CollisionShape2D | 找到的是子节点 `StaticBody2D`，需沿树向上找 `world_items` 组成员 |
+
+**待解决**：是否接受"用 `GetNodesInGroup("world_items")` 处理 WorldItem，其余阵营走 `IntersectShape`"的混合方案，还是为 WorldItem 统一碰撞层后全部迁移。
 
 ---
 
@@ -163,8 +175,8 @@ if (!dealt) return;  // 阵营不匹配时不继续
 // GameActor.cs
 public void ApplyKnockback(Vector2 direction, float speed)
 {
-    if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
-    Velocity = direction * speed;
+	if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+	Velocity = direction * speed;
 }
 ```
 
@@ -186,8 +198,8 @@ public void ApplyKnockback(Vector2 direction, float speed)
 // GameActor.cs
 public void ApplyEffect(ActorEffect effect)
 {
-    if (!CanBeAffected(effect)) return;
-    EffectController?.AddEffect(effect);
+	if (!CanBeAffected(effect)) return;
+	EffectController?.AddEffect(effect);
 }
 ```
 

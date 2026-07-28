@@ -1,5 +1,6 @@
 using Godot;
 using Godot.Collections;
+using Kuros.Actors.Enemies.Attacks;
 using Kuros.Core;
 
 namespace Kuros.Fx
@@ -28,7 +29,7 @@ namespace Kuros.Fx
 		[Export] public Array<AnimationPlayer> AnimationPlayers { get; set; } = new();
 
 		[ExportGroup("Spawn")]
-		[Export] public PackedScene? SpawnScene { get; set; }
+		[Export] public Array<AttackEffectEntry> SpawnEntries { get; set; } = new();
 
 		[Export] public bool FacingRight { get; set; } = true;
 
@@ -51,14 +52,26 @@ namespace Kuros.Fx
 			QueueFree();
 		}
 
-		public void SpawnAtMarker(string markerName)
+		public void SpawnAtMarker(string encoded)
 		{
-			if (SpawnScene == null) return;
+			int entryIndex = 0;
+			string markerName = encoded;
+			int colon = encoded.LastIndexOf(':');
+			if (colon > 0 && int.TryParse(encoded[(colon + 1)..], out int idx))
+			{
+				markerName = encoded[..colon];
+				entryIndex = idx;
+			}
+
+			if (entryIndex < 0 || entryIndex >= SpawnEntries.Count) return;
+			var entry = SpawnEntries[entryIndex];
+			if (entry?.Scene == null) return;
 
 			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
 			if (marker == null) return;
 
-			var instance = SpawnScene.Instantiate();
+			var instance = entry.Scene.Instantiate();
+			entry.ApplyOverrides(instance);
 			GetParent()?.AddChild(instance);
 			if (instance is Node2D node)
 				node.GlobalPosition = marker.GlobalPosition;

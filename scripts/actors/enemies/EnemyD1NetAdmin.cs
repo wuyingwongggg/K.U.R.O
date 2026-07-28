@@ -7,16 +7,28 @@ namespace Kuros.Actors.Enemies
 {
 	public partial class EnemyD1NetAdmin : SampleEnemy
 	{
+		private CollisionShape2D? _bodyShape;
+
 		public override void _Ready()
 		{
 			base._Ready();
 			ActiveImmunities |= ImmunityFlags.ForcedMovement;
+			_bodyShape = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+		}
+
+		public override void _Process(double delta)
+		{
+			base._Process(delta);
+
+			bool hasFreeze = EffectController?.GetEffect<FreezeEffect>() != null;
+			if (_bodyShape != null)
+				_bodyShape.Disabled = !hasFreeze;
 		}
 
 		public override bool CanBeAffected(ActorEffect? effect)
 		{
-			// 眩晕状态允许所有效果
-			if (StateMachine?.CurrentState?.Name == "Frozen")
+			// 眩晕期间（含 Hit 打断）允许所有效果
+			if (EffectController?.GetEffect<FreezeEffect>() != null)
 				return true;
 
 			// 非眩晕状态仅允许无人机眩晕效果

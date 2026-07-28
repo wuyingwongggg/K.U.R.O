@@ -70,6 +70,15 @@ namespace Kuros.Actors.Enemies.States
                 if (freeze != null)
                     freeze.PendingRemainingTime = 0f;
             }
+
+            // Frozen 结束前强制 AttackController 重新评估终极技
+            var controller = GetNodeOrNull<Attacks.EnemyD1NetAdminAttackController>(
+                "../Attack/AttackController");
+            if (controller != null)
+            {
+                controller.ForceEvaluateUltimate();
+                controller.ForceQueueNextAttack("FrozenEnd");
+            }
         }
 
         public override void PhysicsUpdate(double delta)

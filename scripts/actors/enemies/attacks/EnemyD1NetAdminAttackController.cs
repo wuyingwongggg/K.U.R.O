@@ -100,11 +100,21 @@ namespace Kuros.Actors.Enemies.Attacks
 			CurrentAttackName = string.Empty;
 		}
 
+		/// <summary>
+		/// 外部（如 Frozen 结束时）强制重新评估终极技触发条件。
+		/// </summary>
+		public void ForceEvaluateUltimate()
+		{
+			GD.Print($"[NetAdminUltimate] ForceEvaluate: HP={Enemy?.CurrentHealth}/{Enemy?.MaxHealth}");
+			ConfigureNextAttack();
+		}
+
 		private void ConfigureNextAttack()
 		{
 			// 血量阈值优先级最高：满足条件时强制排队终极技
 			if (ShouldTriggerUltimate())
 			{
+				GD.Print($"[NetAdminUltimate] 触发！阈值={_sortedUltimateThresholds[_triggeredUltimateIndex]}, HP比={(float)Enemy!.CurrentHealth / Enemy.MaxHealth:F2}");
 				TrySetAttackWeight(UltimateAttackName, 1f);
 				TrySetAttackWeight(MeleeAttackName, 0f);
 				TrySetAttackWeight(MultiMeleeAttackName, 0f);
@@ -130,6 +140,13 @@ namespace Kuros.Actors.Enemies.Attacks
 		private void ConsumeUltimateTrigger()
 		{
 			_triggeredUltimateIndex++;
+			// 跳过 HP 已经低于的后续阈值，避免连发多次 Ultimate
+			while (_triggeredUltimateIndex < _sortedUltimateThresholds.Length
+				&& Enemy != null
+				&& (float)Enemy.CurrentHealth / Enemy.MaxHealth <= _sortedUltimateThresholds[_triggeredUltimateIndex])
+			{
+				_triggeredUltimateIndex++;
+			}
 		}
 
 		private void RefreshThresholdCache()

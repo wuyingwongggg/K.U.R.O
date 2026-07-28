@@ -32,7 +32,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(4000, 600)
+size = Vector2(4000, 2000)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
 radius = 1024.0
@@ -53,14 +53,14 @@ PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
 "Damage": 10,
 "EnableCenterEffect": false,
-"MaxLifetime": 2.0,
+"MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
 "MinLifetime": 1.5,
 "MinSpeed": 1200.0,
-"ScaleMax": 1.2,
-"ScaleMin": 0.8,
-"SpawnCount": 4,
-"SpreadAngle": 45.0
+"ScaleMax": 1.0,
+"ScaleMin": 1.0,
+"SpawnCount": 3,
+"SpreadAngle": 60.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -80,7 +80,7 @@ AttackArea = NodePath("Sprite2D/AttackArea")
 DeathEffect = ExtResource("3_2csbb")
 Speed = 400.0
 AttackDamage = 0.0
-MaxHealth = 100
+MaxHealth = 80
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -145,7 +145,7 @@ skeleton_data_res = ExtResource("6_cdf4i")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.83
+preview_time = 0.0
 script = ExtResource("7_02rt2")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
