@@ -2,13 +2,14 @@
 
 ## 核心原则
 
-**所有外部效果通过统一入口作用于 GameActor。GameActor 自身决定接受还是拒绝。**
+1. **效果不关心目标身份。** 变量名用 `target`/`actor`，禁止用 `enemy`/`player`。目标是谁由调用方或配置决定，不写死在效果内部。
+2. **所有外部效果通过统一入口作用于 GameActor。GameActor 自身决定接受还是拒绝。**
 
 ```
 效果（伤害/击退/眩晕/...）
   → 统一入口（GameActor 公开方法）
-	→ GameActor 内部守门（CanBeAffected / ActiveImmunities）
-	  → 执行
+    → GameActor 内部守门（CanBeAffected / ActiveImmunities）
+      → 执行
 ```
 
 ---
@@ -25,7 +26,6 @@ public virtual bool CanBeAffected(ActorEffect? effect) => true;
 - `effect != null`：效果系统调用（`ApplyEffect`）
 - `effect == null`：直接伤害调用（`TakeDamage`）
 - 子类覆写实现"非眩晕无敌"等逻辑
-- **不阻塞 `TakeDamage`**，只阻塞 `ApplyEffect`
 
 ### 2. ActiveImmunities — 类型级永久免疫
 
@@ -49,37 +49,52 @@ public ImmunityFlags ActiveImmunities { get; set; }
 
 ---
 
-## 二、目标发现：只走物理
+## 二、两种效果模式
 
-### 禁用
+### 模式 A：命中触发型（DamageEventBus）
 
-```csharp
-GetTree().GetNodesInGroup("enemies")    // 绕过物理引擎
-GetTree().GetFirstNodeInGroup("player") // 硬编码组名
-actor.GlobalPosition.DistanceTo() < R   // 忽略碰撞形状
+效果监听 `DamageEventBus.OnDamageResolved(attacker, target, ...)`，天然目标无关。
+
+```
+宿主打谁 → 效果就挂谁身上，不需要知道对方阵营
 ```
 
-### 统一使用
+**规则：**
+- 检查 `attacker == Actor`（确保是宿主打的）
+- 对 `target` 执行效果
+- **变量名用 `target`，禁止用 `enemy` / `player`**
+
+**示例：** `DotBleedEffect`、`SlowOnHitEffect`、`KnockbackOnAttackEffect`
+
+### 模式 B：区域扫描型（IntersectShape / Area2D 信号）
+
+效果通过物理引擎发现目标。**禁止 `GetNodesInGroup`，统一用 `IntersectShape` 或 `Area2D` 信号。**
 
 ```csharp
-// 同步形状查询（IntersectShape）
+// 同步形状查询
 var query = new PhysicsShapeQueryParameters2D
 {
-	Shape = shape,
-	Transform = shape.GlobalTransform,
-	CollisionMask = TargetCollisionMask,     // 导出配置，不写死
-	CollideWithAreas = true,
-	CollideWithBodies = false
+    Shape = shape,
+    Transform = shape.GlobalTransform,
+    CollisionMask = TargetCollisionMask,     // 导出配置，不写死
+    CollideWithAreas = true,
+    CollideWithBodies = false
 };
 spaceState.IntersectShape(query);
 
-// 或信号驱动（Area2D.BodyEntered / AreaEntered）
+// 或信号驱动
 area.BodyEntered += OnBodyEntered;
 ```
 
-目标：所有效果通过物理引擎发现目标，netAdmin 的 CollisionShape2D 状态自动被尊重。
+碰撞掩码通过 `[Export(PropertyHint.Layers2DPhysics)] uint TargetCollisionMask` 配置：
 
-### 迁移清单
+| 影响对象 | 值 |
+|---------|-----|
+| 只影响敌人 | `2`（Layer 2） |
+| 只影响玩家 | `4`（Layer 3） |
+| 同时影响两者 | `6`（2\|4） |
+
+### 迁移清单（仍用 GetNodesInGroup 的效果）
 
 | 效果 | 当前方式 | 应改为 |
 |------|---------|--------|
@@ -88,6 +103,19 @@ area.BodyEntered += OnBodyEntered;
 | BlackHoleEffect 吸引 | `GetNodesInGroup` + `DistanceTo` | `IntersectShape` |
 | SoundWaveEffect | `GetNodesInGroup` + `DistanceTo` | `IntersectShape` |
 | TeleportStrikeEffect | `GetNodesInGroup` + `DistanceToSegment` | `IntersectShape` |
+
+---
+
+### 场景根节点类型规范
+
+| 效果类型 | 根节点 | 继承 | 应用路径 |
+|---------|--------|------|---------|
+| 逻辑效果（眩晕/DOT/Buff/击退） | `Node` | `ActorEffect` | `ApplyEffect` → EffectController |
+| 世界生成效果（爆炸/投射物/区域） | `Node2D` | `Node2D` 或子类 | `SpawnSingleEffect` → world |
+
+- `Node` 根的效果不需要世界坐标，挂载在 GameActor 下由 `EffectController` 管理生命周期
+- `Node2D` 根的效果需要 `GlobalPosition` 定位，走 `SpawnSingleEffect` 的世界生成路径
+- **禁止混用**：`ActorEffect` 子类用 `Node2D` 根会导致坐标失效，`Node2D` 脚本用 `Node` 根会导致 Godot 类型错误
 
 ---
 
@@ -122,8 +150,8 @@ if (!dealt) return;  // 阵营不匹配时不继续
 // GameActor.cs
 public void ApplyKnockback(Vector2 direction, float speed)
 {
-	if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
-	Velocity = direction * speed;
+    if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+    Velocity = direction * speed;
 }
 ```
 
@@ -133,9 +161,9 @@ public void ApplyKnockback(Vector2 direction, float speed)
 |------|------|
 | `enemy.Velocity = beamDir * knockSpeed` | `enemy.ApplyKnockback(beamDir, knockSpeed)` |
 | `actor.Velocity = knockbackVelocity` | `actor.ApplyKnockback(direction, speed)` |
-| `mainCharacter.Velocity = knockbackVelocity` | `mainCharacter.ApplyKnockback(dir, speed)`（玩家走覆写，含 ConsumePendingHitKnockback） |
+| `mainCharacter.Velocity = knockbackVelocity` | `mainCharacter.ApplyKnockback(dir, speed)`（玩家走覆写） |
 
-`KnockbackDriver`（`KnockbackOnAttackEffect` 内部）保留，因为它需要 `MoveAndCollide` 做碰撞响应。但在 `Attach` 入口也加 `ForcedMovement` 检查。
+`KnockbackDriver`（`KnockbackOnAttackEffect` 内部）保留，因其需要 `MoveAndCollide` 做碰撞响应，但 `Attach` 入口也加 `ForcedMovement` 检查。
 
 ---
 
@@ -145,16 +173,27 @@ public void ApplyKnockback(Vector2 direction, float speed)
 // GameActor.cs
 public void ApplyEffect(ActorEffect effect)
 {
-	if (!CanBeAffected(effect)) return;
-	EffectController?.AddEffect(effect);
+    if (!CanBeAffected(effect)) return;
+    EffectController?.AddEffect(effect);
 }
 ```
 
-已内置 `CanBeAffected` 守门。所有施加效果的代码直接调 `ApplyEffect`，不需要自己判断目标状态。
+已内置 `CanBeAffected` 守门。施加效果的代码直接调 `ApplyEffect`，不需要自己判断目标状态。
 
 ---
 
-## 六、GameActor 公开 API 总览
+## 六、命名规范
+
+| 禁止 | 正确 |
+|------|------|
+| `enemy`、`_enemy` | `target`、`actor` |
+| `capturedEnemy` | `capturedTarget` |
+| `EnemiesLayerMask` | `TargetCollisionMask` |
+| 注释中的"敌人" | "目标" |
+
+---
+
+## 七、GameActor 公开 API 总览
 
 | 方法 | 用途 | 内部守门 |
 |------|------|---------|
@@ -165,11 +204,27 @@ public void ApplyEffect(ActorEffect effect)
 
 ---
 
-## 七、新效果开发检查清单
+## 八、阵营系统（暂不实施）
+
+当前项目没有 PvP / 友伤 / 队友 NPC，不需要阵营系统。未来如有需要，加 `Faction` 枚举到 `GameActor`：
+
+```csharp
+public enum FactionType { Neutral, Player, Enemy }
+[Export] public FactionType Faction { get; set; }
+```
+
+过滤一行：`if (target.Faction == Actor.Faction) return;`
+
+**不要提前添加。**
+
+---
+
+## 九、新效果开发检查清单
 
 - [ ] 目标发现：`IntersectShape` 或 `Area2D` 信号，不用 `GetNodesInGroup`
 - [ ] 伤害：`DamageDispatcher.DealDamage`，不用 `actor.TakeDamage`
 - [ ] 击退：`actor.ApplyKnockback`，不用 `actor.Velocity =`
 - [ ] 效果施加：`actor.ApplyEffect`，不用手动判断免疫
 - [ ] `TargetCollisionMask` 导出配置，不写死组名/层号
-- [ ] 不硬编码 `enemy`/`player` 变量名
+- [ ] 变量名用 `target`/`actor`，不硬编码 `enemy`/`player`
+- [ ] 效果内部不判断目标阵营/身份
