@@ -64,7 +64,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(180, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
-size = Vector2(250, 150)
+size = Vector2(250, 200)
 
 [node name="WeaponBrawlRiotBracer" type="CharacterBody2D"]
 z_index = 1

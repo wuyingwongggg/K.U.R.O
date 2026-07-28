@@ -192,9 +192,9 @@ script = ExtResource("6_g3n2r")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(250.96452, -1666.0576)
-rotation = 1.4601392
-scale = Vector2(0.99999994, 0.99999994)
+position = Vector2(215.68137, -1716.127)
+rotation = 1.5550272
+scale = Vector2(0.9999998, 1.0000001)
 bone_name = "bone66"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -202,7 +202,6 @@ z_index = 10
 position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
@@ -232,7 +231,6 @@ scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
 [node name="SmashArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/SmashArea"]
 position = Vector2(1900, 150)
@@ -311,6 +309,7 @@ WarmupDuration = 2.0
 ActiveDuration = 0.3
 RecoveryDuration = 0.7
 CooldownDurationMultiplier = 3.0
+TargetableFactions = 7
 KnockbackDistance = 300.0
 KnockbackDuration = 0.2
 KnockbackFromHitPosition = true

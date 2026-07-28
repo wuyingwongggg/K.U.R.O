@@ -146,7 +146,7 @@ bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.4
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -226,6 +226,7 @@ RequiredItemId = "Weapon_Brawl_riotGlove"
 script = ExtResource("12_eaiww")
 DashSpeed = 2500.0
 RecoverySpeed = 0.0
+ContactShapePath = NodePath("../../../HitArea/CollisionShape2D")
 AttackId = "riot_bracer_melee_attack"
 DisplayName = "Riot Bracer Melee Attack"
 Description = "镇暴护腕专属攻击模板示例"
