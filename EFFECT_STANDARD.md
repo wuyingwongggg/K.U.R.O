@@ -117,6 +117,19 @@ area.BodyEntered += OnBodyEntered;
 - `Node2D` 根的效果需要 `GlobalPosition` 定位，走 `SpawnSingleEffect` 的世界生成路径
 - **禁止混用**：`ActorEffect` 子类用 `Node2D` 根会导致坐标失效，`Node2D` 脚本用 `Node` 根会导致 Godot 类型错误
 
+### 已知设计债务：WorldActorEffect
+
+`ActorEffect` 继承 `Node`，导致需要世界坐标的效果（如 `SlowHitAreaEffect`）无法同时拥有 `ActorEffect` 的生命周期管理和 `Node2D` 的位置能力。当前通过 `IWorldSpawnable` 接口手动管理位置——这是绕过 C# 单继承限制的临时方案。
+
+**待实施**：新增 `WorldActorEffect : Node2D` 基类，继承 `ActorEffect` 的核心逻辑（`EffectController` 交互、`Duration`、`OnTick`），但根类型为 `Node2D`。实施后：
+
+| 基类 | 根节点 | 用途 |
+|---|---|---|
+| `ActorEffect` | `Node` | 纯逻辑：眩晕/减速/DOT/Buff |
+| `WorldActorEffect` | `Node2D` | 世界效果：区域伤害/投射物/爆炸 |
+
+`SlowHitAreaEffect` 从 `ActorEffect + IWorldSpawnable` 改为继承 `WorldActorEffect`，删除接口 hack。
+
 ---
 
 ## 三、伤害：只走 DamageDispatcher
