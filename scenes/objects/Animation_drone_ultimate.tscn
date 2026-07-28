@@ -10,7 +10,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -28,7 +28,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(-1, 1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -46,7 +46,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, -1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -64,7 +64,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(-1, -1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -82,7 +82,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -100,7 +100,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(0, 1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -118,7 +118,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(-1, 0),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,
@@ -136,7 +136,7 @@ script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(0, -1),
-"Damage": 10,
+"Damage": 20,
 "EnableCenterEffect": false,
 "MaxLifetime": 1.5,
 "MaxSpeed": 1200.0,

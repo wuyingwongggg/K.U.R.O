@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=46 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -36,7 +36,6 @@
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
 [ext_resource type="PackedScene" uid="uid://cvdv22giw51s8" path="res://scenes/items/Furniture_D_drone.tscn" id="35_bnjvr"]
-[ext_resource type="PackedScene" uid="uid://domkhiw1qy7dh" path="res://scenes/objects/Animation_drone_ultimate.tscn" id="36_eh1sc"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -273,9 +272,6 @@ position = Vector2(-2171, 159)
 
 [node name="FurnitureDrone7" parent="World" instance=ExtResource("35_bnjvr")]
 position = Vector2(-2171, 159)
-
-[node name="AnimationDroneUltimate" parent="World" instance=ExtResource("36_eh1sc")]
-position = Vector2(-1544, 36)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10
