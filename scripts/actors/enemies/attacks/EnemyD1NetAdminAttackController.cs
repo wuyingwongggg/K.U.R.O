@@ -1,13 +1,14 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Kuros.Core;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
 	public partial class EnemyD1NetAdminAttackController : EnemyAttackController
 	{
 		[Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
-		[Export] public string MultiMeleeAttackName { get; set; } = "MultiSimpleMeleeAttack";
+		[Export] public string MultiMeleeAttackName { get; set; } = "SummonAttack";
 		[Export] public string UltimateAttackName { get; set; } = "UltimateAttack";
 
 		[ExportCategory("Ultimate Attack")]
@@ -25,6 +26,9 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "1,100,1")]
 		public int MinWeightPercent = 10;
 
+		/// <summary>召唤检测用的 CollisionShape2D 路径。此形状范围内有其他敌人时禁止召唤。</summary>
+		[Export] public NodePath SummonCheckShapePath = new();
+
 		public string CurrentAttackName { get; private set; } = string.Empty;
 
 		private readonly Dictionary<string, float> _originalWeights = new();
@@ -37,6 +41,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		public override void Initialize(SampleEnemy enemy)
 		{
 			base.Initialize(enemy);
+			_summonCheckShape = null;
 			CacheOriginalWeights();
 			RefreshThresholdCache();
 			ConfigureNextAttack();
@@ -121,10 +126,14 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
-			// 未触发终极技时恢复普通权重
-			TrySetAttackWeight(UltimateAttackName, 0f);
-			RestoreAttackWeight(MeleeAttackName);
-			RestoreAttackWeight(MultiMeleeAttackName);
+			// 恢复普通权重（让 CD 和 attack_weight 正常运作）
+		TrySetAttackWeight(UltimateAttackName, 0f);
+		RestoreAttackWeight(MeleeAttackName);
+		RestoreAttackWeight(MultiMeleeAttackName);
+
+		// 场上已有其他敌人则禁用召唤
+		if (CountNearbyEnemies() > 1)
+			TrySetAttackWeight(MultiMeleeAttackName, 0f);
 		}
 
 		private bool ShouldTriggerUltimate()
@@ -147,6 +156,43 @@ namespace Kuros.Actors.Enemies.Attacks
 			{
 				_triggeredUltimateIndex++;
 			}
+		}
+
+		private CollisionShape2D? _summonCheckShape;
+
+		private int CountNearbyEnemies()
+		{
+			_summonCheckShape ??= ResolveSummonCheckShape();
+			if (_summonCheckShape?.Shape == null || Enemy == null) return 1;
+
+			var spaceState = Enemy.GetWorld2D().DirectSpaceState;
+			var query = new PhysicsShapeQueryParameters2D
+			{
+				Shape = _summonCheckShape.Shape,
+				Transform = _summonCheckShape.GlobalTransform,
+				CollideWithAreas = true,
+				CollideWithBodies = false
+			};
+			var counted = new HashSet<GameActor>();
+			foreach (var result in spaceState.IntersectShape(query))
+			{
+				if (!result.TryGetValue("collider", out var collider)) continue;
+				if (collider.As<GodotObject>() is not Area2D area) continue;
+				var actor = area.GetParent() as GameActor
+					?? area.GetParent()?.GetParent() as GameActor;
+				if (actor != null && IsInstanceValid(actor)
+					&& !actor.IsDead && !actor.IsDeathSequenceActive
+					&& actor.IsInGroup("enemies"))
+					counted.Add(actor);
+			}
+			return counted.Count;
+		}
+
+		private CollisionShape2D? ResolveSummonCheckShape()
+		{
+			if (SummonCheckShapePath.IsEmpty) return null;
+			return GetNodeOrNull<CollisionShape2D>(SummonCheckShapePath)
+				?? Enemy?.GetNodeOrNull<CollisionShape2D>(SummonCheckShapePath);
 		}
 
 		private void RefreshThresholdCache()

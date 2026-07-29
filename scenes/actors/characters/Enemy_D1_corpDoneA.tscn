@@ -24,7 +24,7 @@
 [ext_resource type="Script" uid="uid://dfgse1uwmca1k" path="res://scripts/actors/enemies/attacks/EnemyPinballAttack.cs" id="21_pinball"]
 [ext_resource type="Script" uid="uid://c1kn4gsy08v73" path="res://scripts/actors/enemies/animation/EnemyD1CorpDoneASpineAnimationController.cs" id="22_anim"]
 [ext_resource type="Script" uid="uid://jssl2wlx6q7t" path="res://scripts/actors/enemies/attacks/EnemyD1CorpDoneAAttackController.cs" id="23_atkctrl"]
-[ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyLockdownAttack.cs" id="24_lockdown"]
+[ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyAreaDetectionAttack.cs" id="24_lockdown"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("3_h8ewy")

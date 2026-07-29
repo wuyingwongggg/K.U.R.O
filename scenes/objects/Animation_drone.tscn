@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://d1rblmvm4u46m"]
+[gd_scene load_steps=48 format=3 uid="uid://d1rblmvm4u46m"]
 
 [ext_resource type="SpineSkeletonDataResource" uid="uid://didg4j2bh0iqe" path="res://animations/spine/Enemy_D1_drone.tres" id="1_gnnud"]
 [ext_resource type="Script" uid="uid://cnm33l1nmqohv" path="res://scripts/fx/DirectionalSceneEffect.cs" id="2_animdrone"]
@@ -12,7 +12,7 @@ script = ExtResource("3_ysesj")
 Scene = ExtResource("2_venf4")
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
-[sub_resource type="Animation" id="Animation_j5kry"]
+[sub_resource type="Animation" id="Animation_ysesj"]
 resource_name = "attack_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -40,7 +40,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_jxnf8"]
+[sub_resource type="Animation" id="Animation_j5kry"]
 resource_name = "attack"
 length = 1.3333334
 tracks/0/type = "value"
@@ -68,7 +68,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_guppp"]
+[sub_resource type="Animation" id="Animation_jxnf8"]
 resource_name = "death_looped"
 length = 0.8333333
 tracks/0/type = "value"
@@ -96,7 +96,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_oae87"]
+[sub_resource type="Animation" id="Animation_guppp"]
 resource_name = "death"
 length = 0.8333333
 tracks/0/type = "value"
@@ -124,7 +124,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_1mx5u"]
+[sub_resource type="Animation" id="Animation_oae87"]
 resource_name = "hit_looped"
 length = 0.3333333
 tracks/0/type = "value"
@@ -152,7 +152,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_10kyo"]
+[sub_resource type="Animation" id="Animation_1mx5u"]
 resource_name = "hit"
 length = 0.3333333
 tracks/0/type = "value"
@@ -180,7 +180,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_lv1af"]
+[sub_resource type="Animation" id="Animation_10kyo"]
 resource_name = "idle_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -208,7 +208,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_krw1a"]
+[sub_resource type="Animation" id="Animation_lv1af"]
 resource_name = "idle"
 length = 1.3333334
 tracks/0/type = "value"
@@ -236,7 +236,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_1m4jd"]
+[sub_resource type="Animation" id="Animation_krw1a"]
 resource_name = "stun_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -264,7 +264,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_hddpk"]
+[sub_resource type="Animation" id="Animation_1m4jd"]
 resource_name = "stun"
 length = 1.3333334
 tracks/0/type = "value"
@@ -292,7 +292,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_v1hjt"]
+[sub_resource type="Animation" id="Animation_hddpk"]
 resource_name = "walk_looped"
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -319,7 +319,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_d54a5"]
+[sub_resource type="Animation" id="Animation_v1hjt"]
 resource_name = "walk"
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -346,7 +346,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_7h64c"]
+[sub_resource type="Animation" id="Animation_d54a5"]
 resource_name = "RESET"
 length = 0.5
 tracks/0/type = "value"
@@ -374,28 +374,31 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_h36re"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7h64c"]
 _data = {
-&"-- Empty --": SubResource("Animation_7h64c"),
-&"RESET": SubResource("Animation_7h64c"),
-&"attack": SubResource("Animation_jxnf8"),
-&"attack_looped": SubResource("Animation_j5kry"),
-&"death": SubResource("Animation_oae87"),
-&"death_looped": SubResource("Animation_guppp"),
-&"hit": SubResource("Animation_10kyo"),
-&"hit_looped": SubResource("Animation_1mx5u"),
-&"idle": SubResource("Animation_krw1a"),
-&"idle_looped": SubResource("Animation_lv1af"),
-&"stun": SubResource("Animation_hddpk"),
-&"stun_looped": SubResource("Animation_1m4jd"),
-&"walk": SubResource("Animation_d54a5"),
-&"walk_looped": SubResource("Animation_v1hjt")
+&"-- Empty --": SubResource("Animation_d54a5"),
+&"RESET": SubResource("Animation_d54a5"),
+&"attack": SubResource("Animation_j5kry"),
+&"attack_looped": SubResource("Animation_ysesj"),
+&"death": SubResource("Animation_guppp"),
+&"death_looped": SubResource("Animation_jxnf8"),
+&"hit": SubResource("Animation_1mx5u"),
+&"hit_looped": SubResource("Animation_oae87"),
+&"idle": SubResource("Animation_lv1af"),
+&"idle_looped": SubResource("Animation_10kyo"),
+&"stun": SubResource("Animation_1m4jd"),
+&"stun_looped": SubResource("Animation_krw1a"),
+&"walk": SubResource("Animation_v1hjt"),
+&"walk_looped": SubResource("Animation_hddpk")
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ysesj"]
 shader = ExtResource("5_ysesj")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ysesj"]
+size = Vector2(500, 400)
 
 [sub_resource type="Animation" id="Animation_2acxb"]
 length = 0.001
@@ -946,6 +949,9 @@ shader = ExtResource("5_ysesj")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_j5kry"]
+size = Vector2(500, 400)
+
 [sub_resource type="Animation" id="Animation_2h3tl"]
 length = 0.001
 
@@ -1121,13 +1127,20 @@ track_index = 0
 
 [node name="SpineSprite Track 0" type="AnimationPlayer" parent="DroneVisual/SpineSprite/SpineAnimationTrack"]
 libraries = {
-&"": SubResource("AnimationLibrary_h36re")
+&"": SubResource("AnimationLibrary_7h64c")
 }
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual"]
 material = SubResource("ShaderMaterial_ysesj")
 scale = Vector2(12, 6)
 texture = ExtResource("6_j5kry")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="DroneVisual"]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DroneVisual/StaticBody2D"]
+position = Vector2(0, -100)
+shape = SubResource("RectangleShape2D_ysesj")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="DroneVisual"]
 libraries = {
@@ -1160,6 +1173,13 @@ libraries = {
 material = SubResource("ShaderMaterial_4job6")
 scale = Vector2(12, 6)
 texture = ExtResource("6_j5kry")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="DroneVisual2"]
+scale = Vector2(0.9999999, 0.9999999)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DroneVisual2/StaticBody2D"]
+position = Vector2(0, -100)
+shape = SubResource("RectangleShape2D_j5kry")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="DroneVisual2"]
 libraries = {
