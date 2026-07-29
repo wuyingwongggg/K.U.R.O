@@ -165,7 +165,7 @@ script = ExtResource("5_muxhp")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
-preview_animation = "skill_beam"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 1.8
 script = ExtResource("5_muxhp")
@@ -304,6 +304,7 @@ metadata/attack_weight = 40.0
 [node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
 script = ExtResource("15_ultbeam")
 BeamDuration = 5.0
+InterruptFrozenDuration = 3.0
 MoveNodes = [NodePath("../../../../OutlineLayer"), NodePath("../../../../SpineSprite"), NodePath("../../../../Sprite2D/HitArea")]
 MoveOffsetPx = 800.0
 AttackName = "UltimateBeamAttack"

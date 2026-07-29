@@ -29,6 +29,9 @@ namespace Kuros.Actors.Enemies.States
         {
             _stunTimer -= (float)delta;
 
+            if (_savedFrozenRemainingTime > 0f)
+                _savedFrozenRemainingTime -= (float)delta;
+
             Enemy.Velocity = Enemy.Velocity.MoveToward(Vector2.Zero, Enemy.Speed * (float)delta);
             Enemy.MoveAndSlide();
 
