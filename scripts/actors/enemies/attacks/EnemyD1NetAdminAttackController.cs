@@ -8,7 +8,8 @@ namespace Kuros.Actors.Enemies.Attacks
 	public partial class EnemyD1NetAdminAttackController : EnemyAttackController
 	{
 		[Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
-		[Export] public string MultiMeleeAttackName { get; set; } = "SummonAttack";
+		[Export] public string MultiMeleeAttackName { get; set; } = "MultiMeleeAttack";
+		[Export] public string SummonAttackName { get; set; } = "SummonAttack";
 		[Export] public string UltimateAttackName { get; set; } = "UltimateAttack";
 
 		[ExportCategory("Ultimate Attack")]
@@ -26,8 +27,11 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "1,100,1")]
 		public int MinWeightPercent = 10;
 
-		/// <summary>召唤检测用的 CollisionShape2D 路径。此形状范围内有其他敌人时禁止召唤。</summary>
+		/// <summary>召唤检测用的 CollisionShape2D 路径。</summary>
 		[Export] public NodePath SummonCheckShapePath = new();
+
+		/// <summary>HP 低于此阈值时 SimpleMelee → MultiMelee 升级。</summary>
+		[Export(PropertyHint.Range, "0,1,0.01")] public float MeleeUpgradeHPThreshold = 0.5f;
 
 		public string CurrentAttackName { get; private set; } = string.Empty;
 
@@ -123,6 +127,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				TrySetAttackWeight(UltimateAttackName, 1f);
 				TrySetAttackWeight(MeleeAttackName, 0f);
 				TrySetAttackWeight(MultiMeleeAttackName, 0f);
+				TrySetAttackWeight(SummonAttackName, 0f);
 				return;
 			}
 
@@ -130,10 +135,23 @@ namespace Kuros.Actors.Enemies.Attacks
 		TrySetAttackWeight(UltimateAttackName, 0f);
 		RestoreAttackWeight(MeleeAttackName);
 		RestoreAttackWeight(MultiMeleeAttackName);
+		RestoreAttackWeight(SummonAttackName);
+
+		// HP 阈值升级：SimpleMelee → MultiMelee
+		float hpRatio = Enemy != null ? (float)Enemy.CurrentHealth / Enemy.MaxHealth : 1f;
+		if (hpRatio <= MeleeUpgradeHPThreshold)
+		{
+			TrySetAttackWeight(MultiMeleeAttackName, GetOriginalWeight(MeleeAttackName));
+			TrySetAttackWeight(MeleeAttackName, 0f);
+		}
+		else
+		{
+			TrySetAttackWeight(MultiMeleeAttackName, 0f);
+		}
 
 		// 场上已有其他敌人则禁用召唤
 		if (CountNearbyEnemies() > 1)
-			TrySetAttackWeight(MultiMeleeAttackName, 0f);
+			TrySetAttackWeight(SummonAttackName, 0f);
 		}
 
 		private bool ShouldTriggerUltimate()

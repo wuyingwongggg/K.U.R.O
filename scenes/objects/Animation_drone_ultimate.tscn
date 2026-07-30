@@ -604,7 +604,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kuwu1"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_lx077"]
 resource_name = "attack_looped"
@@ -1052,7 +1052,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ceea7"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_1rxg5"]
 resource_name = "attack_looped"
@@ -1500,7 +1500,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6s5xm"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_jbtun"]
 resource_name = "attack_looped"
@@ -1936,7 +1936,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t20ns"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_nfnbu"]
 resource_name = "attack_looped"
@@ -2372,7 +2372,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofmy0"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_udckp"]
 resource_name = "attack_looped"
@@ -2856,7 +2856,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jmp4w"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_3sbak"]
 resource_name = "attack_looped"
@@ -3316,7 +3316,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vcau0"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [sub_resource type="Animation" id="Animation_w41jd"]
 resource_name = "attack_looped"
@@ -3812,7 +3812,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7gqf1"]
-size = Vector2(800, 400)
+size = Vector2(1200, 400)
 
 [node name="AnimationDroneUltimate" type="Node2D" node_paths=PackedStringArray("AnimationPlayers")]
 z_index = 2

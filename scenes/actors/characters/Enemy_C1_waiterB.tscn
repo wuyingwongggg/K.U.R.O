@@ -104,7 +104,7 @@ StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 StatProfile = SubResource("Resource_f4qnp")
 LootTable = ExtResource("5_eyt4q")
-DamageFlashColor = Color(1, 1, 1, 1)
+DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
