@@ -1,7 +1,19 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://b54fcdj2q1lnc"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://b54fcdj2q1lnc"]
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_skvjn"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_qc45w"]
+[ext_resource type="PackedScene" uid="uid://sys4kmbp6v8o" path="res://scenes/builds/machine/MachineInertiaDriveEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://degne2jkk4wty" path="res://assets/BuildIcon/Machine_A_005_惯性驱动.png" id="3_uhsja"]
+
+[sub_resource type="Resource" id="Resource_qc45w"]
+script = ExtResource("1_skvjn")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"RampSpeed": 0.5,
+"TierValues": [1.5, 1.75, 2.0]
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("2_qc45w")
@@ -9,7 +21,7 @@ EffectId = "BuildMachine_A_005"
 DisplayName = "惯性驱动"
 Description = "连续移动方向不变时热量获取速度递增50%/75%/100%，改变方向后重置"
 BuildClass = "Machine"
-Rarity = 0
-Weight = 10
 MaxStacks = 3
+Icon = ExtResource("3_uhsja")
+EffectEntries = Array[ExtResource("1_skvjn")]([SubResource("Resource_qc45w")])
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

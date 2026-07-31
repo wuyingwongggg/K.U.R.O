@@ -78,7 +78,9 @@ BuildCard (Control)
 | `scripts/ui/BuildSelectionWindow.cs` | 动态 N 卡实例化 + CallDeferred + 等比尺寸 |
 | `shaders/materials/pseudo_3d_card.gdshader` | 透视 shader（rot_y_deg/rot_x_deg/fov） |
 
-## 待完成
+## 实施状态
 
-- 稀有度差异化：RarityGlow 按 Common/Rare/Epic 换贴图/颜色
-- card 的 debug 日志清理
+- Step 1-4 ✅ 已完成（BuildCard.tscn/cs + BuildSelectionWindow 重构 + 鼠标交互 + 键盘选择）
+- 待完成：
+  - 稀有度差异化：RarityGlow 按 Common/Rare/Epic 换贴图/颜色
+  - card 的 debug 日志清理

@@ -58,3 +58,7 @@ BuildSelectionManager:
 - 跨场景队列持久化：BuildSelectionManager 是 autoload，队列天生跨场景
 - 队列中 _options 引用的 EffectDefinition 在场景切换后是否有效？EffectDefinition 是 Resource，自动内存管理
 - 按钮位置可能与 HUD 重叠：放在右上角，和 BattleHUD 坐标错开
+
+## 实施状态
+
+**暂缓。** 待构筑系统和卡牌效果全部完善后再实施。当前阶段（P1）玩家按 ESC 后游戏设置界面（Layer 3）覆盖在三选一窗口（Layer 2）上层，关闭设置后继续选择，选项不丢失。

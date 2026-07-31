@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dl36l0e6jab2f"]
+
+[ext_resource type="Script" uid="uid://dq4sp42vu3862" path="res://scripts/builds/machine/MachineModifyHeatCapEffect.cs" id="1"]
+
+[node name="MachineModifyHeatCapEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "7e9d546f-1909-447f-b74b-76f1de022b37"
+Description = "热量累积强化：提升或降低热量上限 "

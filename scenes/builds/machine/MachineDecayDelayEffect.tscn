@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dw8hu32julp5u"]
+
+[ext_resource type="Script" uid="uid://62fxrughjiq" path="res://scripts/builds/machine/MachineDecayDelayEffect.cs" id="1"]
+
+[node name="MachineDecayDelayEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "22c2ae43-33ed-4fad-bca5-b7d6f8eb4413"
+Description = "热量累积强化：延长热量自动衰减的延迟时间"

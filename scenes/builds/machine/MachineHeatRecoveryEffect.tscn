@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1gf0suqwwrq4"]
+
+[ext_resource type="Script" uid="uid://e6khrgro820y" path="res://scripts/builds/machine/MachineHeatRecoveryEffect.cs" id="1"]
+
+[node name="MachineHeatRecoveryEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "3185b140-5fbe-4d73-a2ac-509c71e321ea"
+Description = "热量累积强化: 未发动核心技能时，若热量低于阈值则自动恢复到该阈值"

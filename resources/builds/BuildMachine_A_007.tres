@@ -1,7 +1,20 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://buttph60k4s2l"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://buttph60k4s2l"]
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_5oiv2"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_3ve0c"]
+[ext_resource type="Texture2D" uid="uid://b14udikim0tpx" path="res://assets/BuildIcon/Machine_A_007_高速导热.png" id="2_c2ity"]
+[ext_resource type="PackedScene" uid="uid://cosy1nowiamgm" path="res://scenes/builds/machine/MachineHighSpeedConductionEffect.tscn" id="3_scene"]
+
+[sub_resource type="Resource" id="Resource_c2ity"]
+script = ExtResource("1_5oiv2")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"CapValues": [0.75, 0.5],
+"DecayValues": [1.75, 3.5],
+"Duration": 0.0,
+"GainValues": [1.75, 2.0]
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("2_3ve0c")
@@ -11,4 +24,6 @@ Description = "所有的热量积累速度提升75%/100%，热量上限降低30%
 BuildClass = "Machine"
 Rarity = 1
 MaxStacks = 2
+Icon = ExtResource("2_c2ity")
+EffectEntries = Array[ExtResource("1_5oiv2")]([SubResource("Resource_c2ity")])
 metadata/_custom_type_script = "uid://3bb6nng4vb53"
