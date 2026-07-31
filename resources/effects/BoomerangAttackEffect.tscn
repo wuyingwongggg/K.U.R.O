@@ -15,7 +15,7 @@ script = ExtResource("1_qrffi")
 Speed = 3000.0
 TrackStartTime = 1.3
 RotateWithVelocity = false
-Duration = 5.0
+Duration = 15.0
 HitPlayerDelay = 0.1
 Damage = 20
 DamageInterval = 0.30000000000000004
@@ -27,6 +27,7 @@ Pseudo3DZSpeed = 2000.0
 script = ExtResource("2_6aiag")
 sprite_path = NodePath("../Sprite2D")
 is_spine = false
+interval = 0.02
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.33, 0.33)

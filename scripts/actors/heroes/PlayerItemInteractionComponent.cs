@@ -305,6 +305,13 @@ namespace Kuros.Actors.Heroes
             if (isThrowWeapon && selectedStack.IsThrowOnCooldown)
                 return false;
 
+            if (disposition == DropDisposition.Place
+                && selectedStack.Item.IsThrowable
+                && selectedStack.Item.IsThrowWeapon
+                && selectedStack.Item.PreventDropDuringCooldown
+                && selectedStack.IsThrowOnCooldown)
+                return false;
+
             InventoryItemStack extracted;
             bool extractedFromInventory;
             float savedCd = selectedStack.ThrowCooldownRemaining;

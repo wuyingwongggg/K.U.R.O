@@ -1915,6 +1915,7 @@ namespace Kuros.Items.World
 						entry.ApplyOverrides(node2D);
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
+						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
 					}
 					else
 					{
@@ -1977,6 +1978,7 @@ namespace Kuros.Items.World
 								?? GetTree().CurrentScene;
 							worldNode?.AddChild(node2D);
 							node2D.GlobalPosition = spawnPos;
+								node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
 						}
 						else if (node is Kuros.Core.Effects.ActorEffect actorEffect)
 						{

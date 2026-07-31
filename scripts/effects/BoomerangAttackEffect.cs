@@ -51,6 +51,20 @@ namespace Kuros.Fx
         // ── 子节点引用 ────────────────────────────────────────────
 
         private Area2D? _attackArea;
+        private string? _sourceWeaponItemId;
+
+        // ── 公共属性 ──────────────────────────────────────────────
+
+        public string? SourceWeaponItemId
+        {
+            get
+            {
+                if (_sourceWeaponItemId == null && HasMeta("source_weapon_item_id"))
+                    _sourceWeaponItemId = (string)GetMeta("source_weapon_item_id");
+                return _sourceWeaponItemId;
+            }
+            set => _sourceWeaponItemId = value;
+        }
 
         // ── 运行时状态 ────────────────────────────────────────────
 
@@ -166,7 +180,7 @@ namespace Kuros.Fx
             TickDamage(dt);
 
             if (_elapsed >= Duration)
-                QueueFree();
+                Destroy();
         }
 
         // ── 区域计时伤害 ──────────────────────────────────────────
@@ -295,8 +309,39 @@ namespace Kuros.Fx
         {
             if (_elapsed < HitPlayerDelay) return;
             _caught = true;
+            Destroy();
+        }
+
+        private void Destroy()
+        {
+            ResetThrowCooldown();
             _afterimage?.Call("stop");
             QueueFree();
+        }
+
+        private void ResetThrowCooldown()
+        {
+            if (_attacker is not SamplePlayer player) return;
+            var quickBar = player.InventoryComponent?.QuickBar;
+            if (quickBar == null) return;
+
+            var weaponId = SourceWeaponItemId;
+            if (!string.IsNullOrEmpty(weaponId))
+            {
+                for (int i = 0; i < quickBar.SlotCount; i++)
+                {
+                    var stack = quickBar.GetStack(i);
+                    if (stack != null && stack.Item.ItemId == weaponId)
+                    {
+                        stack.ThrowCooldownRemaining = 0f;
+                        return;
+                    }
+                }
+            }
+
+            var selectedStack = player.InventoryComponent?.GetSelectedQuickBarStack();
+            if (selectedStack != null)
+                selectedStack.ThrowCooldownRemaining = 0f;
         }
 
         // ── 私有方法 ──────────────────────────────────────────────

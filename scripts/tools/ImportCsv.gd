@@ -80,6 +80,7 @@ func import_items_from_csv() -> void:
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
 		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")
+		_s_bool(res,  "PreventDropDuringCooldown", row, hm, "PreventDropDuringCooldown")
 		_s_vec2(res,  "ThrowStartOffset", row, hm, "ThrowStartOffset")
 		_s_float(res, "ThrowParabolicDuration",      row, hm, "ThrowParabolicDuration")
 		_s_float(res, "ThrowParabolicPeakHeight",    row, hm, "ThrowParabolicPeakHeight")

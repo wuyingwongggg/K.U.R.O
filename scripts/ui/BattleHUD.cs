@@ -827,7 +827,7 @@ namespace Kuros.UI
 				for (int i = 0; i < 5; i++)
 				{
 					var qbStack = _player?.InventoryComponent?.QuickBar?.GetStack(i);
-					if (qbStack != null && qbStack.IsThrowOnCooldown)
+					if (qbStack != null)
 						UpdateQuickBarSlot(i);
 				}
 			}
