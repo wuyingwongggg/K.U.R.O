@@ -47,7 +47,7 @@ namespace Kuros.Builds.Machine
         protected override void OnTick(double delta)
         {
             if (_core == null) return;
-            if (_core.IsReleasing) return;
+            if (_core.IsReleasing || _core.IsBuffActive) return;
 
             float threshold = _core.MaxHeat * CurrentPercent / 100f;
             if (_core.Heat >= threshold) return;

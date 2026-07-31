@@ -10,7 +10,7 @@ script = ExtResource("1_6bbx0")
 Scene = ExtResource("3_scene")
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0,
-"TierValues": [16.0, 31.0]
+"TierValues": [15.0, 30.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 

@@ -31,6 +31,8 @@ namespace Kuros.Builds.BuildCore
         public float Heat { get; private set; }
         public float HeatRatio => MaxHeat > 0f ? Heat / MaxHeat : 0f;
         public bool IsReleasing { get; private set; }
+        /// <summary>Buff 期间热量正在消耗中。</summary>
+        public bool IsBuffActive => _buffActive;
         /// <summary>热量保底值：被动衰减不会低于此值。由外部效果设置。</summary>
         public float MinHeat { get; set; }
 

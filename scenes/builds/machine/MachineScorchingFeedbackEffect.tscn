@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://dnrgi45oa3s3k"]
 
-[ext_resource type="Script" path="res://scripts/builds/machine/MachineScorchingFeedbackEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://bl2488nvejse7" path="res://scripts/builds/machine/MachineScorchingFeedbackEffect.cs" id="1"]
 
 [node name="MachineScorchingFeedbackEffect" type="Node"]
 script = ExtResource("1")
+EffectId = "185fcea5-fd4e-4f48-a6c4-513542993d33"
+Description = "灼热反馈：热量突破阈值时，每次攻击对目标造成灼烧 DoT"
