@@ -15,7 +15,7 @@
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="12_n1u0g"]
 [ext_resource type="PackedScene" uid="uid://b73y4fylkvq5o" path="res://resources/effects/CubeData.tscn" id="13_x3mw2"]
 [ext_resource type="PackedScene" uid="uid://c08uxmi4ffstu" path="res://resources/effects/FireWall.tscn" id="14_3o8by"]
-[ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyLockdownAttack.cs" id="14_7lyje"]
+[ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyAreaDetectionAttack.cs" id="14_7lyje"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_fm7ty"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_8btli"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="17_70v8o"]
@@ -159,7 +159,6 @@ scale = Vector2(0.9999999, 1)
 bone_name = "bone3"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-visible = false
 z_index = 10
 position = Vector2(0, -600)
 
@@ -244,7 +243,7 @@ DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 16
 Effects = Array[ExtResource("14_fm7ty")]([SubResource("Resource_nehjm")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3")]
@@ -261,7 +260,7 @@ DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
-GrantedImmunities = 8
+GrantedImmunities = 16
 Effects = Array[ExtResource("14_fm7ty")]([SubResource("Resource_fm7ty")])
 SpawnTiming = 1
 SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]

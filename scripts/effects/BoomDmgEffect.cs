@@ -110,6 +110,9 @@ namespace Kuros.Fx
 
             if (speed <= 0f) return;
 
+            if (actor.ActiveImmunities.HasFlag(Core.ImmunityFlags.ForcedMovement))
+                return;
+
             Vector2 direction = actor.GlobalPosition - origin;
             if (direction == Vector2.Zero) direction = Vector2.Up;
 

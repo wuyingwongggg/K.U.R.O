@@ -32,8 +32,9 @@ namespace Kuros.Actors.Enemies.States
         {
             var freeze = Enemy.EffectController?.GetEffect<FreezeEffect>();
 
-            // 从 Hit 返回时 _phase 保持旧值。若之前在 Down 期间被打断，跳过 Down。
-            if (_phase == StunPhase.Down && freeze != null && freeze.GetRemainingDuration() < freeze.Duration)
+            if (freeze != null && Mathf.Abs(freeze.GetRemainingDuration() - freeze.Duration) < 0.01f)
+                _phase = StunPhase.Down;
+            else if (_phase == StunPhase.Down && freeze != null)
                 _phase = StunPhase.Loop;
 
             _timer = _phase switch
@@ -68,6 +69,15 @@ namespace Kuros.Actors.Enemies.States
                 var freeze = Enemy.EffectController?.GetEffect<FreezeEffect>();
                 if (freeze != null)
                     freeze.PendingRemainingTime = 0f;
+            }
+
+            // Frozen 结束前强制 AttackController 重新评估终极技
+            var controller = GetNodeOrNull<Attacks.EnemyD1NetAdminAttackController>(
+                "../Attack/AttackController");
+            if (controller != null)
+            {
+                controller.ForceEvaluateUltimate();
+                controller.ForceQueueNextAttack("FrozenEnd");
             }
         }
 

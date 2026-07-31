@@ -4676,7 +4676,7 @@
 			}
 		},
 		"events": [
-			{ "time": 1.6, "name": "hit" }
+			{ "time": 1.8, "name": "hit" }
 		]
 	},
 	"skill_dash": {

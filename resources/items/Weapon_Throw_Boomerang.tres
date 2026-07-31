@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=8 format=3 uid="uid://dip678pe3wgkx"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_b7h5n"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_2ih1g"]
+[ext_resource type="PackedScene" uid="uid://bpr5kqjkwkh5w" path="res://resources/effects/BoomerangAttackEffect.tscn" id="3_usxx0"]
+[ext_resource type="Texture2D" uid="uid://5pju5slfrs77" path="res://assets/weapons/回旋镖.png" id="4_usxx0"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="6_sslnu"]
+
+[sub_resource type="Resource" id="Attribute_AttackPower"]
+script = ExtResource("1_b7h5n")
+AttributeId = "attack_power"
+
+[sub_resource type="Resource" id="Resource_b7h5n"]
+script = ExtResource("2_2ih1g")
+Trigger = 4
+EffectScene = ExtResource("3_usxx0")
+Notes = "投掷的瞬间破坏并生成回旋镖"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("6_sslnu")
+ItemId = "Weapon_Throw_Boomerang"
+DisplayName = "禁锢回旋镖"
+Description = "投掷武器：禁锢回旋镖"
+Icon = ExtResource("4_usxx0")
+Category = "Weapon"
+Tags = Array[String](["tag_weapon", "tag_throw"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_b7h5n")]([SubResource("Attribute_AttackPower")])
+EffectEntries = Array[ExtResource("2_2ih1g")]([SubResource("Resource_b7h5n")])
+IsThrowable = true
+IsThrowWeapon = true
+PreventDropDuringCooldown = true
+ThrowStartOffset = Vector2(0, -150)
+ThrowParabolicDuration = 0.01
+ThrowParabolicPeakHeight = 0.0
+ThrowHorizontalDistance = 1.0
+ThrowParabolicLandingYOffset = -150.0
+ThrowWeaponCooldown = 15.0
+WorldScenePath = "uid://dbp28lqhfd5dq"

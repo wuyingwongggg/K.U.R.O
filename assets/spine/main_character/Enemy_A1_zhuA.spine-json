@@ -26328,7 +26328,8 @@
 			]
 		},
 		"events": [
-			{ "time": 0.4333333, "name": "hit" }
+
+			{ "time": 0.444444, "name": "hit" }
 		]
 	},
 	"Weapon_Brawl_RiotGlove": {

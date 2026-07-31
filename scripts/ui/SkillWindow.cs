@@ -27,6 +27,7 @@ namespace Kuros.UI
             CacheNodeReferences();
             BuildSelectionManager.Instance.PickedEffectsChanged += RefreshBuildIcons;
             RefreshBuildIcons();
+            UIManager.RegisterInteractiveChildren(this);
             Visible = true;
             _isOpen = true;
         }

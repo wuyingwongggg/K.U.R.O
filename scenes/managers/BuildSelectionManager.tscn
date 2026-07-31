@@ -23,7 +23,7 @@
 [ext_resource type="Resource" uid="uid://b5spe72g4msa6" path="res://resources/builds/buildcore/WaiterCore.tres" id="23"]
 [ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_006.tres" id="23_a8dc1"]
 [ext_resource type="Resource" uid="uid://duea1v557tmn0" path="res://resources/builds/buildcore/ThrowCore.tres" id="24"]
-[ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_007.tres" id="24_qq6bi"]
+[ext_resource type="Resource" uid="uid://b5gta1na2nfce" path="res://resources/builds/BuildMachine_B_007.tres" id="24_qq6bi"]
 [ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_008.tres" id="25_y7t65"]
 [ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_009.tres" id="26_gaso4"]
 [ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_010.tres" id="27_tqvmv"]
@@ -40,3 +40,5 @@ script = ExtResource("1")
 ThresholdCurve = SubResource("ThresholdCurve")
 CorePool = Array[ExtResource("3_core")]([ExtResource("22"), ExtResource("23"), ExtResource("24")])
 EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("11_51j2i"), ExtResource("12_hmd15"), ExtResource("13_f1ni1"), ExtResource("14_28q7w"), ExtResource("15_sy28j"), ExtResource("16_o8bjk"), ExtResource("17_k6o6d"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("21_fiv8j"), ExtResource("22_f3soq"), ExtResource("23_a8dc1"), ExtResource("24_qq6bi"), ExtResource("25_y7t65"), ExtResource("26_gaso4"), ExtResource("27_tqvmv")])
+CardsPerSelection = 10
+DebugTrigger = true

@@ -64,15 +64,16 @@ namespace Kuros.Items
         [Export] public string BuildClass { get; set; } = string.Empty;
         [Export] public bool IsThrowable { get; set; } = false; // 是否为投掷物，影响拾取该物体的外观，非投掷物背在身后，投掷物则直接举起
         [Export] public bool IsThrowWeapon { get; set; } = false; // 投掷后是否回收（冷却归还背包）。true=投掷武器（回收），false=一次性投掷物（落地销毁）
+        [Export] public bool PreventDropDuringCooldown { get; set; } = false; // CD 期间禁止将该投掷武器从背包放置到地面
 
         [ExportGroup("Durability")]
         [Export] public ItemDurabilityConfig? DurabilityConfig { get; set; }
 
         [ExportGroup("Throw Physics")]
         [Export(PropertyHint.Range, "-1000,1000,1")] public Vector2 ThrowStartOffset { get; set; } = new Vector2(0, -400); // 投掷时相对于玩家的偏移
-        [Export(PropertyHint.Range, "0.1,10,0.01")] public double ThrowParabolicDuration { get; set; } = 0.35;    // 投掷物飞行的总时间（秒）
+        [Export(PropertyHint.Range, "0,10,0.01")] public double ThrowParabolicDuration { get; set; } = 0.35;    // 投掷物飞行的总时间（秒）
         [Export(PropertyHint.Range, "0,500,10")] public float ThrowParabolicPeakHeight { get; set; } = 10f;   // 投掷物飞行过程中达到的最高点相对于起始点的高度
-        [Export(PropertyHint.Range, "100,2000,50")] public float ThrowHorizontalDistance { get; set; } = 500f;   // 投掷物在水平方向的飞行距离（像素），速度由此和ThrowParabolicDuration决定
+        [Export(PropertyHint.Range, "0,2000,1")] public float ThrowHorizontalDistance { get; set; } = 500f;   // 投掷物在水平方向的飞行距离（像素），速度由此和ThrowParabolicDuration决定
         [Export(PropertyHint.Range, "-1000,1000,1")] public float ThrowParabolicLandingYOffset { get; set; } = 300f;    // 投掷物落地点相对于目标点的垂直偏移
         [Export(PropertyHint.Range, "0.1,60,0.1")] public float ThrowWeaponCooldown { get; set; } = 2.0f;              // 投掷武器冷却时间（秒）：仅对 IsThrowWeapon=true 的投掷武器生效
         [Export(PropertyHint.Range, "-10,10,1")] public int ThrowZIndex { get; set; } = 3;                              // 投掷物飞行途中的 z_index

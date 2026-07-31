@@ -83,7 +83,6 @@ namespace Kuros.UI
 		{
 			// 添加到 "ui" 组，方便其他脚本查找
 			AddToGroup("ui");
-			
 			// 如果没有在编辑器中分配，尝试自动查找
 			if (PlayerStatsLabel == null)
 			{
@@ -248,6 +247,7 @@ namespace Kuros.UI
 
 			// 通过UIManager加载物品栏窗口（放在GameUI层，在HUD之上）
 			LoadInventoryWindow();
+			UIManager.RegisterInteractiveChildren(this);
 		}
 
 		/// <summary>
@@ -814,6 +814,7 @@ namespace Kuros.UI
 			}
 		}
 
+
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
@@ -826,7 +827,7 @@ namespace Kuros.UI
 				for (int i = 0; i < 5; i++)
 				{
 					var qbStack = _player?.InventoryComponent?.QuickBar?.GetStack(i);
-					if (qbStack != null && qbStack.IsThrowOnCooldown)
+					if (qbStack != null)
 						UpdateQuickBarSlot(i);
 				}
 			}

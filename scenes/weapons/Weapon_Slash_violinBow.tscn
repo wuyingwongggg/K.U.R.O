@@ -6,6 +6,7 @@
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="4_2yapo"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="5_fg7c5"]
 [ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="6_8ydt5"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="7_huuy5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_huuy5")
@@ -42,9 +43,6 @@ shader_parameter/shney_speed = 1.0000000475
 shader_parameter/twist_speed = 0.5000001187500001
 shader_parameter/rota_speed = 1.0000005225000006
 shader_parameter/curve_ci = 0.2000000095
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_2yapo"]
-load_path = "res://.godot/imported/icon.svg-8de3bad85f457dc91c0dddc7b2368220.ctex"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fg7c5"]
 shader = ExtResource("6_8ydt5")
@@ -99,20 +97,19 @@ texture = SubResource("CompressedTexture2D_rlv6v")
 [node name="star1" type="Sprite2D" parent="Outline"]
 material = SubResource("ShaderMaterial_huuy5")
 position = Vector2(375.75757, -51.51515)
-scale = Vector2(5, 5)
-texture = SubResource("CompressedTexture2D_2yapo")
+texture = ExtResource("7_huuy5")
 
 [node name="star2" type="Sprite2D" parent="Outline/star1"]
 material = SubResource("ShaderMaterial_fg7c5")
-position = Vector2(-15.757574, 3.6363635)
-scale = Vector2(0.7, 0.7)
-texture = SubResource("CompressedTexture2D_2yapo")
+position = Vector2(-57.575768, 12.121212)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("7_huuy5")
 
 [node name="star3" type="Sprite2D" parent="Outline/star1"]
 material = SubResource("ShaderMaterial_mm0uq")
-position = Vector2(10.303026, 7.878787)
+position = Vector2(48.484833, 21.212118)
 scale = Vector2(0.5, 0.5)
-texture = SubResource("CompressedTexture2D_2yapo")
+texture = ExtResource("7_huuy5")
 
 [node name="CollisionArea" type="Area2D" parent="."]
 

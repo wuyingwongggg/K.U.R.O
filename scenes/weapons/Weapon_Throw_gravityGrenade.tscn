@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://cwli4dy5frrx2" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0005.png" id="13_lw6jp"]
 [ext_resource type="Texture2D" uid="uid://chdw3wmn8aujj" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0006.png" id="14_ac8p2"]
 [ext_resource type="Texture2D" uid="uid://dqhcsrdtv78yb" path="res://assets/objects/gravity_grenade_effect/时间轴 1_0007.png" id="15_r3um0"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="17_dj1qy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_swc0d"]
 shader = ExtResource("3_eecfu")
@@ -78,9 +79,6 @@ shader_parameter/shney_speed = 2.000000095
 shader_parameter/twist_speed = 0.5000001187500001
 shader_parameter/rota_speed = 1.0000005225000006
 shader_parameter/curve_ci = 0.2000000095
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_uxlca"]
-load_path = "res://.godot/imported/icon.svg-8de3bad85f457dc91c0dddc7b2368220.ctex"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_n53n5"]
 shader = ExtResource("8_swc0d")
@@ -151,20 +149,19 @@ autoplay = "default"
 [node name="star1" type="Sprite2D" parent="RigidBody2D/Outline"]
 material = SubResource("ShaderMaterial_aeqdd")
 position = Vector2(224.24239, -81.81817)
-scale = Vector2(5, 5)
-texture = SubResource("CompressedTexture2D_uxlca")
+texture = ExtResource("17_dj1qy")
 
 [node name="star2" type="Sprite2D" parent="RigidBody2D/Outline/star1"]
 material = SubResource("ShaderMaterial_n53n5")
-position = Vector2(4.848486, 22.424242)
+position = Vector2(27.272757, 78.787865)
 scale = Vector2(0.7, 0.7)
-texture = SubResource("CompressedTexture2D_uxlca")
+texture = ExtResource("17_dj1qy")
 
 [node name="star3" type="Sprite2D" parent="RigidBody2D/Outline/star1"]
 material = SubResource("ShaderMaterial_w5uvq")
-position = Vector2(-15.151514, 26.060604)
+position = Vector2(-42.424217, -66.66667)
 scale = Vector2(0.5, 0.5)
-texture = SubResource("CompressedTexture2D_uxlca")
+texture = ExtResource("17_dj1qy")
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 

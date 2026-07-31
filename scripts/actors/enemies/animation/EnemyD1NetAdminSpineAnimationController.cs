@@ -23,11 +23,16 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export(PropertyHint.Range, "0,5,0.01")] public float WalkLoopEnd = 1.5f;
 		[Export(PropertyHint.Range, "0,5,0.01")] public float WalkPartStart = 1.51f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float WalkPartEnd = 2f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float MultiAttackLoopStart = 1.5f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float MultiAttackLoopEnd = 2.5f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float MultiAttackPartStart = 2.5f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float MultiAttackPartEnd = 3.0f;
 		private EnemyD1NetAdminAttackController? _attackController;
 		private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
 		private Node? _spineControllerNode;
 		private Callable _spineHitCallable;
 		private bool _spineHitSubscribed;
+		private bool _wasInMultiAttackPhase;
 
 		public override void _Ready()
 		{
@@ -161,11 +166,27 @@ namespace Kuros.Actors.Enemies.Animation
 
 				if (attackName.Equals(controller.MultiMeleeAttackName, _comparison))
 				{
+					var multiMelee = controller.GetNodeOrNull<EnemyNetAdminMultiMeleeAttack>(controller.MultiMeleeAttackName);
+					if (multiMelee != null && multiMelee.IsInMultiAttackPhase)
+					{
+						GD.Print($"[MultiDebug] Loop: _currentKey='{_currentKey}', mode={_currentMode}");
+						PlayPartLoopIfNeeded("MultiAttackLoop", AttackAnimation, MultiAttackLoopStart, MultiAttackLoopEnd, AttackMixDuration);
+					}
+					else
+					{
+						GD.Print($"[MultiDebug] Part: _currentKey='{_currentKey}', mode={_currentMode}");
+						PlayPartOnceIfNeeded("MultiAttackPart", AttackAnimation, MultiAttackPartStart, MultiAttackPartEnd, AttackMixDuration);
+					}
+					return;
+				}
+
+				if (attackName.Equals(controller.SummonAttackName, _comparison))
+				{
 					PlayOnceIfNeeded("Skill", SkillAnimation, SkillMixDuration);
 					return;
 				}
 
-				if (attackName.Equals(controller.LockdownAttackName, _comparison))
+				if (attackName.Equals(controller.UltimateAttackName, _comparison))
 				{
 					PlayOnceIfNeeded("Skill2", Skill2Animation, SkillMixDuration);
 					return;
@@ -252,7 +273,7 @@ namespace Kuros.Actors.Enemies.Animation
 			if (controller.CurrentAttackName.Equals(controller.MeleeAttackName, _comparison))
 				expectedAnimation = AttackAnimation;   // Melee 播放的是 attack
 			else if (controller.CurrentAttackName.Equals(controller.MultiMeleeAttackName, _comparison))
-				expectedAnimation = SkillAnimation;   // MultiMelee 播放的是 skill
+				expectedAnimation = AttackAnimation;   // MultiMelee 播放的是 attack
 
 			if (string.IsNullOrEmpty(expectedAnimation))
 				return true;

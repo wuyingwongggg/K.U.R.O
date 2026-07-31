@@ -28,33 +28,23 @@ namespace Kuros.Items.Effects
 
         public ActorEffect? InstantiateEffect()
         {
-            if (EffectScene == null)
-            {
-                return null;
-            }
-
+            if (EffectScene == null) return null;
             var effect = EffectScene.Instantiate<ActorEffect>();
-            ApplyOverrides(effect);
+            if (effect != null)
+                ApplyOverrides(effect);
             return effect;
         }
 
-        public void ApplyOverrides(ActorEffect effect)
+        public void ApplyOverrides(GodotObject obj)
         {
-            if (effect == null || PropertyOverrides == null || PropertyOverrides.Count == 0)
-            {
-                return;
-            }
-
+            if (obj == null || PropertyOverrides == null || PropertyOverrides.Count == 0) return;
             foreach (var pair in PropertyOverrides)
             {
                 if (pair.Key == null) continue;
-                try
-                {
-                    effect.Set(pair.Key, pair.Value);
-                }
+                try { obj.Set(pair.Key, pair.Value); }
                 catch (Exception ex)
                 {
-                    GD.PushWarning($"[ItemEffectEntry] Failed to override property '{pair.Key}' on effect '{effect.Name}': {ex.Message}");
+                    GD.PushWarning($"[ItemEffectEntry] Failed to override property '{pair.Key}': {ex.Message}");
                 }
             }
         }

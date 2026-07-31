@@ -11,5 +11,4 @@ Description = "允许热量的获取突破100%，且每突破1点热量，移动
 BuildClass = "Machine"
 Rarity = 2
 Weight = 5
-MaxStacks = 1
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

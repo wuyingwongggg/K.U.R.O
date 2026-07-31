@@ -77,12 +77,12 @@ AttackArea = NodePath("AttackArea")
 HitInvincibilityDuration = 0.2
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
-DebugOverlayColor = Color(0, 1, 0, 1)
+DebugOverlayColor = Color(0, 0.76862746, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
 AttackDamage = 10.0
-MaxHealth = 1200
+MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -145,7 +145,7 @@ bones_thickness = 10.09
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.4
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -225,6 +225,7 @@ RequiredItemId = "Weapon_Brawl_riotGlove"
 script = ExtResource("12_eaiww")
 DashSpeed = 2500.0
 RecoverySpeed = 0.0
+ContactShapePath = NodePath("../../../HitArea/CollisionShape2D")
 AttackId = "riot_bracer_melee_attack"
 DisplayName = "Riot Bracer Melee Attack"
 Description = "镇暴护腕专属攻击模板示例"
@@ -496,11 +497,11 @@ scale = Vector2(2.205, 2.205)
 
 [node name="ThrowTrajectoryPreview" type="Node2D" parent="."]
 visible = false
-z_index = 10
-y_sort_enabled = true
+z_index = 1
+z_as_relative = false
 script = ExtResource("43_throwpreview")
 HorizontalDistanceMultiplier = 2.1
-TrailColor = Color(1, 1, 1, 1)
+TrailColor = Color(1, 0, 0, 0.8)
 DotRadius = 20.0
 DotStep = 1
 LandingIndicatorScene = ExtResource("52_pplu2")

@@ -282,6 +282,7 @@ namespace Kuros.Core
 
 		public virtual void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack)
 		{
+			if (!CanBeAffected(null)) return;
 			if (IsDeathSequenceActive || IsDead) return;
 
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ThrowableDamage)
@@ -445,8 +446,15 @@ namespace Kuros.Core
 			LootDropSystem.SpawnLootForActor(this, LootTable);
 		}
 
-		public void ApplyEffect(ActorEffect effect)
+		/// <summary>
+/// 是否可被指定效果影响。默认 true，子类（如 netAdmin）可覆写实现条件免疫。
+/// effect 为 null 时表示普通伤害（非效果触发）。
+/// </summary>
+public virtual bool CanBeAffected(ActorEffect? effect) => true;
+
+public void ApplyEffect(ActorEffect effect)
 		{
+			if (!CanBeAffected(effect)) return;
 			EffectController?.AddEffect(effect);
 		}
 

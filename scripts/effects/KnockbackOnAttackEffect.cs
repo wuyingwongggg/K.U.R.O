@@ -32,6 +32,9 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "0,10,1")]
         public int TriggerHitStep { get; set; } = 1;
 
+        [Export] public bool EnableKnockbackX { get; set; } = true;
+        [Export] public bool EnableKnockbackY { get; set; } = true;
+
         private GameActor? _actor;
 
         protected override void OnApply()
@@ -62,6 +65,9 @@ namespace Kuros.Effects
             if (target.ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
 
             Vector2 direction = (target.GlobalPosition - attacker.GlobalPosition);
+            if (!EnableKnockbackX) direction.X = 0f;
+            if (!EnableKnockbackY) direction.Y = 0f;
+
             if (direction == Vector2.Zero)
             {
                 direction = attacker.FacingRight ? Vector2.Right : Vector2.Left;

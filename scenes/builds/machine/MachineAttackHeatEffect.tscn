@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxmkvv7rguecx"]
+
+[ext_resource type="Script" uid="uid://dn6xy0vieyu6o" path="res://scripts/builds/machine/MachineAttackHeatEffect.cs" id="1"]
+
+[node name="MachineAttackHeatEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "ace5682b-902d-48fd-9b93-b62572b3e0ae"
+Description = "热量累积强化：允许通过攻击命中获取热量"

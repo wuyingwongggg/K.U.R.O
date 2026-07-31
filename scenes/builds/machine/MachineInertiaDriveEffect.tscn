@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://sys4kmbp6v8o"]
+
+[ext_resource type="Script" uid="uid://c28vgf6c2xmx4" path="res://scripts/builds/machine/MachineInertiaDriveEffect.cs" id="1"]
+
+[node name="MachineInertiaDriveEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "42ca78b2-1d2c-4c52-ab4c-b118bb2297c3"
+Description = "热量累积强化：连续移动方向不变时热量获取速度提升，改变方向后重置"

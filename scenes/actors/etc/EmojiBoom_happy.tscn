@@ -197,7 +197,8 @@ BoomScene = ExtResource("2_1umhh")
 BoomDmgScene = ExtResource("3_b2i5j")
 BoomDmgOverrides = Dictionary[String, Variant]({
 "Damage": 100,
-"KnockbackDistance": 150.0,
+"KnockbackDistance": 300.0,
+"KnockbackDuration": 0.3,
 "Radius": 500.0
 })
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"

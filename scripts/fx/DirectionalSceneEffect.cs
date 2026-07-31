@@ -1,0 +1,103 @@
+using Godot;
+using Godot.Collections;
+using Kuros.Actors.Enemies.Attacks;
+using Kuros.Core;
+
+namespace Kuros.Fx
+{
+	/// <summary>
+	/// 通用方向性场景效果：根据生成者的朝向自动播放对应动画，支持在动画中生成子场景和自毁。
+	///
+	/// 方案 A（当前）：子级 AnimationPlayer 的方法调用轨道通过 NodePath("..") 找到根节点，
+	/// 调用 SpawnAtMarker / DestroySelf。适用简单场景。
+	///
+	/// 方案 B（后续优化）：在根节点添加独立 AnimationPlayer，只放方法调用轨道，子级
+	/// AnimationPlayer 专注动画。步骤：
+	/// 1. 在场景根节点下新建 AnimationPlayer，animation_length 与子级动画一致
+	/// 2. 将子级 AnimationPlayer 的方法调用轨道剪切到根 AnimationPlayer 的同名动画中
+	/// 3. 轨道路径改为 .:SpawnAtMarker / .:DestroySelf（不再需要 ..）
+	/// 4. 根 AnimationPlayer 加入 AnimationPlayers 数组，_Ready 自动同步播放
+	/// </summary>
+	public partial class DirectionalSceneEffect : Node2D, IFacingDirectional
+	{
+		[ExportGroup("Animation")]
+		[Export] public string AnimLeft { get; set; } = "SpawnLeft";
+		[Export] public string AnimRight { get; set; } = "SpawnRight";
+		/// <summary>
+		/// 手动指定需要控制的 AnimationPlayer。留空则自动查找所有子节点中的 AnimationPlayer。
+		/// </summary>
+		[Export] public Array<AnimationPlayer> AnimationPlayers { get; set; } = new();
+
+		[ExportGroup("Spawn")]
+		[Export] public Array<AttackEffectEntry> SpawnEntries { get; set; } = new();
+
+		[Export] public bool FacingRight { get; set; } = true;
+
+		public override void _Ready()
+		{
+			var players = AnimationPlayers.Count > 0
+				? AnimationPlayers
+				: FindAnimationPlayers();
+
+			string anim = FacingRight ? AnimRight : AnimLeft;
+			foreach (var ap in players)
+			{
+				if (ap != null && IsInstanceValid(ap) && ap.HasAnimation(anim))
+					ap.Play(anim);
+			}
+		}
+
+		public void DestroySelf()
+		{
+			QueueFree();
+		}
+
+		public void SpawnAtMarker(string encoded)
+		{
+			int entryIndex = 0;
+			string markerName = encoded;
+			int colon = encoded.LastIndexOf(':');
+			if (colon > 0 && int.TryParse(encoded[(colon + 1)..], out int idx))
+			{
+				markerName = encoded[..colon];
+				entryIndex = idx;
+			}
+
+			if (entryIndex < 0 || entryIndex >= SpawnEntries.Count) return;
+			var entry = SpawnEntries[entryIndex];
+			if (entry?.Scene == null) return;
+
+			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
+			if (marker == null) return;
+
+			var instance = entry.Scene.Instantiate();
+			entry.ApplyOverrides(instance);
+			GetParent()?.AddChild(instance);
+			if (instance is Node2D node)
+				node.GlobalPosition = marker.GlobalPosition;
+		}
+
+		private Array<AnimationPlayer> FindAnimationPlayers()
+		{
+			var list = new Array<AnimationPlayer>();
+			foreach (var child in GetChildren())
+			{
+				if (child is AnimationPlayer ap)
+					list.Add(ap);
+				else
+					CollectAnimationPlayers(child, list);
+			}
+			return list;
+		}
+
+		private static void CollectAnimationPlayers(Node node, Array<AnimationPlayer> list)
+		{
+			foreach (var child in node.GetChildren())
+			{
+				if (child is AnimationPlayer ap)
+					list.Add(ap);
+				CollectAnimationPlayers(child, list);
+			}
+		}
+	}
+}

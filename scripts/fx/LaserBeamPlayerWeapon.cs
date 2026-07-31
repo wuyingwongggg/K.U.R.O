@@ -162,7 +162,8 @@ namespace Kuros.Fx
                     : KnockbackDistance > 0f
                         ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
                         : 0f;
-                if (knockSpeed > 0f)
+                if (knockSpeed > 0f
+                    && !enemy.ActiveImmunities.HasFlag(Kuros.Core.ImmunityFlags.ForcedMovement))
                     enemy.Velocity = beamDir * knockSpeed;
             }
 

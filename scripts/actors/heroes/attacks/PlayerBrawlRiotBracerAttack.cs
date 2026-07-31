@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 
 namespace Kuros.Actors.Heroes.Attacks
 {
@@ -7,7 +8,7 @@ namespace Kuros.Actors.Heroes.Attacks
     ///
     /// 移动模式参照 PlayerDashState 的两段速度：
     ///   Warmup  → 不能移动（父类清零速度）
-    ///   Active  → DashSpeed 高速前冲，撞到 Targetable 对象立即停止
+    ///   Active  → DashSpeed 高速前冲，ContactShape 碰到敌人时 DashSpeed 归零
     ///   Recovery → RecoverySpeed 低速滑行，可自然减速
     ///
     /// 继承 PlayerBasicMeleeAttack 的全部近战逻辑（伤害、动画、命中检测），仅追加位移行为。
@@ -22,14 +23,23 @@ namespace Kuros.Actors.Heroes.Attacks
         [Export(PropertyHint.Range, "0,3000,10")]
         public float RecoverySpeed = 500f;
 
+        /// <summary>
+        /// 接触检测用的 CollisionShape2D 路径。用于 IntersectShape 同步查询，
+        /// 独立于 AttackArea 的判定框，可在编辑器中可视化编辑。
+        /// </summary>
+        [Export] public NodePath ContactShapePath = new();
+
         private bool _isDashing;
         private bool _isSliding;
-        private bool _hasHitTarget;
+        private bool _dashDisabled;
+        private float _originalDashSpeed;
         private Vector2 _dashDirection;
+        private CollisionShape2D? _contactShape;
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
+            _originalDashSpeed = DashSpeed;
         }
 
         /// <summary>
@@ -40,7 +50,6 @@ namespace Kuros.Actors.Heroes.Attacks
             base.OnActivePhase();
 
             _dashDirection = Player.FacingRight ? Vector2.Right : Vector2.Left;
-            _hasHitTarget = false;
 
             _isDashing = true;
             _isSliding = false;
@@ -48,25 +57,51 @@ namespace Kuros.Actors.Heroes.Attacks
         }
 
         /// <summary>
-        /// 每帧速度控制（参照 PlayerDashState.PhysicsUpdate 每帧赋值模式）。
-        /// 前冲期间检测 AttackArea 内是否有 Targetable 对象，命中则立即停冲。
+        /// 每帧速度控制。用 IntersectShape 同步查询 ContactShape 是否碰到敌人，
+        /// 命中则 DashSpeed 归零。
         /// </summary>
         protected override void OnTick(double delta)
         {
             base.OnTick(delta);
 
+            if (!_dashDisabled)
+            {
+                var shape = ResolveContactShape();
+                if (shape?.Shape != null)
+                {
+                    var spaceState = shape.GetWorld2D().DirectSpaceState;
+                    var query = new PhysicsShapeQueryParameters2D
+                    {
+                        Shape = shape.Shape,
+                        Transform = shape.GlobalTransform,
+                        CollideWithAreas = true,
+                        CollideWithBodies = false
+                    };
+                    foreach (var result in spaceState.IntersectShape(query))
+                    {
+                        if (!result.TryGetValue("collider", out var collider)) continue;
+                        if (collider.As<GodotObject>() is not Area2D area) continue;
+                        if ((string)area.Name != "HitArea") continue;
+                        var actor = area.GetParent() as GameActor
+                            ?? area.GetParent()?.GetParent() as GameActor;
+                        if (actor != null
+                            && actor.IsInGroup("enemies")
+                            && !actor.IsDeathSequenceActive
+                            && !actor.IsDead)
+                        {
+                            _dashDisabled = true;
+                            DashSpeed = 0f;
+                            _isDashing = false;
+                            _isSliding = false;
+                            Player.Velocity = Vector2.Zero;
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (_isDashing)
             {
-                // 前冲期间检测是否撞到 Targetable 对象（参照 EnemyOnePunchAttack 的 OverlapsBody 检测）
-                if (!_hasHitTarget && AttackArea != null && AttackArea.GetOverlappingBodies().Count > 0)
-                {
-                    _hasHitTarget = true;
-                    _isDashing = false;
-                    _isSliding = false;
-                    Player.Velocity = Vector2.Zero;
-                    return;
-                }
-
                 Player.Velocity = _dashDirection * DashSpeed;
             }
             else if (_isSliding)
@@ -92,9 +127,23 @@ namespace Kuros.Actors.Heroes.Attacks
         {
             _isDashing = false;
             _isSliding = false;
-            _hasHitTarget = false;
+            _dashDisabled = false;
+            DashSpeed = _originalDashSpeed;
             Player.Velocity = Vector2.Zero;
             base.OnAttackFinished();
+        }
+
+        private CollisionShape2D? ResolveContactShape()
+        {
+            if (_contactShape != null && IsInstanceValid(_contactShape) && _contactShape.Shape != null)
+                return _contactShape;
+
+            if (ContactShapePath.IsEmpty)
+                return null;
+
+            _contactShape = GetNodeOrNull<CollisionShape2D>(ContactShapePath)
+                ?? Player?.GetNodeOrNull<CollisionShape2D>(ContactShapePath);
+            return _contactShape;
         }
     }
 }

@@ -103,9 +103,9 @@
 
 ---
 
-### Phase 4：18 张 Machine 卡牌 + 3 个 Core 的 .tres 批量生成
+### Phase 4：20 张 Machine 卡牌 + 3 个 Core 的 .tres 批量生成 ✅
 
-**依赖 Phase 1-3 完成，数据模型已稳定**
+**已完成。实际生成 20 张（A_001-A_010 + B_001-B_010），3 个 Core（MachineCore / WaiterCore / ThrowCore）。**
 
 #### 现状：已有 13 个 .tres，存在以下问题
 
@@ -229,23 +229,22 @@ Phase 1→2→3→4 严格顺序。Phase 5/6 在 4 之后。Phase 7 独立于其
 | 1 | 3 C# | 低（加字段 + 适配） | ✅ |
 | 2 | 1 C# | 中（核心算法） | ✅ |
 | 3 | 1 C# + 1 tscn | 低（堆叠缩放） | ✅ |
-| 4 | 18 tres + 3 core tres | 低（机械化生成） | ⬜ |
+| 4 | 20 tres + 3 core tres | 低（机械化生成） | ✅ |
 | 5 | 1 GDScript | 中（序列化） | ⬜ |
 | 6 | 1 GDScript | 中（反序列化） | ⬜ |
-| 7 | 1 C# + 1 tscn + 1 shader | 中（UI 伪 3D 卡片） | ⬜ |
+| 7 | 2 C# + 2 tscn + 1 shader | 中（UI 伪 3D 卡片） | ✅ |
 
 ---
 
-### Phase 7：BuildSelectionWindow 伪 3D 卡片 HUD
+### Phase 7：BuildSelectionWindow 伪 3D 卡片 HUD ✅
 
-**独立于其他 Phase，可随时实施。详见 [BUILD_HUD_DESIGN.md](BUILD_HUD_DESIGN.md)。**
+**已完成。** 详见 [BUILD_HUD_DESIGN.md](BUILD_HUD_DESIGN.md)。
 
-核心改动：
-- 3 张卡片从 `VBoxContainer` 改为 `ColorRect` + `pseudo_3d_card.gdshader`
-- 鼠标悬停驱动 shader 的伪 3D 倾斜 + 光照
-- 保留键盘选择（1/2/3、←→、Enter）
+已实施：
+- `BuildCard.tscn` + `BuildCard.cs` — SubViewport + pseudo_3d_card.gdshader 渲染，鼠标悬停驱动伪 3D 倾斜
+- `BuildSelectionWindow.cs` — `CardTemplate` export，动态 N 卡实例化，键盘 1-N + ←→ + Enter 选择
+- `shaders/materials/pseudo_3d_card.gdshader` — 透视 shader
 
-**涉及文件**：
-- `scenes/ui/windows/BuildSelectionWindow.tscn`
-- `scripts/ui/BuildSelectionWindow.cs`
-- `shaders/materials/pseudo_3d_card.gdshader`（已存在）
+待完成（详见 BUILD_HUD_DESIGN.md 末尾）：
+- 稀有度差异化：RarityGlow 按 Common/Rare/Epic 换贴图/颜色
+- card 的 debug 日志清理

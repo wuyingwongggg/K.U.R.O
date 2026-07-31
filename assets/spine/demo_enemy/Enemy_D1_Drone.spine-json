@@ -135,6 +135,9 @@
 		}
 	}
 ],
+"events": {
+	"hit": {}
+},
 "animations": {
 	"attack": {
 		"slots": {
@@ -321,7 +324,10 @@
 					{ "time": 1.3333334 }
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 0.6, "name": "hit" }
+		]
 	},
 	"death": {
 		"slots": {

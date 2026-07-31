@@ -27,6 +27,8 @@ public partial class SampleEnemy : GameActor
 	[ExportCategory("Score")]
 	[Export] public int ScoreValue = 10;
 
+	[ExportCategory("Effects")]
+	[Export] public PackedScene? DeathEffect { get; set; }
 	private SamplePlayer? _player;
 	private bool _scoreGranted;
 	private string _debugOverlayText = string.Empty;

@@ -39,8 +39,9 @@
 [sub_resource type="Resource" id="Resource_dknnn"]
 script = ExtResource("2_lfvdk")
 MinComfortDistance = 1000.0
+BurstSpeedMultiplier = 2.5
 BurstDuration = 0.5
-BurstDamageImmuneDuration = 0.5
+BurstCooldown = 1.0
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="Resource" id="Resource_ie6to"]
@@ -109,7 +110,7 @@ AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 50
 Speed = 400.0
 AttackDamage = 40.0
-MaxHealth = 600
+MaxHealth = 750
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 StatProfile = SubResource("Resource_ie6to")

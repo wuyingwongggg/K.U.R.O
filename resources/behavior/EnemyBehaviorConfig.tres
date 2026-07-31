@@ -5,4 +5,7 @@
 [resource]
 script = ExtResource("1_wlbyc")
 Positioning = 1
+MinComfortDistance = 900.0
+BurstDuration = 0.5
+BurstDamageImmuneDuration = 0.5
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"

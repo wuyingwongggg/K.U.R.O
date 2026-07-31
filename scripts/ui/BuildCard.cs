@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Systems;
 
 namespace Kuros.UI
 {
@@ -22,6 +23,46 @@ namespace Kuros.UI
 
         [Export(PropertyHint.Range, "1,1.3,0.01")]
         public float HoverScale { get; set; } = 1.05f;
+
+        [ExportGroup("Rarity Visuals")]
+        [Export] public Texture2D? CardBgCommon { get; set; }
+        [Export] public Texture2D? CardBgRare { get; set; }
+        [Export] public Texture2D? CardBgEpic { get; set; }
+        [Export] public Texture2D? CardBgCore { get; set; }
+        [Export] public Color GlowCommon { get; set; } = new(0.2f, 0.4f, 1f, 0.6f);
+        [Export] public Color GlowRare { get; set; } = new(0.6f, 0.2f, 1f, 0.6f);
+        [Export] public Color GlowEpic { get; set; } = new(1f, 0.85f, 0.2f, 0.7f);
+        [Export] public Color GlowCore { get; set; } = new(1f, 0.2f, 0.2f, 0.8f);
+
+        public void ApplyRarityVisuals(BuildRarity rarity)
+        {
+            if (CardBg != null)
+            {
+                CardBg.Texture = rarity switch
+                {
+                    BuildRarity.Common => CardBgCommon,
+                    BuildRarity.Rare => CardBgRare,
+                    BuildRarity.Epic => CardBgEpic,
+                    BuildRarity.Core => CardBgCore,
+                    _ => CardBgCommon,
+                };
+            }
+            if (RarityGlow != null)
+            {
+                var color = rarity switch
+                {
+                    BuildRarity.Common => GlowCommon,
+                    BuildRarity.Rare => GlowRare,
+                    BuildRarity.Epic => GlowEpic,
+                    BuildRarity.Core => GlowCore,
+                    _ => GlowCommon,
+                };
+                RarityGlow.Modulate = color;
+                var transparent = new Color(color.R, color.G, color.B, 0f);
+                _glowShaderMat?.SetShaderParameter("starting_colour", color);
+                _glowShaderMat?.SetShaderParameter("ending_colour", transparent);
+            }
+        }
 
         [Export]
         public bool Enabled
@@ -49,6 +90,7 @@ namespace Kuros.UI
 
         private bool _isHovered;
         private ShaderMaterial? _shaderMat;
+        private ShaderMaterial? _glowShaderMat;
         private TextureRect? _displayRect;
         private SubViewport? _subViewport;
         private static readonly Vector2 ReferenceSize = new(500, 340);
@@ -56,8 +98,7 @@ namespace Kuros.UI
         private float _currentRotX;
         private float _currentHoverScale = 1f;
 
-        [Export(PropertyHint.Range, "10,170,1")]
-        public float MaxTiltFov { get; set; } = 30f;
+        [Export(PropertyHint.Range, "1,179,1")] public float MaxTiltFov { get; set; } = 30f;
 
         public void ApplyCardScale()
         {
@@ -85,8 +126,6 @@ namespace Kuros.UI
             {
                 _shaderMat = (ShaderMaterial)_shaderMat.Duplicate(true);
                 CardBg!.Material = null;
-                if (RarityGlow != null) RarityGlow.Material = null;
-                if (Icon != null) Icon.Material = null;
             }
 
             // Create SubViewport and move CardInner into it
@@ -116,10 +155,12 @@ namespace Kuros.UI
                 Material = _shaderMat,
             };
             _displayRect.SetAnchorsPreset(LayoutPreset.FullRect);
-            _displayRect.MouseEntered += () => { _isHovered = true; ZIndex = 1; };
-            _displayRect.MouseExited += () => { _isHovered = false; ZIndex = 0; };
+            _displayRect.MouseEntered += () => { _isHovered = true; ZIndex = 1; UpdateSelectionHighlight(); };
+            _displayRect.MouseExited += () => { _isHovered = false; ZIndex = 0; UpdateSelectionHighlight(); };
             _displayRect.GuiInput += OnDisplayRectGuiInput;
             AddChild(_displayRect);
+
+            _glowShaderMat = RarityGlow?.Material as ShaderMaterial;
 
             ApplyEnabledState();
         }
@@ -141,7 +182,7 @@ namespace Kuros.UI
                     targetRotY = (u - 0.5f) * 2f * TiltStrength;
                     targetRotX = (0.5f - v) * 2f * TiltStrength;
                 }
-                targetScale = HoverScale;
+                targetScale = ReferenceSize.X * HoverScale / Size.X;
             }
 
             float lerpSpeed = 0.15f;
@@ -183,7 +224,7 @@ namespace Kuros.UI
         private void UpdateSelectionHighlight()
         {
             if (RarityGlow != null)
-                RarityGlow.Visible = _isSelected;
+                RarityGlow.Visible = _isSelected || _isHovered;
         }
 
         private void ApplyEnabledState()

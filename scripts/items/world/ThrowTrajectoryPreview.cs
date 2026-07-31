@@ -81,7 +81,7 @@ namespace Kuros.Items.World
         public override void _Ready()
         {
             base._Ready();
-            ZIndex = 10; // 绘制在普通精灵上方
+            //ZIndex = 10; // 绘制在普通精灵上方
             // 作为玩家子节点，保持局部坐标在玩家本地空间（Position = Zero）
             _player = GetParent() as SamplePlayer
                    ?? GetOwner() as SamplePlayer

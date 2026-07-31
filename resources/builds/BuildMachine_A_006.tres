@@ -1,7 +1,18 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://dpspa5pca6by8"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://dpspa5pca6by8"]
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_6bbx0"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_1gaxe"]
+[ext_resource type="Texture2D" uid="uid://cxl5em52s546u" path="res://assets/BuildIcon/Machine_A_006_热量回收.png" id="2_bnfgq"]
+[ext_resource type="PackedScene" uid="uid://d1gf0suqwwrq4" path="res://scenes/builds/machine/MachineHeatRecoveryEffect.tscn" id="3_scene"]
+
+[sub_resource type="Resource" id="Resource_bnfgq"]
+script = ExtResource("1_6bbx0")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": [16.0, 31.0]
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("2_1gaxe")
@@ -10,6 +21,7 @@ DisplayName = "热量回收"
 Description = "未发动核心技能时，若热量低于15%/30%，则以每秒15%/30%的速度自动恢复到15%/30%"
 BuildClass = "Machine"
 Rarity = 1
-Weight = 10
 MaxStacks = 2
+Icon = ExtResource("2_bnfgq")
+EffectEntries = Array[ExtResource("1_6bbx0")]([SubResource("Resource_bnfgq")])
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

@@ -29,7 +29,7 @@ shader_parameter/distortion_falloff = 0.415
 [sub_resource type="CircleShape2D" id="CircleShape2D_04aku"]
 radius = 270.0
 
-[node name="BlackHoleEffect" type="Node"]
+[node name="GravityGrenadeEffect" type="Node"]
 script = ExtResource("1_7j3d2")
 AdsorbRadius = 600.0
 AdsorbForce = 200.0

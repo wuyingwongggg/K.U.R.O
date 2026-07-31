@@ -1,0 +1,70 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://crov3gukwsnca"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_b4k65"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_5a8q7"]
+[ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_saa34"]
+[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="4_b4k65"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_bxbpq"]
+[ext_resource type="PackedScene" uid="uid://cigmmy13avtuu" path="res://resources/effects/DroneStunEffect.tscn" id="6_5a8q7"]
+[ext_resource type="Texture2D" uid="uid://bifkxv7ctwotp" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="6_b4k65"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_deb1n"]
+
+[sub_resource type="Resource" id="Resource_6qb80"]
+script = ExtResource("1_b4k65")
+AttributeId = "attack_power"
+Value = 20.0
+metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
+
+[sub_resource type="Resource" id="Resource_6f3qv"]
+script = ExtResource("2_5a8q7")
+Trigger = 1
+EffectScene = ExtResource("3_saa34")
+Notes = "小型家具：减速30%
+"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_1qp51"]
+script = ExtResource("2_5a8q7")
+Trigger = 4
+EffectScene = ExtResource("5_bxbpq")
+Notes = "相机震动
+"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_mqy4i"]
+script = ExtResource("2_5a8q7")
+Trigger = 4
+EffectScene = ExtResource("4_b4k65")
+Notes = "破坏特效"
+PropertyOverrides = Dictionary[String, Variant]({
+"EnableCenterEffect": true,
+"EnableParticles": false
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_saa34"]
+script = ExtResource("2_5a8q7")
+Trigger = 4
+EffectScene = ExtResource("6_5a8q7")
+Notes = "无人机"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("7_deb1n")
+ItemId = "Furniture_D_Drone"
+DisplayName = "破损无人机"
+Description = "一次性投掷道具：破损无人机"
+Icon = ExtResource("6_b4k65")
+HoldScenePath = "uid://c8c450masc7f5"
+Category = "Furniture"
+Tags = Array[String](["tag_throw", "furniture"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_b4k65")]([SubResource("Resource_6qb80")])
+EffectEntries = Array[ExtResource("2_5a8q7")]([SubResource("Resource_6f3qv"), SubResource("Resource_1qp51"), SubResource("Resource_mqy4i"), SubResource("Resource_saa34")])
+IsThrowable = true
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicDuration = 0.4
+ThrowParabolicPeakHeight = 100.0
+ThrowHorizontalDistance = 700.0
+ThrowParabolicLandingYOffset = 250.0
+WorldScenePath = "uid://cvdv22giw51s8"

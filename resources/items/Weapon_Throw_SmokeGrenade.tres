@@ -21,6 +21,7 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("2_letw0")
 Trigger = 4
 EffectScene = ExtResource("4_letw0")
+Notes = "眩晕"
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 4.0
 })

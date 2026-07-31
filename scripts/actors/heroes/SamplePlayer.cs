@@ -629,6 +629,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		if (!AiInputOverrideEnabled)
 		{
+			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
+				return false;
 			return Input.IsActionPressed(actionName);
 		}
 
@@ -643,6 +645,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		if (!AiInputOverrideEnabled)
 		{
+			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
+				return false;
 			return Input.IsActionJustPressed(actionName);
 		}
 

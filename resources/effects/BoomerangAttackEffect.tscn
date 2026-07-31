@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://bpr5kqjkwkh5w"]
+
+[ext_resource type="Script" uid="uid://bh8spu8pbecfg" path="res://scripts/effects/BoomerangAttackEffect.cs" id="1_qrffi"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="2_6aiag"]
+[ext_resource type="Texture2D" uid="uid://5pju5slfrs77" path="res://assets/weapons/回旋镖.png" id="3_yeyl0"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yeyl0"]
+size = Vector2(400, 200)
+
+[node name="BoomerangAttackEffect" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+script = ExtResource("1_qrffi")
+Speed = 3000.0
+TrackStartTime = 1.3
+RotateWithVelocity = false
+Duration = 15.0
+HitPlayerDelay = 0.1
+Damage = 20
+DamageInterval = 0.30000000000000004
+Pseudo3DTargetPath = NodePath("Sprite2D")
+Pseudo3DXAngle = 55.0
+Pseudo3DZSpeed = 2000.0
+
+[node name="AfterimageController" type="Node" parent="."]
+script = ExtResource("2_6aiag")
+sprite_path = NodePath("../Sprite2D")
+is_spine = false
+interval = 0.02
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.33, 0.33)
+texture = ExtResource("3_yeyl0")
+offset = Vector2(0, 150)
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="AttackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("RectangleShape2D_yeyl0")

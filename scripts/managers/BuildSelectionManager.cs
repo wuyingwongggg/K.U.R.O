@@ -171,6 +171,7 @@ namespace Kuros.Managers
                     Description = core.Description,
                     BuildClass = core.BuildClass,
                     Icon = core.Icon,
+                    Rarity = BuildRarity.Core,
                 });
             }
 
@@ -185,8 +186,6 @@ namespace Kuros.Managers
             var canvasLayer = new CanvasLayer { Layer = 2 };
             GetTree().Root.AddChild(canvasLayer);
             canvasLayer.AddChild(window);
-
-            window.TreeExiting += () => _isSelectionActive = false;
 
             window.ShowWindow(options, chosenEffect =>
             {
@@ -266,8 +265,6 @@ namespace Kuros.Managers
             var canvasLayer = new CanvasLayer { Layer = 2 };
             GetTree().Root.AddChild(canvasLayer);
             canvasLayer.AddChild(window);
-
-            window.TreeExiting += () => _isSelectionActive = false;
 
             window.ShowWindow(options, chosenEffect =>
             {

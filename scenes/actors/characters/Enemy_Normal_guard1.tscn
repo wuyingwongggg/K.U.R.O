@@ -218,7 +218,7 @@ DamageMultiplier = 1.5
 KnockbackDistance = 500.0
 KnockbackDuration = 0.2
 KnockbackSpeed = 3000.0
-GrantedImmunities = 24
+GrantedImmunities = 16
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 

@@ -12,7 +12,7 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string AttackAnimation = "attack";
 		[Export] public string SkillAnimation = "skill";
 		[Export] public string HitAnimation = "hit";
-		[Export] public string StunAnimation = "death";
+		[Export] public string StunAnimation = "idle";
 		[Export] public string DieAnimation = "death";
 		[Export(PropertyHint.Range, "0.1,3,0.1")] public float KeepDistanceTimeScale = 2f;
 
