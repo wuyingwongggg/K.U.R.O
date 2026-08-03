@@ -1,0 +1,123 @@
+[gd_scene load_steps=28 format=3 uid="uid://y1isgrju8g0h"]
+
+[ext_resource type="Script" uid="uid://cgpuq73b0w5rb" path="res://scripts/effects/DotBurnEffect.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c21qtwystr7o4" path="res://assets/effect/AttackEffect/burn_b/BurnB_01.png" id="2_cq841"]
+[ext_resource type="Texture2D" uid="uid://b8ih6h0ad2rdh" path="res://assets/effect/AttackEffect/burn_b/BurnB_02.png" id="3_px4q2"]
+[ext_resource type="Texture2D" uid="uid://bw578ihhr0dt" path="res://assets/effect/AttackEffect/burn_b/BurnB_03.png" id="4_o54ko"]
+[ext_resource type="Texture2D" uid="uid://bajvnceultpeu" path="res://assets/effect/AttackEffect/burn_b/BurnB_04.png" id="5_roepl"]
+[ext_resource type="Texture2D" uid="uid://cylrkb6b8dbid" path="res://assets/effect/AttackEffect/burn_b/BurnB_05.png" id="6_8xvvp"]
+[ext_resource type="Texture2D" uid="uid://bqc1rmpwo0ras" path="res://assets/effect/AttackEffect/burn_b/BurnB_06.png" id="7_1a564"]
+[ext_resource type="Texture2D" uid="uid://c64hcvol8onoe" path="res://assets/effect/AttackEffect/burn_b/BurnB_07.png" id="8_0b5bx"]
+[ext_resource type="Texture2D" uid="uid://cordoocgu66xk" path="res://assets/effect/AttackEffect/burn_b/BurnB_08.png" id="9_wel1i"]
+[ext_resource type="Texture2D" uid="uid://cx2ekvdol5qk2" path="res://assets/effect/AttackEffect/burn_b/BurnB_09.png" id="10_wnd1e"]
+[ext_resource type="Texture2D" uid="uid://4sbj66w0t4o3" path="res://assets/effect/AttackEffect/burn_b/BurnB_10.png" id="11_bhsey"]
+[ext_resource type="Texture2D" uid="uid://q82n130rrdc" path="res://assets/effect/AttackEffect/burn_b/BurnB_11.png" id="12_ha0ob"]
+[ext_resource type="Texture2D" uid="uid://dr35inh6utl4r" path="res://assets/effect/AttackEffect/burn_b/BurnB_12.png" id="13_1uwja"]
+[ext_resource type="Texture2D" uid="uid://b40k1buha3eax" path="res://assets/effect/AttackEffect/burn_b/BurnB_13.png" id="14_qsdgn"]
+[ext_resource type="Texture2D" uid="uid://dbqr4amyouoj4" path="res://assets/effect/AttackEffect/burn_b/BurnB_14.png" id="15_ralvx"]
+[ext_resource type="Texture2D" uid="uid://ldrqx0d2ca7u" path="res://assets/effect/AttackEffect/burn_b/BurnB_15.png" id="16_0han6"]
+[ext_resource type="Texture2D" uid="uid://bffil8q5n5cec" path="res://assets/effect/AttackEffect/burn_b/BurnB_16.png" id="17_pjxuf"]
+[ext_resource type="Texture2D" uid="uid://pxsp1lehj08u" path="res://assets/effect/AttackEffect/burn_b/BurnB_17.png" id="18_htd07"]
+[ext_resource type="Texture2D" uid="uid://b410encujmkue" path="res://assets/effect/AttackEffect/burn_b/BurnB_18.png" id="19_8agpw"]
+[ext_resource type="Texture2D" uid="uid://bf7otg26ouvya" path="res://assets/effect/AttackEffect/burn_b/BurnB_19.png" id="20_e36ga"]
+[ext_resource type="Texture2D" uid="uid://bb6waua32jdkb" path="res://assets/effect/AttackEffect/burn_b/BurnB_20.png" id="21_ja2jo"]
+[ext_resource type="Texture2D" uid="uid://d2b1vcvqbxvdd" path="res://assets/effect/AttackEffect/burn_b/BurnB_21.png" id="22_ha1c5"]
+[ext_resource type="Texture2D" uid="uid://dkbysw0bb0g3t" path="res://assets/effect/AttackEffect/burn_b/BurnB_22.png" id="23_rn4vi"]
+[ext_resource type="Texture2D" uid="uid://dv3ro6dgupy3n" path="res://assets/effect/AttackEffect/burn_b/BurnB_23.png" id="24_8ly14"]
+[ext_resource type="Texture2D" uid="uid://dvm38cy86g2ij" path="res://assets/effect/AttackEffect/burn_b/BurnB_24.png" id="25_iwrsf"]
+[ext_resource type="Texture2D" uid="uid://dv0yy7bmcjoke" path="res://assets/effect/AttackEffect/burn_b/BurnB_25.png" id="26_xt6w1"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wel1i"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_cq841")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_px4q2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_o54ko")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_roepl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_8xvvp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_1a564")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_0b5bx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_wel1i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_wnd1e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_bhsey")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_ha0ob")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_1uwja")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_qsdgn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_ralvx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_0han6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_pjxuf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_htd07")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_8agpw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_e36ga")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_ja2jo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_ha1c5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_rn4vi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_8ly14")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_iwrsf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_xt6w1")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="DotBurnEffect" type="Node"]
+script = ExtResource("1_script")
+EffectId = "dot_burn"
+DisplayName = "灼烧"
+Description = "持续灼烧伤害，重复施加刷新持续时间"
+IsBuff = false
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 2
+sprite_frames = SubResource("SpriteFrames_wel1i")
+autoplay = "default"

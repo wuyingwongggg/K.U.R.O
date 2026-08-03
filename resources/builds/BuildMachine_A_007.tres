@@ -9,10 +9,10 @@
 script = ExtResource("1_5oiv2")
 Scene = ExtResource("3_scene")
 PropertyOverrides = Dictionary[String, Variant]({
-"CapValues": [0.75, 0.5],
-"DecayValues": [1.75, 3.5],
+"CapValues": [-30.0, -50.0],
+"DecayValues": [75.0, 100.0],
 "Duration": 0.0,
-"GainValues": [1.75, 2.0]
+"GainValues": [75.0, 100.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -20,7 +20,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_3ve0c")
 EffectId = "BuildMachine_A_007"
 DisplayName = "高速导热"
-Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，且非发动核心技能时的热量衰减速度提高75%/100%"
+Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，所有热量衰减的速度提高75%/100%"
 BuildClass = "Machine"
 Rarity = 1
 MaxStacks = 2

@@ -23,6 +23,11 @@ namespace Kuros.Actors.Enemies
 			bool hasFreeze = EffectController?.GetEffect<FreezeEffect>() != null;
 			if (_bodyShape != null)
 				_bodyShape.Disabled = !hasFreeze;
+
+			// Hit/Frozen 期间 z_index 降低到 2，其余恢复 3
+			string stateName = StateMachine?.CurrentState?.Name ?? string.Empty;
+			bool lowered = stateName == "Hit" || stateName == "Frozen";
+			ZIndex = lowered ? 2 : 3;
 		}
 
 		public override bool CanBeAffected(ActorEffect? effect)

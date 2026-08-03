@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca0sv5f203uhx"]
+
+[ext_resource type="Script" uid="uid://dcauwwvv1js1h" path="res://scripts/builds/machine/MachineOverclockEffect.cs" id="1"]
+
+[node name="MachineOverclockEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "3857c167-f96c-4584-b35a-f1766486a3ce"
+Description = "允许热量突破 MaxHeat，使移动速度、攻击速度、受到的伤害随溢出热量的增加而增加"
