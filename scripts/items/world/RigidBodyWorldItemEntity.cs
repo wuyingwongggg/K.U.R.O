@@ -715,9 +715,28 @@ namespace Kuros.Items.World
 			// 应用到实际位置
 			float newY = heightAtPhase;
 			float newX = _rigidBody.GlobalPosition.X + (float)(_throwHorizontalVelocity * delta);
-			
+
+			// 撞墙检测：手动物理射线（freeze 刚体子节点的 Area2D 信号不可靠），
+			// 沿水平飞行方向检测前方墙体，命中非 GameActor 物理体则停止并销毁
+			if (_impactArmed && StopOnHit && CheckWallHit(_rigidBody.GlobalPosition, _throwHorizontalVelocity))
+			{
+				_inFlight = false;
+				_flightTimer = 0.0;
+				_impactArmed = false;
+				_rigidBody.LinearVelocity = Vector2.Zero;
+				try { _rigidBody.Set("freeze", true); } catch { }
+				RestoreRigidBodyCollision();
+				if (!_isDestroying)
+				{
+					_landingHideTimer = LandingHideDelay;
+					if (!IsDisposableCopy && IsThrowWeapon)
+						_inventoryReturnTimer = ThrowWeaponCooldown;
+				}
+				return;
+			}
+
 			_rigidBody.GlobalPosition = new Vector2(newX, newY);
-			
+
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
 			Vector2 simulatedVelocity = new Vector2(
 				_throwHorizontalVelocity,
@@ -1211,6 +1230,36 @@ namespace Kuros.Items.World
 				StopItemMovement();
 			}
 
+			return true;
+		}
+
+		/// <summary>
+		/// 飞行中沿水平方向发射射线，检测前方是否为 AirWall（空气墙）。
+		/// 仅 AirWall 触发销毁，其他物理体（地面/障碍/投掷物）不拦截。
+		/// </summary>
+		private bool CheckWallHit(Vector2 from, float horizontalVelocity)
+		{
+			if (_rigidBody == null || horizontalVelocity == 0f) return false;
+
+			float step = Mathf.Abs(horizontalVelocity) * 0.05f + 20f; // 覆盖本帧移动距离
+			var space = _rigidBody.GetWorld2D().DirectSpaceState;
+			var query = new PhysicsRayQueryParameters2D
+			{
+				From = from,
+				To = from + new Vector2(Mathf.Sign(horizontalVelocity) * step, 0f),
+				CollideWithBodies = true,
+				CollideWithAreas = false
+			};
+
+			var result = space.IntersectRay(query);
+			if (result.Count == 0 || !result.TryGetValue("collider", out var collider))
+				return false;
+
+			var body = collider.As<GodotObject>();
+			if (body is GameActor) return false;      // 敌人/玩家交给伤害流程
+			if (body == LastDroppedBy) return false;
+			if (body is Node node && !string.Equals((string)node.Name, "AirWall", System.StringComparison.OrdinalIgnoreCase))
+				return false;
 			return true;
 		}
 

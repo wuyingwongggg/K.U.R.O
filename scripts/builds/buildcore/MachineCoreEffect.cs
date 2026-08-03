@@ -35,7 +35,10 @@ namespace Kuros.Builds.BuildCore
 
         [ExportCategory("Overflow")]
         [Export] public bool AllowHeatOverflow = false; // 允许热量突破 MaxHeat（异常超频）
-        [Export(PropertyHint.Range, "0,50,0.5")] public float OverflowBuffPercentPerHeat = 2f; // 每溢出 1 点热量的增益百分比（移动/攻速/受伤）
+        [Export(PropertyHint.Range, "0,500,1")] public float MaxOverflowHeat = 50f; // 热量最多突破 MaxHeat 的上限值
+        [Export(PropertyHint.Range, "0,50,0.5")] public float OverflowSpeedPercentPerHeat = 2f; // 每溢出 1 点热量的移动速度增益百分比
+        [Export(PropertyHint.Range, "0,50,0.5")] public float OverflowAttackSpeedPercentPerHeat = 2f; // 每溢出 1 点热量的攻击速度增益百分比
+        [Export(PropertyHint.Range, "0,50,0.5")] public float OverflowDamageTakenPercentPerHeat = 2f; // 每溢出 1 点热量的受伤增益百分比
 
         /// <summary>当前热量 (0-MaxHeat)，HUD 绑定读取。</summary>
         public float Heat { get; private set; }
@@ -57,7 +60,6 @@ namespace Kuros.Builds.BuildCore
         private readonly Dictionary<HeatStat, Dictionary<string, float>> _modifiers = new();
 
         private float _baseSpeed;
-        private float _baseAttackCooldown;
 
         /// <summary>获取某属性的基础值（场景导出值，运行时不修改）。</summary>
         public float GetBaseValue(HeatStat stat)
@@ -137,7 +139,6 @@ namespace Kuros.Builds.BuildCore
             if (Actor != null)
             {
                 _baseSpeed = Actor.Speed;
-                _baseAttackCooldown = Actor.AttackCooldown;
             }
 
             DamageEventBus.Subscribe(OnDamageDealt);
@@ -198,7 +199,7 @@ namespace Kuros.Builds.BuildCore
 
         private float GetHeatCap()
         {
-            return AllowHeatOverflow ? float.MaxValue : MaxHeat;
+            return AllowHeatOverflow ? MaxHeat + MaxOverflowHeat : MaxHeat;
         }
 
         /// <summary>每溢出 1 点热量：移动速度、攻击速度、受到的伤害 +OverflowBuffPercentPerHeat%。</summary>
@@ -210,15 +211,17 @@ namespace Kuros.Builds.BuildCore
             if (!AllowHeatOverflow || overflow <= 0f)
             {
                 Actor.Speed = _baseSpeed;
-                Actor.AttackCooldown = _baseAttackCooldown;
+                Actor.AttackSpeedMultiplier = 1f;
                 Actor.IncomingDamageMultiplier = 1f;
                 return;
             }
 
-            float mult = 1f + overflow * OverflowBuffPercentPerHeat / 100f;
-            Actor.Speed = _baseSpeed * mult;
-            Actor.AttackCooldown = Mathf.Max(_baseAttackCooldown / mult, 0.01f);
-            Actor.IncomingDamageMultiplier = mult;
+            float speedMult = 1f + overflow * OverflowSpeedPercentPerHeat / 100f;
+            float attackSpeedMult = 1f + overflow * OverflowAttackSpeedPercentPerHeat / 100f;
+            float damageTakenMult = 1f + overflow * OverflowDamageTakenPercentPerHeat / 100f;
+            Actor.Speed = _baseSpeed * speedMult;
+            Actor.AttackSpeedMultiplier = attackSpeedMult;
+            Actor.IncomingDamageMultiplier = damageTakenMult;
         }
 
         public override void _UnhandledInput(InputEvent @event)
@@ -271,7 +274,7 @@ namespace Kuros.Builds.BuildCore
             if (Actor != null)
             {
                 Actor.Speed = _baseSpeed;
-                Actor.AttackCooldown = _baseAttackCooldown;
+                Actor.AttackSpeedMultiplier = 1f;
                 Actor.IncomingDamageMultiplier = 1f;
             }
             base.OnRemoved();

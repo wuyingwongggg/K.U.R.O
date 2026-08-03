@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=10 format=3 uid="uid://t836cltal7m"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_u3jcx"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_oo772"]
+[ext_resource type="PackedScene" uid="uid://dly4tcnl66v70" path="res://scenes/actors/etc/Briefcase_defense.tscn" id="3_oo772"]
+[ext_resource type="Texture2D" uid="uid://bqvp7vj7idub3" path="res://assets/objects/briefcase/choose/时间轴 1_0001.png" id="4_u3jcx"]
+[ext_resource type="PackedScene" uid="uid://bfy7edlq83jl6" path="res://scenes/actors/etc/Briefcase_attack.tscn" id="4_uuih4"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_t5rl6"]
+
+[sub_resource type="Resource" id="Attribute_AttackPower"]
+script = ExtResource("1_u3jcx")
+AttributeId = "attack_power"
+
+[sub_resource type="Resource" id="Resource_hcgjl"]
+script = ExtResource("2_oo772")
+Trigger = 4
+EffectScene = ExtResource("4_uuih4")
+RequiredFrameMin = 14
+RequiredFrameMax = 26
+Notes = "生成攻击"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_hx5md"]
+script = ExtResource("2_oo772")
+Trigger = 4
+EffectScene = ExtResource("3_oo772")
+RequiredFrameMin = 0
+RequiredFrameMax = 13
+Notes = "生成护盾"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("5_t5rl6")
+ItemId = "Weapon_Throw_Briefcase"
+DisplayName = "多功能公文包"
+Description = "投掷武器：多功能公文包"
+Icon = ExtResource("4_u3jcx")
+HoldScenePath = "uid://d2k8mvhgfao4i"
+Category = "Weapon"
+Tags = Array[String](["tag_weapon", "tag_throw"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_u3jcx")]([SubResource("Attribute_AttackPower")])
+EffectEntries = Array[ExtResource("2_oo772")]([SubResource("Resource_hcgjl"), SubResource("Resource_hx5md")])
+IsThrowable = true
+IsThrowWeapon = true
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicDuration = 0.3
+ThrowParabolicPeakHeight = 100.0
+ThrowHorizontalDistance = 300.0
+ThrowParabolicLandingYOffset = 250.0
+ThrowWeaponCooldown = 5.0
+WorldScenePath = "uid://dco3a60ge2arj"

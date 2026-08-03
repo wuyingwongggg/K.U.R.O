@@ -184,16 +184,18 @@ namespace Kuros.Fx
                 // 基准方向：面朝右 = 右飞，面朝左 = 左飞
                 float baseAngle = FacingRight ? 0f : Mathf.Pi;
 
-                // 若玩家在前方 → 加入垂直偏移角，朝玩家方向倾斜
-                var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
-                if (player != null)
+                // 按 TargetableFactions 选择瞄准目标（玩家/最近敌人/最近者），无目标则纯水平飞行
+                var target = ResolveAimTarget();
+                if (target != null)
                 {
-                    Vector2 toPlayer = GetPlayerAimCenter(player) - GlobalPosition;
-                    if (toPlayer != Vector2.Zero)
+                    Vector2 toTarget = GetAimCenter(target) - GlobalPosition;
+                    if (toTarget != Vector2.Zero)
                     {
+                        // 全角度追踪：X 不取绝对值，目标在后方时也朝目标方向飞行
+                        // MaxVerticalTiltDegrees = 180+ 时可达 360 度无死角
                         float maxTilt = Mathf.DegToRad(MaxVerticalTiltDegrees);
                         float dySign = FacingRight ? 1f : -1f;
-                        float tiltAngle = Mathf.Atan2(toPlayer.Y * dySign, Mathf.Abs(toPlayer.X));
+                        float tiltAngle = Mathf.Atan2(toTarget.Y * dySign, toTarget.X * dySign);
                         tiltAngle = Mathf.Clamp(tiltAngle, -maxTilt, maxTilt);
                         baseAngle += tiltAngle;
                     }
@@ -312,9 +314,21 @@ namespace Kuros.Fx
             // MainCharacter 无敌状态跳过击退但仍造成伤害
             bool alreadyInvincible = body is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
+            // 传 null 跳过 IsHitByArea 二次重叠检测：信号已确认碰撞，
+            // 高速飞行时二次查询可能与物理状态错开导致漏伤害
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
-            if (!dealt) return;
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+            if (!dealt)
+            {
+                // 撞到不可伤害的物理体（AirWall 等障碍）：弹幕应销毁而非穿过继续飞，
+                // 否则被墙隔开的目标永远无法被攻击到
+                if (body is not GameActor)
+                {
+                    SpawnDestroyEffect();
+                    QueueFree();
+                }
+                return;
+            }
 
             if (!alreadyInvincible && body is GameActor hitActor)
                 ApplyKnockback(hitActor);
@@ -330,13 +344,15 @@ namespace Kuros.Fx
         private void OnAttackAreaAreaEntered(Area2D area)
         {
             if (_hit || _spawning) return;
+            // 仅接受目标的 HitArea，避免敌人的攻击判定区等误触发
+            if ((string)area.Name != "HitArea") return;
             var target = area.Owner ?? area;
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
 
             bool alreadyInvincible = area.Owner is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)
@@ -374,17 +390,50 @@ namespace Kuros.Fx
         }
 
         /// <summary>
-        /// 获取玩家的受击判定中心（HitArea 的 CollisionShape2D 全局位置），
+        /// 按 TargetableFactions 选择瞄准目标：玩家、最近敌人，或两者中的最近者。
+        /// 无可用目标时返回 null（纯水平飞行）。
+        /// </summary>
+        private Node2D? ResolveAimTarget()
+        {
+            float bestDistSq = float.MaxValue;
+            Node2D? best = null;
+
+            if (TargetableFactions.HasFlag(TargetableFactions.Player))
+            {
+                var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+                if (player != null && GodotObject.IsInstanceValid(player))
+                {
+                    float d = player.GlobalPosition.DistanceSquaredTo(GlobalPosition);
+                    if (d < bestDistSq) { bestDistSq = d; best = player; }
+                }
+            }
+
+            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
+            {
+                foreach (Node node in GetTree().GetNodesInGroup("enemies"))
+                {
+                    if (node is not GameActor enemy || !GodotObject.IsInstanceValid(enemy)) continue;
+                    if (enemy.IsDeathSequenceActive || enemy.IsDead) continue;
+                    float d = enemy.GlobalPosition.DistanceSquaredTo(GlobalPosition);
+                    if (d < bestDistSq) { bestDistSq = d; best = enemy; }
+                }
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// 获取目标的受击判定中心（HitArea 的 CollisionShape2D 全局位置），
         /// 用于计算飞行方向时的垂直偏移。
         /// </summary>
-        private static Vector2 GetPlayerAimCenter(Node2D player)
+        private static Vector2 GetAimCenter(Node2D target)
         {
-            var hitArea = player.GetNodeOrNull<Area2D>("HitArea")
-                ?? player.FindChild("HitArea", recursive: true, owned: false) as Area2D;
+            var hitArea = target.GetNodeOrNull<Area2D>("HitArea")
+                ?? target.FindChild("HitArea", recursive: true, owned: false) as Area2D;
             var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             return hitShape?.GlobalPosition
                 ?? hitArea?.GlobalPosition
-                ?? player.GlobalPosition;
+                ?? target.GlobalPosition;
         }
     }
 }

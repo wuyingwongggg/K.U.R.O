@@ -214,7 +214,7 @@ position = Vector2(290.90912, -2030.3032)
 position = Vector2(-190.9091, -2048.485)
 
 [node name="Marker2D4" type="Marker2D" parent="Node2D"]
-position = Vector2(1500, 0)
+position = Vector2(1500, -300)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_w5mqq")

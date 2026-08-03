@@ -9,8 +9,10 @@
 script = ExtResource("1_avkbu")
 Scene = ExtResource("2_sihfu")
 PropertyOverrides = Dictionary[String, Variant]({
-"BuffPercentPerHeat": 2.0,
-"Duration": 0.0
+"AttackSpeedPercentPerHeat": 0.75,
+"DamageTakenPercentPerHeat": 2.0,
+"Duration": 0.0,
+"SpeedPercentPerHeat": 1.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 

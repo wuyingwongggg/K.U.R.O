@@ -401,6 +401,42 @@ namespace Kuros.Actors.Heroes
 			}
 		}
 
+		/// <summary>
+		/// 从指定时间点播放 Spine 动画（跳帧）。
+		/// </summary>
+		/// <param name="animName">动画名称</param>
+		/// <param name="startTime">起始时间（秒），从该时间点继续播放</param>
+		/// <param name="loop">是否循环</param>
+		/// <param name="timeScale">时间缩放</param>
+		public void PlaySpineAnimationFrom(string animName, float startTime, bool loop = false, float timeScale = 1.0f)
+		{
+			if (_spineController == null)
+			{
+				GD.PushWarning($"[{Name}] SpineController 未初始化，无法播放动画: {animName}");
+				return;
+			}
+
+			_currentAnimation = animName;
+			UpdateSpineBoneNodeVisibility(animName);
+
+			try
+			{
+				_spineController.Call("play_from", animName, startTime, loop, AnimationMixDuration, timeScale);
+
+				ResolveOutlineSpines();
+				foreach (Node outlineNode in _outlineSpineControllers)
+				{
+					if (IsInstanceValid(outlineNode) && outlineNode.HasMethod("play_from"))
+					{
+						outlineNode.Call("play_from", animName, startTime, loop, AnimationMixDuration, timeScale);
+					}
+				}
+			}
+			catch (Exception)
+			{
+			}
+		}
+
 		public Node? GetSpineControllerNode()
 		{
 			return _spineController;

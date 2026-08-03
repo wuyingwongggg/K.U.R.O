@@ -13,34 +13,38 @@
 script = ExtResource("1_3xlkm")
 AttributeId = "attack_power"
 
-[sub_resource type="Resource" id="Resource_happy"]
-script = ExtResource("2_6ffm0")
-Trigger = 4
-EffectScene = ExtResource("7_happy")
-RequiredFrameMin = 0
-RequiredFrameMax = 9
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
-
 [sub_resource type="Resource" id="Resource_neutral"]
 script = ExtResource("2_6ffm0")
 Trigger = 4
 EffectScene = ExtResource("8_neutral")
-RequiredFrameMin = 10
-RequiredFrameMax = 19
+RequiredFrameMin = 0
+RequiredFrameMax = 9
+Notes = "EmojiBoomNeutral"
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_scared"]
 script = ExtResource("2_6ffm0")
 Trigger = 4
 EffectScene = ExtResource("9_scared")
+RequiredFrameMin = 10
+RequiredFrameMax = 19
+Notes = "EmojiBoomScared"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_happy"]
+script = ExtResource("2_6ffm0")
+Trigger = 4
+EffectScene = ExtResource("7_happy")
 RequiredFrameMin = 20
 RequiredFrameMax = 29
+Notes = "EmojiBoomHappy"
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_6ffm0"]
 script = ExtResource("2_6ffm0")
 Trigger = 4
 EffectScene = ExtResource("4_3xlkm")
+Notes = "camera shake"
 PropertyOverrides = Dictionary[String, Variant]({
 "ShakeDelay": 1.2,
 "ShakeStrength": 24.0
@@ -55,10 +59,10 @@ Description = "安保类投掷武器：emoji炸弹"
 Icon = ExtResource("4_q0hkk")
 HoldScenePath = "uid://wjyrkwgsoe42"
 Category = "Weapon"
-Tags = Array[String](["tag_weapon", "build_guard", "tag_throw"])
+Tags = Array[String](["tag_weapon", "tag_throw"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_3xlkm")]([SubResource("Attribute_AttackPower")])
-EffectEntries = Array[ExtResource("2_6ffm0")]([SubResource("Resource_happy"), SubResource("Resource_neutral"), SubResource("Resource_scared"), SubResource("Resource_6ffm0")])
+EffectEntries = Array[ExtResource("2_6ffm0")]([SubResource("Resource_neutral"), SubResource("Resource_scared"), SubResource("Resource_happy"), SubResource("Resource_6ffm0")])
 IsThrowable = true
 IsThrowWeapon = true
 ThrowStartOffset = Vector2(0, -250)

@@ -1,0 +1,123 @@
+[gd_scene load_steps=29 format=3 uid="uid://d2k8mvhgfao4i"]
+
+[ext_resource type="Texture2D" uid="uid://cvo0s4q2b76x" path="res://assets/objects/briefcase/choose/时间轴 1_0000.png" id="1_nh1bj"]
+[ext_resource type="Texture2D" uid="uid://bqvp7vj7idub3" path="res://assets/objects/briefcase/choose/时间轴 1_0001.png" id="2_rlo7o"]
+[ext_resource type="Texture2D" uid="uid://pm7d1cq8f1f" path="res://assets/objects/briefcase/choose/时间轴 1_0002.png" id="3_53cv0"]
+[ext_resource type="Texture2D" uid="uid://cqdr1jlu7sovo" path="res://assets/objects/briefcase/choose/时间轴 1_0003.png" id="4_tl7io"]
+[ext_resource type="Texture2D" uid="uid://crqboc5vvkmof" path="res://assets/objects/briefcase/choose/时间轴 1_0004.png" id="5_wsdwo"]
+[ext_resource type="Texture2D" uid="uid://c85hn3gonh5rs" path="res://assets/objects/briefcase/choose/时间轴 1_0005.png" id="6_bcq0h"]
+[ext_resource type="Texture2D" uid="uid://5buk5npn55hu" path="res://assets/objects/briefcase/choose/时间轴 1_0006.png" id="7_vfp7p"]
+[ext_resource type="Texture2D" uid="uid://7umftp6f0hqy" path="res://assets/objects/briefcase/choose/时间轴 1_0007.png" id="8_a0g0g"]
+[ext_resource type="Texture2D" uid="uid://r1lvik8culnw" path="res://assets/objects/briefcase/choose/时间轴 1_0008.png" id="9_gl33f"]
+[ext_resource type="Texture2D" uid="uid://i41d7ylbp2jo" path="res://assets/objects/briefcase/choose/时间轴 1_0009.png" id="10_0327s"]
+[ext_resource type="Texture2D" uid="uid://bkoex1gdroabc" path="res://assets/objects/briefcase/choose/时间轴 1_0010.png" id="11_hmyd0"]
+[ext_resource type="Texture2D" uid="uid://bv4q6hmoofdxw" path="res://assets/objects/briefcase/choose/时间轴 1_0011.png" id="12_tvvt7"]
+[ext_resource type="Texture2D" uid="uid://b0cmhdefcxudh" path="res://assets/objects/briefcase/choose/时间轴 1_0012.png" id="13_72xeu"]
+[ext_resource type="Texture2D" uid="uid://bgp83fimxovur" path="res://assets/objects/briefcase/choose/时间轴 1_0013.png" id="14_25clx"]
+[ext_resource type="Texture2D" uid="uid://fhs2xsfkr3va" path="res://assets/objects/briefcase/choose/时间轴 1_0014.png" id="15_5qf0b"]
+[ext_resource type="Texture2D" uid="uid://be22y2ura24bl" path="res://assets/objects/briefcase/choose/时间轴 1_0015.png" id="16_3j4a4"]
+[ext_resource type="Texture2D" uid="uid://dekppxsyy2heb" path="res://assets/objects/briefcase/choose/时间轴 1_0016.png" id="17_usvn7"]
+[ext_resource type="Texture2D" uid="uid://c3so3kxlqrxxs" path="res://assets/objects/briefcase/choose/时间轴 1_0017.png" id="18_17pl6"]
+[ext_resource type="Texture2D" uid="uid://bw3nu83imt5e" path="res://assets/objects/briefcase/choose/时间轴 1_0018.png" id="19_eapis"]
+[ext_resource type="Texture2D" uid="uid://dl7n3mlf0q268" path="res://assets/objects/briefcase/choose/时间轴 1_0019.png" id="20_kjcpi"]
+[ext_resource type="Texture2D" uid="uid://6ux1gjcq25u1" path="res://assets/objects/briefcase/choose/时间轴 1_0020.png" id="21_rtlls"]
+[ext_resource type="Texture2D" uid="uid://dl1v6qisw2i5h" path="res://assets/objects/briefcase/choose/时间轴 1_0021.png" id="22_1rcfk"]
+[ext_resource type="Texture2D" uid="uid://bmf64u7b0mp54" path="res://assets/objects/briefcase/choose/时间轴 1_0022.png" id="23_736lc"]
+[ext_resource type="Texture2D" uid="uid://d3k2r8owmrcri" path="res://assets/objects/briefcase/choose/时间轴 1_0023.png" id="24_uecqn"]
+[ext_resource type="Texture2D" uid="uid://bjonebydg67f4" path="res://assets/objects/briefcase/choose/时间轴 1_0024.png" id="25_ssswg"]
+[ext_resource type="Texture2D" uid="uid://culdjjbceo148" path="res://assets/objects/briefcase/choose/时间轴 1_0025.png" id="26_dhtja"]
+[ext_resource type="Texture2D" uid="uid://cjrnoejraw48t" path="res://assets/objects/briefcase/choose/时间轴 1_0026.png" id="27_i1845"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_i7plp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_53cv0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_tl7io")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_wsdwo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_bcq0h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_vfp7p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_a0g0g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_gl33f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_0327s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_hmyd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_tvvt7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_72xeu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_25clx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_5qf0b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_3j4a4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_usvn7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_17pl6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_eapis")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_kjcpi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_rtlls")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_1rcfk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_736lc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_uecqn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_ssswg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_dhtja")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_i1845")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_nh1bj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_rlo7o")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="BriefcaseHoldingAnimation" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_i7plp")
+autoplay = "default"
+offset = Vector2(-35, 200)

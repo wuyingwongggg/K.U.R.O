@@ -58,6 +58,7 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+AttackDamage = 30.0
 MaxHealth = 200
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")

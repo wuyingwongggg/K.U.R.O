@@ -8,12 +8,12 @@
 [sub_resource type="Resource" id="SegmentA"]
 script = ExtResource("2_entry_script")
 Scene = ExtResource("3_a")
-Position = Vector2(127, -620)
+Position = Vector2(0, -440)
 
 [sub_resource type="Resource" id="SegmentB"]
 script = ExtResource("2_entry_script")
 Scene = ExtResource("4_b")
-Position = Vector2(124, 460)
+Position = Vector2(0, 640)
 
 [node name="FIreWall" type="Node2D"]
 z_as_relative = false

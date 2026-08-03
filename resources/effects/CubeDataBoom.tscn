@@ -13,6 +13,7 @@ SpawnDuration = 0.05
 MinSpeed = 300.0
 MaxSpeed = 300.0
 Damage = 0
+TargetableFactions = 0
 ScaleMin = 0.5
 ScaleMax = 1.0
 MinLifetime = 0.3

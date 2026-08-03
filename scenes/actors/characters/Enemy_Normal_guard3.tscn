@@ -172,6 +172,7 @@ scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 collision_mask = 4
 monitorable = false

@@ -1,0 +1,104 @@
+[gd_scene load_steps=22 format=3 uid="uid://bfy7edlq83jl6"]
+
+[ext_resource type="Script" uid="uid://dk8rm2u1hw8kf" path="res://scripts/effects/BriefcaseOpenEffect.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://b73y4fylkvq5o" path="res://resources/effects/CubeData.tscn" id="2_ipc2i"]
+[ext_resource type="Texture2D" uid="uid://d4gf51jsvksgd" path="res://assets/objects/briefcase/open/时间轴 1_0000.png" id="4_xtyp2"]
+[ext_resource type="Texture2D" uid="uid://btrrp5tjpbg01" path="res://assets/objects/briefcase/open/时间轴 1_0001.png" id="5_l6vw5"]
+[ext_resource type="Texture2D" uid="uid://bpp82on8q0x4r" path="res://assets/objects/briefcase/open/时间轴 1_0002.png" id="6_iw1w1"]
+[ext_resource type="Texture2D" uid="uid://dnn6m3gq8ke5w" path="res://assets/objects/briefcase/open/时间轴 1_0003.png" id="7_gi6bh"]
+[ext_resource type="Texture2D" uid="uid://cctad6n8571dv" path="res://assets/objects/briefcase/open/时间轴 1_0004.png" id="8_k5dck"]
+[ext_resource type="Texture2D" uid="uid://d27htaokhi5yu" path="res://assets/objects/briefcase/open/时间轴 1_0005.png" id="9_yyb2e"]
+[ext_resource type="Texture2D" uid="uid://dfby3oqpducqg" path="res://assets/objects/briefcase/open/时间轴 1_0006.png" id="10_qhpwx"]
+[ext_resource type="Texture2D" uid="uid://durvd0m8ddet1" path="res://assets/objects/briefcase/open/时间轴 1_0007.png" id="11_cecrc"]
+[ext_resource type="Texture2D" uid="uid://bcugp3wmre8g1" path="res://assets/objects/briefcase/open/时间轴 1_0008.png" id="12_l671f"]
+[ext_resource type="Texture2D" uid="uid://x88geektv80t" path="res://assets/objects/briefcase/open/时间轴 1_0009.png" id="13_b30i3"]
+[ext_resource type="Texture2D" uid="uid://dek41w6uym1ba" path="res://assets/objects/briefcase/open/时间轴 1_0010.png" id="14_i3buw"]
+[ext_resource type="Texture2D" uid="uid://b06v3dvxwkqm6" path="res://assets/objects/briefcase/open/时间轴 1_0011.png" id="15_sw54s"]
+[ext_resource type="Texture2D" uid="uid://b81hvvj7y0wiw" path="res://assets/objects/briefcase/open/时间轴 1_0012.png" id="16_ygctv"]
+[ext_resource type="Texture2D" uid="uid://ij1omtehjyyy" path="res://assets/objects/briefcase/open/时间轴 1_0013.png" id="17_oruo5"]
+[ext_resource type="Texture2D" uid="uid://dmoc4akqt6n" path="res://assets/objects/briefcase/open/时间轴 1_0014.png" id="18_83ngi"]
+[ext_resource type="Texture2D" uid="uid://3ffh1mw1hddm" path="res://assets/objects/briefcase/open/时间轴 1_0015.png" id="19_u5sl8"]
+[ext_resource type="Texture2D" uid="uid://coanvm1j2rwo8" path="res://assets/objects/briefcase/open/时间轴 1_0016.png" id="20_lyrr8"]
+[ext_resource type="Texture2D" uid="uid://26arr86mqbgj" path="res://assets/objects/briefcase/open/时间轴 1_0017.png" id="21_nl2nt"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3r03d"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_xtyp2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_l6vw5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_iw1w1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_gi6bh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_k5dck")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_yyb2e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_qhpwx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_cecrc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_l671f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_b30i3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_i3buw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_sw54s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_ygctv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_oruo5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_83ngi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_u5sl8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_lyrr8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_nl2nt")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="BriefcaseAttack" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+scale = Vector2(0.33, 0.33)
+script = ExtResource("1_script")
+EffectScene = ExtResource("2_ipc2i")
+EffectOverrides = Dictionary[String, Variant]({
+"FacingRight": true,
+"TargetableFactions": 2
+})
+SpawnInterval = 1.0
+EffectId = "aed1be5e-765f-4b58-876c-af0448300858"
+Duration = 10.0
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_3r03d")
+autoplay = "default"
+offset = Vector2(-220, -250)

@@ -52,7 +52,7 @@ namespace Kuros.Effects
 
         protected override void OnStackRefreshed()
         {
-            _tickAccum = 0f;
+            // 不重置 _tickAccum：连续攻击刷新时长时，tick 伤害仍按 TickInterval 触发
             ShowBurnVisual();
         }
 
