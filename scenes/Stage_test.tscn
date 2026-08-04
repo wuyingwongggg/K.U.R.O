@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=49 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -37,6 +37,8 @@
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
 [ext_resource type="PackedScene" uid="uid://dbp28lqhfd5dq" path="res://scenes/weapons/Weapon_Throw_boomerang.tscn" id="35_bnjvr"]
 [ext_resource type="PackedScene" uid="uid://dco3a60ge2arj" path="res://scenes/weapons/Weapon_Throw_briefcase.tscn" id="36_eh1sc"]
+[ext_resource type="PackedScene" uid="uid://elnc1v25l2w1" path="res://scenes/weapons/Weapon_Throw_eCore.tscn" id="36_kwrre"]
+[ext_resource type="PackedScene" uid="uid://dxjijjaojsunw" path="res://shaders/lightning_beam.tscn" id="38_e5fdm"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -234,17 +236,20 @@ position = Vector2(-69, -1512.9999)
 [node name="WeaponThrowMetalSpike" parent="World" instance=ExtResource("12_mkebo")]
 position = Vector2(-78, -1389)
 
-[node name="WeaponThrowSmokeGrenade" parent="World" instance=ExtResource("13_pxy7y")]
-position = Vector2(882, -1341)
-
 [node name="WeaponThrowSmokeGrenade2" parent="World" instance=ExtResource("13_pxy7y")]
-position = Vector2(1214, -1348)
+position = Vector2(546, -1348)
 
 [node name="WeaponThrowEmojiBomb" parent="World" instance=ExtResource("20_mkebo")]
 position = Vector2(267, -1360)
 
-[node name="WeaponThrowEmojiBomb2" parent="World" instance=ExtResource("20_mkebo")]
-position = Vector2(536, -1351)
+[node name="WeaponThrowBoomerang" parent="World" instance=ExtResource("35_bnjvr")]
+position = Vector2(958, -1386)
+
+[node name="WeaponThrowBriefcase" parent="World" instance=ExtResource("36_eh1sc")]
+position = Vector2(1402, -1334)
+
+[node name="WeaponThrowECore" parent="World" instance=ExtResource("36_kwrre")]
+position = Vector2(1738, -1353)
 
 [node name="LoadingElevator" type="Node2D" parent="World"]
 position = Vector2(4285, -336)
@@ -253,11 +258,8 @@ ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
 
-[node name="WeaponThrowBoomerang" parent="World" instance=ExtResource("35_bnjvr")]
-position = Vector2(1556, -1340)
-
-[node name="WeaponThrowBriefcase" parent="World" instance=ExtResource("36_eh1sc")]
-position = Vector2(2007, -1325)
+[node name="LightningBeam" parent="World" instance=ExtResource("38_e5fdm")]
+position = Vector2(310, -804)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

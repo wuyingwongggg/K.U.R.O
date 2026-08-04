@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
@@ -98,6 +99,11 @@ namespace Kuros.Builds.BuildCore
             }
 
             SetStatValue(stat, baseVal * (1f + sum / 100f));
+
+            // 容量缩小（减容效果）后热量回落：非超频时不允许 Heat 超过新上限，
+            // 避免 HUD 将"容量变化"误判为爆表
+            if (stat == HeatStat.MaxHeat && !AllowHeatOverflow && Heat > MaxHeat)
+                Heat = MaxHeat;
         }
 
         private float GetStatValue(HeatStat stat) => stat switch

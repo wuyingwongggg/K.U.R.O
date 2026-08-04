@@ -48,5 +48,5 @@ ThrowParabolicDuration = 0.3
 ThrowParabolicPeakHeight = 100.0
 ThrowHorizontalDistance = 300.0
 ThrowParabolicLandingYOffset = 250.0
-ThrowWeaponCooldown = 5.0
+ThrowWeaponCooldown = 10.0
 WorldScenePath = "uid://dco3a60ge2arj"

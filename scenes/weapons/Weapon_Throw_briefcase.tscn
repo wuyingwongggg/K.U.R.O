@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bqvp7vj7idub3" path="res://assets/objects/briefcase/choose/时间轴 1_0001.png" id="6_1f376"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_stfcd"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_nkmmx"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_df6x7"]
 shader = ExtResource("3_x26gv")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
@@ -35,6 +35,7 @@ size = Vector2(400, 250)
 size = Vector2(300, 250)
 
 [node name="WeaponThrowBriefcase" type="Node2D"]
+z_index = 1
 script = ExtResource("1_df6x7")
 ItemDefinition = ExtResource("2_df6x7")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
@@ -47,7 +48,7 @@ DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
-ShadowPath = NodePath("RigidBody2D/Shadow")
+ShadowPath = NodePath("")
 
 [node name="RigidBody2D" type="RigidBody2D" parent="."]
 gravity_scale = 0.0
@@ -56,9 +57,9 @@ freeze = true
 freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
-material = SubResource("ShaderMaterial_nkmmx")
-position = Vector2(0, 152)
-scale = Vector2(6, 0.067)
+material = SubResource("ShaderMaterial_df6x7")
+position = Vector2(0, 66)
+scale = Vector2(4, 0.3)
 texture = ExtResource("4_mie5h")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]

@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://u42x4nuqgi3b"]
+
+[ext_resource type="Script" uid="uid://8vnf13a4rcon" path="res://scripts/effects/ECoreAttackEffect.cs" id="1_xleon"]
+[ext_resource type="PackedScene" uid="uid://dxjijjaojsunw" path="res://shaders/lightning_beam.tscn" id="2_4m7pg"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="2_jyt8n"]
+[ext_resource type="Texture2D" uid="uid://cjdlmm44l3ndf" path="res://assets/weapons/滚雷.png" id="3_xleon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yeyl0"]
+size = Vector2(150, 150)
+
+[node name="ECoreAttackEffect" type="Node2D" node_paths=PackedStringArray("RotateNode")]
+script = ExtResource("1_xleon")
+Speed = 2400.0
+BounceHeight = 300.0
+BounceLength = 800.0
+BounceCooldown = 0.05
+RotateNode = NodePath("Sprite2D")
+Duration = 10.0
+PeriodicSpawnScene = ExtResource("2_4m7pg")
+SpawnInterval = 0.5
+
+[node name="AfterimageController" type="Node" parent="."]
+script = ExtResource("2_jyt8n")
+sprite_path = NodePath("../Sprite2D")
+is_spine = false
+interval = 0.01
+lifetime = 0.1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 2
+scale = Vector2(0.33, 0.33)
+texture = ExtResource("3_xleon")
+offset = Vector2(0, -30)
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="AttackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("RectangleShape2D_yeyl0")

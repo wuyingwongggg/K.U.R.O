@@ -186,6 +186,7 @@ namespace Kuros.Fx
 
                 // 按 TargetableFactions 选择瞄准目标（玩家/最近敌人/最近者），无目标则纯水平飞行
                 var target = ResolveAimTarget();
+                GD.Print($"[Cube Debug] AimTarget: {target?.Name ?? "null"} at {target?.GlobalPosition ?? Vector2.Zero}, self at {GlobalPosition}, flags={(int)TargetableFactions}");
                 if (target != null)
                 {
                     Vector2 toTarget = GetAimCenter(target) - GlobalPosition;
@@ -318,11 +319,14 @@ namespace Kuros.Fx
             // 高速飞行时二次查询可能与物理状态错开导致漏伤害
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+            GD.Print($"[Cube Debug] BodyEntered: {body.Name} spawning={_spawning} dealt={dealt} " +
+                     $"faction={DamageDispatcher.ResolveDamageReceiver(body, TargetableFactions)?.Name}");
             if (!dealt)
             {
-                // 撞到不可伤害的物理体（AirWall 等障碍）：弹幕应销毁而非穿过继续飞，
-                // 否则被墙隔开的目标永远无法被攻击到
-                if (body is not GameActor)
+                // 仅 AirWall（空气墙）拦截销毁，其他物理体（地面/障碍/投掷物）不拦截
+                if (body is not GameActor
+                    && body is Node node
+                    && string.Equals((string)node.Name, "AirWall", System.StringComparison.OrdinalIgnoreCase))
                 {
                     SpawnDestroyEffect();
                     QueueFree();
@@ -353,6 +357,17 @@ namespace Kuros.Fx
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+            if (!dealt && area.Owner is GameActor ga)
+            {
+                GD.Print($"[Cube Debug] AreaEntered REJECTED: owner={ga.Name} attacker={_attacker?.Name} " +
+                         $"dead={ga.IsDead} dying={ga.IsDeathSequenceActive} " +
+                         $"canBeAffected={ga.CanBeAffected(null)} immunities={(int)ga.ActiveImmunities} " +
+                         $"receiver={DamageDispatcher.ResolveDamageReceiver(target, TargetableFactions)?.Name}");
+            }
+            else if (!dealt)
+            {
+                GD.Print($"[Cube Debug] AreaEntered REJECTED: owner={area.Owner?.Name} nonActor");
+            }
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)
@@ -373,10 +388,23 @@ namespace Kuros.Fx
         }
 
         /// <summary>
-        /// 在父节点的子节点中查找第一个 "enemies" 组 GameActor 作为攻击来源。
+        /// 显式设置的攻击来源（由生成方传入，如玩家投掷的弹幕 → 玩家）。
+        /// 直接映射 _attacker：生成方在 AddChild 之后赋值也能立即生效（_Ready 已解析过）。
+        /// </summary>
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
+
+        /// <summary>
+        /// 在父节点的子节点中查找第一个 "enemies" 组 GameActor 作为攻击来源（无显式设置时）。
         /// </summary>
         private void ResolveAttacker()
         {
+            if (_attacker != null && GodotObject.IsInstanceValid(_attacker))
+                return;
+
             var parent = GetParent();
             if (parent == null) return;
             foreach (var child in parent.GetChildren())

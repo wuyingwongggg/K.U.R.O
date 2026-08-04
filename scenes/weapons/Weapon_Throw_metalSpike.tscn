@@ -35,6 +35,7 @@ size = Vector2(400, 250)
 size = Vector2(300, 250)
 
 [node name="WeaponThrowMetalSpike" type="Node2D"]
+z_index = 1
 script = ExtResource("1_owowg")
 ItemDefinition = ExtResource("2_ussve")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")

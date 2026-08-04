@@ -18,13 +18,19 @@ namespace Kuros.Effects
         [Export] public PackedScene? EffectScene { get; set; }
         [Export] public Godot.Collections.Dictionary<string, Variant> EffectOverrides { get; set; } = new();
         [Export(PropertyHint.Range, "0,10,0.1")] public float DelaySeconds = 1.0f;
-        [Export(PropertyHint.Range, "0,10,0.1")] public float SpawnInterval = 0f;
+        [Export(PropertyHint.Range, "0,10,0.01")] public float SpawnInterval = 0f;
+        /// <summary>
+        /// 特效生成锚点（Marker2D 放在本场景节点下）。不为空时按数组顺序依次轮换使用
+        /// Marker2D.GlobalPosition 作为生成位置，否则用当前 global_position（投掷落点）。
+        /// </summary>
+        [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
 
         public Vector2? WorldSpawnPosition { get; set; }
 
         private float _delayElapsed;
         private float _intervalElapsed;
         private int _spawnCount;
+        private int _spawnMarkerIndex;
 
         protected override void OnApply()
         {
@@ -88,6 +94,16 @@ namespace Kuros.Effects
             if (world == null || EffectScene == null) return;
 
             var pos = Get("global_position").AsVector2();
+
+            // 指定 SpawnMarkers 时按数组顺序轮换取 Marker2D.GlobalPosition 作为生成位置
+            if (SpawnMarkers.Length > 0)
+            {
+                var marker = SpawnMarkers[_spawnMarkerIndex % SpawnMarkers.Length];
+                _spawnMarkerIndex++;
+                if (marker != null && GodotObject.IsInstanceValid(marker))
+                    pos = marker.GlobalPosition;
+            }
+
             var node = EffectScene.Instantiate();
 
             if (node is Node2D node2D)
@@ -98,6 +114,8 @@ namespace Kuros.Effects
 
                 if (node2D is BoomDmgEffect boom)
                     boom.Attacker = Actor;
+                if (node2D is RotatingCube cube)
+                    cube.Attacker = Actor;
 
                 foreach (var pair in EffectOverrides)
                 {

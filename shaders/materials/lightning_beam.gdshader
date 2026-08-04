@@ -15,6 +15,7 @@ uniform float intensive : hint_range(.0, 5.0, 0.05) = 0.8; // How much the light
 uniform float lightning_thin = 2.; // How thin the lightning i
 uniform int number_lightning = 8;
 uniform float speed = 1.;
+uniform float seed = 0.0;
 uniform float position : hint_range(0.0, 1.0, 0.05) = 0.5;
 uniform bool horizontal = false;
 uniform float edge_dispersion : hint_range(0.0, 5.0, 0.05) = 1.0;
@@ -32,7 +33,7 @@ void fragment() {
 		old_color = texture(color_gradient, vec2(uv.y, uv.x));
 	}
 	COLOR = vec4(0.);
-	float time = TIME * speed;
+	float time = TIME * speed + seed;
 
 
 	for (int i = 0; i < number_lightning; i++){

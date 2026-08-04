@@ -168,6 +168,7 @@ bone_name = "Upper Body"
 shape = SubResource("CircleShape2D_vj0fg")
 
 [node name="HitArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
 position = Vector2(0, -500)
