@@ -68,6 +68,9 @@ namespace Kuros.Builds.Machine
             if (source != DamageSource.DirectAttack) return;
             if (!_armed || _core == null || !_core.IsBuffActive) return;
             if (Actor == null || attacker != Actor) return;
+            // 防御：当前事件流不会传出 null target，但保留判空避免未来路径变更时
+            // 崩溃或"首次攻击"名额被无效目标消耗
+            if (target == null) return;
 
             _armed = false; // 每 buff 周期只触发一次
 

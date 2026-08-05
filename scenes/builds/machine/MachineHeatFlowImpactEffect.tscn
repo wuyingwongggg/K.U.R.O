@@ -1,12 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://d00kleabdu4b3"]
+[gd_scene load_steps=3 format=3 uid="uid://d00kleabdu4b3"]
 
 [ext_resource type="Script" uid="uid://bx6htj2vyg5i4" path="res://scripts/builds/machine/MachineHeatFlowImpactEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://bnutlxs5tb1oq" path="res://scenes/builds/machine/MachineHeatFlowVisual.tscn" id="2_visual"]
 
 [node name="MachineHeatFlowImpactEffect" type="Node"]
 script = ExtResource("1")
 Damage = 20.0
-TargetCollisionMask = 3
+TargetCollisionMask = 11
 TargetableFactions = 6
-ShowDebugRadius = true
+VisualEffectScene = ExtResource("2_visual")
+VisualExitDelay = 0.5
 EffectId = "a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
 Description = "热量释放强化：buff 期间奔跑/闪避每秒对接触目标造成伤害 "

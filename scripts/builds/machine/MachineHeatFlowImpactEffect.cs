@@ -24,6 +24,14 @@ namespace Kuros.Builds.Machine
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 
+        /// <summary>玩家身上的特效场景（如火焰 Sprite2D），实例化后直接挂到玩家身上跟随移动。</summary>
+        [Export] public PackedScene? VisualEffectScene = null;
+        /// <summary>退出奔跑/闪避（或 buff 结束）后，特效延迟 N 秒才消失。</summary>
+        [Export(PropertyHint.Range, "0,5,0.1")] public float VisualExitDelay = 1f;
+        /// <summary>视觉尺寸随接触范围线性变化：最小层范围对应 VisualScaleMin，最大层范围对应 VisualScaleMax。</summary>
+        [Export(PropertyHint.Range, "0.1,20,0.1")] public float VisualScaleMin = 3f;
+        [Export(PropertyHint.Range, "0.1,20,0.1")] public float VisualScaleMax = 6f;
+
         [ExportCategory("Debug")]
         [Export] public bool ShowDebugRadius { get; set; } = false;
         [Export] public Color DebugRadiusColor { get; set; } = new(1f, 0.2f, 0.2f, 0.35f);
@@ -33,6 +41,8 @@ namespace Kuros.Builds.Machine
         private Area2D? _contactArea;
         private CollisionShape2D? _contactShape;
         private ContactRadiusDrawer? _radiusDrawer;
+        private Node2D? _visualInstance;
+        private float _exitDelayRemaining;
         private readonly Dictionary<GameActor, float> _actorTimers = new();
         private readonly Dictionary<GameActor, int> _actorRefs = new();
 
@@ -43,7 +53,35 @@ namespace Kuros.Builds.Machine
             _tier = 0;
             _core = Actor?.EffectController?.GetEffect<MachineCoreEffect>();
             if (Actor == null) return;
+
             CreateContactArea();
+
+            // 特效场景实例化后直接挂到玩家身上（必定跟随玩家移动），初始隐藏
+            if (VisualEffectScene != null)
+            {
+                var node = VisualEffectScene.Instantiate();
+                if (node is Node2D node2d)
+                {
+                    Actor.AddChild(node2d);
+                    node2d.Visible = false;
+                    _visualInstance = node2d;
+                    UpdateVisualScale();
+                }
+                else
+                {
+                    node?.QueueFree();
+                }
+            }
+        }
+
+        /// <summary>视觉缩放随当前层接触范围线性插值：最小范围→VisualScaleMin，最大范围→VisualScaleMax。</summary>
+        private void UpdateVisualScale()
+        {
+            if (_visualInstance == null) return;
+            float minR = RangeValues.Length > 0 ? RangeValues[0] : 0f;
+            float maxR = RangeValues.Length > 1 ? RangeValues[^1] : minR;
+            float t = maxR > minR ? Mathf.Clamp((CurrentRadius - minR) / (maxR - minR), 0f, 1f) : 0f;
+            _visualInstance.Scale = Vector2.One * Mathf.Lerp(VisualScaleMin, VisualScaleMax, t);
         }
 
         protected override void OnStackRefreshed()
@@ -57,6 +95,7 @@ namespace Kuros.Builds.Machine
                 _radiusDrawer.Radius = CurrentRadius;
                 _radiusDrawer.QueueRedraw();
             }
+            UpdateVisualScale();
         }
 
         public override void OnRemoved()
@@ -69,6 +108,9 @@ namespace Kuros.Builds.Machine
                 _contactArea.AreaExited -= OnAreaExited;
                 _contactArea.QueueFree();
             }
+            // 特效实例挂在玩家身上，效果移除时一并销毁
+            if (_visualInstance != null && GodotObject.IsInstanceValid(_visualInstance))
+                _visualInstance.QueueFree();
             _actorTimers.Clear();
             _actorRefs.Clear();
             base.OnRemoved();
@@ -108,9 +150,31 @@ namespace Kuros.Builds.Machine
 
         protected override void OnTick(double delta)
         {
-            if (_core == null || Actor == null) return;
+            if (Actor == null) return;
+
+            // 效果生效（buff + 奔跑/闪避）时显示特效；退出后延迟 VisualExitDelay 秒再隐藏
+            // （放在 _core 判空之前，避免核心缺失时特效永不可见）
+            bool active = _core != null && _core.IsBuffActive && IsInRunOrDashState();
+            if (_visualInstance != null)
+            {
+                if (active)
+                {
+                    _exitDelayRemaining = VisualExitDelay; // 生效期间持续武装延迟
+                    if (!_visualInstance.Visible)
+                        _visualInstance.Visible = true;
+                }
+                else if (_exitDelayRemaining > 0f)
+                {
+                    _exitDelayRemaining -= (float)delta; // 退出后延迟倒计时，期间保持显示
+                }
+                else if (_visualInstance.Visible)
+                {
+                    _visualInstance.Visible = false; // 延迟结束才隐藏
+                }
+            }
+
             // 条件不满足时暂停计时（已进入的目标保留记录，条件恢复后继续结算）
-            if (!_core.IsBuffActive || !IsInRunOrDashState()) return;
+            if (!active) return;
 
             TickDamage((float)delta);
         }

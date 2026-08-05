@@ -58,8 +58,11 @@ namespace Kuros.Effects
 
         protected override void OnTick(double delta)
         {
+            // 统一判空：Actor 由 Initialize 赋值，防御未来应用路径变更
+            if (Actor == null) return;
+
             // 火焰特效跟随目标 HitArea 中心
-            if (_burnVisual != null && Actor != null)
+            if (_burnVisual != null)
             {
                 _burnVisual.Visible = true;
                 _burnVisual.GlobalPosition = GetHitCenterWorld(Actor);

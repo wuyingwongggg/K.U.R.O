@@ -63,6 +63,9 @@ namespace Kuros.Builds.BuildCore
         private readonly Dictionary<HeatStat, Dictionary<string, float>> _modifiers = new();
 
         private float _baseSpeed;
+        private float _baseAttackSpeed = 1f;
+        private float _baseIncomingDamage = 1f;
+        private bool _overflowApplied;
 
         /// <summary>获取某属性的基础值（场景导出值，运行时不修改）。</summary>
         public float GetBaseValue(HeatStat stat)
@@ -146,10 +149,8 @@ namespace Kuros.Builds.BuildCore
             foreach (HeatStat stat in System.Enum.GetValues<HeatStat>())
                 _baseValues[stat] = GetStatValue(stat);
 
-            if (Actor != null)
-            {
-                _baseSpeed = Actor.Speed;
-            }
+            // 注意：Speed/攻速/易伤的基础值不在此处采样，
+            // 而是在首次进入超频时采样（此时可能已被其他效果合法修改）
 
             DamageEventBus.Subscribe(OnDamageDealt);
         }
@@ -179,6 +180,9 @@ namespace Kuros.Builds.BuildCore
                 }
             }
 
+            // 超频加成每帧更新（放在 buff 早退之前，避免 buff 期间倍率冻结在旧值）
+            ApplyOverflowBuff();
+
             // 热量累积：移动，速度越快积攒越快
             // Buff 期间是否禁用热量获取
             if (DisableHeatGainDuringBuff && _buffActive)
@@ -203,8 +207,6 @@ namespace Kuros.Builds.BuildCore
                     Heat = Mathf.Max(Heat - DecayRate * dt, MinHeat);
             }
             _wasMovingLastFrame = moving;
-
-            ApplyOverflowBuff();
         }
 
         private float GetHeatCap()
@@ -212,7 +214,11 @@ namespace Kuros.Builds.BuildCore
             return AllowHeatOverflow ? MaxHeat + MaxOverflowHeat : MaxHeat;
         }
 
-        /// <summary>每溢出 1 点热量：移动速度、攻击速度、受到的伤害 +OverflowBuffPercentPerHeat%。</summary>
+        /// <summary>
+        /// 每溢出 1 点热量：移动速度、攻击速度、受到的伤害 +OverflowBuffPercentPerHeat%。
+        /// 只在超频期间接管这三个属性：进入时采样当前基础值（可能已被其他效果合法修改），
+        /// 退出超频的那一帧还原一次，避免每帧覆盖其他效果。
+        /// </summary>
         private void ApplyOverflowBuff()
         {
             if (Actor == null) return;
@@ -220,18 +226,31 @@ namespace Kuros.Builds.BuildCore
 
             if (!AllowHeatOverflow || overflow <= 0f)
             {
-                Actor.Speed = _baseSpeed;
-                Actor.AttackSpeedMultiplier = 1f;
-                Actor.IncomingDamageMultiplier = 1f;
+                // 只在"刚退出超频"的那一帧还原一次，其余帧不再写这三个属性
+                if (_overflowApplied)
+                {
+                    Actor.Speed = _baseSpeed;
+                    Actor.AttackSpeedMultiplier = _baseAttackSpeed;
+                    Actor.IncomingDamageMultiplier = _baseIncomingDamage;
+                    _overflowApplied = false;
+                }
                 return;
             }
 
             float speedMult = 1f + overflow * OverflowSpeedPercentPerHeat / 100f;
             float attackSpeedMult = 1f + overflow * OverflowAttackSpeedPercentPerHeat / 100f;
             float damageTakenMult = 1f + overflow * OverflowDamageTakenPercentPerHeat / 100f;
+            if (!_overflowApplied)
+            {
+                // 进入超频时重新采样当前基础值（含其他效果的合法修改）
+                _baseSpeed = Actor.Speed;
+                _baseAttackSpeed = Actor.AttackSpeedMultiplier;
+                _baseIncomingDamage = Actor.IncomingDamageMultiplier;
+                _overflowApplied = true;
+            }
             Actor.Speed = _baseSpeed * speedMult;
-            Actor.AttackSpeedMultiplier = attackSpeedMult;
-            Actor.IncomingDamageMultiplier = damageTakenMult;
+            Actor.AttackSpeedMultiplier = _baseAttackSpeed * attackSpeedMult;
+            Actor.IncomingDamageMultiplier = _baseIncomingDamage * damageTakenMult;
         }
 
         public override void _UnhandledInput(InputEvent @event)
@@ -282,11 +301,12 @@ namespace Kuros.Builds.BuildCore
             DamageEventBus.Unsubscribe(OnDamageDealt);
             if (_buffActive && Actor != null)
                 Actor.AttackDamage = _originalAttackDamage;
-            if (Actor != null)
+            if (Actor != null && _overflowApplied)
             {
+                // 仅在超频接管期间被移除时还原，非超频状态不碰这三个属性
                 Actor.Speed = _baseSpeed;
-                Actor.AttackSpeedMultiplier = 1f;
-                Actor.IncomingDamageMultiplier = 1f;
+                Actor.AttackSpeedMultiplier = _baseAttackSpeed;
+                Actor.IncomingDamageMultiplier = _baseIncomingDamage;
             }
             base.OnRemoved();
         }

@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://bnutlxs5tb1oq"]
+
+[ext_resource type="Shader" uid="uid://bsmnysawmtvv8" path="res://shaders/materials/fire_effect.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="2_tex"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fire"]
+shader = ExtResource("1_shader")
+shader_parameter/time = 0.0
+shader_parameter/frame_scope = 3.0
+shader_parameter/use_system_time = true
+shader_parameter/time_accel = 5.0
+shader_parameter/cull_backface = true
+shader_parameter/fov = 60.0
+shader_parameter/rot_x_deg = 60.0
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/inset = 0.0
+
+[node name="MachineHeatFlowVisual" type="Sprite2D"]
+z_index = 1
+z_as_relative = false
+material = SubResource("ShaderMaterial_fire")
+texture = ExtResource("2_tex")
