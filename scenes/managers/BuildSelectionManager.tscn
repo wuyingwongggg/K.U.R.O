@@ -7,9 +7,9 @@
 [ext_resource type="Resource" uid="uid://bh73r5tnpb3qh" path="res://resources/builds/BuildMachine_A_001.tres" id="4"]
 [ext_resource type="Resource" uid="uid://cmuj2nvt6bdcc" path="res://resources/builds/BuildMachine_A_002.tres" id="5"]
 [ext_resource type="Resource" uid="uid://c3nfme2whksfc" path="res://resources/builds/BuildMachine_A_003.tres" id="6"]
-[ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_001.tres" id="7"]
-[ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_002.tres" id="8"]
-[ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_003.tres" id="9"]
+[ext_resource type="Resource" uid="uid://bv677i4gn6b53" path="res://resources/builds/BuildMachine_B_001.tres" id="7"]
+[ext_resource type="Resource" uid="uid://cctrh16s2mfkd" path="res://resources/builds/BuildMachine_B_002.tres" id="8"]
+[ext_resource type="Resource" uid="uid://b2makbbyiwpt0" path="res://resources/builds/BuildMachine_B_003.tres" id="9"]
 [ext_resource type="Resource" uid="uid://dnwfnysjfd7r5" path="res://resources/builds/BuildMachine_A_004.tres" id="11_51j2i"]
 [ext_resource type="Resource" uid="uid://b54fcdj2q1lnc" path="res://resources/builds/BuildMachine_A_005.tres" id="12_hmd15"]
 [ext_resource type="Resource" uid="uid://dpspa5pca6by8" path="res://resources/builds/BuildMachine_A_006.tres" id="13_f1ni1"]
@@ -45,4 +45,5 @@ RarityMultiplier = Dictionary[String, float]({
 "Epic": 3.0,
 "Rare": 3.0
 })
+CardsPerSelection = 10
 DebugTrigger = true

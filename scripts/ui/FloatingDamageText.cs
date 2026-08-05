@@ -8,6 +8,16 @@ namespace Kuros.UI
 	/// </summary>
 	public partial class FloatingDamageText : Control
 	{
+		/// <summary>伤害飘字合并模式（玩家设置钩子，暂未接 UI，可由代码/设置系统切换）。</summary>
+		public enum DamageTextMergeMode
+		{
+			MergeWithinWindow, // 窗口内合并（默认，现有行为）
+			AlwaysSeparate,    // 每次伤害单独飘字
+		}
+
+		/// <summary>当前全局合并模式。切到 AlwaysSeparate 后每次伤害独立飘字，不再合并显示。</summary>
+		public static DamageTextMergeMode MergeMode { get; set; } = DamageTextMergeMode.MergeWithinWindow;
+
 		[Export] public float DurationSeconds = 1.5f;
 		[Export] public float FloatHeight = 80f;
 		[Export] public float HorizontalDrift = 40f; // 水平漂移距离
@@ -139,10 +149,11 @@ namespace Kuros.UI
 		}
 
 		/// <summary>
-		/// 检查伤害是否仍在合并时间窗口内
+		/// 检查伤害是否仍在合并时间窗口内（AlwaysSeparate 模式下始终返回 false，每次伤害单独飘字）
 		/// </summary>
 		public bool CanMergeDamage()
 		{
+			if (MergeMode == DamageTextMergeMode.AlwaysSeparate) return false;
 			return _lastDamageTime < DamageMergeWindowSeconds;
 		}
 

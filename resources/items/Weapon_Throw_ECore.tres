@@ -37,5 +37,5 @@ ThrowParabolicDuration = 0.01
 ThrowParabolicPeakHeight = 0.0
 ThrowHorizontalDistance = 1.0
 ThrowParabolicLandingYOffset = -150.0
-ThrowWeaponCooldown = 1.0
+ThrowWeaponCooldown = 10.0
 WorldScenePath = "uid://elnc1v25l2w1"

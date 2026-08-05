@@ -16,9 +16,19 @@ namespace Kuros.Fx
 		[Export] public bool RandomArcMode = false;
 		[Export(PropertyHint.Range, "1,64,1")] public int ArcCount = 1;
 
+		[ExportCategory("Spin")]
+		/// <summary>每脉冲以生成原点为中心旋转（时钟指针式）。角速度范围（度/秒，可负值反向），均为 0 = 不旋转。</summary>
+		[Export(PropertyHint.Range, "-1080,1080,10")] public float MinAngularVelocity = 0f;
+		[Export(PropertyHint.Range, "-1080,1080,10")] public float MaxAngularVelocity = 0f;
+
 		[ExportCategory("Timing")]
-		[Export] public float Lifetime = 0.45f;
+		/// <summary>单条闪电实际展示时长范围：完整生命周期 = GrowDuration + lifetime + FadeDuration（Min == Max 时固定）。</summary>
+		[Export(PropertyHint.Range, "0.05,10,0.05")] public float MinLifetime = 0.45f;
+		[Export(PropertyHint.Range, "0.05,10,0.05")] public float MaxLifetime = 0.45f;
+		/// <summary>脉冲末尾缩回时长：最后 FadeDuration 秒内射线缩回原点（替代淡出）。</summary>
 		[Export] public float FadeDuration = 0.15f;
+		/// <summary>总存在时间：0 = 永久存在（脉冲不断），> 0 = 持续 N 秒后销毁自身。</summary>
+		[Export(PropertyHint.Range, "0,60,0.5")] public float Duration = 0f;
 
 		[ExportCategory("Damage")]
 		[Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -39,7 +49,11 @@ namespace Kuros.Fx
 		private RayCast2D? _ray;
 		private Sprite2D? _lightningSprite;
 		private float _timer;
+		private float _elapsed;
 		private float _currentLength;
+		private float _angularVelocity;
+		private float _pulseLifetime;
+		private float _pulseTotal;
 		private float _texWidth;
 		private float _texHeight;
 		private bool _pendingAutoAim;
@@ -97,7 +111,10 @@ namespace Kuros.Fx
 			}
 
 			ResolveAttacker();
-			_timer = Lifetime;
+			_pulseLifetime = RollPulseLifetime();
+			_pulseTotal = GrowDuration + _pulseLifetime + FadeDuration;
+			_timer = _pulseTotal;
+			_angularVelocity = RollAngularVelocity();
 			_pendingAutoAim = AutoAimAtPlayer;
 			_cachedPlayer ??= GetTree().GetFirstNodeInGroup("player") as Node2D;
 		}
@@ -159,27 +176,65 @@ namespace Kuros.Fx
 				UpdateBeam();
 			}
 
-			_timer -= (float)delta;
-			if (_timer <= 0f) { QueueFree(); return; }
+			_elapsed += (float)delta;
+			// Duration = 0 为永久存在；> 0 时总时长结束销毁自身
+			if (Duration > 0f && _elapsed >= Duration) { QueueFree(); return; }
 
-			if (_timer < FadeDuration && FadeDuration > 0f)
+			_timer -= (float)delta;
+
+			// 当前脉冲结束（缩回完成）→ 立即开始下一脉冲：重新生成 → 生长 → 缩回
+			if (_timer <= 0f)
 			{
-				float t = _timer / FadeDuration;
-				ApplyAlpha(t);
+				StartPulse();
+				_timer = Mathf.Max(_pulseTotal, 0.05f);
 			}
+
+			// 每脉冲以生成原点为中心旋转（时钟指针式）
+			if (_angularVelocity != 0f)
+				Rotation += Mathf.DegToRad(_angularVelocity) * (float)delta;
 
 			if (_arcs.Count > 0)
 			{
 				UpdateArcs();
-				if (!_hasDamaged && Lifetime - _timer >= GrowDuration)
+				if (!_hasDamaged && _pulseTotal - _timer >= GrowDuration)
 					TryDamageArcs();
 			}
 			else
 			{
 				UpdateBeam();
-				if (!_hasDamaged && Lifetime - _timer >= GrowDuration)
+				if (!_hasDamaged && _pulseTotal - _timer >= GrowDuration)
 					TryDamagePlayer();
 			}
+		}
+
+		/// <summary>
+		/// 开始下一脉冲：电弧模式销毁旧电弧并重新随机生成；
+		/// 光束模式重新生长。伤害结算、角速度与脉冲时长也随脉冲重置。
+		/// </summary>
+		private void StartPulse()
+		{
+			_hasDamaged = false;
+			_angularVelocity = RollAngularVelocity();
+			_pulseLifetime = RollPulseLifetime();
+			_pulseTotal = GrowDuration + _pulseLifetime + FadeDuration;
+			if (_arcs.Count > 0)
+			{
+				foreach (var arc in _arcs) arc.Sprite.QueueFree();
+				_arcs.Clear();
+				SpawnRandomArcs();
+			}
+		}
+
+		/// <summary>在 [MinAngularVelocity, MaxAngularVelocity] 间随机本脉冲角速度（度/秒，可负值反向）。</summary>
+		private float RollAngularVelocity()
+		{
+			return MinAngularVelocity + GD.Randf() * (MaxAngularVelocity - MinAngularVelocity);
+		}
+
+		/// <summary>在 [MinLifetime, MaxLifetime] 间随机单条闪电的实际展示时长（秒，不含生长/淡出）。</summary>
+		private float RollPulseLifetime()
+		{
+			return MinLifetime + GD.Randf() * (MaxLifetime - MinLifetime);
 		}
 
 		/// <summary>
@@ -189,10 +244,11 @@ namespace Kuros.Fx
 		private float ProbeWallDistance(float dir, float maxLen)
 		{
 			var space = GetWorld2D().DirectSpaceState;
+			float worldAngle = Rotation + dir;
 			var query = new PhysicsRayQueryParameters2D
 			{
 				From = GlobalPosition,
-				To = GlobalPosition + new Vector2(Mathf.Cos(dir), Mathf.Sin(dir)) * maxLen,
+				To = GlobalPosition + new Vector2(Mathf.Cos(worldAngle), Mathf.Sin(worldAngle)) * maxLen,
 				CollideWithBodies = true,
 				CollideWithAreas = false,
 				CollisionMask = _ray?.CollisionMask ?? 4,
@@ -207,32 +263,28 @@ namespace Kuros.Fx
 				: maxLen;
 		}
 
-		private void ApplyAlpha(float alpha)
+		/// <summary>
+		/// 本脉冲长度缩放系数：前 GrowDuration 秒从 0 生长到 1，
+		/// 末尾 FadeDuration 秒从 1 缩回 0（射线缩回原点）。
+		/// </summary>
+		private float PulseLengthFactor()
 		{
-			if (_lightningSprite != null)
-			{
-				var c = _lightningSprite.Modulate;
-				_lightningSprite.Modulate = new Color(c.R, c.G, c.B, alpha);
-			}
-			foreach (var arc in _arcs)
-			{
-				var c = arc.Sprite.Modulate;
-				arc.Sprite.Modulate = new Color(c.R, c.G, c.B, alpha);
-			}
+			float elapsed = _pulseTotal - _timer;
+			float growT = GrowDuration > 0f ? Mathf.Clamp(elapsed / GrowDuration, 0f, 1f) : 1f;
+			float retractT = FadeDuration > 0f ? Mathf.Clamp((_pulseTotal - elapsed) / FadeDuration, 0f, 1f) : 1f;
+			return Mathf.Min(growT, retractT);
 		}
 
 		/// <summary>
-		/// 随机电弧从 0 生长到各自的目标长度，位置随长度实时前移，
-		/// 保证电弧一端始终固定在原点（从原点朝外伸出）。
+		/// 随机电弧长度随时间变化：生长到目标长度，末尾缩回原点。
 		/// </summary>
 		private void UpdateArcs()
 		{
-			float elapsed = Lifetime - _timer;
-			float grow = GrowDuration > 0f ? Mathf.Clamp(elapsed / GrowDuration, 0f, 1f) : 1f;
+			float factor = PulseLengthFactor();
 			for (int i = 0; i < _arcs.Count; i++)
 			{
 				var arc = _arcs[i];
-				arc.CurrentLength = Mathf.Lerp(0f, arc.TargetLength, grow);
+				arc.CurrentLength = arc.TargetLength * factor;
 				arc.Sprite.Position = new Vector2(Mathf.Cos(arc.Direction), Mathf.Sin(arc.Direction)) * (arc.CurrentLength * 0.5f);
 				arc.Sprite.Scale = new Vector2(Mathf.Max(arc.CurrentLength, 1f) / _texWidth, arc.Sprite.Scale.Y);
 				_arcs[i] = arc;
@@ -257,7 +309,8 @@ namespace Kuros.Fx
 			for (int i = 0; i < _arcs.Count; i++)
 			{
 				var arc = _arcs[i];
-				Vector2 dir = new(Mathf.Cos(arc.Direction), Mathf.Sin(arc.Direction));
+				// 电弧方向 = 自身角度 + 节点旋转（脉冲旋转后仍命中正确位置）
+				Vector2 dir = new(Mathf.Cos(arc.Direction + Rotation), Mathf.Sin(arc.Direction + Rotation));
 				Vector2 toTarget = targetCenter - GlobalPosition;
 				float along = toTarget.Dot(dir);
 				if (along < 0f || along > arc.CurrentLength) continue;
@@ -313,9 +366,7 @@ namespace Kuros.Fx
 				? ToLocal(_ray.GetCollisionPoint()).Length()
 				: MaxLength;
 
-			float elapsed = Lifetime - _timer;
-			float grow = GrowDuration > 0f ? Mathf.Clamp(elapsed / GrowDuration, 0f, 1f) : 1f;
-			_currentLength = Mathf.Lerp(MinLength, rawLength, grow);
+			_currentLength = Mathf.Lerp(MinLength, rawLength, PulseLengthFactor());
 
 			_lightningSprite.Position = Vector2.Zero;
 			_lightningSprite.Scale = new Vector2(_currentLength / _texWidth, _lightningSprite.Scale.Y);

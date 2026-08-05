@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
@@ -34,26 +36,57 @@ namespace Kuros.Fx
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 2.0f;
 
-        [ExportCategory("PeriodicSpawn")]
-        /// <summary>每 SpawnInterval 秒在本特效当前位置生成一次的子特效场景（null = 关闭）。</summary>
-        [Export] public PackedScene? PeriodicSpawnScene = null;
-        [Export(PropertyHint.Range, "0.1,30,0.1")] public float SpawnInterval = 1.0f;
+        [ExportCategory("Damage")]
+        [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+        public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
+        [Export] public bool AllowSelfDamage { get; set; } = false;
+        [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
+        [Export(PropertyHint.Range, "0.1,5,0.1")] public float DamageInterval = 0.5f;
 
         // ── 运行时状态 ────────────────────────────────────────────
 
         private Vector2 _bounceOrigin;
+        private float _initialBaselineY;
         private float _bounceDistance;
         private float _elapsed;
         private Vector2 _travelDir = Vector2.Right;
         private float _bounceCooldownRemaining;
         private bool _initialized;
         private bool _facingRight = true;
-        private float _spawnAccum;
+        private Area2D? _attackArea;
+        private GameActor? _attacker;
+        private readonly Dictionary<GameActor, float> _actorTimers = new();
+        private readonly Dictionary<GameActor, int> _actorRefs = new();
 
         public override void _Ready()
         {
             _facingRight = ResolveFacingRight();
             _travelDir = _facingRight ? Vector2.Right : Vector2.Left;
+
+            _attackArea = GetNodeOrNull<Area2D>("AttackArea");
+            if (_attackArea != null)
+            {
+                _attackArea.BodyEntered += OnBodyEntered;
+                _attackArea.BodyExited += OnBodyExited;
+                _attackArea.AreaEntered += OnAreaEntered;
+                _attackArea.AreaExited += OnAreaExited;
+            }
+
+            ResolveAttacker();
+        }
+
+        public override void _ExitTree()
+        {
+            if (_attackArea != null)
+            {
+                _attackArea.BodyEntered -= OnBodyEntered;
+                _attackArea.BodyExited -= OnBodyExited;
+                _attackArea.AreaEntered -= OnAreaEntered;
+                _attackArea.AreaExited -= OnAreaExited;
+            }
+            _actorTimers.Clear();
+            _actorRefs.Clear();
+            base._ExitTree();
         }
 
         /// <summary>
@@ -82,6 +115,7 @@ namespace Kuros.Fx
             {
                 _initialized = true;
                 _bounceOrigin = GlobalPosition;
+                _initialBaselineY = GlobalPosition.Y;
             }
 
             if (_elapsed >= Duration)
@@ -99,31 +133,129 @@ namespace Kuros.Fx
 
             TickBounce((float)delta);
 
-            if (PeriodicSpawnScene != null && SpawnInterval > 0f)
+            TickDamage((float)delta);
+        }
+
+        // ── 区域计时伤害 ──────────────────────────────────────────
+
+        private void TickDamage(float dt)
+        {
+            if (_actorTimers.Count == 0) return;
+
+            var dead = new List<GameActor>();
+            foreach (var (actor, timer) in _actorTimers)
             {
-                _spawnAccum += (float)delta;
-                while (_spawnAccum >= SpawnInterval)
+                if (!GodotObject.IsInstanceValid(actor) || actor.IsDead)
                 {
-                    _spawnAccum -= SpawnInterval;
-                    SpawnPeriodicEffect();
+                    dead.Add(actor);
+                    continue;
                 }
+
+                float accumulated = timer + dt;
+                if (accumulated >= DamageInterval)
+                {
+                    _actorTimers[actor] = 0f;
+                    DealDamageToActor(actor);
+                }
+                else
+                {
+                    _actorTimers[actor] = accumulated;
+                }
+            }
+
+            foreach (var a in dead)
+            {
+                _actorTimers.Remove(a);
+                _actorRefs.Remove(a);
             }
         }
 
-        /// <summary>
-        /// 生成子特效作为本特效的子节点（本地原点），跟随本特效一起移动/销毁，
-        /// 朝向同步本特效朝向。
-        /// </summary>
-        private void SpawnPeriodicEffect()
+        private void DealDamageToActor(GameActor actor)
         {
-            if (PeriodicSpawnScene == null) return;
+            // 全局最小伤害间隔：目标刚受过伤（含快速进出区域、被其他来源命中）时跳过，
+            // 保证两次结算至少间隔 DamageInterval，堵住反复进出刷伤害的漏洞
+            if (actor.GetSecondsSinceLastDamageTaken() < DamageInterval) return;
 
-            var node = PeriodicSpawnScene.Instantiate();
-            if (node is not Node2D node2D) { node?.QueueFree(); return; }
+            DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+        }
 
-            AddChild(node2D);
-            if (node2D is IFacingDirectional facing)
-                facing.FacingRight = _facingRight;
+        // ── 碰撞回调 ──────────────────────────────────────────────
+
+        private void OnBodyEntered(Node body)
+        {
+            if (body is not GameActor actor) return;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+            AddActorRef(actor);
+        }
+
+        private void OnBodyExited(Node body)
+        {
+            if (body is GameActor actor)
+                RemoveActorRef(actor);
+        }
+
+        private void OnAreaEntered(Area2D area)
+        {
+            if ((string)area.Name != "HitArea") return;
+
+            var actor = area.Owner as GameActor
+                ?? area.GetParent() as GameActor
+                ?? area.GetParent()?.GetParent() as GameActor;
+            if (actor == null) return;
+            if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(actor, _attacker)) return;
+            AddActorRef(actor);
+        }
+
+        private void OnAreaExited(Area2D area)
+        {
+            if ((string)area.Name != "HitArea") return;
+
+            var actor = area.Owner as GameActor
+                ?? area.GetParent() as GameActor
+                ?? area.GetParent()?.GetParent() as GameActor;
+            if (actor != null)
+                RemoveActorRef(actor);
+        }
+
+        private void AddActorRef(GameActor actor)
+        {
+            if (_actorRefs.TryGetValue(actor, out int count))
+            {
+                _actorRefs[actor] = count + 1;
+                return;
+            }
+
+            _actorRefs[actor] = 1;
+            _actorTimers[actor] = 0f;
+            DealDamageToActor(actor);
+        }
+
+        private void RemoveActorRef(GameActor actor)
+        {
+            if (!_actorRefs.TryGetValue(actor, out int count)) return;
+            if (count > 1)
+            {
+                _actorRefs[actor] = count - 1;
+                return;
+            }
+
+            _actorRefs.Remove(actor);
+            _actorTimers.Remove(actor);
+        }
+
+        private void ResolveAttacker()
+        {
+            var parent = GetParent();
+            if (parent == null) return;
+            foreach (var child in parent.GetChildren())
+            {
+                if (child.IsInGroup("player") && child is GameActor ga)
+                {
+                    _attacker = ga;
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -149,13 +281,20 @@ namespace Kuros.Fx
             if (ProbeCollision(GlobalPosition, _travelDir.X * Speed) && _bounceCooldownRemaining <= 0f)
             {
                 _bounceCooldownRemaining = BounceCooldown;
-                // 反射弹跳方向，从当前接触点沿新方向继续弹跳
-                _travelDir = _travelDir - 2f * _travelDir.Dot(_lastHitNormal) * _lastHitNormal;
-                if (_travelDir == Vector2.Zero)
-                    _travelDir = -_lastHitNormal;
-                _bounceOrigin = GlobalPosition;
-                _bounceDistance = 0f;
+                // 每次反弹统一走仅 X 轴方法：水平方向反向，Y 基准线回正到生成时高度
+                BounceXAxisOnly();
             }
+        }
+
+        /// <summary>
+        /// 仅 X 轴反弹：水平方向反向，Y 基准线回正到生成时的高度，
+        /// 从当前位置重新开始弹跳（起始点不高过生成点、不累积下移）。
+        /// </summary>
+        private void BounceXAxisOnly()
+        {
+            _travelDir.X = -_travelDir.X;
+            _bounceOrigin = new Vector2(GlobalPosition.X, _initialBaselineY);
+            _bounceDistance = 0f;
         }
 
         // ── 碰撞检测 ──────────────────────────────────────────────

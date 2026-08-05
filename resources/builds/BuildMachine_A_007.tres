@@ -12,7 +12,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 "CapValues": [-30.0, -50.0],
 "DecayValues": [75.0, 100.0],
 "Duration": 0.0,
-"GainValues": [75.0, 100.0]
+"GainValues": [100.0, 200.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -20,7 +20,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_3ve0c")
 EffectId = "BuildMachine_A_007"
 DisplayName = "高速导热"
-Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，所有热量衰减的速度提高75%/100%"
+Description = "所有的热量积累速度提升75%/100%，热量上限降低30%/50%，热量自然衰减的速度提高100%/200%"
 BuildClass = "Machine"
 Rarity = 1
 MaxStacks = 2

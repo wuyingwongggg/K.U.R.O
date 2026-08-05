@@ -5,10 +5,11 @@ using Kuros.Core.Effects;
 namespace Kuros.Builds.Machine
 {
     /// <summary>
-    /// 高速导热：所有热量积累速度提升，热量上限降低，非释放时衰减速度提高。
+    /// 高速导热：所有热量积累速度提升，热量上限降低，非释放时衰减速度提升。
     /// GainValues  = 每层的获取增幅百分比（75 = +75%，100 = +100%）
     /// CapValues   = 每层的容量变化百分比（-30 = -30%，-50 = -50%）
     /// DecayValues = 每层的衰减增幅百分比（75 = +75%，100 = +100%）
+    /// DecayValues 只作用于 DecayRate（热量衰减），不影响 HeatDrainRate（释放泄热）。
     /// 全部通过 MachineCoreEffect 修改器注册，基于基础值加减。
     /// </summary>
     [GlobalClass]
@@ -47,7 +48,7 @@ namespace Kuros.Builds.Machine
             _core.SetStatModifier(MachineCoreEffect.HeatStat.MoveHeatRate, EffectId, CurrentGain);
             _core.SetStatModifier(MachineCoreEffect.HeatStat.MaxHeat, EffectId, CurrentCap);
             _core.SetStatModifier(MachineCoreEffect.HeatStat.DecayRate, EffectId, CurrentDecay);
-            _core.SetStatModifier(MachineCoreEffect.HeatStat.HeatDrainRate, EffectId, CurrentDecay);
+            // DecayValues 只作用于 DecayRate，不作用于 HeatDrainRate
         }
 
         public override void OnRemoved()
@@ -57,7 +58,6 @@ namespace Kuros.Builds.Machine
                 _core.RemoveStatModifier(MachineCoreEffect.HeatStat.MoveHeatRate, EffectId);
                 _core.RemoveStatModifier(MachineCoreEffect.HeatStat.MaxHeat, EffectId);
                 _core.RemoveStatModifier(MachineCoreEffect.HeatStat.DecayRate, EffectId);
-                _core.RemoveStatModifier(MachineCoreEffect.HeatStat.HeatDrainRate, EffectId);
             }
             base.OnRemoved();
         }

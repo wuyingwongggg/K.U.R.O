@@ -97,6 +97,8 @@ namespace Kuros.Actors.Heroes.Attacks
         /// 当前攻击的 Spine 动画段数（1-based），用于让其他系统（如效果）判断是否为第一段伤害
         /// </summary>
         public static int CurrentAttackHitStep { get; private set; } = 1;
+        /// <summary>当前攻击回合 ID：每次攻击开始递增，供连击/段数效果隔离回合（防止跨回合命中污染判定）。</summary>
+        public static int CurrentAttackRoundId { get; private set; } = 1;
 
         private AttackPhase _phase = AttackPhase.Idle;
         private float _phaseTimer = 0f;
@@ -475,6 +477,7 @@ namespace Kuros.Actors.Heroes.Attacks
             _spineHitWindowActive = ShouldUseSpineHitEvents();
             _currentHitStep = 1;  // 重置段数计数器
             CurrentAttackHitStep = 1;  // 重置静态段数
+            CurrentAttackRoundId++;  // 新攻击回合：连击/段数效果按此隔离回合
 
             // 如果是 MainCharacter，使用 Spine 动画
             if (Player is MainCharacter mainChar)

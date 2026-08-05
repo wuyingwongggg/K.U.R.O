@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci4osjessewos"]
+
+[ext_resource type="Script" uid="uid://ctc3iw4oygq1o" path="res://scripts/builds/machine/MachineDeathEmberEffect.cs" id="1"]
+
+[node name="MachineDeathEmberEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "e3b1c2d4-5f6a-4b7c-8d9e-0a1b2c3d4e5f"
+Description = "热量释放强化：buff 期间敌人死亡时泄热归零 "

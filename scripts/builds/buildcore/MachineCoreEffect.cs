@@ -49,6 +49,8 @@ namespace Kuros.Builds.BuildCore
         public bool IsBuffActive => _buffActive;
         /// <summary>热量保底值：被动衰减不会低于此值。由外部效果设置。</summary>
         public float MinHeat { get; set; }
+        /// <summary>冻结热量获取：期间禁止一切热量增加（移动/攻击/外部 AddHeat）。由外部效果（如死亡余温）设置。</summary>
+        public bool FreezeHeatGain { get; set; }
 
         private float _releaseCooldownRemaining;
         private float _consumedHeat;
@@ -98,7 +100,9 @@ namespace Kuros.Builds.BuildCore
                     sum += percent;
             }
 
-            SetStatValue(stat, baseVal * (1f + sum / 100f));
+            // 钳制最终值 ≥ 0：修改器总和低于 -100%（如缓速放热 -75% + 死亡余温 -100%）
+            // 时速率会变负（泄热变加热），钳制后最差为 0（冻结），杜绝负速率隐患
+            SetStatValue(stat, Mathf.Max(baseVal * (1f + sum / 100f), 0f));
 
             // 容量缩小（减容效果）后热量回落：非超频时不允许 Heat 超过新上限，
             // 避免 HUD 将"容量变化"误判为爆表
@@ -185,7 +189,7 @@ namespace Kuros.Builds.BuildCore
 
             float speed = Actor.Velocity.Length();
             bool moving = speed > 10f;
-            if (moving)
+            if (moving && !FreezeHeatGain)
             {
                 _decayTimer = DecayDelay;
                 float speedMultiplier = 1.0f + Mathf.Max(speed - 500f, 0f) * 0.002f;
@@ -247,10 +251,11 @@ namespace Kuros.Builds.BuildCore
             AddHeat(AttackHeatGain);
         }
 
-        /// <summary>由外部效果增加热量（默认不超过 MaxHeat，超频开启时无上限）。</summary>
+        /// <summary>由外部效果增加热量（默认不超过 MaxHeat，超频开启时无上限）。冻结期间忽略。</summary>
         public void AddHeat(float amount)
         {
             if (amount <= 0f) return;
+            if (FreezeHeatGain) return;
             Heat = Mathf.Min(Heat + amount, GetHeatCap());
         }
 
@@ -291,6 +296,7 @@ namespace Kuros.Builds.BuildCore
             if (!EnableAttackHeatGain || IsReleasing) return;
             if (attacker != Actor) return;
             if (DisableHeatGainDuringBuff && _buffActive) return;
+            if (FreezeHeatGain) return;
             _decayTimer = DecayDelay;
             float gainMult = _buffActive ? BuffHeatGainMultiplier : 1f;
             Heat = Mathf.Min(Heat + AttackHeatGain * gainMult, GetHeatCap());
