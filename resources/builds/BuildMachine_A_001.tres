@@ -17,7 +17,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 script = ExtResource("2_4ae2h")
 EffectId = "BuildMachine_A_001"
 DisplayName = "战斗升温"
-Description = "允许通过攻击命中获取热量，每次命中获取3%/4%/5%热量
+Description = "允许通过攻击命中获取热量，每次命中获取{0}%/{1}%/{2}%热量
 "
 BuildClass = "Machine"
 MaxStacks = 3

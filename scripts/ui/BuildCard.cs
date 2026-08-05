@@ -15,7 +15,7 @@ namespace Kuros.UI
         [Export] public Label? KeyLabel { get; set; }
         [Export] public Label? NameLabel { get; set; }
         [Export] public Label? BuildClassLabel { get; set; }
-        [Export] public Label? DescLabel { get; set; }
+        [Export] public RichTextLabel? DescLabel { get; set; }
         [Export] public Label? ProgressLabel { get; set; }
 
         [Export(PropertyHint.Range, "5,30,1")]
@@ -253,7 +253,7 @@ namespace Kuros.UI
             KeyLabel ??= GetNodeOrNull<Label>("CardInner/KeyLabel");
             NameLabel ??= GetNodeOrNull<Label>("CardInner/NameLabel");
             BuildClassLabel ??= GetNodeOrNull<Label>("CardInner/BuildClassLabel");
-            DescLabel ??= GetNodeOrNull<Label>("CardInner/DescLabel");
+            DescLabel ??= GetNodeOrNull<RichTextLabel>("CardInner/DescLabel");
             ProgressLabel ??= GetNodeOrNull<Label>("CardInner/ProgressLabel");
         }
     }

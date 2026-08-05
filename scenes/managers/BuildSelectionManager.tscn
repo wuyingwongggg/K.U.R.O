@@ -45,5 +45,4 @@ RarityMultiplier = Dictionary[String, float]({
 "Epic": 3.0,
 "Rare": 3.0
 })
-CardsPerSelection = 10
 DebugTrigger = true

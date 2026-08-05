@@ -28,7 +28,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_pn44j")
 EffectId = "BuildMachine_A_008"
 DisplayName = "灼热反馈"
-Description = "热量若突破当前的100%/80%，则每次攻击时造成灼烧，持续3秒且重复施加后覆盖伤害和持续时间
+Description = "热量若突破当前的{0}%/{1}%，则每次攻击时造成灼烧，持续3秒且重复施加后覆盖伤害和持续时间
 "
 BuildClass = "Machine"
 Rarity = 1

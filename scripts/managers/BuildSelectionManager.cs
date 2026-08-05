@@ -218,7 +218,7 @@ namespace Kuros.Managers
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                     CheckAndTriggerSelection(_boundPlayer.Score);
-            });
+            }, _pickedEffectIds);
         }
 
         private BuildCoreDefinition? FindCoreById(string coreId)
@@ -276,7 +276,7 @@ namespace Kuros.Managers
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                     CheckAndTriggerSelection(_boundPlayer.Score);
-            });
+            }, _pickedEffectIds);
         }
 
         private void ApplyEffectBonuses(BuildEffectDefinition effect)
