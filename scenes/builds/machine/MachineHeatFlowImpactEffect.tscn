@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://d00kleabdu4b3"]
+
+[ext_resource type="Script" uid="uid://bx6htj2vyg5i4" path="res://scripts/builds/machine/MachineHeatFlowImpactEffect.cs" id="1"]
+
+[node name="MachineHeatFlowImpactEffect" type="Node"]
+script = ExtResource("1")
+Damage = 20.0
+TargetCollisionMask = 3
+TargetableFactions = 6
+ShowDebugRadius = true
+EffectId = "a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+Description = "热量释放强化：buff 期间奔跑/闪避每秒对接触目标造成伤害 "

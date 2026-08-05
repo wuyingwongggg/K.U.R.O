@@ -19,7 +19,7 @@
 [ext_resource type="Resource" uid="uid://bvi5qia22keqf" path="res://resources/builds/BuildMachine_A_010.tres" id="17_k6o6d"]
 [ext_resource type="Resource" uid="uid://byggwwdffsyf8" path="res://resources/builds/BuildMachine_B_004.tres" id="21_fiv8j"]
 [ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="22"]
-[ext_resource type="Resource" path="res://resources/builds/BuildMachine_B_005.tres" id="22_f3soq"]
+[ext_resource type="Resource" uid="uid://bf6fw01kvd61g" path="res://resources/builds/BuildMachine_B_005.tres" id="22_f3soq"]
 [ext_resource type="Resource" uid="uid://b5spe72g4msa6" path="res://resources/builds/buildcore/WaiterCore.tres" id="23"]
 [ext_resource type="Resource" uid="uid://8em5dh01naf" path="res://resources/builds/BuildMachine_B_006.tres" id="23_a8dc1"]
 [ext_resource type="Resource" uid="uid://duea1v557tmn0" path="res://resources/builds/buildcore/ThrowCore.tres" id="24"]
@@ -45,4 +45,3 @@ RarityMultiplier = Dictionary[String, float]({
 "Epic": 3.0,
 "Rare": 3.0
 })
-DebugTrigger = true

@@ -4,6 +4,7 @@
 
 [node name="MachineCore" type="Node"]
 script = ExtResource("1")
+MoveHeatRate = 50.0
 EffectId = "02f4ccc9-6e5d-4381-ae3d-dc7bcbf90cac"
 Description = "热量表：攻击和移动时累计热量，按下核心技能键清空当前获取的全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。  "
 Duration = 0.0

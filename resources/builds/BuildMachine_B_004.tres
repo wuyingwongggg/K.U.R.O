@@ -1,12 +1,25 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://byggwwdffsyf8"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://byggwwdffsyf8"]
 
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_xs7ce"]
+[ext_resource type="PackedScene" uid="uid://d00kleabdu4b3" path="res://scenes/builds/machine/MachineHeatFlowImpactEffect.tscn" id="2_effect"]
+[ext_resource type="Texture2D" uid="uid://crg4dwig1dlki" path="res://assets/BuildIcon/Machine_B_004_热流冲击.png" id="3_acpri"]
+
+[sub_resource type="Resource" id="Resource_B004"]
+script = ExtResource("1_entry")
+Scene = ExtResource("2_effect")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"RangeValues": [200.0, 400.0, 600.0]
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("1_script")
 EffectId = "BuildMachine_B_004"
 DisplayName = "热流冲击"
-Description = "释放核心技能后的buff期间，奔跑和闪避状态每秒都会对接触到的所有对象造成伤害20/30/40"
+Description = "释放核心技能后的buff期间，奔跑和闪避状态每秒都会对接触到的所有对象造成20点伤害，范围提升{RangeValues:0}/{RangeValues:1}/{RangeValues:2}"
 BuildClass = "Machine"
 MaxStacks = 3
+Icon = ExtResource("3_acpri")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B004")])
