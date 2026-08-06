@@ -1,12 +1,28 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://8em5dh01naf"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=7 format=3 uid="uid://8em5dh01naf"]
 
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_uef0n"]
+[ext_resource type="PackedScene" uid="uid://bbwecacyudlp" path="res://scenes/builds/machine/MachineThermalSunderEffect.tscn" id="2_olalw"]
+[ext_resource type="Texture2D" uid="uid://2qtjbpg2iptb" path="res://assets/BuildIcon/Machine_B_006_热能抽离.png" id="3_icon"]
+[ext_resource type="PackedScene" uid="uid://bhfxd1mo7qdpd" path="res://scenes/builds/machine/MachineFlameRing.tscn" id="4_ring"]
+
+[sub_resource type="Resource" id="Resource_B006"]
+script = ExtResource("1_entry")
+Scene = ExtResource("2_olalw")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"EffectScene": ExtResource("4_ring"),
+"RangeValues": [300.0, 500.0]
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("1_script")
 EffectId = "BuildMachine_B_006"
 DisplayName = "热能抽离"
-Description = "当热量达到100%及以上时释放核心技能后在玩家位置生成一个持续扩散的火焰环，对最大300px/500px范围的敌人造成灼烧，灼烧持续3秒且重复施加后覆盖伤害和持续时间"
+Description = "当热量达到100%及以上时释放核心技能后在玩家位置生成一个持续扩散的火焰环，对最大{RangeValues:0}px/{RangeValues:1}px范围的敌人造成灼烧，灼烧持续3秒且重复施加后覆盖伤害和持续时间"
 BuildClass = "Machine"
+Rarity = 1
 MaxStacks = 2
+Icon = ExtResource("3_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B006")])

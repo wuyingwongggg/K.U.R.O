@@ -8,6 +8,7 @@
 script = ExtResource("1_vwwsf")
 Trigger = 1
 EffectScene = ExtResource("2_i83jg")
+Notes = "击退"
 PropertyOverrides = Dictionary[String, Variant]({
 "EnableKnockbackY": false,
 "KnockbackDistance": 500.0

@@ -1,0 +1,50 @@
+[gd_scene load_steps=10 format=3 uid="uid://bhfxd1mo7qdpd"]
+
+[ext_resource type="Script" uid="uid://k4r24d1vsno1" path="res://scripts/fx/MachineFlameRingEffect.cs" id="1_ring"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="2_entry"]
+[ext_resource type="PackedScene" uid="uid://y1isgrju8g0h" path="res://resources/effects/DotBurnEffect.tscn" id="3_burn"]
+[ext_resource type="Shader" uid="uid://dx65whe3ahege" path="res://shaders/materials/fire_ring.gdshader" id="4_x03t6"]
+[ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="5_e1s05"]
+[ext_resource type="Texture2D" uid="uid://o0blev1r722u" path="res://assets/effect/AttackEffect/ringA/ring.png" id="6_xvwpm"]
+
+[sub_resource type="Resource" id="BurnEntry_Ring"]
+script = ExtResource("2_entry")
+Scene = ExtResource("3_burn")
+PropertyOverrides = Dictionary[String, Variant]({
+"DamagePercentPerSecond": 20.0,
+"Duration": 3.0,
+"TickInterval": 1.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_seouj"]
+shader = ExtResource("4_x03t6")
+shader_parameter/noise1 = ExtResource("5_e1s05")
+shader_parameter/noise2 = ExtResource("5_e1s05")
+shader_parameter/tint = Color(0.79607844, 0, 0, 1)
+shader_parameter/influence = 30.0
+shader_parameter/amount = 0.16999999620016
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x03t6"]
+shader = ExtResource("4_x03t6")
+shader_parameter/noise1 = ExtResource("5_e1s05")
+shader_parameter/noise2 = ExtResource("5_e1s05")
+shader_parameter/tint = Color(0.84313726, 0.5019608, 0, 1)
+shader_parameter/influence = 30.0
+shader_parameter/amount = 0.33999999240032
+
+[node name="MachineFlameRing" type="Node2D"]
+z_index = 2
+script = ExtResource("1_ring")
+BurnEffectEntries = Array[ExtResource("2_entry")]([SubResource("BurnEntry_Ring")])
+TargetCollisionMask = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_seouj")
+scale = Vector2(1, 0.7)
+texture = ExtResource("6_xvwpm")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_x03t6")
+scale = Vector2(1, 0.7)
+texture = ExtResource("6_xvwpm")

@@ -66,6 +66,8 @@ namespace Kuros.Builds.BuildCore
         private float _baseAttackSpeed = 1f;
         private float _baseIncomingDamage = 1f;
         private bool _overflowApplied;
+        /// <summary>每帧缓存的基础攻击力（OnTick 在正常帧流程运行，不会命中检测的临时 DamageOverride 覆盖）。</summary>
+        private float _cachedAttackDamage;
 
         /// <summary>获取某属性的基础值（场景导出值，运行时不修改）。</summary>
         public float GetBaseValue(HeatStat stat)
@@ -151,6 +153,8 @@ namespace Kuros.Builds.BuildCore
 
             // 注意：Speed/攻速/易伤的基础值不在此处采样，
             // 而是在首次进入超频时采样（此时可能已被其他效果合法修改）
+            if (Actor != null)
+                _cachedAttackDamage = Actor.AttackDamage;
 
             DamageEventBus.Subscribe(OnDamageDealt);
         }
@@ -159,6 +163,10 @@ namespace Kuros.Builds.BuildCore
         {
             float dt = (float)delta;
             if (Actor == null) return;
+
+            // 每帧缓存基础攻击力：供 ReleaseHeat 捕获 _originalAttackDamage，
+            // 避免命中检测临时把 AttackDamage 设为 DamageOverride 时采样到污染值
+            _cachedAttackDamage = Actor.AttackDamage;
 
             // CD 计时
             if (_releaseCooldownRemaining > 0f)
@@ -278,6 +286,31 @@ namespace Kuros.Builds.BuildCore
             Heat = Mathf.Min(Heat + amount, GetHeatCap());
         }
 
+        /// <summary>供外部效果自动触发释放核心技能（受释放 CD 与热量约束）。</summary>
+        public void TryReleaseCoreSkill()
+        {
+            if (_releaseCooldownRemaining > 0f) return;
+            ReleaseHeat();
+        }
+
+        /// <summary>
+        /// 当前释放 buff 的攻击力加成量（_originalAttackDamage × min(消耗热量×DamagePerHeat, MaxDamageBonus)）。
+        /// Buff 未激活时为 0。供命中触发的释放效果把本段错过的加成补回。
+        /// </summary>
+        public float CurrentReleaseDamageBonus =>
+            _buffActive ? _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) : 0f;
+
+        /// <summary>
+        /// 重新应用当前 buff 的攻击力加成。命中检测（PerformDefaultHitDetection）的 finally
+        /// 会把 AttackDamage 还原为检测开始值，可能抹掉释放加成；命中触发的释放应在帧末调用此方法恢复，
+        /// 确保下一次攻击的 DamageOverride 捕获到加成后的攻击力。
+        /// </summary>
+        public void RefreshReleaseDamageBonus()
+        {
+            if (!_buffActive || Actor == null) return;
+            Actor.AttackDamage = _originalAttackDamage + CurrentReleaseDamageBonus;
+        }
+
         private void ReleaseHeat()
         {
             if (Heat <= 0f) return;
@@ -289,7 +322,8 @@ namespace Kuros.Builds.BuildCore
             // 应用临时增伤 Buff（基于释放瞬间的热量），持续到热量归零
             if (!_buffActive)
             {
-                _originalAttackDamage = Actor.AttackDamage;
+                // 用每帧缓存的基础攻击力，而非当前值（命中检测期间可能被临时覆盖）
+                _originalAttackDamage = _cachedAttackDamage;
                 _buffActive = true;
             }
             float bonus = _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus);
