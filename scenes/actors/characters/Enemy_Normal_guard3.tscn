@@ -1,23 +1,23 @@
 [gd_scene load_steps=38 format=3 uid="uid://bj81vpm6lg1b8"]
 
-[ext_resource type="Script" uid="uid://bjut5b8tdxsx2" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
-[ext_resource type="Resource" uid="uid://2txgxwswls2l" path="res://resources/loot/Enemy_Normal_NormalDrops.tres" id="2_e1554"]
-[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
+[ext_resource type="Script" uid="uid://cerpcpp7igtk7" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
+[ext_resource type="Script" uid="uid://d2sy6q8lksykw" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
+[ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_3kv8y"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ulog8"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_10g4w"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c0t06u0ancnf8" path="res://animations/spine/Enemy_Normal_guard3.tres" id="5_wjvmm"]
-[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_06rhn"]
-[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="6_ks25x"]
+[ext_resource type="Script" uid="uid://cddf4uyd7uwex" path="res://scripts/controllers/ShadowFollower.cs" id="6_06rhn"]
+[ext_resource type="Script" uid="uid://ctbvpnue2rlif" path="res://scripts/controllers/SpineController.gd" id="6_ks25x"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="7_ewc2t"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="8_bl8xt"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="9_4s8f3"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="10_0nljw"]
-[ext_resource type="Script" uid="uid://bgmignw03rdgx" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3AttackController.cs" id="11_wjvmm"]
-[ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="12_wjvmm"]
+[ext_resource type="Script" uid="uid://d1yb7fjjhoq20" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3AttackController.cs" id="11_wjvmm"]
+[ext_resource type="Script" uid="uid://4tapmxqqwado" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="12_wjvmm"]
 [ext_resource type="PackedScene" uid="uid://c41bp3hlh4ix7" path="res://resources/effects/EnemyGuard3ThrowEffect.tscn" id="13_10g4w"]
-[ext_resource type="Script" uid="uid://bymxhmkwlyl21" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3MeleeAttack.cs" id="14_10g4w"]
+[ext_resource type="Script" uid="uid://20ytjkwr28fr" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3MeleeAttack.cs" id="14_10g4w"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_e03sy"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_06rhn"]
+[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_06rhn"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_m8cja"]
 [ext_resource type="PackedScene" uid="uid://cfm1idhycevph" path="res://scenes/actors/etc/BulletFire.tscn" id="15_u8m7i"]
 [ext_resource type="PackedScene" uid="uid://c1c74ekxu24m1" path="res://shaders/enemy_bullet.tscn" id="15_ulog8"]
@@ -26,8 +26,8 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18_wd41p"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="19_47cbq"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="20_u500j"]
-[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
-[ext_resource type="Script" uid="uid://c8xkf4trw871r" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
+[ext_resource type="Script" uid="uid://bprxf1sr1x5q4" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
+[ext_resource type="Script" uid="uid://ytdcnpeqmnh8" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
 
 [sub_resource type="Resource" id="Resource_06rhn"]
 script = ExtResource("2_ofcms")
@@ -83,7 +83,7 @@ AttackDamage = 0.0
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
-LootTable = ExtResource("2_e1554")
+LootTable = ExtResource("3_3kv8y")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
 [node name="Shadow" type="Sprite2D" parent="."]

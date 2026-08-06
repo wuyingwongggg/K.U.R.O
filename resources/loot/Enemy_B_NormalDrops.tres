@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://ba0kuifke6v7o" path="res://resources/items/Weapon_Stab_drill.tres" id="3_e2vn0"]
 [ext_resource type="Resource" uid="uid://b1jpt8qriaub8" path="res://resources/items/Weapon_Slash_BarrierGate.tres" id="4_syeeu"]
 [ext_resource type="Resource" uid="uid://j6kveph5wqjm" path="res://resources/items/Weapon_Throw_MetalSpike.tres" id="5_geg3s"]
-[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="6_p7jmf"]
+[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="6_p7jmf"]
 
 [sub_resource type="Resource" id="Resource_5a13u"]
 script = ExtResource("2_1ee31")

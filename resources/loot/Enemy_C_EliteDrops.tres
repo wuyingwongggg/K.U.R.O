@@ -3,7 +3,7 @@
 [ext_resource type="Resource" uid="uid://deh2q01buwkpa" path="res://resources/items/Weapon_Slash_ViolinBow.tres" id="1_ikjl6"]
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_1i803"]
 [ext_resource type="Resource" uid="uid://cc5nnn2mscj2d" path="res://resources/items/Weapon_Slash_BunnySword.tres" id="3_gkme5"]
-[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="5_aavc6"]
+[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="5_aavc6"]
 
 [sub_resource type="Resource" id="Resource_5a13u"]
 script = ExtResource("2_1i803")

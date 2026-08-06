@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="LootDropTable" load_steps=17 format=3 uid="uid://d13rra8f1j6ep"]
+
+[ext_resource type="Resource" uid="uid://dsmyr3iwkk7n5" path="res://resources/items/Weapon_Brawl_MechGlove.tres" id="1_nfpv4"]
+[ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_ctdqa"]
+[ext_resource type="Resource" uid="uid://b8vf1obgnfb2y" path="res://resources/items/Weapon_Throw_GravityGrenade.tres" id="3_55xqg"]
+[ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="3_ay2wm"]
+[ext_resource type="Resource" uid="uid://deh2q01buwkpa" path="res://resources/items/Weapon_Slash_ViolinBow.tres" id="4_5ui7y"]
+[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="4_7grpk"]
+[ext_resource type="Resource" uid="uid://cc5nnn2mscj2d" path="res://resources/items/Weapon_Slash_BunnySword.tres" id="5_xbqcb"]
+[ext_resource type="Resource" uid="uid://dip678pe3wgkx" path="res://resources/items/Weapon_Throw_Boomerang.tres" id="6_t4o13"]
+[ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="7_466fd"]
+
+[sub_resource type="Resource" id="Resource_sx6ta"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("1_nfpv4")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_sblno"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("3_ay2wm")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_io2cn"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("4_5ui7y")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_cu0am"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("5_xbqcb")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_2hf78"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("6_t4o13")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_pqwot"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("7_466fd")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_quygb"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("3_55xqg")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[resource]
+script = ExtResource("4_7grpk")
+GlobalDropChance = 0.5
+MaxDrops = 1
+ScatterRadius = 48.0
+DefaultImpulse = 400.0
+Entries = [SubResource("Resource_sx6ta"), SubResource("Resource_sblno"), SubResource("Resource_io2cn"), SubResource("Resource_cu0am"), SubResource("Resource_2hf78"), SubResource("Resource_pqwot"), SubResource("Resource_quygb")]
