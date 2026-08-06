@@ -5,7 +5,7 @@ uniform float radius : hint_range(0.0, 1.0, 0.01) = .7;
 
 uniform float thickness : hint_range(0.0, 1.0, 0.01) = .2;
 
-uniform vec4 color : hint_color = vec4(0.9, 0.4, 0.1, 1.0);
+uniform vec4 color : source_color = vec4(0.9, 0.4, 0.1, 1.0);
 
 uniform float brightness : hint_range(0.0, 15.0, 0.01) = 5.0;
 

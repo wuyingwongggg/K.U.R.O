@@ -11,6 +11,7 @@ namespace Kuros.Builds.Machine
     /// 热流冲击：释放核心技能后的 buff 期间，奔跑/闪避状态下接触范围内
     /// 的目标进入即触发一次伤害，之后按 DamageInterval 持续伤害。
     /// 伤害固定为 Damage，RangeValues = 每层接触范围（px）。
+    /// 仅检测目标物理身体碰撞（BodyEntered/BodyExited），不检测 HitArea 区域。
     /// 结算模型参考 ECoreAttackEffect：区域信号驱动 + 最小间隔保护
     /// （GetSecondsSinceLastDamageTaken，防止快速进出刷伤害）。
     /// </summary>
@@ -23,6 +24,8 @@ namespace Kuros.Builds.Machine
         [Export(PropertyHint.Layers2DPhysics)] public uint TargetCollisionMask = 1;
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
+        /// <summary>伤害判定区域形状（水平胶囊体，同 MachineFlameRing）：Y 相对 X 的压缩比例。1 = 圆形，&lt;1 = 上下短。</summary>
+        [Export(PropertyHint.Range, "0.1,2,0.05")] public float DamageAreaAspectY = 0.8f;
 
         /// <summary>玩家身上的特效场景（如火焰 Sprite2D），实例化后直接挂到玩家身上跟随移动。</summary>
         [Export] public PackedScene? VisualEffectScene = null;
@@ -42,6 +45,7 @@ namespace Kuros.Builds.Machine
         private CollisionShape2D? _contactShape;
         private ContactRadiusDrawer? _radiusDrawer;
         private Node2D? _visualInstance;
+        private float _facingSign = 1f;
         private float _exitDelayRemaining;
         private readonly Dictionary<GameActor, float> _actorTimers = new();
         private readonly Dictionary<GameActor, int> _actorRefs = new();
@@ -74,22 +78,40 @@ namespace Kuros.Builds.Machine
             }
         }
 
-        /// <summary>视觉缩放随当前层接触范围线性插值：最小范围→VisualScaleMin，最大范围→VisualScaleMax。</summary>
+        /// <summary>视觉缩放随当前层接触范围线性插值：最小范围→VisualScaleMin，最大范围→VisualScaleMax。
+        /// 组合玩家朝向符号：玩家翻转只改视觉节点（_sprite/_spineCharacter）的 Scale.X，根节点不翻转，
+        /// 挂在根节点下的特效必须自行镜像，否则朝向相反时朝向性特效会左右颠倒。</summary>
         private void UpdateVisualScale()
         {
             if (_visualInstance == null) return;
             float minR = RangeValues.Length > 0 ? RangeValues[0] : 0f;
             float maxR = RangeValues.Length > 1 ? RangeValues[^1] : minR;
             float t = maxR > minR ? Mathf.Clamp((CurrentRadius - minR) / (maxR - minR), 0f, 1f) : 0f;
-            _visualInstance.Scale = Vector2.One * Mathf.Lerp(VisualScaleMin, VisualScaleMax, t);
+            float s = Mathf.Lerp(VisualScaleMin, VisualScaleMax, t);
+            _visualInstance.Scale = new Vector2(s * _facingSign, s);
+        }
+
+        /// <summary>镜像跟随玩家朝向。符号修正规则与 GameActor.FlipFacing 一致（FaceLeftByDefault 时取反）。</summary>
+        private void SyncVisualFacing()
+        {
+            if (_visualInstance == null || Actor == null) return;
+            float sign = Actor.FacingRight ? 1f : -1f;
+            if (Actor.FaceLeftByDefault) sign *= -1f;
+            if (_facingSign == sign) return;
+            _facingSign = sign;
+            var s = _visualInstance.Scale;
+            _visualInstance.Scale = new Vector2(Mathf.Abs(s.X) * sign, s.Y);
         }
 
         protected override void OnStackRefreshed()
         {
             _tier = Mathf.Min(_tier + 1, RangeValues.Length - 1);
-            // 叠层后同步更新接触区域半径与调试绘制
-            if (_contactShape?.Shape is CircleShape2D circle)
-                circle.Radius = CurrentRadius;
+            // 叠层后同步更新接触区域（水平胶囊：Height = 总长 = 2r，Radius = 上下短轴 = r×aspect，同 MachineFlameRing）与调试绘制
+            if (_contactShape?.Shape is CapsuleShape2D capsule)
+            {
+                capsule.Radius = CurrentRadius * DamageAreaAspectY;
+                capsule.Height = 2f * CurrentRadius;
+            }
             if (_radiusDrawer != null)
             {
                 _radiusDrawer.Radius = CurrentRadius;
@@ -104,8 +126,6 @@ namespace Kuros.Builds.Machine
             {
                 _contactArea.BodyEntered -= OnBodyEntered;
                 _contactArea.BodyExited -= OnBodyExited;
-                _contactArea.AreaEntered -= OnAreaEntered;
-                _contactArea.AreaExited -= OnAreaExited;
                 _contactArea.QueueFree();
             }
             // 特效实例挂在玩家身上，效果移除时一并销毁
@@ -116,7 +136,7 @@ namespace Kuros.Builds.Machine
             base.OnRemoved();
         }
 
-        /// <summary>在玩家身上创建接触区域（圆形，只做监测不参与碰撞）。</summary>
+        /// <summary>在玩家身上创建接触区域（水平胶囊体，只做监测不参与碰撞）。</summary>
         private void CreateContactArea()
         {
             _contactArea = new Area2D
@@ -129,13 +149,20 @@ namespace Kuros.Builds.Machine
             };
             _contactArea.AddChild(_contactShape = new CollisionShape2D
             {
-                Shape = new CircleShape2D { Radius = CurrentRadius },
+                Shape = new CapsuleShape2D
+                {
+                    Radius = CurrentRadius * DamageAreaAspectY,
+                    Height = 2f * CurrentRadius,
+                },
+                // CapsuleShape2D 默认沿 Y 轴，旋转 90° 变水平（长轴 = 左右），同 MachineFlameRing
+                Rotation = Mathf.Pi / 2f,
             });
             if (ShowDebugRadius)
             {
                 _radiusDrawer = new ContactRadiusDrawer
                 {
                     Radius = CurrentRadius,
+                    AspectY = DamageAreaAspectY,
                     DrawColor = DebugRadiusColor,
                 };
                 _contactArea.AddChild(_radiusDrawer);
@@ -144,13 +171,13 @@ namespace Kuros.Builds.Machine
 
             _contactArea.BodyEntered += OnBodyEntered;
             _contactArea.BodyExited += OnBodyExited;
-            _contactArea.AreaEntered += OnAreaEntered;
-            _contactArea.AreaExited += OnAreaExited;
         }
 
         protected override void OnTick(double delta)
         {
             if (Actor == null) return;
+
+            SyncVisualFacing();
 
             // 效果生效（buff + 奔跑/闪避）时显示特效；退出后延迟 VisualExitDelay 秒再隐藏
             // （放在 _core 判空之前，避免核心缺失时特效永不可见）
@@ -247,29 +274,6 @@ namespace Kuros.Builds.Machine
                 RemoveActorRef(actor);
         }
 
-        private void OnAreaEntered(Area2D area)
-        {
-            if ((string)area.Name != "HitArea") return;
-
-            var actor = area.Owner as GameActor
-                ?? area.GetParent() as GameActor
-                ?? area.GetParent()?.GetParent() as GameActor;
-            if (actor == null) return;
-            if (DamageDispatcher.BelongsToActor(actor, Actor)) return;
-            AddActorRef(actor);
-        }
-
-        private void OnAreaExited(Area2D area)
-        {
-            if ((string)area.Name != "HitArea") return;
-
-            var actor = area.Owner as GameActor
-                ?? area.GetParent() as GameActor
-                ?? area.GetParent()?.GetParent() as GameActor;
-            if (actor != null)
-                RemoveActorRef(actor);
-        }
-
         private void AddActorRef(GameActor actor)
         {
             if (_actorRefs.TryGetValue(actor, out int count))
@@ -299,16 +303,21 @@ namespace Kuros.Builds.Machine
             _actorTimers.Remove(actor);
         }
 
-        /// <summary>调试用：实时绘制 ContactRadius 圆（挂在接触区域下，随玩家移动）。</summary>
+        /// <summary>调试用：实时绘制水平胶囊判定区域（中间矩形 + 端部半圆，与接触区域一致，挂在接触区域下随玩家移动）。</summary>
         private partial class ContactRadiusDrawer : Node2D
         {
-            public float Radius;
+            public float Radius;   // 长轴半长（水平）
+            public float AspectY;  // 短轴/长轴比
             public Color DrawColor;
 
             public override void _Draw()
             {
-                DrawCircle(Vector2.Zero, Radius, DrawColor);
-                DrawArc(Vector2.Zero, Radius, 0f, Mathf.Tau, 64, new Color(DrawColor.R, DrawColor.G, DrawColor.B, 1f), 2f);
+                float shortR = Mathf.Max(Radius * AspectY, 0f);
+                float halfMid = Mathf.Max(Radius - shortR, 0f); // 中间直段半长
+                DrawRect(new Rect2(-halfMid, -shortR, halfMid * 2f, shortR * 2f), DrawColor);
+                DrawCircle(new Vector2(-halfMid, 0f), shortR, DrawColor);
+                DrawCircle(new Vector2(halfMid, 0f), shortR, DrawColor);
+                DrawRect(new Rect2(-halfMid, -shortR, halfMid * 2f, shortR * 2f), new Color(DrawColor.R, DrawColor.G, DrawColor.B, 1f), false, 2f);
             }
         }
     }
