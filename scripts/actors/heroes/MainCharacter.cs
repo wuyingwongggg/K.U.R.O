@@ -516,7 +516,9 @@ namespace Kuros.Actors.Heroes
 
 		int previousHealth = CurrentHealth;
 		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
-		_pendingHitKnockback = CurrentHealth < previousHealth;
+		// IgnoreHitStateOnDamage（如齿轮关节 buff）时连击退一起抑制：
+		// 敌人击退依赖 ConsumePendingHitKnockback，保留标记会导致不打断攻击却仍被击退
+		_pendingHitKnockback = CurrentHealth < previousHealth && !IgnoreHitStateOnDamage;
 		// 状态机会处理受伤状态切换，不需要额外逻辑
 	}
 
