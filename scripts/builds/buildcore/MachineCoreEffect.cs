@@ -27,8 +27,8 @@ namespace Kuros.Builds.BuildCore
         [Export(PropertyHint.Range, "0,50,0.1")] public float DecayDelay = 0.5f;  // 非移动时热量衰减前的延迟时间
 
         [ExportCategory("Release")]
-        [Export(PropertyHint.Range, "0,5,0.01")] public float DamagePerHeat = 0.01f;
-        [Export(PropertyHint.Range, "0,5,0.01")] public float MaxDamageBonus = 1.5f;
+        [Export(PropertyHint.Range, "0,5,0.01")] public float ReleaseBonusAtFullHeat = 1.0f; // 满热量释放时的加成比例（100 热量/满热量 → 该值）
+        [Export(PropertyHint.Range, "0,5,0.01")] public float MaxDamageBonus = 1.5f; // 加成上限（超频超过 MaxHeat 时可突破满热量值，但受此钳制）
         [Export(PropertyHint.Range, "1,200,1")] public float HeatDrainRate = 33f;
         [Export(PropertyHint.Range, "0,10,0.1")] public float ReleaseCooldown = 1f;
         [Export] public bool DisableHeatGainDuringBuff = true; // Buff 期间是否禁用热量获取（移动/攻击命中）
@@ -308,11 +308,16 @@ namespace Kuros.Builds.BuildCore
         }
 
         /// <summary>
-        /// 当前释放 buff 的攻击力加成量（_originalAttackDamage × min(消耗热量×DamagePerHeat, MaxDamageBonus)）。
+        /// 当前释放 buff 的攻击力加成量（_originalAttackDamage × 加成比例 × 外部倍率）。
+        /// 加成比例 = ReleaseBonusAtFullHeat × 消耗热量/MaxHeat（满热量 = 满加成，与 MaxHeat 绝对值无关）。
         /// Buff 未激活时为 0。供命中触发的释放效果把本段错过的加成补回。
         /// </summary>
         public float CurrentReleaseDamageBonus =>
-            _buffActive ? _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) * ReleaseBonusMultiplier : 0f;
+            _buffActive ? _originalAttackDamage * ReleaseBonusRatio * ReleaseBonusMultiplier : 0f;
+
+        /// <summary>释放加成比例：满热量恒为 ReleaseBonusAtFullHeat，按 热量/MaxHeat 等比缩放，超频（热量&gt;MaxHeat）突破满热量值但受 MaxDamageBonus 钳制。</summary>
+        private float ReleaseBonusRatio =>
+            Mathf.Min(ReleaseBonusAtFullHeat * _consumedHeat / Mathf.Max(MaxHeat, 0.01f), MaxDamageBonus);
 
         /// <summary>
         /// 重新应用当前 buff 的攻击力加成。命中检测（PerformDefaultHitDetection）的 finally
@@ -340,7 +345,7 @@ namespace Kuros.Builds.BuildCore
                 _originalAttackDamage = _cachedAttackDamage;
                 _buffActive = true;
             }
-            float bonus = _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) * ReleaseBonusMultiplier;
+            float bonus = _originalAttackDamage * ReleaseBonusRatio * ReleaseBonusMultiplier;
             Actor.AttackDamage = _originalAttackDamage + bonus;
 
             // 同步通知外部效果接管（在 AttackDamage 写入之后、调用方返回之前，

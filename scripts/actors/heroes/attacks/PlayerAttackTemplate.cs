@@ -260,8 +260,8 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnTick(double delta) { }
 
-        /// <summary>从 Recovery 打断重启时跳过 Warmup，直接进入 Active 阶段。</summary>
-        public virtual bool SkipWarmupOnRecoveryRestart => false;
+        /// <summary>从 Recovery 打断重启时跳过 Warmup，直接进入 Active 阶段（伤害立即判定）。</summary>
+        [Export] public bool SkipWarmupOnRecoveryRestart = false;
 
         public bool TryStart(bool checkInput = true)
         {

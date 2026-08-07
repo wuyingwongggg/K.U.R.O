@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_v1bwi"]
 [ext_resource type="Resource" uid="uid://cxxnxtyv1yqw6" path="res://resources/items/Weapon_Stab_Corkscrew.tres" id="3_8xk5x"]
 [ext_resource type="Resource" uid="uid://bckpievppp7bh" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="4_v1bwi"]
-[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="6_u33rm"]
+[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="6_u33rm"]
 
 [sub_resource type="Resource" id="Resource_5a13u"]
 script = ExtResource("2_v1bwi")

@@ -8,6 +8,7 @@
 script = ExtResource("1_w8ttm")
 Trigger = 1
 EffectScene = ExtResource("2_bt0ev")
+Notes = "击退"
 PropertyOverrides = Dictionary[String, Variant]({
 "KnockbackDistance": 30.0
 })
@@ -17,12 +18,12 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("2_hduh6")
 SkillId = "WeaponSkill_Stab_Umbrella"
 DisplayName = "雨伞攻击"
-AnimationName = "attack_thrust"
-DamageMultiplier = 0.5
+AnimationName = "Weapon_Stab_Umbrella"
 ShowHitboxDebug = false
 Description = "攻击到敌人时击退该敌人0.3m"
 Effects = Array[ExtResource("1_w8ttm")]([SubResource("Resource_a5flt")])
-ActivationAction = "weapon_skill_block"
 WarmupDuration = 0.17
-ActiveDuration = 0.63
-RecoveryDuration = 0.2
+ActiveDuration = 0.23
+RecoveryDuration = 0.1
+WarmupAnimationSpeed = 0.4
+RecoveryAnimationSpeed = 0.5
