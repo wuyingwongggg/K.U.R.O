@@ -55,7 +55,7 @@ func play(anim: String, loop := true, mix_duration := 0.1, time_scale := 1.0):
 
 	_current_animation_name = anim
 	_hit_sequence = 0
-	
+
 	var entry = state.set_animation(anim, loop)
 	if entry:
 		# 设置混合时长
@@ -63,13 +63,24 @@ func play(anim: String, loop := true, mix_duration := 0.1, time_scale := 1.0):
 			entry.set_mix_duration(mix_duration)
 		else:
 			entry.mix_duration = mix_duration
-		
+
 		# 设置时间缩放
 		if entry.has_method("set_time_scale"):
 			entry.set_time_scale(time_scale)
 		else:
 			entry.time_scale = time_scale
-	
+
+	return entry
+
+## 从指定时间点播放动画（跳帧）
+## start_time: 动画起始时间（秒），播放后立即跳到此时间点继续
+func play_from(anim: String, start_time: float, loop := true, mix_duration := 0.1, time_scale := 1.0):
+	var entry = play(anim, loop, mix_duration, time_scale)
+	if entry and start_time > 0.0:
+		if entry.has_method("set_track_time"):
+			entry.set_track_time(start_time)
+		else:
+			entry.track_time = start_time
 	return entry
 
 ## 动态修改当前正在播放动画的时间缩放，无需重启动画。

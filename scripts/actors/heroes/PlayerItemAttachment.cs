@@ -525,6 +525,20 @@ namespace Kuros.Actors.Heroes
             ClearHeldScene();
         }
 
+        /// <summary>获取当前 hold 场景中的 AnimatedSprite2D（用于投掷帧捕获）。按类型查找，不依赖节点名。</summary>
+        public AnimatedSprite2D? GetHeldAnimatedSprite()
+        {
+            if (_heldSceneInstance == null || !GodotObject.IsInstanceValid(_heldSceneInstance))
+                return null;
+            if (_heldSceneInstance is AnimatedSprite2D direct) return direct;
+            foreach (Node child in _heldSceneInstance.FindChildren("*", recursive: true, owned: false))
+            {
+                if (child is AnimatedSprite2D anim)
+                    return anim;
+            }
+            return null;
+        }
+
         private void UpdateEquippedAttackArea(ItemDefinition? item)
         {
             if (item == null)

@@ -113,9 +113,21 @@ namespace Kuros.Actors.Heroes.States
 
         private void CaptureThrowFrameFromHeldScene()
         {
-            var sprite = Player.FindChild("EmojiBoomAnimation", recursive: true, owned: false) as AnimatedSprite2D;
+            var sprite = Player.ItemAttachment?.GetHeldAnimatedSprite()
+                ?? FindHeldAnimatedSprite(Player);
             if (_interaction != null)
                 _interaction.PendingThrowFrame = sprite?.Frame ?? -1;
+        }
+
+        /// <summary>按类型在玩家场景树下找第一个 AnimatedSprite2D（附件缓存失败时的回退）。</summary>
+        private static AnimatedSprite2D? FindHeldAnimatedSprite(Node root)
+        {
+            foreach (Node child in root.FindChildren("*", recursive: true, owned: false))
+            {
+                if (child is AnimatedSprite2D anim)
+                    return anim;
+            }
+            return null;
         }
     }
 }

@@ -10,7 +10,7 @@ script = ExtResource("1_52r4t")
 Scene = ExtResource("2_a5u4b")
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0,
-"TierValues": [30.0, 40.0, 50.0]
+"TierValues": [10.0, 20.0, 30.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -18,7 +18,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_52r4t")
 EffectId = "BuildMachine_A_002"
 DisplayName = "扩容核心"
-Description = "热量上限提升30%/40%/50%"
+Description = "热量上限提升{0}%/{1}%/{2}%"
 BuildClass = "Machine"
 MaxStacks = 3
 Icon = ExtResource("3_a5u4b")

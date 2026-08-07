@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=8 format=3 uid="uid://cka5mpyehi0l0"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_r7lny"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_s1y4f"]
+[ext_resource type="PackedScene" uid="uid://u42x4nuqgi3b" path="res://resources/effects/ECoreAttackEffect.tscn" id="3_r7lny"]
+[ext_resource type="Texture2D" uid="uid://cjdlmm44l3ndf" path="res://assets/weapons/滚雷.png" id="4_r7lny"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_fie3g"]
+
+[sub_resource type="Resource" id="Attribute_AttackPower"]
+script = ExtResource("1_r7lny")
+AttributeId = "attack_power"
+
+[sub_resource type="Resource" id="Resource_b7h5n"]
+script = ExtResource("2_s1y4f")
+Trigger = 4
+EffectScene = ExtResource("3_r7lny")
+Notes = "投掷的瞬间破坏并生成点击核心
+"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("5_fie3g")
+ItemId = "Weapon_Throw_ECore"
+DisplayName = "电击核心"
+Description = "投掷武器：电击核心"
+Icon = ExtResource("4_r7lny")
+Category = "Weapon"
+Tags = Array[String](["tag_weapon", "tag_throw"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_r7lny")]([SubResource("Attribute_AttackPower")])
+EffectEntries = Array[ExtResource("2_s1y4f")]([SubResource("Resource_b7h5n")])
+IsThrowable = true
+IsThrowWeapon = true
+PreventDropDuringCooldown = true
+ThrowStartOffset = Vector2(0, -150)
+ThrowParabolicDuration = 0.01
+ThrowParabolicPeakHeight = 0.0
+ThrowHorizontalDistance = 1.0
+ThrowParabolicLandingYOffset = -150.0
+ThrowWeaponCooldown = 10.0
+WorldScenePath = "uid://elnc1v25l2w1"

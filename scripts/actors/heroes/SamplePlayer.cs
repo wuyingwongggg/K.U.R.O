@@ -46,6 +46,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	private Vector2 _currentAttackAnchorMotionOffset = Vector2.Zero;
 	private Node2D? _attackMotionBoneNode;
 	private PlayerItemAttachment? _itemAttachment;
+	public PlayerItemAttachment? ItemAttachment => _itemAttachment;
 	//private AiDecisionBridge? _aiDecisionBridge;
 	//private AiDecisionExecutor? _aiDecisionExecutor;
 	private readonly Godot.Collections.Array<Rid> _attackQueryExclude = new();

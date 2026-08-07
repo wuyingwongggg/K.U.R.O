@@ -14,8 +14,8 @@ shader_parameter/fade = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mxyg0"]
 shader = ExtResource("2_vl6ap")
-shader_parameter/glow_intensity = 1.6000000760000002
-shader_parameter/core_width = 0.400000019
+shader_parameter/glow_intensity = 2.000000095
+shader_parameter/core_width = 0.6000000285
 shader_parameter/core_length = 0.930000044175
 shader_parameter/fade = 1.0
 
@@ -36,27 +36,6 @@ KnockbackSpeed = 1000.0
 target_position = Vector2(3000, 0)
 collision_mask = 4
 
-[node name="Spotlight" type="Sprite2D" parent="."]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-scale = Vector2(0.8, 0.6)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight" type="Sprite2D" parent="Spotlight"]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight2" type="Sprite2D" parent="Spotlight"]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight3" type="Sprite2D" parent="Spotlight"]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-texture = ExtResource("2_spot")
-
 [node name="GlowSprite" type="Sprite2D" parent="."]
 modulate = Color(18.892157, 0, 0, 1)
 material = SubResource("ShaderMaterial_vfvjj")
@@ -71,3 +50,25 @@ scale = Vector2(1, 0.3)
 texture = ExtResource("3_beam")
 centered = false
 offset = Vector2(0, -10)
+
+[node name="Spotlight" type="Sprite2D" parent="."]
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+scale = Vector2(0.8, 0.6)
+texture = ExtResource("2_spot")
+
+[node name="Spotlight" type="Sprite2D" parent="Spotlight"]
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+texture = ExtResource("2_spot")
+
+[node name="Spotlight2" type="Sprite2D" parent="Spotlight"]
+visible = false
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+texture = ExtResource("2_spot")
+
+[node name="Spotlight3" type="Sprite2D" parent="Spotlight"]
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+texture = ExtResource("2_spot")

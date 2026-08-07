@@ -5,4 +5,4 @@
 [node name="MachineHighSpeedConductionEffect" type="Node"]
 script = ExtResource("1")
 EffectId = "82ab1456-47d1-4c5d-a6f3-b8dc45245b81"
-Description = "所有热量积累速度提升，热量上限降低，非释放时衰减速度提高"
+Description = "所有热量积累速度提升，热量上限降低，自然衰减速度提升"

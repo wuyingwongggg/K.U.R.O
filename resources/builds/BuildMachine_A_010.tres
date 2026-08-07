@@ -1,14 +1,29 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bvi5qia22keqf"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://bvi5qia22keqf"]
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_avkbu"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_knq0i"]
+[ext_resource type="PackedScene" uid="uid://ca0sv5f203uhx" path="res://scenes/builds/machine/MachineOverclockEffect.tscn" id="2_sihfu"]
+[ext_resource type="Texture2D" uid="uid://dreguwukftm4f" path="res://assets/BuildIcon/Machine_A_010_异常超频.png" id="3_28pbp"]
+
+[sub_resource type="Resource" id="Resource_m0so0"]
+script = ExtResource("1_avkbu")
+Scene = ExtResource("2_sihfu")
+PropertyOverrides = Dictionary[String, Variant]({
+"AttackSpeedPercentPerHeat": 0.75,
+"DamageTakenPercentPerHeat": 2.0,
+"Duration": 0.0,
+"SpeedPercentPerHeat": 1.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [resource]
 script = ExtResource("2_knq0i")
 EffectId = "BuildMachine_A_010"
 DisplayName = "异常超频"
-Description = "允许热量的获取突破100%，且每突破1点热量，移动速度、攻击速度、受到的伤害提升2%"
+Description = "允许热量的获取突破100%，且每突破1点热量，移动速度提升1%、攻击速度提升0.75%、受到的伤害提升2%"
 BuildClass = "Machine"
 Rarity = 2
 Weight = 5
+Icon = ExtResource("3_28pbp")
+EffectEntries = Array[ExtResource("1_avkbu")]([SubResource("Resource_m0so0")])
 metadata/_custom_type_script = "uid://3bb6nng4vb53"

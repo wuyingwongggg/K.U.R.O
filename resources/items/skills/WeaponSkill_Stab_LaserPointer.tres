@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=5 format=3 uid="uid://dsc4x3a8m8hu3"]
+
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_g83ek"]
+[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_02i83"]
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_65vvs"]
+
+[sub_resource type="Resource" id="Resource_a5flt"]
+script = ExtResource("1_g83ek")
+Trigger = 1
+EffectScene = ExtResource("2_02i83")
+Notes = "击退"
+PropertyOverrides = Dictionary[String, Variant]({
+"KnockbackDistance": 30.0
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("3_65vvs")
+SkillId = "WeaponSkill_LaserPointer"
+DisplayName = "激光笔攻击"
+AnimationName = "Weapon_Stab_LaserPointer"
+DamageMultiplier = 0.6
+Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt")])
+WarmupDuration = 0.3500000000000001
+ActiveDuration = 0.95
+RecoveryDuration = 0.19999999999999996

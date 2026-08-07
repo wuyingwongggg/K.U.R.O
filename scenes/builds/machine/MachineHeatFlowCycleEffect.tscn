@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://es3coq7fveae"]
 
-[ext_resource type="Script" path="res://scripts/builds/machine/MachineHeatFlowCycleEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://cqjb021gg1q0e" path="res://scripts/builds/machine/MachineHeatFlowCycleEffect.cs" id="1"]
 
 [node name="MachineHeatFlowCycleEffect" type="Node"]
 script = ExtResource("1")
+EffectId = "16ed39cd-cfee-4208-97ee-a2f15419bb27"
+Description = "发动核心技能期间允许继续获取热量"

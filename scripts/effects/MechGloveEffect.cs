@@ -29,6 +29,7 @@ namespace Kuros.Effects
         private bool[] _stepHit = System.Array.Empty<bool>();
         private bool _critApplied;
         private int _lastTrackedStep;
+        private int _lastRoundId = -1;
         private bool _subscribed;
 
         public MechGloveEffect()
@@ -69,9 +70,18 @@ namespace Kuros.Effects
             if (Actor == null || attacker != Actor || target == null) return;
             if (damage <= 0) return;
 
+            int roundId = PlayerAttackTemplate.CurrentAttackRoundId;
+
+            // 回合变化 → 重置连击：跨回合的命中事件不得参与本回合的连击/暴击判定
+            if (roundId != _lastRoundId)
+            {
+                ResetCombo();
+                _lastRoundId = roundId;
+            }
+
             int step = PlayerAttackTemplate.CurrentAttackHitStep;
 
-            // 段数归 1 或出现倒退，说明开始了新一轮攻击，重置连击状态
+            // 段数归 1 或出现倒退（同一回合内），说明开始了新一轮攻击，重置连击状态
             if (step == 1 || step < _lastTrackedStep)
             {
                 ResetCombo();

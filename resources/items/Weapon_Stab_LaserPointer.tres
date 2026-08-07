@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=7 format=3 uid="uid://bcl2h4rh8esrx"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_bqh4s"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_ugy8x"]
+[ext_resource type="Texture2D" uid="uid://bqyt30qieseuf" path="res://assets/weapons/激光笔.png" id="3_bqh4s"]
+[ext_resource type="Resource" uid="uid://dsc4x3a8m8hu3" path="res://resources/items/skills/WeaponSkill_Stab_LaserPointer.tres" id="4_bqh4s"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_ucubx"]
+
+[sub_resource type="Resource" id="Attribute_AttackPower"]
+script = ExtResource("1_bqh4s")
+AttributeId = "attack_power"
+Value = 20.0
+
+[resource]
+script = ExtResource("5_ucubx")
+ItemId = "Weapon_Stab_LaserPointer"
+DisplayName = "激光笔"
+Description = "戳刺武器：激光笔"
+Icon = ExtResource("3_bqh4s")
+Category = "Weapon"
+Tags = Array[String](["tag_weapon", "tag_stab", "hit_1"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_bqh4s")]([SubResource("Attribute_AttackPower")])
+WeaponSkillResources = Array[Resource]([ExtResource("4_bqh4s")])
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicPeakHeight = 100.0
+ThrowParabolicLandingYOffset = 250.0
+WorldScenePath = "uid://daek68pd4nvyr"

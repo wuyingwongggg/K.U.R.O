@@ -1,0 +1,375 @@
+[gd_scene load_steps=41 format=3 uid="uid://bhfxd1mo7qdpd"]
+
+[ext_resource type="Script" uid="uid://k4r24d1vsno1" path="res://scripts/fx/MachineFlameRingEffect.cs" id="1_ring"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="2_entry"]
+[ext_resource type="PackedScene" uid="uid://y1isgrju8g0h" path="res://resources/effects/DotBurnEffect.tscn" id="3_burn"]
+[ext_resource type="Shader" uid="uid://dx65whe3ahege" path="res://shaders/materials/fire_ring.gdshader" id="4_x03t6"]
+[ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="5_e1s05"]
+[ext_resource type="Texture2D" uid="uid://o0blev1r722u" path="res://assets/effect/AttackEffect/ringA/ring.png" id="6_xvwpm"]
+[ext_resource type="Shader" uid="uid://bk3a7dtbgf1jd" path="res://shaders/materials/fire_cartoon.gdshader" id="7_e1s05"]
+[ext_resource type="Texture2D" uid="uid://bx2lb5fq15jqs" path="res://assets/effect/AttackEffect/ringA/ringB.png" id="8_ogq61"]
+[ext_resource type="Texture2D" uid="uid://cnngeydj5ptrn" path="res://assets/effect/AttackEffect/ringA/ringB_2.png" id="9_seouj"]
+[ext_resource type="Texture2D" uid="uid://c21qtwystr7o4" path="res://assets/effect/AttackEffect/burn_b/BurnB_01.png" id="10_fhu0o"]
+[ext_resource type="Texture2D" uid="uid://b8ih6h0ad2rdh" path="res://assets/effect/AttackEffect/burn_b/BurnB_02.png" id="11_8auex"]
+[ext_resource type="Texture2D" uid="uid://bw578ihhr0dt" path="res://assets/effect/AttackEffect/burn_b/BurnB_03.png" id="12_sna3a"]
+[ext_resource type="Texture2D" uid="uid://bajvnceultpeu" path="res://assets/effect/AttackEffect/burn_b/BurnB_04.png" id="13_8qcoa"]
+[ext_resource type="Texture2D" uid="uid://cylrkb6b8dbid" path="res://assets/effect/AttackEffect/burn_b/BurnB_05.png" id="14_b8rdm"]
+[ext_resource type="Texture2D" uid="uid://bqc1rmpwo0ras" path="res://assets/effect/AttackEffect/burn_b/BurnB_06.png" id="15_b6ews"]
+[ext_resource type="Texture2D" uid="uid://c64hcvol8onoe" path="res://assets/effect/AttackEffect/burn_b/BurnB_07.png" id="16_x7d20"]
+[ext_resource type="Texture2D" uid="uid://cordoocgu66xk" path="res://assets/effect/AttackEffect/burn_b/BurnB_08.png" id="17_qdoog"]
+[ext_resource type="Texture2D" uid="uid://cx2ekvdol5qk2" path="res://assets/effect/AttackEffect/burn_b/BurnB_09.png" id="18_0qxf5"]
+[ext_resource type="Texture2D" uid="uid://4sbj66w0t4o3" path="res://assets/effect/AttackEffect/burn_b/BurnB_10.png" id="19_8fvki"]
+[ext_resource type="Texture2D" uid="uid://q82n130rrdc" path="res://assets/effect/AttackEffect/burn_b/BurnB_11.png" id="20_ek74v"]
+[ext_resource type="Texture2D" uid="uid://dr35inh6utl4r" path="res://assets/effect/AttackEffect/burn_b/BurnB_12.png" id="21_yiap7"]
+[ext_resource type="Texture2D" uid="uid://b40k1buha3eax" path="res://assets/effect/AttackEffect/burn_b/BurnB_13.png" id="22_j4p47"]
+[ext_resource type="Texture2D" uid="uid://dbqr4amyouoj4" path="res://assets/effect/AttackEffect/burn_b/BurnB_14.png" id="23_ga2h2"]
+[ext_resource type="Texture2D" uid="uid://ldrqx0d2ca7u" path="res://assets/effect/AttackEffect/burn_b/BurnB_15.png" id="24_stghg"]
+[ext_resource type="Texture2D" uid="uid://bffil8q5n5cec" path="res://assets/effect/AttackEffect/burn_b/BurnB_16.png" id="25_qbdmq"]
+[ext_resource type="Texture2D" uid="uid://pxsp1lehj08u" path="res://assets/effect/AttackEffect/burn_b/BurnB_17.png" id="26_4ki14"]
+[ext_resource type="Texture2D" uid="uid://b410encujmkue" path="res://assets/effect/AttackEffect/burn_b/BurnB_18.png" id="27_r76i4"]
+[ext_resource type="Texture2D" uid="uid://bf7otg26ouvya" path="res://assets/effect/AttackEffect/burn_b/BurnB_19.png" id="28_irlxc"]
+[ext_resource type="Texture2D" uid="uid://bb6waua32jdkb" path="res://assets/effect/AttackEffect/burn_b/BurnB_20.png" id="29_1ibis"]
+[ext_resource type="Texture2D" uid="uid://d2b1vcvqbxvdd" path="res://assets/effect/AttackEffect/burn_b/BurnB_21.png" id="30_quaqn"]
+[ext_resource type="Texture2D" uid="uid://dkbysw0bb0g3t" path="res://assets/effect/AttackEffect/burn_b/BurnB_22.png" id="31_styqa"]
+[ext_resource type="Texture2D" uid="uid://dv3ro6dgupy3n" path="res://assets/effect/AttackEffect/burn_b/BurnB_23.png" id="32_8ysv1"]
+[ext_resource type="Texture2D" uid="uid://dvm38cy86g2ij" path="res://assets/effect/AttackEffect/burn_b/BurnB_24.png" id="33_td06n"]
+[ext_resource type="Texture2D" uid="uid://dv0yy7bmcjoke" path="res://assets/effect/AttackEffect/burn_b/BurnB_25.png" id="34_8ru48"]
+
+[sub_resource type="Resource" id="BurnEntry_Ring"]
+script = ExtResource("2_entry")
+Scene = ExtResource("3_burn")
+PropertyOverrides = Dictionary[String, Variant]({
+"DamagePercentPerSecond": 100.0,
+"Duration": 3.0,
+"TickInterval": 1.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e1s05"]
+shader = ExtResource("4_x03t6")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 120.0000056525
+shader_parameter/rot_x_deg = 330.000032775
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/inset = 0.0
+shader_parameter/noise1 = ExtResource("5_e1s05")
+shader_parameter/noise2 = ExtResource("5_e1s05")
+shader_parameter/tint = Color(1, 0.44313726, 0, 1)
+shader_parameter/influence = 20.000000298024
+shader_parameter/amount = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xvwpm"]
+shader = ExtResource("7_e1s05")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 1.0
+shader_parameter/rot_x_deg = 45.0000192375
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/inset = 0.0
+shader_parameter/noise_tex = ExtResource("5_e1s05")
+shader_parameter/noise_tex2 = ExtResource("5_e1s05")
+shader_parameter/formato_custom_tex = ExtResource("8_ogq61")
+shader_parameter/margem_seguranca = 4.00000019
+shader_parameter/modo_rgb = false
+shader_parameter/cor_contorno = Color(1, 0.34117648, 0, 1)
+shader_parameter/cor_externa = Color(0.8, 0.37254903, 0, 1)
+shader_parameter/cor_media = Color(1, 0.5, 0, 1)
+shader_parameter/cor_nucleo = Color(1, 0.9, 0.2, 1)
+shader_parameter/outline_interno_ativo = true
+shader_parameter/outline_interno_chance = 0.800000038
+shader_parameter/outline_interno_velocidade = 10.0
+shader_parameter/usar_rastro_procedural = true
+shader_parameter/angulo_arco = 360.0
+shader_parameter/espessura_rastro = 0.0
+shader_parameter/suavizacao_borda = 0.1
+shader_parameter/usar_textura_formato = false
+shader_parameter/formato_tex_escala = Vector2(1, 1)
+shader_parameter/mistura_textura_procedural = 0.5
+shader_parameter/distorcer_textura = true
+shader_parameter/distorcao_forca = 0.05
+shader_parameter/distorcao_velocidade = 2.0
+shader_parameter/distorcao_escala = 3.0
+shader_parameter/alpha_geral = 1.0
+shader_parameter/radomizar_alpha = false
+shader_parameter/alpha_min = 0.4
+shader_parameter/alpha_max = 1.0
+shader_parameter/vel_radomizacao = 15.0
+shader_parameter/pixelado = false
+shader_parameter/qtd_pixels = 64.0
+shader_parameter/intensidade_glow = 1.5
+shader_parameter/direcao_vento = Vector2(0, 1)
+shader_parameter/forca_fogo = 1.5
+shader_parameter/variacao_caos = 2.00000009174012
+shader_parameter/criar_faiscas = true
+shader_parameter/qtd_faiscas = 1.0
+shader_parameter/velocidade_puxao_faiscas = 2.0
+shader_parameter/faiscas_com_borda = true
+shader_parameter/faisca_tempo_radomico = true
+shader_parameter/faisca_tempo_min = 0.5
+shader_parameter/faisca_tempo_max = 3.0
+shader_parameter/faisca_tamanho_base = 15.0
+shader_parameter/faisca_tamanho_radomico = true
+shader_parameter/faisca_tamanho_min = 0.5
+shader_parameter/faisca_tamanho_max = 2.0
+shader_parameter/overlay_ring = false
+shader_parameter/overlay_tint = Color(1, 0.5, 0.1, 1)
+shader_parameter/overlay_amount = 0.5
+shader_parameter/overlay_velocidade = 1.0
+shader_parameter/overlay_influence = 30.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ogq61"]
+shader = ExtResource("4_x03t6")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 1.0
+shader_parameter/rot_x_deg = 50.00001947499999
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/inset = 0.0
+shader_parameter/noise1 = ExtResource("5_e1s05")
+shader_parameter/noise2 = ExtResource("5_e1s05")
+shader_parameter/tint = Color(1, 0.75686276, 0, 1)
+shader_parameter/influence = 25.00000037253
+shader_parameter/amount = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yvtjc"]
+shader = ExtResource("4_x03t6")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 39.4230018250925
+shader_parameter/rot_x_deg = 35.00001876250002
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/inset = 0.0
+shader_parameter/noise1 = ExtResource("5_e1s05")
+shader_parameter/noise2 = ExtResource("5_e1s05")
+shader_parameter/tint = Color(0.92941177, 0.4862745, 0, 1)
+shader_parameter/influence = 15.000000223518
+shader_parameter/amount = 0.0
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3gppx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_fhu0o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_8auex")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_sna3a")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_8qcoa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_b8rdm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_b6ews")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_x7d20")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_qdoog")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_0qxf5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_8fvki")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_ek74v")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_yiap7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_j4p47")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_ga2h2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_stghg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_qbdmq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_4ki14")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_r76i4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_irlxc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_1ibis")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_quaqn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_styqa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_8ysv1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_td06n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_8ru48")
+}],
+"loop": true,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="MachineFlameRing" type="Node2D"]
+z_index = 1
+script = ExtResource("1_ring")
+ExpandDuration = 0.2
+BurnEffectEntries = Array[ExtResource("2_entry")]([SubResource("BurnEntry_Ring")])
+TargetCollisionMask = 3
+VisualSpritePath = NodePath("Sprite2D2")
+DamageAreaAspectY = 0.7
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_e1s05")
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("8_ogq61")
+
+[node name="Sprite2D" type="Sprite2D" parent="Sprite2D2"]
+material = SubResource("ShaderMaterial_xvwpm")
+scale = Vector2(2.7, 2.7)
+texture = ExtResource("6_xvwpm")
+
+[node name="Sprite2D3" type="Sprite2D" parent="Sprite2D2"]
+material = SubResource("ShaderMaterial_ogq61")
+scale = Vector2(0.6, 0.8)
+texture = ExtResource("8_ogq61")
+
+[node name="Sprite2D4" type="Sprite2D" parent="Sprite2D2"]
+material = SubResource("ShaderMaterial_yvtjc")
+scale = Vector2(1.0999998, 1.0499998)
+texture = ExtResource("9_seouj")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-14.285714, -222.85715)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D11" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-74.28571, -200.00003)
+scale = Vector2(0.4, 0.4)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-122.85714, -200.00003)
+scale = Vector2(0.55, 0.55)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D12" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-182.85715, -154.28572)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D13" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(51.428574, -217.14287)
+scale = Vector2(0.44999996, 0.44999996)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(108.57143, -217.14285)
+scale = Vector2(0.55, 0.55)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D14" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(162.85715, -191.42857)
+scale = Vector2(0.65, 0.65)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D4" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(214.28572, -137.14285)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D5" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-220, -137.14287)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D15" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-220.00003, -94.28571)
+scale = Vector2(0.4, 0.4)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D6" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-220.00003, -65.71429)
+scale = Vector2(0.65, 0.65)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D16" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(217.14287, -97.14286)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D7" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(228.57141, -48.571434)
+scale = Vector2(0.65, 0.65)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D17" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(214.28572, 9.536743e-07)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D8" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(151.42857, 37.14286)
+scale = Vector2(0.7, 0.7)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D18" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-222.85715, -14.285715)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D9" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-160, 37.142853)
+scale = Vector2(0.7, 0.7)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D20" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(74.28571, 82.85714)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D19" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(-77.14285, 68.57143)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"
+
+[node name="AnimatedSprite2D10" type="AnimatedSprite2D" parent="Sprite2D2"]
+position = Vector2(0, 74.28571)
+scale = Vector2(0.7, 0.7)
+sprite_frames = SubResource("SpriteFrames_3gppx")
+autoplay = "default"

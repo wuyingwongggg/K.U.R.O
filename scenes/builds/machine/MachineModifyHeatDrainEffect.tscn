@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://uegsjb1tl7fy"]
+
+[ext_resource type="Script" uid="uid://dnkm85dlak03u" path="res://scripts/builds/machine/MachineModifyHeatDrainEffect.cs" id="1"]
+
+[node name="MachineModifyHeatDrainEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "d5a1a74b-2c3e-4f8a-9b7e-6a2f1c8d4e01"
+Description = "热量释放强化：加快或减慢释放核心技能时的热量衰减速度 "

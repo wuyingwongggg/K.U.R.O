@@ -27,7 +27,8 @@ Pseudo3DZSpeed = 2000.0
 script = ExtResource("2_6aiag")
 sprite_path = NodePath("../Sprite2D")
 is_spine = false
-interval = 0.02
+interval = 0.01
+lifetime = 0.1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.33, 0.33)

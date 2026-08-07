@@ -60,7 +60,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 3,
-"SpreadAngle": 60.0
+"SpreadAngle": 60.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 

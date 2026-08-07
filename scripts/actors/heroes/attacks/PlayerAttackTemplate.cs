@@ -97,12 +97,15 @@ namespace Kuros.Actors.Heroes.Attacks
         /// 当前攻击的 Spine 动画段数（1-based），用于让其他系统（如效果）判断是否为第一段伤害
         /// </summary>
         public static int CurrentAttackHitStep { get; private set; } = 1;
+        /// <summary>当前攻击回合 ID：每次攻击开始递增，供连击/段数效果隔离回合（防止跨回合命中污染判定）。</summary>
+        public static int CurrentAttackRoundId { get; private set; } = 1;
 
         private AttackPhase _phase = AttackPhase.Idle;
         private float _phaseTimer = 0f;
         private float _cooldownTimer = 0f;
         private bool _wantsRestart = false;
         private bool _wantsMove = false;
+        private float _pendingSkipWarmupStart = -1f;
         private bool _hitEffectSubscribed = false;
         private bool _hitWindowActive = false;
         private Node? _hitEffectParent;
@@ -112,7 +115,26 @@ namespace Kuros.Actors.Heroes.Attacks
         private bool _spineHitSubscribed = false;
         private bool _spineHitWindowActive = false;
         private string _spineAttackAnimationName = string.Empty;
-        private string _resolvedAnimationName = string.Empty;
+        protected string _resolvedAnimationName = string.Empty;
+
+        /// <summary>当前是否处于 Active 阶段（供子类做阶段判断，如激光笔的 Active 方向切换）。</summary>
+        protected bool IsInActivePhase => _phase == AttackPhase.Active;
+
+        /// <summary>切换 Active 阶段的动画名并同步 Spine hit 事件匹配名（切换后新动画的 hit 事件才能通过匹配）。</summary>
+        protected void SetSpineAttackAnimation(string animationName)
+        {
+            _spineAttackAnimationName = animationName;
+        }
+
+        /// <summary>当前攻击动画的 Warmup 段时长（动画时间轴秒数，未缩放），供子类切换动画时跳帧到 Active 段。</summary>
+        protected float ResolveWarmupAnimationTime()
+            => ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration);
+
+        /// <summary>当前 Active 阶段的动画播放速度（技能 ActiveAnimationSpeed × 全局攻速倍率，与阶段计时同源），
+        /// 供子类切换动画时保持速度一致，避免播放速度被重置为 1× 导致与阶段计时错位。</summary>
+        protected float ResolveActiveAnimationSpeed()
+            => Mathf.Max((_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f)
+                * Mathf.Max(Player.AttackSpeedMultiplier, 0.01f), 0.01f);
         private WeaponSkillDefinition? _activeWeaponSkill;
         private AttackHitboxDebugDrawer? _hitboxDebugDrawer;
         private int _currentHitStep = 1;  // 记录当前 Spine 动画段数（1-based）
@@ -257,12 +279,23 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnTick(double delta) { }
 
+        /// <summary>从 Recovery 打断重启时跳过 Warmup，直接进入 Active 阶段（伤害立即判定）。</summary>
+        [Export] public bool SkipWarmupOnRecoveryRestart = false;
+
         public bool TryStart(bool checkInput = true)
         {
-            if (!CanStart(checkInput)) return false;
+            // Recovery 打断重启是玩家主动连击，豁免 AttackTimer 冷却
+            bool isRestart = _wantsRestart;
+            if (!CanStart(checkInput, allowDuringCooldown: isRestart)) return false;
 
+            bool skipWarmup = isRestart && SkipWarmupOnRecoveryRestart;
             _wantsRestart = false;
             _wantsMove = false;
+
+            // 跳过 Warmup 时动画从 Warmup 结束处（动画内容时间）跳帧播放
+            _pendingSkipWarmupStart = skipWarmup
+                ? ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration)
+                : -1f;
 
             // 提前解析当前武器技能，以便应用 timing 覆盖
             _activeWeaponSkill = Player.WeaponSkillController?.GetPrimarySkillDefinition();
@@ -271,18 +304,21 @@ namespace Kuros.Actors.Heroes.Attacks
             _effectiveRecovery = ResolveSkillTiming(_activeWeaponSkill?.RecoveryDuration, RecoveryDuration);
 
             // 阶段时长按动画速度调整：速度越慢，阶段越久，确保动画完整播放
-            float warmupSpeed = _activeWeaponSkill?.WarmupAnimationSpeed ?? 1f;
-            float activeSpeed = _activeWeaponSkill?.ActiveAnimationSpeed ?? 1f;
-            float recoverySpeed = _activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f;
+            // 全局攻速倍率与武器技能速度相乘，空手（无技能）时 1f × 倍率同样生效
+            float globalSpeed = Mathf.Max(Player.AttackSpeedMultiplier, 0.01f);
+            float warmupSpeed = (_activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed;
+            float activeSpeed = (_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed;
+            float recoverySpeed = (_activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed;
             _effectiveWarmup   /= Mathf.Max(warmupSpeed, 0.01f);
             _effectiveActive   /= Mathf.Max(activeSpeed, 0.01f);
             _effectiveRecovery /= Mathf.Max(recoverySpeed, 0.01f);
 
             // 先进入 Warmup 阶段，再启动攻击
             // 这样可以确保当动画 hit 事件触发时，IsRunning 已经是 true
-            SetPhase(AttackPhase.Warmup);
+            // Recovery 打断重启且子类要求时，跳过 Warmup 直接进入 Active（伤害立即判定）
+            SetPhase(skipWarmup ? AttackPhase.Active : AttackPhase.Warmup);
             OnAttackStarted();
-            ApplyPhaseAnimationSpeed(AttackPhase.Warmup);
+            ApplyPhaseAnimationSpeed(skipWarmup ? AttackPhase.Active : AttackPhase.Warmup);
 
             if (ConsumeResourceOnStart)
             {
@@ -297,6 +333,7 @@ namespace Kuros.Actors.Heroes.Attacks
             _spineHitWindowActive = false;
             _spineAttackAnimationName = string.Empty;
             _activeWeaponSkill = null;
+            _pendingSkipWarmupStart = -1f;
 
             if (clearCooldown)
             {
@@ -310,11 +347,11 @@ namespace Kuros.Actors.Heroes.Attacks
             }
         }
 
-        protected virtual bool CanStart(bool checkInput)
+        protected virtual bool CanStart(bool checkInput, bool allowDuringCooldown = false)
         {
             if (Player == null) return false;
             if (IsRunning || IsOnCooldown) return false;
-            if (Player.AttackTimer > 0f) return false;
+            if (!allowDuringCooldown && Player.AttackTimer > 0f) return false;
 
             if (!IsWeaponRequirementSatisfied())
             {
@@ -416,12 +453,13 @@ namespace Kuros.Actors.Heroes.Attacks
 
         private void ApplyPhaseAnimationSpeed(AttackPhase phase)
         {
+            float globalSpeed = Mathf.Max(Player.AttackSpeedMultiplier, 0.01f);
             float speed = phase switch
             {
-                AttackPhase.Warmup => _activeWeaponSkill?.WarmupAnimationSpeed ?? 1f,
-                AttackPhase.Active => _activeWeaponSkill?.ActiveAnimationSpeed ?? 1f,
-                AttackPhase.Recovery => _activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f,
-                _ => 1f
+                AttackPhase.Warmup => (_activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed,
+                AttackPhase.Active => (_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed,
+                AttackPhase.Recovery => (_activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed,
+                _ => 1f * globalSpeed
             };
 
             if (Player is MainCharacter mainChar)
@@ -458,13 +496,22 @@ namespace Kuros.Actors.Heroes.Attacks
             _spineHitWindowActive = ShouldUseSpineHitEvents();
             _currentHitStep = 1;  // 重置段数计数器
             CurrentAttackHitStep = 1;  // 重置静态段数
+            CurrentAttackRoundId++;  // 新攻击回合：连击/段数效果按此隔离回合
 
             // 如果是 MainCharacter，使用 Spine 动画
             if (Player is MainCharacter mainChar)
             {
                 if (!string.IsNullOrEmpty(_resolvedAnimationName))
                 {
-                    mainChar.PlaySpineAnimation(_resolvedAnimationName, false);
+                    if (_pendingSkipWarmupStart >= 0f)
+                    {
+                        // 跳过 Warmup：动画从 Warmup 结束处跳帧播放
+                        mainChar.PlaySpineAnimationFrom(_resolvedAnimationName, _pendingSkipWarmupStart, false);
+                    }
+                    else
+                    {
+                        mainChar.PlaySpineAnimation(_resolvedAnimationName, false);
+                    }
                 }
             }
             // 否则使用 AnimationPlayer

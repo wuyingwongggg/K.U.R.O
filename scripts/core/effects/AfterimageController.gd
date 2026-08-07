@@ -2,7 +2,7 @@ extends Node
 
 @export var sprite_path: NodePath = "../SpineSprite"
 @export var is_spine: bool = true
-@export_range(0.02, 0.5, 0.01) var interval: float = 0.05
+@export_range(0.01, 0.5, 0.01) var interval: float = 0.05
 @export_range(0.1, 2.0, 0.05) var lifetime: float = 0.3
 @export_range(0.0, 1.0, 0.05) var start_alpha: float = 0.5
 @export var ghost_color: Color = Color.WHITE

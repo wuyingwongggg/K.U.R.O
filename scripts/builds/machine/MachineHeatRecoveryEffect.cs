@@ -22,13 +22,11 @@ namespace Kuros.Builds.Machine
         {
             _tier = 0;
             _core = Actor?.EffectController?.GetEffect<MachineCoreEffect>();
-            ApplyMinHeat();
         }
 
         protected override void OnStackRefreshed()
         {
             _tier = Mathf.Min(_tier + 1, TierValues.Length - 1);
-            ApplyMinHeat();
         }
 
         public override void OnRemoved()
@@ -38,18 +36,14 @@ namespace Kuros.Builds.Machine
             base.OnRemoved();
         }
 
-        private void ApplyMinHeat()
-        {
-            if (_core != null)
-                _core.MinHeat = _core.MaxHeat * CurrentPercent / 100f;
-        }
-
         protected override void OnTick(double delta)
         {
             if (_core == null) return;
-            if (_core.IsReleasing) return;
+            if (_core.IsReleasing || _core.IsBuffActive) return;
 
+            // 每帧跟随当前 MaxHeat（可能被其他效果修改），保底 + 恢复阈值同步更新
             float threshold = _core.MaxHeat * CurrentPercent / 100f;
+            _core.MinHeat = threshold;
             if (_core.Heat >= threshold) return;
 
             float regenAmount = Mathf.Min(threshold - _core.Heat, threshold * (float)delta);

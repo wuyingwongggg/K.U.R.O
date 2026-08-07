@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Builds.Machine;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -31,9 +32,22 @@ namespace Kuros.Actors.Heroes.States
         private float _totalDuration;
 
         public int Charges => _charges;
-        public bool CanDash => _charges > 0;
+        /// <summary>闪避可用性：热能闪避（B_008）激活期间完全由热量判定（热量不足则无法闪避），否则由充能判定。</summary>
+        public bool CanDash
+        {
+            get
+            {
+                var heatDash = GetHeatDashEffect();
+                if (heatDash != null && heatDash.IsActive)
+                    return heatDash.CanConsumeForDash;
+                return _charges > 0;
+            }
+        }
         public float RechargeProgress => _charges >= MaxCharges ? 1f
             : 1f - (_rechargeTimer / RechargeTime);
+
+        private MachineHeatDashEffect? GetHeatDashEffect()
+            => Player?.EffectController?.GetEffect<MachineHeatDashEffect>();
 
         public override void _Ready()
         {
@@ -62,9 +76,18 @@ namespace Kuros.Actors.Heroes.States
 
         public override void Enter()
         {
-            _charges--;
-            if (_charges < MaxCharges && _rechargeTimer <= 0f)
-                _rechargeTimer = RechargeTime;
+            // 热能闪避（B_008）：buff 期间消耗热量替代充能（热量不足时 CanDash 已拦截进入）
+            var heatDash = GetHeatDashEffect();
+            if (heatDash != null && heatDash.IsActive)
+            {
+                heatDash.ConsumeForDash();
+            }
+            else
+            {
+                _charges--;
+                if (_charges < MaxCharges && _rechargeTimer <= 0f)
+                    _rechargeTimer = RechargeTime;
+            }
 
             Vector2 input = GetMovementInput();
             bool isBackDash = input == Vector2.Zero;

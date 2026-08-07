@@ -10,8 +10,8 @@ script = ExtResource("1_skvjn")
 Scene = ExtResource("3_scene")
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0,
-"RampSpeed": 0.5,
-"TierValues": [1.5, 1.75, 2.0]
+"RampTime": 2.0,
+"TierValues": [50.0, 100.0, 150.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -19,7 +19,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_qc45w")
 EffectId = "BuildMachine_A_005"
 DisplayName = "惯性驱动"
-Description = "连续移动方向不变时热量获取速度递增50%/75%/100%，改变方向后重置"
+Description = "连续移动方向不变时热量获取速度递增{0}%/{1}%/{2}%，改变方向后重置"
 BuildClass = "Machine"
 MaxStacks = 3
 Icon = ExtResource("3_uhsja")

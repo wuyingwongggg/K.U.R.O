@@ -1,0 +1,83 @@
+[gd_resource type="Resource" script_class="LootDropTable" load_steps=27 format=3 uid="uid://b78jb4tij8dil"]
+
+[ext_resource type="Resource" uid="uid://bckpievppp7bh" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="1_pkbge"]
+[ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_tsu42"]
+[ext_resource type="Resource" uid="uid://bgd8dah8wugey" path="res://resources/items/Weapon_Brawl_RiotGlove.tres" id="3_nt66c"]
+[ext_resource type="Resource" uid="uid://b7cpmnpvb42rf" path="res://resources/items/Weapon_Slash_Baguette.tres" id="4_du121"]
+[ext_resource type="Resource" uid="uid://b1jpt8qriaub8" path="res://resources/items/Weapon_Slash_BarrierGate.tres" id="5_w85wc"]
+[ext_resource type="Resource" uid="uid://bfijfbb5m32i6" path="res://resources/items/Weapon_Slash_ExpandBaton.tres" id="6_ipevg"]
+[ext_resource type="Resource" uid="uid://ba0kuifke6v7o" path="res://resources/items/Weapon_Stab_drill.tres" id="7_b0j3b"]
+[ext_resource type="Resource" uid="uid://c01sltuo7404y" path="res://resources/items/Weapon_Stab_umbrella.tres" id="8_4fimt"]
+[ext_resource type="Resource" uid="uid://cxxnxtyv1yqw6" path="res://resources/items/Weapon_Stab_Corkscrew.tres" id="9_gk8qa"]
+[ext_resource type="Resource" uid="uid://cka5mpyehi0l0" path="res://resources/items/Weapon_Throw_ECore.tres" id="10_q7n1v"]
+[ext_resource type="Resource" uid="uid://t836cltal7m" path="res://resources/items/Weapon_Throw_Briefcase.tres" id="11_0gtqq"]
+[ext_resource type="Resource" uid="uid://j6kveph5wqjm" path="res://resources/items/Weapon_Throw_MetalSpike.tres" id="12_pf6o5"]
+[ext_resource type="Resource" uid="uid://dknruw00xelvv" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="13_le1mu"]
+[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="14_u5lf1"]
+
+[sub_resource type="Resource" id="Resource_yl8i7"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("1_pkbge")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_6d5fu"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("3_nt66c")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_rhouh"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("4_du121")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_mdap4"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("5_w85wc")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_l664v"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("6_ipevg")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_0225d"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("7_b0j3b")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_8ip88"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("8_4fimt")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_8hoxe"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("9_gk8qa")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_25nek"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("10_q7n1v")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_44tj7"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("11_0gtqq")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_w1bax"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("12_pf6o5")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_ayers"]
+script = ExtResource("2_tsu42")
+Item = ExtResource("13_le1mu")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[resource]
+script = ExtResource("14_u5lf1")
+MaxDrops = 1
+ScatterRadius = 48.0
+DefaultImpulse = 400.0
+Entries = [SubResource("Resource_yl8i7"), SubResource("Resource_6d5fu"), SubResource("Resource_rhouh"), SubResource("Resource_mdap4"), SubResource("Resource_l664v"), SubResource("Resource_0225d"), SubResource("Resource_8ip88"), SubResource("Resource_8hoxe"), SubResource("Resource_25nek"), SubResource("Resource_44tj7"), SubResource("Resource_w1bax"), SubResource("Resource_ayers")]

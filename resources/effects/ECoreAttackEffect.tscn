@@ -1,0 +1,61 @@
+[gd_scene load_steps=6 format=3 uid="uid://u42x4nuqgi3b"]
+
+[ext_resource type="Script" uid="uid://8vnf13a4rcon" path="res://scripts/effects/ECoreAttackEffect.cs" id="1_xleon"]
+[ext_resource type="PackedScene" uid="uid://dxjijjaojsunw" path="res://shaders/lightning_beam.tscn" id="2_4m7pg"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="2_jyt8n"]
+[ext_resource type="Texture2D" uid="uid://cjdlmm44l3ndf" path="res://assets/weapons/滚雷.png" id="3_xleon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yeyl0"]
+size = Vector2(600, 400)
+
+[node name="ECoreAttackEffect" type="Node2D" node_paths=PackedStringArray("RotateNode")]
+script = ExtResource("1_xleon")
+Speed = 2200.0
+BounceHeight = 300.0
+BounceLength = 800.0
+BounceCooldown = 0.05
+RotationSpeed = 1080.0
+RotateNode = NodePath("Sprite2D")
+Duration = 10.0
+Damage = 20
+DamageInterval = 0.7999999999999999
+
+[node name="AfterimageController" type="Node" parent="."]
+script = ExtResource("2_jyt8n")
+sprite_path = NodePath("../Sprite2D")
+is_spine = false
+interval = 0.01
+lifetime = 0.1
+
+[node name="LightningBeam" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam2" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam3" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam4" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam5" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam6" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam7" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam8" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam9" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="LightningBeam10" parent="." instance=ExtResource("2_4m7pg")]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 2
+scale = Vector2(0.33, 0.33)
+texture = ExtResource("3_xleon")
+offset = Vector2(0, -30)
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="AttackArea" type="Area2D" parent="."]
+z_index = 10
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("RectangleShape2D_yeyl0")

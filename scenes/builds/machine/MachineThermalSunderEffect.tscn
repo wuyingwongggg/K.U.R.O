@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://bbwecacyudlp"]
+
+[ext_resource type="Script" uid="uid://crgd63uk3sri6" path="res://scripts/builds/machine/MachineThermalSunderEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://bhfxd1mo7qdpd" path="res://scenes/builds/machine/MachineFlameRing.tscn" id="2_gb8r2"]
+
+[node name="MachineThermalSunderEffect" type="Node"]
+script = ExtResource("1")
+EffectScene = ExtResource("2_gb8r2")
+EffectId = "b6c5d4e3-2f1a-4b8c-9d0e-1f2a3b4c5d6e"
+Description = "热量释放强化：满热量释放时在玩家位置生成火焰环 "

@@ -10,11 +10,13 @@ group_uniforms color_uniforms;
 uniform sampler2D color_gradient; 
 uniform bool use_color_gradient = false;
 uniform float color_effect_mod : hint_range(0.0, 3.0, 0.05) = 0.5; // How weak the color effect should be
+uniform vec3 bolt_tint : source_color = vec3(1.0); // 色调：乘到闪电颜色上（gradient/贴图两条路径都生效）
 group_uniforms;
 uniform float intensive : hint_range(.0, 5.0, 0.05) = 0.8; // How much the lightning oscillates
 uniform float lightning_thin = 2.; // How thin the lightning i
 uniform int number_lightning = 8;
 uniform float speed = 1.;
+uniform float seed = 0.0;
 uniform float position : hint_range(0.0, 1.0, 0.05) = 0.5;
 uniform bool horizontal = false;
 uniform float edge_dispersion : hint_range(0.0, 5.0, 0.05) = 1.0;
@@ -31,8 +33,9 @@ void fragment() {
 	if (use_color_gradient) {
 		old_color = texture(color_gradient, vec2(uv.y, uv.x));
 	}
+	old_color.rgb *= bolt_tint.rgb;
 	COLOR = vec4(0.);
-	float time = TIME * speed;
+	float time = TIME * speed + seed;
 
 
 	for (int i = 0; i < number_lightning; i++){

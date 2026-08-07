@@ -10,7 +10,7 @@ script = ExtResource("1_ppqmc")
 Scene = ExtResource("3_scene")
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0,
-"TierValues": [1.0, 1.5, 2.0]
+"TierValues": [50.0, 75.0, 100.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -18,7 +18,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("2_l6888")
 EffectId = "BuildMachine_A_004"
 DisplayName = "降温延迟"
-Description = "延长热量自动衰减的延迟时间1秒 /1.5 秒 /2秒"
+Description = "延长热量自动衰减的延迟时间{0}% /{1}% /{2}%"
 BuildClass = "Machine"
 MaxStacks = 3
 Icon = ExtResource("3_w0w1j")

@@ -2,33 +2,39 @@
 
 [ext_resource type="Script" uid="uid://tuvfrpaqbads" path="res://scripts/fx/LightningBeam.cs" id="1_script"]
 [ext_resource type="Shader" uid="uid://b6xl0c7op3kjn" path="res://shaders/materials/lightning_beam.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="3_tex"]
+[ext_resource type="Texture2D" uid="uid://b6qys2indga4q" path="res://assets/effect/LightEffect/开门光.png" id="4_dnggq"]
 [ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="4_noise"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5phwg"]
 shader = ExtResource("2_shader")
 shader_parameter/lightning_noise = ExtResource("4_noise")
 shader_parameter/background_noise = ExtResource("4_noise")
-shader_parameter/use_color_gradient = true
-shader_parameter/color_effect_mod = 0.5000000074506
-shader_parameter/intensive = 0.70000001043084
+shader_parameter/use_color_gradient = false
+shader_parameter/color_effect_mod = 0.5
+shader_parameter/bolt_tint = Color(0, 0.1882353, 1, 1)
+shader_parameter/intensive = 0.20000000298024
 shader_parameter/lightning_thin = 2.0
-shader_parameter/number_lightning = 8
-shader_parameter/speed = 0.3
+shader_parameter/number_lightning = 3
+shader_parameter/speed = 1.0
+shader_parameter/seed = 0.0
 shader_parameter/position = 0.5
 shader_parameter/horizontal = true
-shader_parameter/edge_dispersion = 4.0000000596048
+shader_parameter/edge_dispersion = 3.0000000447036
 
 [node name="LightningBeam" type="Node2D"]
-z_index = 3
-y_sort_enabled = true
+z_index = 1
 script = ExtResource("1_script")
-MaxLength = 1500.0
-Lifetime = 0.5
-FadeDuration = 0.3
+MaxLength = 600.0
+MinLength = 100.0
+RandomArcMode = true
+ArcCount = 3
+MinAngularVelocity = -60.0
+MaxAngularVelocity = 60.0
+MinLifetime = 0.1
+MaxLifetime = 0.2
+FadeDuration = 0.1
+TargetableFactions = 2
 Damage = 20
-KnockbackDistance = 50.0
-KnockbackSpeed = 1000.0
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
 target_position = Vector2(3000, 0)
@@ -36,8 +42,7 @@ collision_mask = 4
 
 [node name="LightningSprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_5phwg")
-scale = Vector2(1, 3)
-skew = 0.17453292
-texture = ExtResource("3_tex")
+scale = Vector2(1, 0.6)
+texture = ExtResource("4_dnggq")
 centered = false
-offset = Vector2(0, -64)
+offset = Vector2(0, -215)
