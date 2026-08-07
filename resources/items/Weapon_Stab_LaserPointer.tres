@@ -21,7 +21,6 @@ Category = "Weapon"
 Tags = Array[String](["tag_weapon", "tag_stab", "hit_1"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_bqh4s")]([SubResource("Attribute_AttackPower")])
-EffectEntries = Array[ExtResource("2_ugy8x")]([null])
 WeaponSkillResources = Array[Resource]([ExtResource("4_bqh4s")])
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicPeakHeight = 100.0

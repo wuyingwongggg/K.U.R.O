@@ -58,6 +58,8 @@ namespace Kuros.Actors.Heroes
 	private CanvasItem? _spineBoneNode;
 	private Color _defaultOutlineModulate = new Color(0.02f, 0.02f, 0.02f, 0.85f);
 	private string _currentAnimation = string.Empty;
+	/// <summary>当前正在播放的 Spine 动画名（供外部判断是否已在该动画，避免重复重播）。</summary>
+	public string CurrentAnimationName => _currentAnimation;
 	private float _hitInvincibilityRemaining = 0.0f;
 	private float _invincibleFlashElapsed = 0.0f;
 	private float _defaultSpineAlpha = 1.0f;

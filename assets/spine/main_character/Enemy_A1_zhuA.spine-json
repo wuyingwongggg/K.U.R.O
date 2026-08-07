@@ -43004,7 +43004,8 @@
 			}
 		],
 		"events": [
-			{ "time": 0.5, "name": "hit" }
+			{ "time": 0.7, "name": "hit" },
+			{ "time": 1.0, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_bwd": {
@@ -45788,6 +45789,10 @@
 					{ "slot": "014", "offset": 54 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 0.7, "name": "hit" },
+			{ "time": 1.0, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_fwd": {
@@ -48609,6 +48614,10 @@
 					{ "slot": "014", "offset": 54 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 0.7, "name": "hit" },
+			{ "time": 1.0, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_Umbrella": {

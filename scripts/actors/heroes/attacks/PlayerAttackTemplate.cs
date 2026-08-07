@@ -115,7 +115,26 @@ namespace Kuros.Actors.Heroes.Attacks
         private bool _spineHitSubscribed = false;
         private bool _spineHitWindowActive = false;
         private string _spineAttackAnimationName = string.Empty;
-        private string _resolvedAnimationName = string.Empty;
+        protected string _resolvedAnimationName = string.Empty;
+
+        /// <summary>当前是否处于 Active 阶段（供子类做阶段判断，如激光笔的 Active 方向切换）。</summary>
+        protected bool IsInActivePhase => _phase == AttackPhase.Active;
+
+        /// <summary>切换 Active 阶段的动画名并同步 Spine hit 事件匹配名（切换后新动画的 hit 事件才能通过匹配）。</summary>
+        protected void SetSpineAttackAnimation(string animationName)
+        {
+            _spineAttackAnimationName = animationName;
+        }
+
+        /// <summary>当前攻击动画的 Warmup 段时长（动画时间轴秒数，未缩放），供子类切换动画时跳帧到 Active 段。</summary>
+        protected float ResolveWarmupAnimationTime()
+            => ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration);
+
+        /// <summary>当前 Active 阶段的动画播放速度（技能 ActiveAnimationSpeed × 全局攻速倍率，与阶段计时同源），
+        /// 供子类切换动画时保持速度一致，避免播放速度被重置为 1× 导致与阶段计时错位。</summary>
+        protected float ResolveActiveAnimationSpeed()
+            => Mathf.Max((_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f)
+                * Mathf.Max(Player.AttackSpeedMultiplier, 0.01f), 0.01f);
         private WeaponSkillDefinition? _activeWeaponSkill;
         private AttackHitboxDebugDrawer? _hitboxDebugDrawer;
         private int _currentHitStep = 1;  // 记录当前 Spine 动画段数（1-based）
