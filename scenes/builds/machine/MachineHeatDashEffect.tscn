@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwrqrvds656cj"]
+
+[ext_resource type="Script" uid="uid://b5g8j2n4p6t8v" path="res://scripts/builds/machine/MachineHeatDashEffect.cs" id="1"]
+
+[node name="MachineHeatDashEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "9d2f5b8e-4c3a-4b9f-8d7e-2a6c1b4d8e3f"
+Description = "热量释放强化：buff 期间闪避不再消耗充能 CD，改为消耗热量"

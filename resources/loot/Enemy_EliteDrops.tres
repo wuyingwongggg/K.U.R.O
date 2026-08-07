@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://b8vf1obgnfb2y" path="res://resources/items/Weapon_Throw_GravityGrenade.tres" id="3_55xqg"]
 [ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="3_ay2wm"]
 [ext_resource type="Resource" uid="uid://deh2q01buwkpa" path="res://resources/items/Weapon_Slash_ViolinBow.tres" id="4_5ui7y"]
-[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="4_7grpk"]
+[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="4_7grpk"]
 [ext_resource type="Resource" uid="uid://cc5nnn2mscj2d" path="res://resources/items/Weapon_Slash_BunnySword.tres" id="5_xbqcb"]
 [ext_resource type="Resource" uid="uid://dip678pe3wgkx" path="res://resources/items/Weapon_Throw_Boomerang.tres" id="6_t4o13"]
 [ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="7_466fd"]

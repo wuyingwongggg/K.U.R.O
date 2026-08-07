@@ -51,6 +51,13 @@ namespace Kuros.Builds.BuildCore
         public float MinHeat { get; set; }
         /// <summary>冻结热量获取：期间禁止一切热量增加（移动/攻击/外部 AddHeat）。由外部效果（如死亡余温）设置。</summary>
         public bool FreezeHeatGain { get; set; }
+        /// <summary>释放攻击力加成的倍率（1 = 原始加成）。由外部效果（燃烧效率）在 buff 期间动态衰减控制。</summary>
+        public float ReleaseBonusMultiplier { get; set; } = 1f;
+        /// <summary>本 buff 周期释放时消耗的热量快照，供外部效果计算衰减进度。</summary>
+        public float ConsumedHeat => _consumedHeat;
+        /// <summary>释放核心技能时同步触发（ReleaseHeat 内部）。外部效果（如燃烧效率）借此在释放瞬间立即接管加成，
+        /// 避免命中触发的释放（爆发推力）在加成接管前读取到未放大的补偿值。</summary>
+        public event Action? ReleaseStarted;
 
         private float _releaseCooldownRemaining;
         private float _consumedHeat;
@@ -286,6 +293,13 @@ namespace Kuros.Builds.BuildCore
             Heat = Mathf.Min(Heat + amount, GetHeatCap());
         }
 
+        /// <summary>消耗热量（外部效果用，如热能闪避）。buff 期间消耗会加速 buff 结束。</summary>
+        public void ConsumeHeat(float amount)
+        {
+            if (amount <= 0f) return;
+            Heat = Mathf.Max(Heat - amount, 0f);
+        }
+
         /// <summary>供外部效果自动触发释放核心技能（受释放 CD 与热量约束）。</summary>
         public void TryReleaseCoreSkill()
         {
@@ -298,7 +312,7 @@ namespace Kuros.Builds.BuildCore
         /// Buff 未激活时为 0。供命中触发的释放效果把本段错过的加成补回。
         /// </summary>
         public float CurrentReleaseDamageBonus =>
-            _buffActive ? _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) : 0f;
+            _buffActive ? _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) * ReleaseBonusMultiplier : 0f;
 
         /// <summary>
         /// 重新应用当前 buff 的攻击力加成。命中检测（PerformDefaultHitDetection）的 finally
@@ -326,8 +340,12 @@ namespace Kuros.Builds.BuildCore
                 _originalAttackDamage = _cachedAttackDamage;
                 _buffActive = true;
             }
-            float bonus = _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus);
+            float bonus = _originalAttackDamage * Mathf.Min(_consumedHeat * DamagePerHeat, MaxDamageBonus) * ReleaseBonusMultiplier;
             Actor.AttackDamage = _originalAttackDamage + bonus;
+
+            // 同步通知外部效果接管（在 AttackDamage 写入之后、调用方返回之前，
+            // 保证命中触发的释放（爆发推力）读取 CurrentReleaseDamageBonus 时倍率已生效）
+            ReleaseStarted?.Invoke();
         }
 
         public override void OnRemoved()

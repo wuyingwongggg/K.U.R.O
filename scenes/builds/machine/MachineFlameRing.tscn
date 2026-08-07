@@ -54,7 +54,7 @@ shader_parameter/rot_y_deg = 0.0
 shader_parameter/inset = 0.0
 shader_parameter/noise1 = ExtResource("5_e1s05")
 shader_parameter/noise2 = ExtResource("5_e1s05")
-shader_parameter/tint = Color(0.92941177, 0.25882354, 0, 1)
+shader_parameter/tint = Color(1, 0.44313726, 0, 1)
 shader_parameter/influence = 20.000000298024
 shader_parameter/amount = 0.0
 
@@ -67,10 +67,11 @@ shader_parameter/rot_y_deg = 0.0
 shader_parameter/inset = 0.0
 shader_parameter/noise_tex = ExtResource("5_e1s05")
 shader_parameter/noise_tex2 = ExtResource("5_e1s05")
+shader_parameter/formato_custom_tex = ExtResource("8_ogq61")
 shader_parameter/margem_seguranca = 4.00000019
 shader_parameter/modo_rgb = false
-shader_parameter/cor_contorno = Color(0.8, 1, 0, 1)
-shader_parameter/cor_externa = Color(0.8, 1, 0, 1)
+shader_parameter/cor_contorno = Color(1, 0.34117648, 0, 1)
+shader_parameter/cor_externa = Color(0.8, 0.37254903, 0, 1)
 shader_parameter/cor_media = Color(1, 0.5, 0, 1)
 shader_parameter/cor_nucleo = Color(1, 0.9, 0.2, 1)
 shader_parameter/outline_interno_ativo = true
@@ -119,26 +120,26 @@ shader_parameter/overlay_influence = 30.0
 shader = ExtResource("4_x03t6")
 shader_parameter/cull_backface = true
 shader_parameter/fov = 1.0
-shader_parameter/rot_x_deg = 51.246019534184995
+shader_parameter/rot_x_deg = 50.00001947499999
 shader_parameter/rot_y_deg = 0.0
 shader_parameter/inset = 0.0
 shader_parameter/noise1 = ExtResource("5_e1s05")
 shader_parameter/noise2 = ExtResource("5_e1s05")
-shader_parameter/tint = Color(1, 0.21960784, 0, 1)
-shader_parameter/influence = 22.0000003278264
+shader_parameter/tint = Color(1, 0.75686276, 0, 1)
+shader_parameter/influence = 25.00000037253
 shader_parameter/amount = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yvtjc"]
 shader = ExtResource("4_x03t6")
 shader_parameter/cull_backface = true
-shader_parameter/fov = 1.0
-shader_parameter/rot_x_deg = -34.9999845625
+shader_parameter/fov = 39.4230018250925
+shader_parameter/rot_x_deg = 35.00001876250002
 shader_parameter/rot_y_deg = 0.0
 shader_parameter/inset = 0.0
 shader_parameter/noise1 = ExtResource("5_e1s05")
 shader_parameter/noise2 = ExtResource("5_e1s05")
-shader_parameter/tint = Color(0.92941177, 0.25882354, 0, 1)
-shader_parameter/influence = 9.0000001341108
+shader_parameter/tint = Color(0.92941177, 0.4862745, 0, 1)
+shader_parameter/influence = 15.000000223518
 shader_parameter/amount = 0.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3gppx"]
@@ -245,88 +246,88 @@ texture = ExtResource("6_xvwpm")
 
 [node name="Sprite2D3" type="Sprite2D" parent="Sprite2D2"]
 material = SubResource("ShaderMaterial_ogq61")
-scale = Vector2(0.7142857, 0.94285715)
+scale = Vector2(0.6, 0.8)
 texture = ExtResource("8_ogq61")
 
 [node name="Sprite2D4" type="Sprite2D" parent="Sprite2D2"]
 material = SubResource("ShaderMaterial_yvtjc")
-scale = Vector2(1.1, 1.05)
+scale = Vector2(1.0999998, 1.0499998)
 texture = ExtResource("9_seouj")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-14.285714, -242.85715)
+position = Vector2(-14.285714, -222.85715)
 scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D11" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-74.28571, -228.57143)
+position = Vector2(-74.28571, -200.00003)
 scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-126.60714, -232.32143)
+position = Vector2(-122.85714, -200.00003)
 scale = Vector2(0.55, 0.55)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D12" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-180, -191.42857)
+position = Vector2(-182.85715, -154.28572)
 scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D13" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(51.428562, -234.2857)
+position = Vector2(51.428574, -217.14287)
 scale = Vector2(0.44999996, 0.44999996)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(107.67856, -235.17857)
+position = Vector2(108.57143, -217.14285)
 scale = Vector2(0.55, 0.55)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D14" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(165.71426, -205.7143)
+position = Vector2(162.85715, -191.42857)
 scale = Vector2(0.65, 0.65)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D4" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(220.00002, -165.71428)
+position = Vector2(214.28572, -137.14285)
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D5" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-229.28572, -157.85715)
+position = Vector2(-220, -137.14287)
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D15" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-237.14287, -102.85713)
+position = Vector2(-220.00003, -94.28571)
 scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D6" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(-243.57144, -77.857155)
+position = Vector2(-220.00003, -65.71429)
 scale = Vector2(0.65, 0.65)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D16" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(248.57144, -102.85715)
+position = Vector2(217.14287, -97.14286)
 scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"
 
 [node name="AnimatedSprite2D7" type="AnimatedSprite2D" parent="Sprite2D2"]
-position = Vector2(245.71426, -51.42857)
+position = Vector2(228.57141, -48.571434)
 scale = Vector2(0.65, 0.65)
 sprite_frames = SubResource("SpriteFrames_3gppx")
 autoplay = "default"

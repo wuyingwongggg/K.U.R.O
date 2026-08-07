@@ -158,12 +158,13 @@ script = ExtResource("1_script")
 EffectScene = ExtResource("2_ipc2i")
 EffectOverrides = Dictionary[String, Variant]({
 "AllowSelfDamage": true,
-"Damage": 25.0,
+"Damage": 20.0,
 "FacingRight": true,
 "TargetableFactions": 2
 })
-SpawnInterval = 0.75
+SpawnInterval = 1.0
 SpawnMarkers = [NodePath("Node2D/Marker2D")]
+EffectId = "4d3b4b09-f39a-42bb-8fe4-f1d2343efd90"
 Duration = 10.0
 
 [node name="Shadow" type="Sprite2D" parent="."]

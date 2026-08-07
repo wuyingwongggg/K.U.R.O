@@ -15,7 +15,7 @@
 热流冲击,BuildMachine_B_004,Common,machine,热量释放强化,释放核心技能后的buff期间，奔跑和闪避状态每秒都会对接触到的所有对象造成伤害20/30/40,
 爆发推力,BuildMachine_B_005,Common,machine,热量释放强化,释放核心技能后的第一次攻击造成50px/100px/150px的击退，伤害提升10%/20%/30%,
 热能抽离,BuildMachine_B_006,Rare,machine,热量释放强化,当热量达到100%及以上时释放核心技能后在玩家位置生成一个持续扩散的火焰环，对最大300px/500px范围的敌人造成灼烧，灼烧持续3秒且重复施加后覆盖伤害和持续时间（灼烧：根据玩家的基础攻击力等比造成伤害）,
-燃烧效率,BuildMachine_B_007,Rare,machine,热量释放强化,"释放核心技能后的攻击力加成提升50%/100%，但在buff期间持续衰减,，最低衰减到50%/100%",
+燃烧效率,BuildMachine_B_007,Rare,machine,热量释放强化,"释放核心技能后的攻击力加成提升50%/100%，但在buff期间持续衰减,，最低衰减到10%/20%",
 热能闪避,BuildMachine_B_008,Rare,machine,热量释放强化,释放核心技能后的buff期间，闪避不再消耗CD，而是消耗热量20/10,
 齿轮关节,BuildMachine_B_009,Epic,machine,热量释放强化,释放核心技能后的buff期间受到攻击也不会被击退或打断攻击动作,
 延迟损伤,BuildMachine_B_010,Epic,machine,热量释放强化,释放核心技能后的buff期间受到的所有伤害都会在buff结束时结算,

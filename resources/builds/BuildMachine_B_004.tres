@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://byggwwdffsyf8"]
 
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
-[ext_resource type="Script" uid="uid://ce3uslxqcj53w" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://d00kleabdu4b3" path="res://scenes/builds/machine/MachineHeatFlowImpactEffect.tscn" id="2_effect"]
 [ext_resource type="Texture2D" uid="uid://crg4dwig1dlki" path="res://assets/BuildIcon/Machine_B_004_热流冲击.png" id="3_acpri"]
 
