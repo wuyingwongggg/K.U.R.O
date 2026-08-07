@@ -147,9 +147,9 @@ script = ExtResource("4_ixg0x")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("4_o4xwm")
 preview_skin = "Default"
-preview_animation = "Weapon_Stab_LaserPointer"
+preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.38
+preview_time = 0.51
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]

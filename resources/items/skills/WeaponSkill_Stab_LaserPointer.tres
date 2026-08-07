@@ -20,6 +20,7 @@ SkillId = "WeaponSkill_LaserPointer"
 DisplayName = "激光笔攻击"
 AnimationName = "Weapon_Stab_LaserPointer"
 DamageMultiplier = 0.6
+ShowHitboxDebug = false
 Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt")])
 WarmupDuration = 0.3500000000000001
 ActiveDuration = 0.95
