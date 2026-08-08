@@ -471,10 +471,14 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			// 命中检测：不中断冲刺，重叠期间可持续触发（启用动画事件触发时跳过此处）
-			if (!RequireAnimationHitTrigger && _canAttemptMoveAttack && Enemy.PlayerTarget != null && IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
+			// DealDamage 必须在 Player 检测之前无条件调用，确保非 Player 目标也能被处理
+			if (!RequireAnimationHitTrigger && _canAttemptMoveAttack && Enemy.PlayerTarget != null)
 			{
 				ApplyMoveAttackDamage(Enemy.PlayerTarget);
-				ApplyMoveAttackKnockback(Enemy.PlayerTarget);
+				if (IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
+				{
+					ApplyMoveAttackKnockback(Enemy.PlayerTarget);
+				}
 			}
 
 			// 实时追踪玩家位置更新冲刺方向
@@ -518,9 +522,14 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptMoveAttack) return;
 
+			// DealDamage 必须在 Player 检测之前无条件调用：
+			// DealDamageFromArea 统一处理 Player + 非 Player（WorldItem 等）
+			// 所有阵营目标的伤害。若放在 Player 守卫内，则 Player 不在
+			// 区域内时 WorldItem 等其他 target 也会被跳过。
+			ApplyMoveAttackDamage(Enemy.PlayerTarget);
+			
 			if (IsPlayerInsideMoveAttackZone(Enemy.PlayerTarget))
 			{
-				ApplyMoveAttackDamage(Enemy.PlayerTarget);
 				ApplyMoveAttackKnockback(Enemy.PlayerTarget);
 			}
 		}
