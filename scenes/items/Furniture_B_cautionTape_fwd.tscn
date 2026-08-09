@@ -1,10 +1,10 @@
 [gd_scene load_steps=13 format=3 uid="uid://c0oyd0psq7fe1"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kw1ju"]
+[ext_resource type="Script" uid="uid://cp63hl1ekodjm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kw1ju"]
 [ext_resource type="Resource" uid="uid://bk5qofm73s8f2" path="res://resources/items/Furniture_B_CautionTape_fwd.tres" id="2_kw1ju"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kaxmn"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_jstfe"]
-[ext_resource type="Texture2D" uid="uid://djwqphcob6hvw" path="res://assets/furnitures/hotel_scene2/CautionTape_fwd.png" id="6_kw1ju"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_jstfe"]
+[ext_resource type="Texture2D" uid="uid://dj70l43ietglp" path="res://assets/furnitures/hotel_scene2/CautionTape_fwd.png" id="6_kw1ju"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_kaxmn")
@@ -26,13 +26,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kw1ju"]
-size = Vector2(100, 350)
+size = Vector2(80, 350)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(160, 610)
+size = Vector2(130, 610)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(150, 600)
+size = Vector2(120, 600)
 
 [node name="FurnitureCautionTape_fwd" type="Node2D"]
 z_index = 2

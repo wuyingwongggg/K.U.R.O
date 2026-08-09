@@ -85,7 +85,7 @@ AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
 AttackDamage = 10.0
-MaxHealth = 120
+MaxHealth = 150
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -338,6 +338,7 @@ HitEffectScene = ExtResource("13_7xilr")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
 RequiredItemId = "Weapon_Stab_drill"
+SkipWarmupOnRecoveryRestart = true
 
 [node name="StabCorkscrew" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_13pt2")

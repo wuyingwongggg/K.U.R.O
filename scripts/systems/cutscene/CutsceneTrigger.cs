@@ -20,13 +20,17 @@ namespace Kuros.Systems.Cutscene
 
         public override void _Ready()
         {
-            AreaEntered += OnAreaEntered;
+            // 使用 BodyEntered（与 EnemySpawnManager 同款），检测玩家物理体而非 HitArea。
+            // BodyEntered 比 AreaEntered 更可靠：不依赖玩家 HitArea 的 Monitorable 设置，
+            // 且与碰撞层矩阵直接匹配，配置更直观。
+            BodyEntered += OnBodyEntered;
+            Monitoring = true;
             GD.Print($"[Cutscene] CutsceneTrigger Ready — 节点: {Name}, Sequence: {(Sequence != null ? Sequence.SequenceId : "null")}");
         }
 
-        private void OnAreaEntered(Area2D area)
+        private void OnBodyEntered(Node2D body)
         {
-            GD.Print($"[Cutscene] AreaEntered — area: {area.Name}, parent: {area.GetParent()?.Name}");
+            GD.Print($"[Cutscene] BodyEntered — body: {body.Name}");
 
             if (TriggerOnce && _triggered)
             {
@@ -39,11 +43,10 @@ namespace Kuros.Systems.Cutscene
                 return;
             }
 
-            // 检测玩家的 HitArea：自身在 player 组，或其父节点在 player 组
-            var owner = area.IsInGroup(PlayerGroup) ? (Node)area : area.GetParent();
-            if (owner == null || !owner.IsInGroup(PlayerGroup))
+            // BodyEntered 直接拿到玩家物理体根节点，无需向上查父节点
+            if (!body.IsInGroup(PlayerGroup))
             {
-                GD.Print($"[Cutscene] 非玩家 area，忽略（PlayerGroup={PlayerGroup}）");
+                GD.Print($"[Cutscene] 非玩家 body，忽略（PlayerGroup={PlayerGroup}）");
                 return;
             }
 

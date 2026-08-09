@@ -28,4 +28,3 @@ metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
 script = ExtResource("2_8cx4o")
 SequenceId = "D_end_intro"
 Steps = Array[ExtResource("1_fqhds")]([SubResource("Resource_hubsw"), SubResource("Resource_n254o")])
-metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

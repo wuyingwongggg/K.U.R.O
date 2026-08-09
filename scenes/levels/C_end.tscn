@@ -1,11 +1,11 @@
 [gd_scene load_steps=29 format=3 uid="uid://dboywwkmaxr72"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
-[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_iqss4"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_f0bsw"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
+[ext_resource type="Script" uid="uid://crsxnj6dphc7a" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
+[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="4_iqss4"]
+[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_f0bsw"]
 [ext_resource type="PackedScene" uid="uid://8ce54l6083nt" path="res://scenes/actors/characters/Enemy_C1_waiterB.tscn" id="6_emx2a"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_m4til"]
+[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_m4til"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="12_tl38j"]
 [ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="13_hlghd"]
 [ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="14_bf4xp"]
@@ -225,10 +225,10 @@ position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 
 [node name="FurnitureChairB" parent="." instance=ExtResource("16_4vmbn")]
-position = Vector2(-680, -648)
+position = Vector2(-652, -649)
 
 [node name="FurnitureChairB2" parent="." instance=ExtResource("16_4vmbn")]
-position = Vector2(-622, 1092)
+position = Vector2(-606, 1116)
 
 [node name="FurnitureChairB3" parent="." instance=ExtResource("16_4vmbn")]
 position = Vector2(1582, -567)
@@ -237,7 +237,7 @@ position = Vector2(1582, -567)
 position = Vector2(1626, 1205)
 
 [node name="FurnitureChairB_fwd" parent="." instance=ExtResource("17_246ku")]
-position = Vector2(-1383, -593)
+position = Vector2(-1408, -593)
 
 [node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("17_246ku")]
 position = Vector2(-1366, 1112)

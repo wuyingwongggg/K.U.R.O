@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://c1c74ekxu24m1"]
 
-[ext_resource type="Script" uid="uid://tjd0e0fbhsil" path="res://scripts/fx/EnemyBullet.cs" id="1_sahqo"]
+[ext_resource type="Script" uid="uid://4gg04ay7xs63" path="res://scripts/fx/EnemyBullet.cs" id="1_sahqo"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hgsvh"]
 radius = 60.0
@@ -14,7 +14,6 @@ MaxVerticalTiltDegrees = 5.0
 Duration = 3.0
 TrailPoints = 2
 TargetableFactions = 1
-Damage = 30
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 

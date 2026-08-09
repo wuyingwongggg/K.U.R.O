@@ -1,9 +1,9 @@
 [gd_scene load_steps=31 format=3 uid="uid://cqdtru26cvd8g"]
 
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_65ofg"]
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_v2w3b"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_0xlrd"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="3_5qtsb"]
+[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="1_65ofg"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_v2w3b"]
+[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_0xlrd"]
+[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="3_5qtsb"]
 [ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="4_0yg2g"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="5_csfgp"]
 [ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="5_ufqsd"]
@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="7_y8smn"]
 [ext_resource type="Texture2D" uid="uid://dltdv5y6eqawb" path="res://assets/environments/scene_3_hotel/地面A.png" id="8_0xlrd"]
 [ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="11_51aoc"]
-[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="12_ihbuc"]
+[ext_resource type="Script" uid="uid://blrupwolbou73" path="res://scripts/environments/ParallaxBackground2D.cs" id="12_ihbuc"]
 [ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="12_jgb2w"]
 [ext_resource type="Texture2D" uid="uid://brk1t88wdisc" path="res://assets/environments/scene_3_hotel/窗户玻璃反射.png" id="12_k7rdm"]
 [ext_resource type="Texture2D" uid="uid://b5ugc8esuokxg" path="res://assets/environments/scene_3_hotel/墙壁A.png" id="12_v2w3b"]
@@ -184,10 +184,10 @@ position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_qym5g")
 
 [node name="FurnitureChairB" parent="." instance=ExtResource("12_jgb2w")]
-position = Vector2(-680, -648)
+position = Vector2(-651, -648)
 
 [node name="FurnitureChairB2" parent="." instance=ExtResource("12_jgb2w")]
-position = Vector2(-622, 1092)
+position = Vector2(-599, 1122)
 
 [node name="FurnitureChairB3" parent="." instance=ExtResource("12_jgb2w")]
 position = Vector2(1582, -567)
@@ -196,7 +196,7 @@ position = Vector2(1582, -567)
 position = Vector2(1626, 1205)
 
 [node name="FurnitureChairB_fwd" parent="." instance=ExtResource("13_ihbuc")]
-position = Vector2(-1383, -593)
+position = Vector2(-1408, -600)
 
 [node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("13_ihbuc")]
 position = Vector2(-1366, 1112)
@@ -238,10 +238,10 @@ position = Vector2(-1124, -344)
 position = Vector2(1140, -381)
 
 [node name="FurnitureGarbageCanA3" parent="." instance=ExtResource("18_8qudx")]
-position = Vector2(-833, 908)
+position = Vector2(-866, 854)
 
 [node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("18_8qudx")]
 position = Vector2(1392, 923)
 
 [node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("19_fmu77")]
-position = Vector2(153, 813)
+position = Vector2(18, 997)
