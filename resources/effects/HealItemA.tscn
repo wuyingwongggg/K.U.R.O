@@ -1,0 +1,34 @@
+[gd_scene load_steps=6 format=3 uid="uid://br2ookaynqrjk"]
+
+[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="1_4haid"]
+[ext_resource type="Texture2D" uid="uid://cbygwy246d6t0" path="res://resources/assets/supplies/Supplies_A0_pudding.png" id="1_w5u2p"]
+[ext_resource type="Script" uid="uid://c1ptqnioj3b71" path="res://scripts/effects/HealOnContact.cs" id="3_ho7q1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_la1in"]
+shader = ExtResource("1_4haid")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_btvbp"]
+size = Vector2(200, 200)
+
+[node name="HealItemA" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_la1in")
+texture = ExtResource("1_w5u2p")
+
+[node name="HealArea" type="Area2D" parent="."]
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HealArea"]
+shape = SubResource("RectangleShape2D_btvbp")
+
+[node name="HealOnContact" type="Node" parent="HealArea"]
+script = ExtResource("3_ho7q1")
+HealAmount = 10

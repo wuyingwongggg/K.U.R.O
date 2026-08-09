@@ -1,6 +1,5 @@
 using Godot;
 using Kuros.Core;
-using Kuros.Systems.FSM;
 
 namespace Kuros.Environments
 {
@@ -14,7 +13,9 @@ namespace Kuros.Environments
     ///   Broken 受击   → gate_broken_hit → gate_broken_idle
     ///   HP = 0        → gate_knockback（终态，不再响应）
     ///
-    /// 命中检测：检测玩家在指定 Area2D 范围内且处于 Attack 状态的上升沿。
+    /// 命中检测：检测玩家的 jhit 命中帧（AttackTimer 跳变），而非攻击按键。
+    /// AttackTimer 在 PerformAttackCheck() 被调用时从 0 跳变到 AttackCooldown，
+    /// 这是与 Spine hit 事件同步的精确命中信号。
     /// 一次性动画播放期间不接受新命中（_animLocked），避免动画被打断。
     /// 受击时广播伤害信号到 GameActor.AnyDamageTaken，触发相机抖动和击打特效。
     /// </summary>
@@ -41,9 +42,10 @@ namespace Kuros.Environments
 
         private int _hp;
         private GatePhase _phase = GatePhase.Normal;
-        private bool _wasAttacking;       // 上一帧玩家是否在攻击
+        private bool _wasAttacking;       // 上一帧是否检测到 jhit 命中帧
         private bool _animLocked;         // 一次性动画播放中，禁止注册新命中
         private bool _playerInHitArea;    // 玩家当前是否在 HitArea 范围内
+        private float _lastAttackTimer;   // 上一帧玩家的 AttackTimer，用于检测 jhit 上升沿
 
         public override void _Ready()
         {
@@ -105,9 +107,17 @@ namespace Kuros.Environments
             }
             if (_player == null) return;
 
-            bool attacking = _playerInHitArea && IsPlayerInAttackState(_player);
+            // 检测玩家攻击的 jhit 命中帧：
+            // - IsPlayerInAttackState 检测的是"按下攻击键"（Warmup 第一帧），比实际命中早 0.15s+
+            // - AttackTimer 在 PerformAttackCheck() 被调用时跳变到 AttackCooldown，这才是 jhit 帧
+            // - 通过追踪 AttackTimer 的上升沿来精确判定命中帧
+            float currentAttackTimer = (_player is GameActor actor) ? actor.AttackTimer : 0f;
+            bool hitFrameFired = currentAttackTimer > _lastAttackTimer + 0.001f;
+            _lastAttackTimer = currentAttackTimer;
 
-            // 上升沿：玩家刚进入攻击状态
+            bool attacking = _playerInHitArea && hitFrameFired;
+
+            // 上升沿：玩家的 jhit 命中帧刚到
             if (attacking && !_wasAttacking)
                 RegisterHit();
 
@@ -205,10 +215,5 @@ namespace Kuros.Environments
             return hitArea != null && area == hitArea;
         }
 
-        private static bool IsPlayerInAttackState(Node2D player)
-        {
-            var sm = player.GetNodeOrNull<StateMachine>("StateMachine");
-            return sm?.CurrentState?.Name == "Attack";
-        }
     }
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://cqdtru26cvd8g"]
+[gd_scene load_steps=32 format=3 uid="uid://cqdtru26cvd8g"]
 
 [ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="1_65ofg"]
 [ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_v2w3b"]
@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="17_i8k3d"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="18_8qudx"]
 [ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="19_fmu77"]
+[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="24_ihbuc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3x13k"]
 size = Vector2(5100, 3050)
@@ -220,7 +221,7 @@ position = Vector2(1188, -589)
 position = Vector2(1240, 1249)
 
 [node name="FurnitureTableRoundC" parent="." instance=ExtResource("15_wx5h1")]
-position = Vector2(20, 300)
+position = Vector2(20, 212)
 
 [node name="FurnitureFoodCartA" parent="." instance=ExtResource("16_k8h6y")]
 position = Vector2(-643, -244)
@@ -245,3 +246,6 @@ position = Vector2(1392, 923)
 
 [node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("19_fmu77")]
 position = Vector2(18, 997)
+
+[node name="HealItemA" parent="." instance=ExtResource("24_ihbuc")]
+position = Vector2(2, 269)

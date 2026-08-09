@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://cg2o6k0etyc25"]
+[gd_scene load_steps=32 format=3 uid="uid://cg2o6k0etyc25"]
 
 [ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_4duw5"]
 [ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="19_4gcw4"]
 [ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="20_ainwx"]
 [ext_resource type="PackedScene" uid="uid://df51wgv346jhn" path="res://scenes/environments/elevatorGate_C_flip.tscn" id="21_4duw5"]
+[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="22_y44ha"]
 [ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="24_qm83g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -32,7 +33,7 @@ size = Vector2(5220, 3050)
 size = Vector2(1000, 1000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mxkb7"]
-size = Vector2(5300, 3000)
+size = Vector2(5200, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7mqiy"]
 size = Vector2(400, 2500)
@@ -93,7 +94,6 @@ shape = SubResource("RectangleShape2D_omx51")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="BattleArena" type="Area2D" parent="."]
-visible = false
 z_index = 10
 script = ExtResource("1_lxqj5")
 ArenaSize = Vector2(4800, 3000)
@@ -109,7 +109,7 @@ shape = SubResource("RectangleShape2D_mxkb7")
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 visible = false
 script = ExtResource("2_ainwx")
-WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2")])
+WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager")])
 WaveClearDelay = 0.0
 PollInterval = 0.30000000000000004
 TriggerArea = NodePath("TriggerArea")
@@ -269,3 +269,6 @@ position = Vector2(1392, 923)
 position = Vector2(29, 870)
 
 [node name="AnimationCharacter" parent="." instance=ExtResource("24_qm83g")]
+
+[node name="HealItemA" parent="." instance=ExtResource("22_y44ha")]
+position = Vector2(18, 184)
