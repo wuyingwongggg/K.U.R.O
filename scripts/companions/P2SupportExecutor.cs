@@ -26,6 +26,10 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "0,20,0.1")] public float SupportItemCooldownSeconds { get; set; } = 6.0f;
         [Export] public bool EnableLogging { get; set; } = false;
 
+        [ExportCategory("Move Decision")]
+        /// <summary>move_to 决策（远离敌人）的目标距离：玩家位置 + 远离方向 × 此值。</summary>
+        [Export(PropertyHint.Range, "100,2000,50")] public float MoveAwayDistance { get; set; } = 600f;
+
         [ExportCategory("Shield VFX")]
         [Export] public Color ShieldBlockFlashColor { get; set; } = new Color(0.55f, 0.85f, 1f, 1f);
         [Export(PropertyHint.Range, "0.05,0.6,0.01")] public float ShieldBlockFlashDuration { get; set; } = 0.16f;
@@ -256,6 +260,9 @@ namespace Kuros.Companions
                 case "use_support_item":
                     return ExecuteSupportItem(decision);
 
+                case "move_to":
+                    return ExecuteMoveTo(decision);
+
                 default:
                     LastRejectedReason = $"intent '{intent}' is not in whitelist";
                     LastResult = "rejected";
@@ -264,6 +271,92 @@ namespace Kuros.Companions
                     EmitSignal(SignalName.DecisionRejected, $"intent '{intent}' is not in whitelist");
                     return false;
             }
+        }
+
+        /// <summary>执行移动决策（move_to）：解析目标世界坐标 → 交给 P2CompanionController.SetMoveTarget。
+        /// 目标语义：away_enemy = 远离最近敌人方向；offset:x:y = 相对玩家偏移。</summary>
+        private bool ExecuteMoveTo(SupportDecision decision)
+        {
+            ResolveDependencies();
+            if (_companionController == null)
+            {
+                Reject("move_to", "companion controller not available");
+                return false;
+            }
+
+            Vector2? target = ResolveMoveTarget(decision.Target);
+            if (!target.HasValue)
+            {
+                Reject("move_to", $"无法解析移动目标 '{decision.Target}'（支持 away_enemy / offset:x:y）");
+                return false;
+            }
+
+            _companionController.SetMoveTarget(target.Value);
+            if (EnableLogging)
+                GD.Print($"[P2SupportExecutor] applied move_to: {decision.Target} → {target.Value}");
+            LastAppliedDecisionJson = decision.ToJson(pretty: false);
+            LastRejectedReason = string.Empty;
+            LastResult = "applied";
+            LastActionDetail = decision.Target;
+            TotalDecisionApplied++;
+            EmitSignal(SignalName.DecisionApplied, decision.ToJson(pretty: false));
+            return true;
+        }
+
+        /// <summary>解析移动目标：away_enemy → 玩家位置 + 远离最近敌人方向 × MoveAwayDistance；offset:x:y → 玩家位置 + 偏移。</summary>
+        private Vector2? ResolveMoveTarget(string target)
+        {
+            if (_player == null) return null;
+
+            if (target == "away_enemy" || target == "nearest_enemy_away")
+            {
+                var enemy = FindNearestEnemy();
+                if (enemy == null) return null;
+                Vector2 away = (_player.GlobalPosition - enemy.GlobalPosition).Normalized();
+                if (away == Vector2.Zero) away = Vector2.Right;
+                return _player.GlobalPosition + away * MoveAwayDistance;
+            }
+
+            if (target.StartsWith("offset:", StringComparison.Ordinal))
+            {
+                string[] parts = target.Substring("offset:".Length).Split(':');
+                if (parts.Length == 2
+                    && float.TryParse(parts[0], out float x)
+                    && float.TryParse(parts[1], out float y))
+                {
+                    return _player.GlobalPosition + new Vector2(x, y);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>查找距玩家最近的存活敌人。</summary>
+        private GameActor? FindNearestEnemy()
+        {
+            if (_player == null) return null;
+            GameActor? nearest = null;
+            float best = float.MaxValue;
+            foreach (Node node in GetTree().GetNodesInGroup("enemies"))
+            {
+                if (node is not GameActor actor || actor.IsDead || actor.IsDeathSequenceActive) continue;
+                float d = _player.GlobalPosition.DistanceTo(actor.GlobalPosition);
+                if (d < best)
+                {
+                    best = d;
+                    nearest = actor;
+                }
+            }
+            return nearest;
+        }
+
+        private void Reject(string intent, string reason)
+        {
+            LastRejectedReason = reason;
+            LastResult = "rejected";
+            LastActionDetail = intent;
+            TotalDecisionRejected++;
+            EmitSignal(SignalName.DecisionRejected, reason);
         }
 
         private bool ExecuteSupportSkill(SupportDecision decision)
@@ -322,6 +415,8 @@ namespace Kuros.Companions
                 GD.Print($"[P2SupportExecutor] applied trigger_support_skill: {detail}");
             }
 
+            _companionController?.TriggerAction(); // 动作成功 → 播 action 动画
+
             LastAppliedDecisionJson = decision.ToJson(pretty: false);
             LastRejectedReason = string.Empty;
             LastResult = "applied";
@@ -374,6 +469,8 @@ namespace Kuros.Companions
             {
                 GD.Print($"[P2SupportExecutor] applied use_support_item: tag={requiredTag}");
             }
+
+            _companionController?.TriggerAction(); // 动作成功 → 播 action 动画
 
             LastAppliedDecisionJson = decision.ToJson(pretty: false);
             LastRejectedReason = string.Empty;

@@ -58,7 +58,7 @@ shader_parameter/alpha = 0.4
 radius = 180.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vj0fg"]
-size = Vector2(400, 600)
+size = Vector2(400, 500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
 size = Vector2(650, 400)
@@ -179,10 +179,9 @@ visible = false
 shape = SubResource("CircleShape2D_vj0fg")
 
 [node name="HitArea" type="Area2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
-position = Vector2(0, -500)
+position = Vector2(0, -400)
 shape = SubResource("RectangleShape2D_vj0fg")
 
 [node name="AttackArea" type="Area2D" parent="."]

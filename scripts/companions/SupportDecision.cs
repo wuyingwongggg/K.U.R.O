@@ -83,6 +83,29 @@ namespace Kuros.Companions
             };
         }
 
+        /// <summary>
+        /// 创建移动决策（move_to）。Target 语义：
+        /// `away_enemy` = 远离最近敌人方向；`offset:x:y` = 相对玩家位置的偏移坐标。
+        /// </summary>
+        public static SupportDecision MoveTo(
+            string sourceRule,
+            string reason,
+            string target = "away_enemy",
+            string urgency = "medium",
+            float durationSeconds = 2f)
+        {
+            return new SupportDecision
+            {
+                IsValid = true,
+                Intent = "move_to",
+                Target = string.IsNullOrWhiteSpace(target) ? "away_enemy" : target,
+                Urgency = string.IsNullOrWhiteSpace(urgency) ? "medium" : urgency,
+                DurationSeconds = Mathf.Max(0f, durationSeconds),
+                Reason = reason ?? string.Empty,
+                SourceRule = sourceRule ?? string.Empty
+            };
+        }
+
         public static SupportDecision TriggerSupportSkill(
             string sourceRule,
             string reason,

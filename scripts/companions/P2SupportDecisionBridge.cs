@@ -30,8 +30,8 @@ namespace Kuros.Companions
             // Map combat intents into companion-support intents.
             string mappedIntent = intent switch
             {
-                "retreat" => "suggest_retreat",
-                "reposition" => "suggest_retreat",
+                "retreat" => "move_to",       // 远离敌人（移动决策）
+                "reposition" => "move_to",    // 重新站位（移动决策）
                 "loot" => "suggest_pickup",
                 "use_skill" => "trigger_support_skill",
                 "use_support_item" => "use_support_item",
@@ -44,7 +44,6 @@ namespace Kuros.Companions
 
             string message = mappedIntent switch
             {
-                "suggest_retreat" => "suggest_retreat",
                 "suggest_pickup" => "suggest_pickup",
                 _ => string.Empty
             };
