@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Godot;
+using Kuros.Items;
 using Kuros.Items.Tags;
 using Kuros.Systems.AI;
 
@@ -15,12 +17,18 @@ namespace Kuros.Companions
         [Export] public NodePath SupportExecutorPath { get; set; } = new("../SupportExecutor");
         [Export] public NodePath SupportDecisionBridgePath { get; set; } = new("../SupportDecisionBridge");
         [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../MainCharacter/AiDecisionBridge");
+        [Export] public NodePath WeaponCarrierPath { get; set; } = new("../WeaponCarrier");
 
         [ExportCategory("AI Bridge")]
         [Export] public bool EnableAiDecisionBridge { get; set; } = false;
         [Export] public bool AiDecisionHasPriority { get; set; } = true;
+        /// <summary>武器拾取检测范围（px）：范围内存在可拾取武器时自动前往拾取。</summary>
+        [Export(PropertyHint.Range, "100,3000,50")] public float CarryRangeMax { get; set; } = 2000f;
+        /// <summary>武器忽略范围（px）：距玩家小于此值的武器不拾取（玩家自己会捡，防止反复拾取/放置循环）。</summary>
+        [Export(PropertyHint.Range, "100,1000,50")] public float CarryRangeMin { get; set; } = 400f;
         [Export] public bool UseLiveAiDecisionSource { get; set; } = true;
         [Export] public bool RequestAiDecisionFromBridge { get; set; } = true;
+        /// <summary>AI 决策请求间隔（秒）：每 N 秒向 AiDecisionBridge 请求一次决策，避免频繁请求。</summary>
         [Export(PropertyHint.Range, "0.2,10,0.1")] public float AiRequestIntervalSeconds { get; set; } = 1.0f;
         [Export] public bool ConsumeOnlyFreshAiDecision { get; set; } = true;
         [Export(PropertyHint.MultilineText)] public string DebugAiSuggestionJson { get; set; } = string.Empty;
@@ -40,11 +48,20 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "0.05,1,0.01")] public float LowHpThresholdRatio { get; set; } = 0.35f;
         [Export(PropertyHint.Range, "10,2000,1")] public float EnemyDangerDistance { get; set; } = 320f;
         [Export(PropertyHint.Range, "1,30,0.5")] public float QuietSceneReminderSeconds { get; set; } = 9f;
+        /// <summary>治疗规则冷却（秒）：低血被攻击 → 用食物。</summary>
+        [Export(PropertyHint.Range, "0.5,30,0.5")] public float HealRuleCooldownSeconds { get; set; } = 5.5f;
+        /// <summary>护盾规则冷却（秒）：敌人近身 → 放技能。</summary>
+        [Export(PropertyHint.Range, "0.5,30,0.5")] public float ShieldRuleCooldownSeconds { get; set; } = 4.0f;
+        /// <summary>武器拾取规则冷却（秒）：范围内有武器 → 前往拾取。</summary>
+        [Export(PropertyHint.Range, "0.5,30,0.5")] public float WeaponFetchCooldownSeconds { get; set; } = 6f;
+        /// <summary>AI 决策消费冷却（秒）：同一条 AI 决策映射执行的间隔。</summary>
+        [Export(PropertyHint.Range, "0.2,10,0.1")] public float AiDecisionConsumeCooldownSeconds { get; set; } = 1.5f;
 
         private GameStateProvider? _gameStateProvider;
         private P2SupportExecutor? _supportExecutor;
         private P2SupportDecisionBridge? _decisionBridge;
         private AiDecisionBridge? _aiDecisionBridge;
+        private P2WeaponCarrier? _weaponCarrier;
         private float _tickAccum;
         private ulong _globalNextHintAtMs;
         private ulong _nextAiRequestAtMs;
@@ -117,7 +134,7 @@ namespace Kuros.Companions
                         reason: "player hp below threshold while under attack",
                         itemTag: ItemTagIds.Food,
                         urgency: "high"),
-                    perRuleCooldownSeconds: 5.5f);
+                    perRuleCooldownSeconds: HealRuleCooldownSeconds);
                 return;
             }
 
@@ -130,7 +147,20 @@ namespace Kuros.Companions
                         reason: "nearest enemy is within danger distance",
                         target: "player",
                         urgency: "medium"),
-                    perRuleCooldownSeconds: 4.0f);
+                    perRuleCooldownSeconds: ShieldRuleCooldownSeconds);
+                return;
+            }
+
+            // 范围内存在可拾取武器（玩家近似距离）→ 自动前往拾取并拖回玩家旁
+            if (WeaponNearby())
+            {
+                TryEmitDecision(
+                    ruleKey: "weapon_nearby",
+                    decision: SupportDecision.FetchWeapon(
+                        sourceRule: "weapon_nearby",
+                        reason: "weapon found in carry range",
+                        urgency: "medium"),
+                    perRuleCooldownSeconds: WeaponFetchCooldownSeconds);
                 return;
             }
 
@@ -146,6 +176,42 @@ namespace Kuros.Companions
                         durationSeconds: 1.8f),
                     perRuleCooldownSeconds: QuietSceneReminderSeconds);
             }
+        }
+
+        /// <summary>武器放置完成回调：从此刻开始拾取 CD（决策发出时设置的 CD 会被此处覆盖，
+        /// 实际语义 = 放置完成 + WeaponFetchCooldownSeconds 后才能再次拾取）。</summary>
+        private void OnWeaponPlaced()
+        {
+            _ruleCooldownUntilMs["weapon_nearby"] = Time.GetTicksMsec() + SecondsToMs(WeaponFetchCooldownSeconds);
+            LastTriggeredRuleKey = "weapon_nearby_placed";
+        }
+
+        /// <summary>CarryRangeMax 内（且距玩家 ≥ CarryRangeMin）是否存在可拾取的武器世界实体
+        /// （world_items 组 + Weapon 类过滤，以玩家位置为基准近似）。</summary>
+        private bool WeaponNearby()
+        {
+            var player = GetTree().GetFirstNodeInGroup("player") as Kuros.Core.GameActor;
+            if (player == null) return false;
+
+            foreach (Node node in GetTree().GetNodesInGroup("world_items"))
+            {
+                // 两类实体都支持：非投掷 WorldItemEntity 与投掷 RigidBodyWorldItemEntity（无继承，需分别读取）
+                ItemDefinition? def = null;
+                if (node is Kuros.Items.World.WorldItemEntity world)
+                    def = world.ItemDefinition;
+                else if (node is Kuros.Items.World.RigidBodyWorldItemEntity rigid)
+                    def = rigid.ItemDefinition;
+                if (def == null) continue;
+
+                bool isWeapon = def.IsThrowWeapon
+                    || string.Equals(def.Category, "Weapon", StringComparison.OrdinalIgnoreCase);
+                if (!isWeapon) continue;
+
+                float d = player.GlobalPosition.DistanceTo(((Node2D)node).GlobalPosition);
+                if (d <= CarryRangeMax && d >= CarryRangeMin)
+                    return true;
+            }
+            return false;
         }
 
         private bool TryEmitAiDecision(GameState state)
@@ -184,7 +250,7 @@ namespace Kuros.Companions
 
                     LastAiRejectReason = string.Empty;
                     _lastConsumedAiDecisionSignature = signature;
-                    TryEmitDecision("ai_bridge_live", mappedDecision, perRuleCooldownSeconds: 1.5f);
+                    TryEmitDecision("ai_bridge_live", mappedDecision, perRuleCooldownSeconds: AiDecisionConsumeCooldownSeconds);
                     return true;
                 }
             }
@@ -208,7 +274,7 @@ namespace Kuros.Companions
             }
 
             LastAiRejectReason = string.Empty;
-            TryEmitDecision("ai_bridge_debug", aiDecision, perRuleCooldownSeconds: 1.5f);
+            TryEmitDecision("ai_bridge_debug", aiDecision, perRuleCooldownSeconds: AiDecisionConsumeCooldownSeconds);
             return true;
         }
 
@@ -395,6 +461,18 @@ namespace Kuros.Companions
                 _gameStateProvider = GetNodeOrNull<GameStateProvider>(GameStateProviderPath)
                     ?? GetNodeOrNull<GameStateProvider>(NormalizeRelativePath(GameStateProviderPath))
                     ?? GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<GameStateProvider>("GameStateProvider");
+            }
+
+            var nextCarrier = _weaponCarrier
+                ?? GetNodeOrNull<P2WeaponCarrier>(WeaponCarrierPath)
+                ?? GetNodeOrNull<P2WeaponCarrier>(NormalizeRelativePath(WeaponCarrierPath));
+            if (!ReferenceEquals(nextCarrier, _weaponCarrier))
+            {
+                if (_weaponCarrier != null)
+                    _weaponCarrier.WeaponPlaced -= OnWeaponPlaced;
+                _weaponCarrier = nextCarrier;
+                if (_weaponCarrier != null)
+                    _weaponCarrier.WeaponPlaced += OnWeaponPlaced; // 放置完成 → 开始拾取 CD
             }
 
             if (_supportExecutor == null || !IsInstanceValid(_supportExecutor) || !_supportExecutor.IsInsideTree())

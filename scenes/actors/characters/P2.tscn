@@ -17,14 +17,12 @@
 [ext_resource type="Script" uid="uid://cn4tupk0uaw24" path="res://scripts/companions/states/P2ActionState.cs" id="12_p2action"]
 [ext_resource type="Script" uid="uid://bmiei1iy5k083" path="res://scripts/companions/states/P2HitState.cs" id="13_p2hit"]
 [ext_resource type="Script" uid="uid://cnp1ua5f38uyt" path="res://scripts/companions/states/P2StunState.cs" id="14_p2stun"]
+[ext_resource type="Script" uid="uid://yh01qcriwen2" path="res://scripts/companions/P2WeaponCarrier.cs" id="15_weaponcarrier"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_v2uuc"]
 shader = ExtResource("2_87y7c")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_p2body"]
-radius = 100.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tiaay"]
 size = Vector2(200, 250)
@@ -36,7 +34,8 @@ scale = Vector2(0.33, 0.33)
 collision_layer = 4
 script = ExtResource("2_p2follow")
 FollowSmoothing = 30.0
-MaxCatchUpSpeed = 600.0
+FreeRoamSpeed = 500.0
+FollowSpeed = 1500.0
 FloatFrequency = 0.9
 EnableDynamicLayering = false
 WanderInterval = 5.0
@@ -46,6 +45,10 @@ DebugHintKey = 4194328
 
 [node name="HintAnchor" type="Marker2D" parent="."]
 position = Vector2(300, -350)
+
+[node name="ItemDrop" type="Marker2D" parent="."]
+position = Vector2(0, 100)
+scale = Vector2(0.9999999, 0.9999999)
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_v2uuc")
@@ -105,7 +108,7 @@ script = ExtResource("5_74bjo")
 skeleton_data_res = ExtResource("4_87y7c")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
+preview_frame = false
 preview_time = 1.0
 script = ExtResource("5_74bjo")
 
@@ -123,18 +126,18 @@ y_sort_enabled = true
 
 [node name="SupportBrain" type="Node" parent="."]
 script = ExtResource("4_p2brain")
-EnableAiDecisionBridge = true
-PersonalityChatterChance = 0.8
+CarryRangeMax = 3000.0
+
+[node name="WeaponCarrier" type="Node" parent="."]
+script = ExtResource("15_weaponcarrier")
+ItemDropAnchorPath = NodePath("../ItemDrop")
+DropOffset = Vector2(0, 0)
 
 [node name="SupportExecutor" type="Node" parent="."]
 script = ExtResource("5_p2executor")
 
 [node name="SupportDecisionBridge" type="Node" parent="."]
 script = ExtResource("6_p2bridge")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_p2body")
-disabled = true
 
 [node name="HitArea" type="Area2D" parent="."]
 

@@ -32,7 +32,7 @@ namespace Kuros.Companions
             {
                 "retreat" => "move_to",       // 远离敌人（移动决策）
                 "reposition" => "move_to",    // 重新站位（移动决策）
-                "loot" => "suggest_pickup",
+                "loot" => "fetch_weapon",     // 拾取武器（实际前往拾取并拖回）
                 "use_skill" => "trigger_support_skill",
                 "use_support_item" => "use_support_item",
                 "heal" => "use_support_item",
@@ -42,11 +42,7 @@ namespace Kuros.Companions
                 _ => intent
             };
 
-            string message = mappedIntent switch
-            {
-                "suggest_pickup" => "suggest_pickup",
-                _ => string.Empty
-            };
+            string message = string.Empty;
 
             return TryBuildDecisionCore(
                 mappedIntent,

@@ -39,10 +39,14 @@ namespace Kuros.Companions
         [Export] public NodePath CompanionAnchorPath { get; set; } = new("CompanionAnchor");
         /// <summary>跟随偏移（相对玩家，X 按朝向反侧取符号，Y 叠加浮动）。</summary>
         [Export] public Vector2 FollowOffset { get; set; } = new(320f, -80f);
-        /// <summary>跟随平滑度：越大收敛越快。</summary>
+        /// <summary>Lerp 收敛平滑度：越大越快地接近目标。</summary>
         [Export(PropertyHint.Range, "0.1,30,0.1")] public float FollowSmoothing { get; set; } = 8.5f;
-        /// <summary>每帧最大位移（速度上限 px/秒）。</summary>
-        [Export(PropertyHint.Range, "10,5000,1")] public float MaxCatchUpSpeed { get; set; } = 1400f;
+        /// <summary>自由游走速度上限（px/秒）：游走/随机目标移动用。</summary>
+        [Export(PropertyHint.Range, "10,3000,10")] public float FreeRoamSpeed { get; set; } = 300f;
+        /// <summary>跟随速度上限（px/秒）：跟随模式接近玩家用，应大于 FreeRoamSpeed 保证追上玩家。</summary>
+        [Export(PropertyHint.Range, "10,5000,10")] public float FollowSpeed { get; set; } = 700f;
+        /// <summary>跟随模式最大持续时间（秒）：超过后即使距离未达标也恢复自由模式，避免无限跟随。</summary>
+        [Export(PropertyHint.Range, "0.5,30,0.5")] public float FollowMaxDuration { get; set; } = 5f;
         /// <summary>始终跟随玩家背后（偏移取玩家朝向反侧）。</summary>
         [Export] public bool AlwaysFollowBehindPlayer { get; set; } = true;
         /// <summary>保持固定在玩家朝向侧（转身不穿越玩家）。</summary>
@@ -65,6 +69,12 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "0,100,0.1")] public float LayerSwitchDeadZone { get; set; } = 8f;
         /// <summary>按朝向而非 Y 差判断前后层。</summary>
         [Export] public bool LayerByFacingDirection { get; set; } = false;
+
+        [ExportCategory("Boundary")]
+        /// <summary>空气墙射线检测开关：自由游走时向移动方向发射线，命中墙体则贴墙停住（类似 ECore）。</summary>
+        [Export] public bool ClampToBoundary { get; set; } = true;
+        /// <summary>射线碰撞层（空气墙 layer，如 6）；默认全层检测。</summary>
+        [Export(PropertyHint.Layers2DPhysics)] public uint BoundaryCollisionMask { get; set; } = uint.MaxValue;
 
         [ExportCategory("Free Roam")]
         /// <summary>自由移动开关：在玩家周围环形区域内游走（决策/脚本目标点）。关闭则纯跟随。</summary>
@@ -121,10 +131,18 @@ namespace Kuros.Companions
 
         /// <summary>当前是否处于跟随模式（Walk 状态据此切换 move/walk 动画）。</summary>
         public bool IsFollowingMode => _mode == RoamMode.Follow;
+
+        /// <summary>玩家当前位置（供外部系统做距离判定）。</summary>
+        public Vector2 PlayerPosition => _player?.GlobalPosition ?? GlobalPosition;
+
+        /// <summary>拾取/拖回武器期间忽略移动范围约束（由 P2WeaponCarrier 设置），
+        /// 防止玩家移动导致 P2 被持续拉回打断拾取流程。</summary>
+        public bool IgnoreMoveRange { get; set; }
         private Vector2? _moveTarget;              // 决策/游走指定的移动目标（世界坐标），null = 跟随
         private float _wanderTimer;                // 空闲游走计时
         private float _hitInvincibilityRemaining;  // 受击免疫剩余时间
         private bool _pendingAction;               // 等待接近玩家后触发的 action（决策动作两阶段）
+        private float _followElapsed;              // 跟随模式已持续时长（超 FollowMaxDuration 后强制退出）
 
         // Dialogic 气泡队列
         private readonly Queue<string> _hintQueue = new();
@@ -227,13 +245,17 @@ namespace Kuros.Companions
             float blend = 1f - Mathf.Exp(-Mathf.Max(0.1f, FollowSmoothing) * (float)delta);
             Vector2 next = GlobalPosition.Lerp(target, blend);
 
-            float maxStep = Mathf.Max(10f, MaxCatchUpSpeed) * (float)delta;
+            // 速度上限按模式区分：跟随速度 > 自由游走速度（保证跟上玩家）
+            float speedLimit = _mode == RoamMode.Follow ? FollowSpeed : FreeRoamSpeed;
+            float maxStep = Mathf.Max(10f, speedLimit) * (float)delta;
             Vector2 step = next - GlobalPosition;
             if (step.Length() > maxStep)
             {
                 next = GlobalPosition + step.Normalized() * maxStep;
             }
 
+            // 射线碰撞：自由游走时向移动方向检测空气墙，命中则贴墙（赋值前检测）
+            next = ApplyRayCollision(GlobalPosition, next);
             GlobalPosition = next;
 
             UpdateMotionState(); // 状态机：有目标 → Walk，否则 Idle（位移唯一由本方法驱动）
@@ -259,11 +281,12 @@ namespace Kuros.Companions
             float distToPlayer = GlobalPosition.DistanceTo(anchor);
 
             // ── 模式切换 ──────────────────────────────────────────
-            if (_mode == RoamMode.FreeRoam && distToPlayer > MoveRangeMax)
+            if (!IgnoreMoveRange && _mode == RoamMode.FreeRoam && distToPlayer > MoveRangeMax)
             {
-                // 超出自由范围 → 切跟随模式（清空目标，接近玩家）
+                // 超出自由范围 → 切跟随模式（清空目标，接近玩家，开始计时）
                 _mode = RoamMode.Follow;
                 _moveTarget = null;
+                _followElapsed = 0f;
             }
             else if (_mode == RoamMode.Follow && !_pendingAction
                      && distToPlayer <= FollowRangeMax
@@ -271,6 +294,16 @@ namespace Kuros.Companions
             {
                 // 回到跟随范围区间 → 恢复自由模式（挂起 action 时保持跟随直到触发）
                 _mode = RoamMode.FreeRoam;
+            }
+            else if (_mode == RoamMode.Follow && !_pendingAction)
+            {
+                // 跟随持续计时：超过 FollowMaxDuration 后即使距离未达标也恢复自由，避免无限跟随
+                _followElapsed += delta;
+                if (_followElapsed >= FollowMaxDuration)
+                {
+                    _mode = RoamMode.FreeRoam;
+                    _moveTarget = null;
+                }
             }
 
             // ── 跟随模式：目标 = 玩家位置（接近到 FollowRange 区间后由模式切换恢复自由）──
@@ -339,6 +372,39 @@ namespace Kuros.Companions
             // 正弦浮动
             float hover = Mathf.Sin(_hoverClock * Mathf.Tau * FloatFrequency) * FloatAmplitude;
             return anchor + new Vector2(FollowOffset.X * sideSign, FollowOffset.Y + hover);
+        }
+
+        /// <summary>射线碰撞（类似 ECore）：自由游走时从当前位置向移动目标发射线，
+        /// 命中墙体则移动到命中点贴墙停住。仅"自由游走"状态检测：
+        /// - 拾取/拖拽武器（IgnoreMoveRange）不检测（可穿墙执行任务）
+        /// - 跟随模式、action 两阶段（接近/播放）不检测</summary>
+        private Vector2 ApplyRayCollision(Vector2 from, Vector2 to)
+        {
+            if (!ClampToBoundary) return to;
+            if (IgnoreMoveRange) return to;                       // 拾取/拖拽流程中
+            if (_mode != RoamMode.FreeRoam) return to;            // 非自由模式（含跟随模式）
+            if (_pendingAction) return to;                        // action 接近阶段
+            var sm = GetNodeOrNull<Kuros.Systems.FSM.StateMachine>("StateMachine");
+            if (sm?.CurrentState?.Name == "Action") return to;    // action 播放阶段
+
+            Vector2 dir = to - from;
+            if (dir.LengthSquared() < 0.0001f) return to;
+
+            var query = new PhysicsRayQueryParameters2D
+            {
+                From = from,
+                To = to,
+                CollisionMask = BoundaryCollisionMask,
+                Exclude = new Godot.Collections.Array<Rid> { GetRid() }, // 排除自身碰撞体
+                CollideWithAreas = false,
+                CollideWithBodies = true,
+            };
+            var result = GetWorld2D().DirectSpaceState.IntersectRay(query);
+            if (result.Count == 0) return to;
+
+            // 命中：移动到命中点并略微回退（贴墙停住，避免贴边抖动）
+            Vector2 hitPos = result["position"].AsVector2();
+            return hitPos - dir.Normalized() * 2f;
         }
 
         /// <summary>生成环形区域（Min~Max）内的随机游走目标点。</summary>

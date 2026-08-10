@@ -18,6 +18,7 @@ namespace Kuros.Companions
         [ExportCategory("References")]
         [Export] public NodePath CompanionControllerPath { get; set; } = new("..");
         [Export] public NodePath PlayerPath { get; set; } = new("../MainCharacter");
+        [Export] public NodePath WeaponCarrierPath { get; set; } = new("WeaponCarrier");
 
         [ExportCategory("Support Execution")]
         [Export] public string DefaultSupportSkillAction { get; set; } = "weapon_skill_block";
@@ -42,6 +43,7 @@ namespace Kuros.Companions
         [Export] public string EquippedEquipmentId { get; set; } = "p2_equipment_heal_amp_10";
 
         private P2CompanionController? _companionController;
+        private P2WeaponCarrier? _weaponCarrier;
         private global::SamplePlayer? _player;
         private global::SamplePlayer? _shieldBoundPlayer;
 
@@ -263,6 +265,9 @@ namespace Kuros.Companions
                 case "move_to":
                     return ExecuteMoveTo(decision);
 
+                case "fetch_weapon":
+                    return ExecuteFetchWeapon(decision);
+
                 default:
                     LastRejectedReason = $"intent '{intent}' is not in whitelist";
                     LastResult = "rejected";
@@ -271,6 +276,39 @@ namespace Kuros.Companions
                     EmitSignal(SignalName.DecisionRejected, $"intent '{intent}' is not in whitelist");
                     return false;
             }
+        }
+
+        /// <summary>执行拾取武器决策（fetch_weapon）：交给 P2WeaponCarrier 前往拾取并拖回玩家旁。</summary>
+        private bool ExecuteFetchWeapon(SupportDecision decision)
+        {
+            ResolveDependencies();
+            if (_weaponCarrier == null)
+            {
+                Reject("fetch_weapon", "weapon carrier not available");
+                return false;
+            }
+
+            if (_weaponCarrier.IsBusy || _weaponCarrier.IsCarrying)
+            {
+                Reject("fetch_weapon", "carrier busy or already carrying");
+                return false;
+            }
+
+            if (!_weaponCarrier.TryFetchNearestWeapon())
+            {
+                Reject("fetch_weapon", "范围内没有可拾取的武器");
+                return false;
+            }
+
+            if (EnableLogging)
+                GD.Print("[P2SupportExecutor] applied fetch_weapon");
+            LastAppliedDecisionJson = decision.ToJson(pretty: false);
+            LastRejectedReason = string.Empty;
+            LastResult = "applied";
+            LastActionDetail = "fetch_weapon";
+            TotalDecisionApplied++;
+            EmitSignal(SignalName.DecisionApplied, decision.ToJson(pretty: false));
+            return true;
         }
 
         /// <summary>执行移动决策（move_to）：解析目标世界坐标 → 交给 P2CompanionController.SetMoveTarget。
@@ -828,6 +866,9 @@ namespace Kuros.Companions
 
             _companionController = GetNodeOrNull<P2CompanionController>(CompanionControllerPath)
                 ?? GetNodeOrNull<P2CompanionController>(NormalizeRelativePath(CompanionControllerPath));
+
+            _weaponCarrier ??= GetNodeOrNull<P2WeaponCarrier>(WeaponCarrierPath)
+                ?? GetNodeOrNull<P2WeaponCarrier>(NormalizeRelativePath(WeaponCarrierPath));
 
             ResolvePlayer();
         }
