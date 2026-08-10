@@ -233,6 +233,9 @@ BurnEffectEntries = Array[ExtResource("2_entry")]([SubResource("BurnEntry_Ring")
 TargetCollisionMask = 3
 VisualSpritePath = NodePath("Sprite2D2")
 DamageAreaAspectY = 0.7
+ContactDamage = 30.0
+KnockbackDistance = 100.0
+KnockbackDuration = 0.1
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_e1s05")

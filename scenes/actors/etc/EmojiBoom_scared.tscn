@@ -1,8 +1,10 @@
-[gd_scene load_steps=27 format=3 uid="uid://c5kj5kfho7gcf"]
+[gd_scene load_steps=30 format=3 uid="uid://c5kj5kfho7gcf"]
 
 [ext_resource type="Script" uid="uid://cmg8g6kgr8yqd" path="res://scripts/effects/EmojiBoomEffect.cs" id="1_pyffd"]
 [ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="2_6p3fn"]
 [ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="3_clhpl"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_i35n1"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_y7kjy"]
 [ext_resource type="Texture2D" uid="uid://760mjxq2r1su" path="res://assets/objects/emoji_boom/时间轴 1_0008.png" id="12_jq84c"]
 [ext_resource type="Texture2D" uid="uid://frs87ufjfuoy" path="res://assets/objects/emoji_boom/时间轴 1_0009.png" id="13_benes"]
 [ext_resource type="Texture2D" uid="uid://cg7aibnohxiqi" path="res://assets/objects/emoji_boom/时间轴 1_0010.png" id="14_k6vby"]
@@ -25,6 +27,11 @@
 [ext_resource type="Texture2D" uid="uid://ch02xd1jd0mfd" path="res://assets/objects/emoji_boom/时间轴 1_0027.png" id="31_ojn0a"]
 [ext_resource type="Texture2D" uid="uid://cypm3kp87w6yx" path="res://assets/objects/emoji_boom/时间轴 1_0028.png" id="32_1e2ke"]
 [ext_resource type="Texture2D" uid="uid://c0pm3cnldrgcq" path="res://assets/objects/emoji_boom/时间轴 1_0029.png" id="33_srng7"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3rw86"]
+shader = ExtResource("4_i35n1")
+shader_parameter/softness = 0.5
+shader_parameter/alpha = 0.4
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3r03d"]
 animations = [{
@@ -118,6 +125,8 @@ script = ExtResource("1_pyffd")
 BoomScene = ExtResource("2_6p3fn")
 BoomDmgScene = ExtResource("3_clhpl")
 BoomSceneOverrides = Dictionary[String, Variant]({
+"ScaleSpawnWithSelf": true,
+"SpawnDelay": 0.2,
 "scale": Vector2(0.5, 0.5)
 })
 BoomDmgOverrides = Dictionary[String, Variant]({
@@ -128,6 +137,12 @@ BoomDmgOverrides = Dictionary[String, Variant]({
 })
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
 Duration = 1.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_3rw86")
+scale = Vector2(10, 5)
+texture = ExtResource("5_y7kjy")
+offset = Vector2(4, 20)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_3r03d")

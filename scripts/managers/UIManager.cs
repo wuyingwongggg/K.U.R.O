@@ -29,6 +29,7 @@ namespace Kuros.Managers
 		private const string LOADING_SCREEN_PATH = "res://scenes/ui/LoadingScreen.tscn";
 		private const string LEVEL_NAME_POPUP_PATH = "res://scenes/ui/LevelNamePopup.tscn";
 		private const string ITEM_OBTAINED_POPUP_PATH = "res://scenes/ui/ItemObtainedPopup.tscn";
+		private const string GAME_OVER_SCREEN_PATH = "res://scenes/ui/windows/GameOverScreen.tscn";
 
 		// 当前加载的UI节点
 		private Dictionary<string, Node> _loadedUIs = new Dictionary<string, Node>();
@@ -331,6 +332,18 @@ namespace Kuros.Managers
 		public void UnloadItemObtainedPopup()
 		{
 			UnloadUI("ItemObtainedPopup");
+		}
+
+		// 便捷方法：加载死亡界面（玩家死亡时全屏弹出）
+		public GameOverScreen LoadGameOverScreen()
+		{
+			return LoadUI<GameOverScreen>(GAME_OVER_SCREEN_PATH, UILayer.Menu, "GameOverScreen");
+		}
+
+		// 便捷方法：卸载死亡界面
+		public void UnloadGameOverScreen()
+		{
+			UnloadUI("GameOverScreen");
 		}
 		public static void RegisterInteractiveChildren(Node parent)
 		{

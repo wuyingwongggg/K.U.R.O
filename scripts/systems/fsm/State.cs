@@ -6,12 +6,16 @@ namespace Kuros.Systems.FSM
 {
     public abstract partial class State : Node
     {
+        /// <summary>被控制的 GameActor（玩家/敌人使用；P2 等非 GameActor 时为 null，用 Owner）。</summary>
         protected GameActor Actor { get; private set; } = null!;
+        /// <summary>被控制的节点（GameActor 或 P2 等自定义节点）。</summary>
+        protected Node Owner { get; private set; } = null!;
         protected StateMachine Machine { get; private set; } = null!;
 
-        public void Initialize(GameActor actor, StateMachine machine)
+        public void Initialize(Node owner, StateMachine machine)
         {
-            Actor = actor;
+            Owner = owner;
+            Actor = owner as GameActor;
             Machine = machine;
             _ReadyState();
         }

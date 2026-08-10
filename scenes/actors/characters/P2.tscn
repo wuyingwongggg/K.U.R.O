@@ -89,7 +89,6 @@ preview_frame = false
 preview_time = 0.0
 
 [node name="HintBubble" parent="." instance=ExtResource("3_p2hint_scene")]
-visible = false
 z_index = 3
 z_as_relative = false
 y_sort_enabled = true
@@ -106,6 +105,5 @@ script = ExtResource("5_p2executor")
 script = ExtResource("6_p2bridge")
 
 [node name="DebugPanel" parent="." instance=ExtResource("7_p2debug_scene")]
-visible = false
 
 [node name="LoadoutPanel" parent="." instance=ExtResource("8_p2loadout_scene")]

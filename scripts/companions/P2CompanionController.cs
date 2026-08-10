@@ -94,10 +94,27 @@ namespace Kuros.Companions
                 PushHint("ready");
             }
 
-            // P2CompanionController.cs _Ready() 末尾
-            var animHsm = GetNodeOrNull("AnimHSM");
-            animHsm?.Call("initialize", this);   // 触发 _setup()，建立状态和迁移
-            animHsm?.Call("set_active", true);   // 进入 StateIdle
+            // 初始化状态机（P2.tscn 的 StateMachine 节点，状态见 scripts/companions/states/）
+            GetNodeOrNull<Kuros.Systems.FSM.StateMachine>("StateMachine")?.Initialize(this);
+        }
+
+        /// <summary>播放 Spine 动画：主 SpineSprite + OutlineLayer 下全部描边精灵同步播放（仿 MainCharacter）。
+        /// 主精灵未挂 SpineController 时跳过（由 P2.tscn 配置），outline 始终生效。</summary>
+        public void PlaySpineAnimation(string animationName, bool loop = true)
+        {
+            if (string.IsNullOrWhiteSpace(animationName)) return;
+
+            var spine = GetNodeOrNull<Node>("SpineSprite");
+            if (spine != null && spine.HasMethod("play"))
+                spine.Call("play", animationName, loop);
+
+            var outlineLayer = GetNodeOrNull<Node>("OutlineLayer");
+            if (outlineLayer == null) return;
+            foreach (Node child in outlineLayer.GetChildren())
+            {
+                if (child.HasMethod("play"))
+                    child.Call("play", animationName, loop);
+            }
         }
 
         public override void _ExitTree()

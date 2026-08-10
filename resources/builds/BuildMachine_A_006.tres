@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://dpspa5pca6by8"]
 
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_6bbx0"]
-[ext_resource type="Script" uid="uid://ce3uslxqcj53w" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_1gaxe"]
-[ext_resource type="Texture2D" uid="uid://dpdpd38y31xnr" path="res://assets/BuildIcon/Machine_A_006_热量回收.png" id="2_bnfgq"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_6bbx0"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_1gaxe"]
+[ext_resource type="Texture2D" uid="uid://cxl5em52s546u" path="res://assets/BuildIcon/Machine_A_006_热量回收.png" id="2_bnfgq"]
 [ext_resource type="PackedScene" uid="uid://d1gf0suqwwrq4" path="res://scenes/builds/machine/MachineHeatRecoveryEffect.tscn" id="3_scene"]
 
 [sub_resource type="Resource" id="Resource_bnfgq"]

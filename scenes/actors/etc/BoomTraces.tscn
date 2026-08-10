@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dv6nbmv1yc02i"]
+
+[ext_resource type="Texture2D" uid="uid://bdm27yiqdm8df" path="res://assets/effect/AttackEffect/traces/TracesOfBoom.png" id="2_c7upr"]
+[ext_resource type="Script" uid="uid://mbol0v4le42t" path="res://scripts/effects/FadeInOutDestroy.cs" id="3_x8fl3"]
+
+[node name="Traces" type="Sprite2D"]
+z_index = 1
+z_as_relative = false
+scale = Vector2(0.7, 0.6)
+texture = ExtResource("2_c7upr")
+script = ExtResource("3_x8fl3")
+FadeInDuration = 0.0
+HoldDuration = 3.0
+FadeOutDuration = 1.0
