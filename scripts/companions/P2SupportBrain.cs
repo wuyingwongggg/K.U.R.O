@@ -46,6 +46,8 @@ namespace Kuros.Companions
 
         [ExportCategory("Rules")]
         [Export(PropertyHint.Range, "0.05,1,0.01")] public float LowHpThresholdRatio { get; set; } = 0.35f;
+        /// <summary>自动治疗阈值：玩家血量比例 ≤ 此值时 P2 主动释放治疗技能（不依赖攻击状态/J 面板切换）。</summary>
+        [Export(PropertyHint.Range, "0.05,1,0.01")] public float HealThresholdRatio { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "10,2000,1")] public float EnemyDangerDistance { get; set; } = 320f;
         [Export(PropertyHint.Range, "1,30,0.5")] public float QuietSceneReminderSeconds { get; set; } = 9f;
         /// <summary>治疗规则冷却（秒）：低血被攻击 → 用食物。</summary>
@@ -124,6 +126,22 @@ namespace Kuros.Companions
             }
 
             float hpRatio = state.PlayerHp / (float)Mathf.Max(1, state.PlayerMaxHp);
+
+            // 低血自动治疗（技能路径）：血量 ≤ HealThresholdRatio 即触发治疗技能，
+            // 独立于攻击状态/J 面板切换——Executor 按 target "heal" 解析出治疗技能执行 ApplyHeal。
+            // 不 return：技能治疗失败（冷却中/满血）时，后续极低血+被攻击仍可落食物路径兜底
+            // （全局冷却会阻止同帧重复决策）。
+            if (hpRatio <= HealThresholdRatio)
+            {
+                TryEmitDecision(
+                    ruleKey: "heal_low_hp",
+                    decision: SupportDecision.TriggerSupportSkill(
+                        sourceRule: "heal_low_hp",
+                        reason: "player hp below heal threshold",
+                        target: "heal",
+                        urgency: "high"),
+                    perRuleCooldownSeconds: HealRuleCooldownSeconds);
+            }
 
             if (hpRatio <= LowHpThresholdRatio && state.PlayerUnderAttack)
             {

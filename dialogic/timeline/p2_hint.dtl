@@ -19,7 +19,7 @@ P2: d(=^･ω･^=)b
 [end_timeline]
 
 label quiet_scene_pickup_3
-P2: （¯﹃¯）
+P2: 打得不错喵~
 [end_timeline]
 
 label fallback_low_hp
@@ -30,8 +30,12 @@ label fallback_enemy_close
 P2: 正在努力搓护盾喵~ 再等一等喵~
 [end_timeline]
 
-label fallback_generic
-P2: 当前辅助动作不可用
+label fallback_generic_1
+P2: 来了喵~来了喵~
+[end_timeline]
+
+label fallback_generic_2
+P2: 等等我喵~
 [end_timeline]
 
 label suggest_retreat
@@ -40,6 +44,10 @@ P2: 先拉开距离更安全
 
 label suggest_pickup_1
 P2: (^✪ω✪^)
+[end_timeline]
+
+label suggest_pickup_2
+P2: 发现宝物了喵~
 [end_timeline]
 
 label ai_received
@@ -54,8 +62,12 @@ label shield_applied_2
 P2: (=^･ω･^=)⊃━☆
 [end_timeline]
 
-label healed
-P2: 恢复了一点体力
+label healed_1
+P2: 恢复一点体力喵~
+[end_timeline]
+
+label healed_2
+P2: 给你治疗喵~
 [end_timeline]
 
 label equipment_bonus

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
 using Kuros.Items.Tags;
+using Kuros.Managers;
 
 namespace Kuros.Companions
 {
@@ -640,6 +641,9 @@ namespace Kuros.Companions
             _player.RestoreHealth(nextHealth, _player.MaxHealth);
             TotalHealFromSkills += finalHeal;
 
+            // 治疗飘字（绿色 +数值 显示在玩家头上）
+            FloatingDamageTextManager.Instance?.ShowFloatingHealing(finalHeal, _player.GlobalPosition, 0f);
+
             _dialogue?.Speak(P2DialogueEvent.Healed, finalHeal);
             detail = $"{skillId}|heal={finalHeal}|mult={multiplier:0.00}";
             return true;
@@ -674,6 +678,7 @@ namespace Kuros.Companions
             int nextHealth = Mathf.Min(_player.MaxHealth, _player.CurrentHealth + bonus);
             _player.RestoreHealth(nextHealth, _player.MaxHealth);
             TotalHealFromEquipBonus += bonus;
+            FloatingDamageTextManager.Instance?.ShowFloatingHealing(bonus, _player.GlobalPosition, 0f);
             _dialogue?.Speak(P2DialogueEvent.EquipmentBonus, bonus);
 
             if (EnableLogging)

@@ -51,7 +51,7 @@ size = Vector2(400, 600)
 y_sort_enabled = true
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-915, -500)
+position = Vector2(-1009, -310)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false

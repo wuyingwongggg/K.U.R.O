@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_eljuq"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_opjbq"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_nqnch"]
-[ext_resource type="Texture2D" uid="uid://cevt5rjvurl0b" path="res://assets/furnitures/hotel_scene4/WhiteBoardA.png" id="6_ai8ol"]
+[ext_resource type="Texture2D" uid="uid://bix6nbba2r1c7" path="res://assets/furnitures/hotel_scene4/WhiteBoardA.png" id="6_ai8ol"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_vw6ke"]
 
 [sub_resource type="Resource" id="Resource_eu1t6"]

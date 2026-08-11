@@ -40,7 +40,6 @@ FollowSpeed = 1500.0
 FollowMaxDuration = 10.0
 FloatFrequency = 0.9
 EnableDynamicLayering = false
-WanderInterval = 5.0
 DebugHintKey = 4194328
 
 [node name="Anchor_Hint" type="Marker2D" parent="."]
