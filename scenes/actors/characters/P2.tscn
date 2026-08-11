@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://cgjrdwkemgrcy"]
+[gd_scene load_steps=22 format=3 uid="uid://cgjrdwkemgrcy"]
 
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_87y7c"]
 [ext_resource type="Script" uid="uid://csll5ffp7awd5" path="res://scripts/companions/P2CompanionController.cs" id="2_p2follow"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://bmiei1iy5k083" path="res://scripts/companions/states/P2HitState.cs" id="13_p2hit"]
 [ext_resource type="Script" uid="uid://cnp1ua5f38uyt" path="res://scripts/companions/states/P2StunState.cs" id="14_p2stun"]
 [ext_resource type="Script" uid="uid://yh01qcriwen2" path="res://scripts/companions/P2WeaponCarrier.cs" id="15_weaponcarrier"]
+[ext_resource type="Script" uid="uid://c0h11rcqixei5" path="res://scripts/companions/P2DialogueController.cs" id="16_dialogue"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_v2uuc"]
 shader = ExtResource("2_87y7c")
@@ -36,17 +37,16 @@ script = ExtResource("2_p2follow")
 FollowSmoothing = 30.0
 FreeRoamSpeed = 500.0
 FollowSpeed = 1500.0
+FollowMaxDuration = 10.0
 FloatFrequency = 0.9
 EnableDynamicLayering = false
 WanderInterval = 5.0
-BubbleAnchorPath = NodePath("HintAnchor")
-HintDisplaySeconds = 1.5
 DebugHintKey = 4194328
 
-[node name="HintAnchor" type="Marker2D" parent="."]
+[node name="Anchor_Hint" type="Marker2D" parent="."]
 position = Vector2(300, -350)
 
-[node name="ItemDrop" type="Marker2D" parent="."]
+[node name="Anchor_ItemDrop" type="Marker2D" parent="."]
 position = Vector2(0, 100)
 scale = Vector2(0.9999999, 0.9999999)
 
@@ -124,19 +124,22 @@ z_index = 3
 z_as_relative = false
 y_sort_enabled = true
 
-[node name="SupportBrain" type="Node" parent="."]
+[node name="AI_Brain" type="Node" parent="."]
 script = ExtResource("4_p2brain")
 CarryRangeMax = 3000.0
 
-[node name="WeaponCarrier" type="Node" parent="."]
+[node name="AI_Dialogue" type="Node" parent="."]
+script = ExtResource("16_dialogue")
+
+[node name="AI_WeaponCarrier" type="Node" parent="."]
 script = ExtResource("15_weaponcarrier")
-ItemDropAnchorPath = NodePath("../ItemDrop")
+ItemDropAnchorPath = NodePath("../Anchor_ItemDrop")
 DropOffset = Vector2(0, 0)
 
-[node name="SupportExecutor" type="Node" parent="."]
+[node name="AI_Executor" type="Node" parent="."]
 script = ExtResource("5_p2executor")
 
-[node name="SupportDecisionBridge" type="Node" parent="."]
+[node name="AI_DecisionBridge" type="Node" parent="."]
 script = ExtResource("6_p2bridge")
 
 [node name="HitArea" type="Area2D" parent="."]

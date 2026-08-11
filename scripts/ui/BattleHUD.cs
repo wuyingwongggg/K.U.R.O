@@ -22,6 +22,9 @@ namespace Kuros.UI
 	// 叠加在生命条上的数字显示
 	[Export] public Label? HealthValueLabel { get; private set; } = null!;
 	[Export] public Label ScoreLabel { get; private set; } = null!;
+	// 经验条：按 Build 阈值曲线显示当前等级区间内的进度（0-100），升级时自动归零
+	[Export] public TextureProgressBar? ExpFillBar { get; private set; } = null!;
+	[Export] public Label? ExpValueLabel { get; private set; } = null!;
 	[Export] public Button PauseButton { get; private set; } = null!;
 	[Export] public Label GoldLabel { get; private set; } = null!;
 
@@ -116,6 +119,16 @@ namespace Kuros.UI
 				ScoreLabel = GetNodeOrNull<Label>("ScoreLabel");
 			}
 
+			if (ExpFillBar == null)
+			{
+				ExpFillBar = GetNodeOrNull<TextureProgressBar>("TextureProgressBar/ExpFillBar");
+			}
+
+			if (ExpValueLabel == null)
+			{
+				ExpValueLabel = GetNodeOrNull<Label>("TextureProgressBar/ExpValueLabel");
+			}
+
 			if (PauseButton == null)
 			{
 				PauseButton = GetNodeOrNull<Button>("PauseButton");
@@ -153,7 +166,9 @@ namespace Kuros.UI
 
 			// 尝试自动连接玩家（如果场景中已有玩家）
 			CallDeferred(MethodName.TryAutoConnectPlayer);
-			CreateDashIndicator();
+
+			// 缓存 Dash 充能点指示器节点引用（节点本身在 BattleHUD.tscn 中布局）
+			_dashIcon = GetNodeOrNull<DashIconControl>("DashIcon");
 
 			// 发出就绪信号
 			EmitSignal(SignalName.HUDReady);
@@ -492,7 +507,41 @@ namespace Kuros.UI
 				// 只显示数字，便于与图标/背景组合
 				ScoreLabel.Text = $"{_score}";
 			}
+			UpdateExpDisplay(_score);
 			// PlayerStatsLabel 保留原逻辑用于调试/回退需要
+		}
+
+		/// <summary>
+		/// 按 Build 阈值曲线更新经验条：显示当前等级区间内的进度（0-100），
+		/// 跨越阈值时等级 +1 且进度自动归零（新的等级区间起点）。
+		/// 曲线取 BuildSelectionManager 的 ThresholdCurve，与 Build 三选一的触发曲线一致。
+		/// </summary>
+		private void UpdateExpDisplay(int score)
+		{
+			if (ExpFillBar == null) return;
+
+			var curve = BuildSelectionManager.Instance?.ThresholdCurve;
+			if (curve == null)
+			{
+				ExpFillBar.Value = 0f;
+				return;
+			}
+
+			int triggerCount = curve.GetTriggerCount(score);      // 已触发的次数（累计阈值已达标数）
+			int level = triggerCount + 1;                         // 当前等级（第 1 次触发前为 LV 1）
+			int start = curve.GetCumulativeScore(triggerCount);   // 本等级起点总分
+			int end = curve.GetCumulativeScore(triggerCount + 1); // 升级所需总分
+			float progress = end > start
+				? Mathf.Clamp((score - start) / (float)(end - start), 0f, 1f)
+				: 0f;
+
+			ExpFillBar.MaxValue = 100f;
+			ExpFillBar.Value = progress * 100f;
+
+			if (ExpValueLabel != null)
+			{
+				ExpValueLabel.Text = $"LV {level}";
+			}
 		}
 
 		private void ConfigureHealthFillBar()
@@ -755,10 +804,8 @@ namespace Kuros.UI
 			}));
 		}
 
-		// Dash 指示器
-	private Control? _dashIcon;
-	private ThrowCooldownOverlay? _dashCooldownOverlay;
-	private Label? _dashChargeLabel;
+		// Dash 充能点指示器（节点在 BattleHUD.tscn 中布局，这里只缓存引用）
+	private DashIconControl? _dashIcon;
 	private PlayerDashState? _dashState;
 	private float _dashUpdateTimer;
 
@@ -888,46 +935,6 @@ namespace Kuros.UI
 				}
 			}
 		}
-	private void CreateDashIndicator()
-	{
-		_dashIcon = new DashIconControl
-		{
-			Name = "DashIndicator",
-		};
-		_dashIcon.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-		_dashIcon.OffsetLeft = 20;
-		_dashIcon.OffsetTop = 120;
-		_dashIcon.OffsetRight = 60;
-		_dashIcon.OffsetBottom = 160;
-		AddChild(_dashIcon);
-
-		_dashCooldownOverlay = new ThrowCooldownOverlay();
-		_dashCooldownOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		_dashCooldownOverlay.OffsetLeft = 0;
-		_dashCooldownOverlay.OffsetTop = 0;
-		_dashCooldownOverlay.OffsetRight = 0;
-		_dashCooldownOverlay.OffsetBottom = 0;
-		_dashIcon.AddChild(_dashCooldownOverlay);
-
-		_dashChargeLabel = new Label
-		{
-			Name = "DashChargeLabel",
-			HorizontalAlignment = HorizontalAlignment.Right,
-			VerticalAlignment = VerticalAlignment.Bottom,
-			MouseFilter = MouseFilterEnum.Ignore
-		};
-		_dashChargeLabel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_dashChargeLabel.OffsetLeft = -28;
-		_dashChargeLabel.OffsetTop = -18;
-		_dashChargeLabel.OffsetRight = 0;
-		_dashChargeLabel.OffsetBottom = 0;
-		_dashChargeLabel.AddThemeColorOverride("font_color", Colors.White);
-		_dashChargeLabel.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.8f));
-		_dashChargeLabel.AddThemeConstantOverride("outline_size", 2);
-		_dashChargeLabel.AddThemeFontSizeOverride("font_size", 14);
-		_dashIcon.AddChild(_dashChargeLabel);
-	}
-
 	private void UpdateDashDisplay(float delta)
 	{
 		if (_dashState == null || _dashIcon == null) return;
@@ -936,94 +943,8 @@ namespace Kuros.UI
 		if (_dashUpdateTimer > 0f) return;
 		_dashUpdateTimer = 0.05f;
 
-		if (_dashCooldownOverlay != null)
-			_dashCooldownOverlay.Progress = 1f - _dashState.RechargeProgress;
-
-		if (_dashChargeLabel != null)
-			_dashChargeLabel.Text = $"{_dashState.Charges}";
+		// 充能点：左侧 Charges 个亮色（可用），其余暗色（CD），从右往左变化
+		_dashIcon.SetCharges(_dashState.Charges, _dashState.MaxCharges);
 	}
-
-		/// <summary>
-		private partial class DashIconControl : Control
-		{
-			public override void _Ready()
-			{
-				MouseFilter = MouseFilterEnum.Ignore;
-			}
-			public override void _Draw()
-			{
-				var size = Size;
-				var center = size * 0.5f;
-				var r = Mathf.Min(size.X, size.Y) * 0.38f;
-				var color = new Color(0.4f, 0.7f, 1f, 0.9f);
-				var points = new Vector2[]
-				{
-					center + new Vector2(0, -r),
-					center + new Vector2(r, 0),
-					center + new Vector2(0, r),
-					center + new Vector2(-r, 0)
-				};
-				DrawPolygon(points, new Color[] { color });
-			}
-		}
-
-		/// 投掷武器冷却扇形遮罩控件
-		/// 从12点钟方向顺时针绘制半透明扇形，覆盖图标表示冷却剩余时间
-		/// </summary>
-		private partial class ThrowCooldownOverlay : Control
-		{
-			private float _progress;
-			public float Progress
-			{
-				get => _progress;
-				set { _progress = Mathf.Clamp(value, 0f, 1f); QueueRedraw(); }
-			}
-
-			public override void _Ready()
-			{
-				base._Ready();
-				MouseFilter = MouseFilterEnum.Ignore;
-			}
-
-			public override void _Draw()
-			{
-				base._Draw();
-				if (_progress <= 0f) return;
-
-				Vector2 rectSize = Size;
-				Vector2 center = rectSize * 0.5f;
-				Vector2 halfSize = rectSize * 0.5f;
-
-				var overlayColor = new Color(0f, 0f, 0f, 0.5f);
-
-				int steps = 48;
-				float startAngle = -Mathf.Pi / 2f; // 从12点钟方向开始
-				float endAngle = startAngle + Mathf.Pi * 2f * _progress;
-				var points = new Vector2[steps + 2];
-				points[0] = center;
-				for (int i = 0; i <= steps; i++)
-				{
-					float t = (float)i / steps;
-					float angle = Mathf.Lerp(startAngle, endAngle, t);
-					Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-					points[i + 1] = center + GetRectEdgePoint(dir, halfSize);
-				}
-				DrawPolygon(points, new Color[] { overlayColor });
-			}
-
-			private static Vector2 GetRectEdgePoint(Vector2 direction, Vector2 halfSize)
-			{
-				if (direction == Vector2.Zero) return Vector2.Zero;
-				float tx = direction.X != 0f ? halfSize.X / Mathf.Abs(direction.X) : float.MaxValue;
-				float ty = direction.Y != 0f ? halfSize.Y / Mathf.Abs(direction.Y) : float.MaxValue;
-				return direction * Mathf.Min(tx, ty);
-			}
-
-			public override void _Notification(int what)
-			{
-				base._Notification(what);
-				if (what == NotificationResized) QueueRedraw();
-			}
-		}
 	}
 }

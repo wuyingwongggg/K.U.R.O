@@ -2,14 +2,13 @@ using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Core;
 using Kuros.Core.Events;
-using System.Collections.Generic;
 
 namespace Kuros.Companions
 {
     /// <summary>
-    /// P2（2P 伴随角色）控制器：负责跟随/自由移动、朝向、渲染层级、Spine 动画播放、
-    /// 受击处理与 Dialogic 气泡。移动采用双模式（自由游走 / 跟随接近），
-    /// 状态机（P2.tscn 的 StateMachine）只做行为/动画层，位移唯一由本类驱动。
+    /// P2（2P 伴随角色）控制器：负责跟随/自由移动、朝向、渲染层级、Spine 动画播放与受击处理。
+    /// 移动采用双模式（自由游走 / 跟随接近），状态机（P2.tscn 的 StateMachine）只做行为/动画层，
+    /// 位移唯一由本类驱动。对话气泡逻辑已独立到 P2DialogueController（AI_Dialogue 节点）。
     /// </summary>
     public partial class P2CompanionController : CharacterBody2D, ICompanionStateSource
     {
@@ -100,18 +99,9 @@ namespace Kuros.Companions
         /// <summary>要镜像/翻转的精灵路径（场景节点名 SpineSprite）。</summary>
         [Export] public NodePath SpritePath { get; set; } = new("SpineSprite");
 
-        [ExportCategory("Dialogic Hint")]
-        /// <summary>
-        /// P2 的 Dialogic 角色资源路径（.dch）。气泡会跟随 BubbleAnchorPath 节点位置显示。
-        /// 需要在 Dialogic Variables 设置中定义 'p2_hint_text' 变量（默认值为空字符串）。
-        /// </summary>
-        [Export(PropertyHint.File, "*.dch")] public string P2CharacterPath { get; set; } = "res://dialogic/character/P2.dch";
-        /// <summary>气泡锚点节点（相对于 P2CompanionController 自身）。留空则以自身位置为锚点。</summary>
-        [Export] public NodePath BubbleAnchorPath { get; set; } = new(".");
-        /// <summary>气泡自动关闭时长（秒）。</summary>
-        [Export(PropertyHint.Range, "0.5,10,0.1")] public float HintDisplaySeconds { get; set; } = 2.2f;
-        /// <summary>气泡队列最大长度（超出丢弃新 hint）。</summary>
-        [Export(PropertyHint.Range, "1,20,1")] public int MaxHintQueueSize { get; set; } = 6;
+        [ExportCategory("Dialogue")]
+        /// <summary>对话控制器节点路径（P2.tscn 的 AI_Dialogue，气泡逻辑已独立）。</summary>
+        [Export] public NodePath DialogueControllerPath { get; set; } = new("AI_Dialogue");
 
         [ExportCategory("Debug")]
         /// <summary>调试热键开关（按下推送 "combat" 气泡）。</summary>
@@ -144,34 +134,23 @@ namespace Kuros.Companions
         private bool _pendingAction;               // 等待接近玩家后触发的 action（决策动作两阶段）
         private float _followElapsed;              // 跟随模式已持续时长（超 FollowMaxDuration 后强制退出）
 
-        // Dialogic 气泡队列
-        private readonly Queue<string> _hintQueue = new();
-        private bool _dialogicBusy;                // 气泡正在播放
-        private bool _waitingForHintEnd;           // 等待当前气泡结束
-        private GodotObject? _dialogic;            // /root/Dialogic 单例引用
-        private Callable _timelineEndedCallable;
+        private P2DialogueController? _dialogue;   // 对话控制器（气泡逻辑独立组件）
 
         public override void _Ready()
         {
             AddToGroup("companions"); // 供 GameStateProvider 组回退识别
 
-            // 订阅 Dialogic 的 timeline 结束信号（气泡队列推进）
-            _dialogic = GetNodeOrNull("/root/Dialogic");
-            if (_dialogic != null)
-            {
-                _timelineEndedCallable = Callable.From(OnDialogicTimelineEnded);
-                _dialogic.Connect("timeline_ended", _timelineEndedCallable);
-            }
+            _dialogue = GetNodeOrNull<P2DialogueController>(DialogueControllerPath);
 
             ResolveReferences();
 
             if (_player != null)
             {
-                // 初始放到跟随点、同步朝向与层级，并播 "ready" 气泡
+                // 初始放到跟随点、同步朝向与层级，并播 "ready" 气泡（经对话控制器）
                 GlobalPosition = ComputeFollowPosition(_player.GlobalPosition);
                 UpdateVisualFacing(GlobalPosition); // 初始无移动目标 → 保持默认朝向
                 UpdateDynamicLayering();
-                PushHint("ready");
+                _dialogue?.Speak(P2DialogueEvent.Ready);
             }
 
             // 初始化状态机（P2.tscn 的 StateMachine 节点，状态见 scripts/companions/states/）
@@ -197,33 +176,12 @@ namespace Kuros.Companions
             }
         }
 
-        public override void _ExitTree()
-        {
-            // 退订 Dialogic 信号，防止悬挂回调
-            if (_dialogic != null && IsInstanceValid(_dialogic)
-                && _dialogic.IsConnected("timeline_ended", _timelineEndedCallable))
-            {
-                _dialogic.Disconnect("timeline_ended", _timelineEndedCallable);
-            }
-        }
-
         public override void _Notification(int what)
         {
             // P2 被隐藏时（过场 HideNodePaths 触发），立即取消正在显示的 hint 气泡
+            // （子节点收不到父级 VisibilityChanged 通知，故由根节点转发给对话控制器）
             if (what == NotificationVisibilityChanged && !Visible)
-                CancelActiveHint();
-        }
-
-        /// <summary>取消当前气泡并清空队列（隐藏/过场时调用）。</summary>
-        private void CancelActiveHint()
-        {
-            _hintQueue.Clear();
-            if (!_waitingForHintEnd) return;
-            _waitingForHintEnd = false;
-            _dialogicBusy = false;
-            _dialogic ??= GetNodeOrNull("/root/Dialogic");
-            if (_dialogic != null && IsInstanceValid(_dialogic) && _dialogic.HasMethod("end_timeline"))
-                _dialogic.Call("end_timeline");
+                _dialogue?.CancelActiveHint();
         }
 
         public override void _PhysicsProcess(double delta)
@@ -264,7 +222,7 @@ namespace Kuros.Companions
 
             if (EnableDebugHintHotkey && Input.IsKeyPressed(DebugHintKey))
             {
-                PushHint("combat");
+                _dialogue?.Speak(P2DialogueEvent.Combat);
             }
         }
 
@@ -586,107 +544,6 @@ namespace Kuros.Companions
             }
 
             return new NodePath($"../{text}");
-        }
-
-        /// <summary>
-        /// 播放 p2_hint timeline 中对应 label 的对话气泡。
-        /// hintKey 对应 p2_hint.dtl 中的 label 名称（如 "ready"、"combat"）。
-        /// 在 Dialogic 编辑器中编辑 dialogic/timeline/p2_hint.dtl 来维护文本。
-        /// </summary>
-        public void PushHint(string hintKey)
-        {
-            if (string.IsNullOrWhiteSpace(hintKey))
-                return;
-
-            // 过场播放期间禁止触发 hint
-            var cutsceneManager = GetTree().GetFirstNodeInGroup("cutscene_manager");
-            if (cutsceneManager is Kuros.Systems.Cutscene.CutsceneManager cm && cm.IsPlaying)
-                return;
-
-            _dialogic ??= GetNodeOrNull("/root/Dialogic");
-            if (_dialogic == null || !IsInstanceValid(_dialogic))
-                return;
-
-            // 如果 Dialogic 正在播放非本 hint 的 Timeline（例如剧情对话），则放弃
-            var currentTimeline = _dialogic.Get("current_timeline");
-            if (currentTimeline.VariantType != Variant.Type.Nil && !_waitingForHintEnd)
-                return;
-
-            // 气泡播放中：入队等待（超队列上限丢弃）
-            if (_dialogicBusy)
-            {
-                if (_hintQueue.Count < Mathf.Max(1, MaxHintQueueSize))
-                    _hintQueue.Enqueue(hintKey);
-                return;
-            }
-
-            StartDialogicHint(hintKey);
-        }
-
-        /// <summary>
-        /// 显示运行时动态生成的文本（如 AI 个性台词），文本不在 DTL 中预定义。
-        /// 通过 Dialogic 变量 "p2_hint_text" 注入后播放 p2_hint.dtl 的 label:direct。
-        /// 需在 Dialogic 编辑器 Variables 中预先定义 "p2_hint_text" 变量（默认值留空即可）。
-        /// </summary>
-        public void PushHintDirect(string rawText)
-        {
-            if (string.IsNullOrWhiteSpace(rawText))
-                return;
-
-            _dialogic ??= GetNodeOrNull("/root/Dialogic");
-            if (_dialogic == null || !IsInstanceValid(_dialogic))
-                return;
-
-            // 在启动 timeline 前注入变量，label:direct 中的 {p2_hint_text} 会读取该值
-            _dialogic.Get("VAR").AsGodotObject()?.Call("set_variable", "p2_hint_text", rawText);
-            PushHint("direct");
-        }
-
-        /// <summary>启动一条 Dialogic 气泡（标记忙碌 → 定位角色 → 到时自动结束）。</summary>
-        private void StartDialogicHint(string hintKey)
-        {
-            if (_dialogic == null || !IsInstanceValid(_dialogic))
-                return;
-
-            _dialogicBusy = true;
-            _waitingForHintEnd = true;
-
-            // 若还没有激活的 Layout，先加载 textbubble_A 样式
-            var styles = _dialogic.Get("Styles").AsGodotObject();
-            if (styles != null && !(bool)styles.Call("has_active_layout_node"))
-                styles.Call("load_style", "textbubble_A");
-
-            // 以 label 为入口启动 p2_hint timeline（文本全部定义在 dtl 文件中）
-            var layoutNode = _dialogic.Call("start", "p2_hint", hintKey).AsGodotObject() as Node;
-
-            // 将气泡定位到 BubbleAnchorPath 指定节点
-            if (!string.IsNullOrEmpty(P2CharacterPath) && !BubbleAnchorPath.IsEmpty && layoutNode != null)
-            {
-                var anchor = GetNodeOrNull<Node2D>(BubbleAnchorPath);
-                if (anchor != null)
-                    layoutNode.CallDeferred("register_character", P2CharacterPath, anchor);
-            }
-
-            // 到时后自动结束（若玩家未手动推进）
-            float delay = Mathf.Max(0.5f, HintDisplaySeconds);
-            GetTree().CreateTimer(delay).Timeout += () =>
-            {
-                if (_waitingForHintEnd && _dialogic != null && IsInstanceValid(_dialogic))
-                    _dialogic.Call("end_timeline");
-            };
-        }
-
-        /// <summary>Dialogic timeline 结束回调：解除忙碌并推进队列中的下一条气泡。</summary>
-        private void OnDialogicTimelineEnded()
-        {
-            if (!_waitingForHintEnd)
-                return;
-
-            _waitingForHintEnd = false;
-            _dialogicBusy = false;
-
-            if (_hintQueue.Count > 0)
-                StartDialogicHint(_hintQueue.Dequeue());
         }
     }
 }

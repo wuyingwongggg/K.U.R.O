@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://cx81yiwuaqfyq"]
 
 [ext_resource type="Script" uid="uid://n1112647r6l5" path="res://scripts/ui/CoreHUD.cs" id="1_42qdb"]
-[ext_resource type="Texture2D" uid="uid://b4bnmx44vnatg" path="res://resources/ui/生命值栏.png" id="2_fmoog"]
-[ext_resource type="Texture2D" uid="uid://b65npykj1n37g" path="res://resources/ui/生命值条.png" id="2_heat_fill"]
+[ext_resource type="Texture2D" uid="uid://b4bnmx44vnatg" path="res://assets/ui/生命值栏.png" id="2_fmoog"]
+[ext_resource type="Texture2D" uid="uid://b65npykj1n37g" path="res://assets/ui/生命值条.png" id="2_heat_fill"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_heat"]
 atlas = ExtResource("2_heat_fill")
@@ -22,7 +22,6 @@ WaiterPanel = NodePath("WaiterPanel")
 ThrowPanel = NodePath("ThrowPanel")
 
 [node name="MachinePanel" type="Panel" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 0.8

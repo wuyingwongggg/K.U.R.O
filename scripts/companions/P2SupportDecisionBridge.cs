@@ -125,6 +125,7 @@ namespace Kuros.Companions
                     target: target),
 
                 "suggest_pickup" => SupportDecision.Hint(
+                    // 无后缀 key：PushHint 会自动发现 dtl 中 suggest_pickup_N 变体并随机
                     message: string.IsNullOrWhiteSpace(message) ? "suggest_pickup" : message,
                     sourceRule: "ai_bridge",
                     reason: string.IsNullOrWhiteSpace(reason) ? "ai suggested pickup" : reason,

@@ -8,15 +8,23 @@ using Kuros.Systems.Inventory;
 namespace Kuros.Companions
 {
     /// <summary>
-    /// P2 武器搬运工：自动前往拾取范围内的武器 → 挂到 P2 的 Spine 骨骼上（单持有槽，无背包）→
-    /// 拖拽回玩家身边 → 在玩家旁生成世界武器实体（玩家自行拾取）。
-    /// 状态机：Idle → GoingToWeapon（前往）→ Returning（拖回）→ 放置 → Idle。
+    /// P2 武器搬运工：将"前往武器 → 拾取 → 返回 → 放置"拆分为可自由组合的步骤，
+    /// 在关键决策点发出信号（WeaponTargetReached / WeaponPickedUp / WeaponPlaced），
+    /// 由 AI（AI_Brain）同步判断"该武器是否为玩家需要"，可改向（换下一把）或中途原地放置。
+    /// 无外部决策时按默认流程自动完成（到达→拾取→返回→放置），保持向后兼容。
     /// </summary>
     [GlobalClass]
     public partial class P2WeaponCarrier : Node
     {
-        /// <summary>武器放置完成时触发（Brain 据此开始拾取 CD）。</summary>
-        [Signal] public delegate void WeaponPlacedEventHandler();
+        /// <summary>到达目标武器时触发（参数 = 武器物品定义）。AI 在此判断是否拾取。</summary>
+        [Signal] public delegate void WeaponTargetReachedEventHandler(ItemDefinition item);
+        /// <summary>拾取并挂载到骨骼后触发（参数 = 武器物品定义）。AI 在此判断返回或原地放置。</summary>
+        [Signal] public delegate void WeaponPickedUpEventHandler(ItemDefinition item);
+        /// <summary>武器放置完成时触发（参数 = 武器物品定义）。Brain 据此开始拾取 CD。</summary>
+        [Signal] public delegate void WeaponPlacedEventHandler(ItemDefinition item);
+
+        /// <summary>搬运步骤（可自由组合，外部通过公开方法驱动）。</summary>
+        public enum CarrierStep { Idle, GoingToWeapon, PickedUp, Returning }
 
         [Export] public NodePath CompanionControllerPath { get; set; } = new("..");
         [Export] public NodePath PlayerPath { get; set; } = new("../MainCharacter");
@@ -25,8 +33,8 @@ namespace Kuros.Companions
         [Export] public NodePath BonePath { get; set; } = new("../SpineSprite/SpineBoneNode");
         /// <summary>持有视觉相对骨骼的微调偏移（骨骼自带旋转/位移）。</summary>
         [Export] public Vector2 WeaponHoldOffset { get; set; } = Vector2.Zero;
-        /// <summary>放置锚点（P2 自身的 Marker2D "ItemDrop"）：武器生成在锚点全局位置。</summary>
-        [Export] public NodePath ItemDropAnchorPath { get; set; } = new("ItemDrop");
+        /// <summary>放置锚点（P2 自身的 Marker2D "Anchor_ItemDrop"）：武器生成在锚点全局位置。</summary>
+        [Export] public NodePath ItemDropAnchorPath { get; set; } = new("Anchor_ItemDrop");
         /// <summary>回退放置偏移：锚点缺失时用 玩家位置 + 此偏移（参考玩家 Drop (32,0)）。</summary>
         [Export] public Vector2 DropOffset { get; set; } = new(32f, 0f);
         /// <summary>拾取检测范围（px）：此范围内的可拾取武器才响应。</summary>
@@ -34,20 +42,22 @@ namespace Kuros.Companions
         /// <summary>忽略范围（px）：武器距玩家小于此值时不拾取（玩家自己会捡，避免反复拾取/放置循环）。</summary>
         [Export(PropertyHint.Range, "100,1000,50")] public float CarryRangeMin { get; set; } = 400f;
 
-        private enum CarrierState { Idle, GoingToWeapon, Returning }
-
-        private CarrierState _state = CarrierState.Idle;
+        private CarrierStep _step = CarrierStep.Idle;
         private P2CompanionController? _controller;
         private SamplePlayer? _player;
         private Node2D? _targetWeapon;      // 目标武器世界实体
+        private ItemDefinition? _targetItem; // 目标武器物品定义（决策点参数）
         private ItemDefinition? _heldItem;  // 单持有槽（无背包）
         private int _heldQuantity;
         private Node2D? _heldVisual;        // 骨骼上的持有视觉（HoldScene 实例或 Icon Sprite）
+        private bool _targetReachedNotified; // 当前目标是否已发"到达"通知（防重复）
 
+        /// <summary>当前搬运步骤。</summary>
+        public CarrierStep CurrentStep => _step;
         /// <summary>当前是否持有武器。</summary>
         public bool IsCarrying => _heldItem != null;
         /// <summary>是否正在执行拾取/拖拽流程。</summary>
-        public bool IsBusy => _state != CarrierState.Idle;
+        public bool IsBusy => _step != CarrierStep.Idle;
 
         public override void _Ready()
         {
@@ -56,29 +66,139 @@ namespace Kuros.Companions
 
         public override void _Process(double delta)
         {
-            switch (_state)
+            switch (_step)
             {
-                case CarrierState.GoingToWeapon:
+                case CarrierStep.GoingToWeapon:
                     UpdateGoingToWeapon();
                     break;
-                case CarrierState.Returning:
+                case CarrierStep.PickedUp:
+                    UpdatePickedUp();
+                    break;
+                case CarrierStep.Returning:
                     UpdateReturning();
                     break;
             }
         }
 
-        /// <summary>尝试拾取范围内最近的武器。失败返回 false（无目标/执行中/已有持有）。</summary>
-        public bool TryFetchNearestWeapon()
+        // ── 步骤控制接口（AI 可自由组合调用） ─────────────────────
+
+        /// <summary>开始前往范围内最近的武器（目标选择含最远优先/范围过滤）。失败返回 false。</summary>
+        public bool StartFetchNearestWeapon()
         {
             if (IsBusy || IsCarrying || _controller == null) return false;
 
             var weapon = FindNearestWeapon();
             if (weapon == null) return false;
 
-            _targetWeapon = weapon;
-            _controller.IgnoreMoveRange = true; // 拾取流程期间忽略移动范围约束，不被拉回打断
-            _controller.SetMoveTarget(weapon.GlobalPosition);
-            _state = CarrierState.GoingToWeapon;
+            StartFetchWeapon(weapon);
+            return true;
+        }
+
+        /// <summary>前往指定武器实体（AI 指定目标时用）。</summary>
+        public void StartFetchWeapon(Node2D weaponEntity)
+        {
+            if (weaponEntity == null || _controller == null) return;
+
+            _targetWeapon = weaponEntity;
+            _targetItem = ReadItem(weaponEntity);
+            _targetReachedNotified = false;
+            _controller.IgnoreMoveRange = true; // 拾取流程期间忽略移动范围约束/空气墙，不被打断
+            _controller.SetMoveTarget(weaponEntity.GlobalPosition);
+            _step = CarrierStep.GoingToWeapon;
+        }
+
+        /// <summary>放弃当前目标并自动查找下一把（GoTo 阶段 AI 判断"不需要"时调用）。无下一把则回 Idle。</summary>
+        public void AbortAndFindNext()
+        {
+            if (_targetWeapon == null)
+            {
+                FinishToIdle();
+                return;
+            }
+
+            // 排除当前目标，重新查找（最远优先 + 范围过滤）
+            var current = _targetWeapon;
+            _targetWeapon = null;
+            _targetItem = null;
+            var next = FindNearestWeapon(exclude: current);
+            if (next == null)
+            {
+                FinishToIdle();
+                return;
+            }
+
+            StartFetchWeapon(next);
+        }
+
+        /// <summary>拾取当前目标并挂载到骨骼，停在 PickedUp 步骤（AI 在 WeaponPickedUp 事件中决定下一步）。</summary>
+        public void PickupAndHold()
+        {
+            if (_step != CarrierStep.GoingToWeapon || _targetWeapon == null) return;
+            PickupWeaponInternal(_targetWeapon);
+        }
+
+        /// <summary>开始拖回玩家位置（PickedUp 步骤 AI 判断"需要"时调用）。</summary>
+        public void ReturnToPlayer()
+        {
+            if (_step != CarrierStep.PickedUp) return;
+            _step = CarrierStep.Returning;
+            if (_player != null)
+                _controller?.SetMoveTarget(_player.GlobalPosition);
+        }
+
+        /// <summary>原地放置（PickedUp/Returning 步骤 AI 判断"不需要"时调用）：在 P2 当前位置生成武器实体。</summary>
+        public void PlaceAtCurrent()
+        {
+            if (_heldItem == null)
+            {
+                FinishToIdle();
+                return;
+            }
+
+            PlaceWeaponAt(_controller?.GlobalPosition ?? GetDropPosition());
+        }
+
+        /// <summary>在放置锚点（Anchor_ItemDrop）位置放置（返回玩家后的默认放置）。</summary>
+        public void PlaceAtPlayer()
+        {
+            if (_heldItem == null)
+            {
+                FinishToIdle();
+                return;
+            }
+
+            PlaceWeaponAt(GetDropPosition());
+        }
+
+        /// <summary>AI 查询：该武器是否为玩家需要（玩家已持有同 ID 武器 → 不需要，避免重复搬运）。</summary>
+        public bool IsWeaponDesired(ItemDefinition item)
+        {
+            if (item == null) return false;
+            if (_player?.InventoryComponent == null) return true; // 无背包信息：默认需要
+
+            // 玩家快捷栏/背包已持有同 ID → 不需要
+            var quickBar = _player.InventoryComponent.QuickBar;
+            if (quickBar != null)
+            {
+                for (int i = 0; i < quickBar.Slots.Count; i++)
+                {
+                    var stack = quickBar.GetStack(i);
+                    if (stack != null && !stack.IsEmpty && stack.Item?.ItemId == item.ItemId)
+                        return false;
+                }
+            }
+
+            var backpack = _player.InventoryComponent.Backpack;
+            if (backpack != null)
+            {
+                for (int i = 0; i < backpack.Slots.Count; i++)
+                {
+                    var stack = backpack.GetStack(i);
+                    if (stack != null && !stack.IsEmpty && stack.Item?.ItemId == item.ItemId)
+                        return false;
+                }
+            }
+
             return true;
         }
 
@@ -91,15 +211,11 @@ namespace Kuros.Companions
             _heldItem = null;
             _heldQuantity = 0;
             _targetWeapon = null;
-            _state = CarrierState.Idle;
-            if (_controller != null)
-            {
-                _controller.IgnoreMoveRange = false;
-                _controller.StopMoving();
-            }
+            _targetItem = null;
+            FinishToIdle();
         }
 
-        // ── 状态推进 ──────────────────────────────────────────
+        // ── 内部状态推进 ──────────────────────────────────────────
 
         private void UpdateGoingToWeapon()
         {
@@ -109,17 +225,49 @@ namespace Kuros.Companions
                 return;
             }
 
-            // 每帧重新设置目标（拾取期间 IgnoreMoveRange 已忽略范围约束，目标不会被清空，此处仅为保险）
+            // 每帧重新设置目标（拾取期间 IgnoreMoveRange 已忽略范围约束，目标不会被清空，仅为保险）
             _controller.SetMoveTarget(_targetWeapon.GlobalPosition);
 
-            // 到达武器（ArriveDistance 内）→ 拾取并挂到骨骼
+            // 到达武器：发出决策事件，AI 同步响应（PickupAndHold / AbortAndFindNext）；
+            // 无人响应时下一帧自动拾取（默认流程）
             if (_controller.GlobalPosition.DistanceTo(_targetWeapon.GlobalPosition) <= _controller.ArriveDistance)
             {
-                PickupWeapon(_targetWeapon);
+                if (!_targetReachedNotified)
+                {
+                    _targetReachedNotified = true;
+                    EmitSignal(SignalName.WeaponTargetReached, _targetItem);
+                    return; // 本帧停：等待 AI 决策
+                }
+
+                PickupAndHold();
             }
         }
 
-        private void PickupWeapon(Node2D weaponEntity)
+        private void UpdatePickedUp()
+        {
+            // 无人响应 WeaponPickedUp 时下一帧默认返回玩家（默认流程）
+            ReturnToPlayer();
+        }
+
+        private void UpdateReturning()
+        {
+            if (_controller == null || _player == null)
+            {
+                Cancel();
+                return;
+            }
+
+            // 每帧把拖回目标更新为玩家当前位置（玩家移动时实时追踪，自愈范围约束竞争）
+            _controller.SetMoveTarget(_player.GlobalPosition);
+
+            // 到达玩家身边（FollowRangeMin 内）→ 放置
+            if (_controller.GlobalPosition.DistanceTo(_player.GlobalPosition) <= _controller.FollowRangeMin)
+            {
+                PlaceAtPlayer();
+            }
+        }
+
+        private void PickupWeaponInternal(Node2D weaponEntity)
         {
             if (!TryReadItem(weaponEntity, out ItemDefinition? def, out int quantity))
             {
@@ -137,56 +285,45 @@ namespace Kuros.Companions
 
             weaponEntity.QueueFree(); // 世界实体消失（被 P2 拿起）
             ShowHeldVisual();
+            _targetWeapon = null;
+            _targetItem = null;
+            _step = CarrierStep.PickedUp;
 
-            // 拖回玩家身边
-            _state = CarrierState.Returning;
-            if (_player != null)
-                _controller?.SetMoveTarget(_player.GlobalPosition);
+            // 发出拾取决策事件，AI 同步响应（ReturnToPlayer / PlaceAtCurrent）；
+            // 无人响应时 UpdatePickedUp 下一帧自动返回
+            EmitSignal(SignalName.WeaponPickedUp, _heldItem);
         }
 
-        private void UpdateReturning()
-        {
-            if (_controller == null || _player == null)
-            {
-                Cancel();
-                return;
-            }
-
-            // 每帧把拖回目标更新为玩家当前位置（玩家移动时实时追踪）。
-            // Controller 的范围约束（超 MoveRangeMax 清目标拉回）会与本目标竞争，
-            // 但下一帧此处重新设置目标 → 自愈；不受约束影响地持续追踪玩家
-            _controller.SetMoveTarget(_player.GlobalPosition);
-
-            // 到达玩家身边（FollowRangeMin 内）→ 放置
-            if (_controller.GlobalPosition.DistanceTo(_player.GlobalPosition) <= _controller.FollowRangeMin)
-            {
-                PlaceWeapon();
-            }
-        }
-
-        private void PlaceWeapon()
+        /// <summary>在世界指定位置生成武器实体并完成放置（清持有/恢复约束/发 WeaponPlaced）。</summary>
+        private void PlaceWeaponAt(Vector2 worldPosition)
         {
             if (_heldItem == null)
             {
-                Cancel();
+                FinishToIdle();
                 return;
             }
 
-            // 在 P2 的 ItemDrop 锚点位置生成世界武器实体（玩家从该处自行拾取）
             var stack = new InventoryItemStack(_heldItem, _heldQuantity);
-            WorldItemSpawner.SpawnFromStack(this, stack, GetDropPosition());
+            var placedItem = _heldItem;
+            WorldItemSpawner.SpawnFromStack(this, stack, worldPosition);
 
             HideHeldVisual();
             _heldItem = null;
             _heldQuantity = 0;
-            _state = CarrierState.Idle;
+            FinishToIdle();
+
+            EmitSignal(SignalName.WeaponPlaced, placedItem); // 放置完成：Brain 据此开始拾取 CD
+        }
+
+        /// <summary>还原到 Idle 并恢复移动范围约束。</summary>
+        private void FinishToIdle()
+        {
+            _step = CarrierStep.Idle;
             if (_controller != null)
             {
-                _controller.IgnoreMoveRange = false; // 放下武器后恢复移动范围约束
+                _controller.IgnoreMoveRange = false;
                 _controller.StopMoving();
             }
-
-            EmitSignal(SignalName.WeaponPlaced); // 放置完成：Brain 据此开始拾取 CD
         }
 
         /// <summary>放置位置：优先 P2 的 ItemDrop 锚点全局位置；锚点缺失回退 玩家位置 + DropOffset。</summary>
@@ -239,9 +376,9 @@ namespace Kuros.Companions
 
         // ── 目标查找 ──────────────────────────────────────────
 
-        /// <summary>查找拾取目标武器：P2 距离 ≤ CarryRange、武器距玩家 ≥ CarryRangeMin（玩家附近的武器留给玩家自己捡），
-        /// 取范围内最远的武器（优先搬运远距离掉落）。</summary>
-        private Node2D? FindNearestWeapon()
+        /// <summary>查找拾取目标武器：P2 距离 ≤ min(CarryRange, MoveRangeMax)、距玩家 ≥ CarryRangeMin，
+        /// 取范围内最远（优先搬运远处掉落）。exclude 用于"换下一把"时排除当前目标。</summary>
+        private Node2D? FindNearestWeapon(Node2D? exclude = null)
         {
             if (_controller == null) return null;
             Node2D? target = null;
@@ -250,6 +387,7 @@ namespace Kuros.Companions
             foreach (Node node in GetTree().GetNodesInGroup("world_items"))
             {
                 if (node is not Node2D node2D || !IsInstanceValid(node2D)) continue;
+                if (exclude != null && node2D == exclude) continue;
                 // 两类实体都支持：非投掷武器 WorldItemEntity（CharacterBody2D）与投掷武器
                 // RigidBodyWorldItemEntity（Node2D，RigidBody2D 包装）——并非继承关系，需分别读取
                 if (!TryReadItem(node2D, out ItemDefinition? def, out _)) continue;
@@ -296,6 +434,12 @@ namespace Kuros.Companions
             definition = null;
             quantity = 0;
             return false;
+        }
+
+        /// <summary>读取实体物品定义（决策点信号参数用；失败返回 null）。</summary>
+        private static ItemDefinition? ReadItem(Node node)
+        {
+            return TryReadItem(node, out ItemDefinition? def, out _) ? def : null;
         }
 
         private static bool IsWeapon(ItemDefinition def)

@@ -1,13 +1,25 @@
-label ready
-P2: P2 已就位
+label ready_1
+P2: 回来喽喵~
+[end_timeline]
+
+label ready_2
+P2: （＾3＾）~♪
 [end_timeline]
 
 label combat
 P2: 注意节奏，先稳住站位
 [end_timeline]
 
-label quiet_scene_pickup
-P2: 暂时安全，看看附近掉落
+label quiet_scene_pickup_1
+P2: ─=≡Σ(^･ω･^)つ つ
+[end_timeline]
+
+label quiet_scene_pickup_2
+P2: d(=^･ω･^=)b
+[end_timeline]
+
+label quiet_scene_pickup_3
+P2: （¯﹃¯）
 [end_timeline]
 
 label fallback_low_hp
@@ -15,7 +27,7 @@ P2: 补给暂不可用，先撤一步保命
 [end_timeline]
 
 label fallback_enemy_close
-P2: 护盾暂不可用，注意拉开距离
+P2: 正在努力搓护盾喵~ 再等一等喵~
 [end_timeline]
 
 label fallback_generic
@@ -26,16 +38,36 @@ label suggest_retreat
 P2: 先拉开距离更安全
 [end_timeline]
 
-label suggest_pickup
-P2: 附近有掉落，注意拾取
+label suggest_pickup_1
+P2: (^✪ω✪^)
 [end_timeline]
 
 label ai_received
 P2: 收到建议
 [end_timeline]
 
+label shield_applied_1
+P2: 给你护盾喵~
+[end_timeline]
+
+label shield_applied_2
+P2: (=^･ω･^=)⊃━☆
+[end_timeline]
+
+label healed
+P2: 恢复了一点体力
+[end_timeline]
+
+label equipment_bonus
+P2: 装备加成恢复了一些体力
+[end_timeline]
+
+label ai_chatter
+P2: 收到，已按建议行动
+[end_timeline]
+
 label shield_expired
-P2: P2 护盾已失效
+P2: (*´･д･)?
 [end_timeline]
 
 label direct

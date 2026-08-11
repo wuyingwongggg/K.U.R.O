@@ -14,10 +14,10 @@ namespace Kuros.Companions
     {
         [ExportCategory("References")]
         [Export] public NodePath GameStateProviderPath { get; set; } = new("../MainCharacter/GameStateProvider");
-        [Export] public NodePath SupportExecutorPath { get; set; } = new("../SupportExecutor");
-        [Export] public NodePath SupportDecisionBridgePath { get; set; } = new("../SupportDecisionBridge");
+        [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
+        [Export] public NodePath SupportDecisionBridgePath { get; set; } = new("../AI_DecisionBridge");
         [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../MainCharacter/AiDecisionBridge");
-        [Export] public NodePath WeaponCarrierPath { get; set; } = new("../WeaponCarrier");
+        [Export] public NodePath WeaponCarrierPath { get; set; } = new("../AI_WeaponCarrier");
 
         [ExportCategory("AI Bridge")]
         [Export] public bool EnableAiDecisionBridge { get; set; } = false;
@@ -169,6 +169,7 @@ namespace Kuros.Companions
                 TryEmitDecision(
                     ruleKey: "quiet_scene_pickup",
                     decision: SupportDecision.Hint(
+                        // 无后缀 key：PushHint 会自动发现 dtl 中 quiet_scene_pickup_N 变体并随机
                         message: "quiet_scene_pickup",
                         sourceRule: "quiet_scene_pickup",
                         reason: "no alive enemies",
@@ -178,9 +179,30 @@ namespace Kuros.Companions
             }
         }
 
+        /// <summary>到达目标武器回调：AI 判断该武器是否为玩家需要——
+        /// 需要 → 拾取并挂载（随后触发 WeaponPickedUp 再决策）；不需要 → 放弃并前往下一把。</summary>
+        private void OnWeaponTargetReached(ItemDefinition item)
+        {
+            if (_weaponCarrier == null) return;
+            if (_weaponCarrier.IsWeaponDesired(item))
+                _weaponCarrier.PickupAndHold();
+            else
+                _weaponCarrier.AbortAndFindNext();
+        }
+
+        /// <summary>拾取后回调：AI 判断——玩家需要 → 继续拖回玩家旁；不需要 → 立刻原地放置并交由后续规则换目标。</summary>
+        private void OnWeaponPickedUp(ItemDefinition item)
+        {
+            if (_weaponCarrier == null) return;
+            if (_weaponCarrier.IsWeaponDesired(item))
+                _weaponCarrier.ReturnToPlayer();
+            else
+                _weaponCarrier.PlaceAtCurrent(); // 原地放置（随后触发 WeaponPlaced → 规则可再选下一把）
+        }
+
         /// <summary>武器放置完成回调：从此刻开始拾取 CD（决策发出时设置的 CD 会被此处覆盖，
         /// 实际语义 = 放置完成 + WeaponFetchCooldownSeconds 后才能再次拾取）。</summary>
-        private void OnWeaponPlaced()
+        private void OnWeaponPlaced(ItemDefinition item)
         {
             _ruleCooldownUntilMs["weapon_nearby"] = Time.GetTicksMsec() + SecondsToMs(WeaponFetchCooldownSeconds);
             LastTriggeredRuleKey = "weapon_nearby_placed";
@@ -328,21 +350,25 @@ namespace Kuros.Companions
             if (!applied && _supportExecutor != null)
             {
                 TotalDecisionsRejected++;
-                string fallbackMessage = BuildFallbackHint(ruleKey, _supportExecutor.LastRejectedReason);
-                var fallback = SupportDecision.Hint(
-                    message: fallbackMessage,
-                    sourceRule: $"{ruleKey}_fallback_hint",
-                    reason: $"fallback because primary decision rejected: {_supportExecutor.LastRejectedReason}",
-                    urgency: "medium",
-                    durationSeconds: 1.8f);
-
-                LastTriggeredRuleKey = $"{ruleKey}_fallback_hint";
-                LastDecisionJson = fallback.ToJson(pretty: false);
-                TotalFallbackHints++;
-                bool fallbackApplied = _supportExecutor.TryExecute(fallback);
-                if (fallbackApplied)
+                string fallbackMessage = BuildFallbackHint(ruleKey);
+                // 兜底返回空串表示该场景无需提示（如玩家已有护盾），跳过兜底
+                if (!string.IsNullOrWhiteSpace(fallbackMessage))
                 {
-                    TotalDecisionsApplied++;
+                    var fallback = SupportDecision.Hint(
+                        message: fallbackMessage,
+                        sourceRule: $"{ruleKey}_fallback_hint",
+                        reason: $"fallback because primary decision rejected: {_supportExecutor.LastRejectedReason}",
+                        urgency: "medium",
+                        durationSeconds: 1.8f);
+
+                    LastTriggeredRuleKey = $"{ruleKey}_fallback_hint";
+                    LastDecisionJson = fallback.ToJson(pretty: false);
+                    TotalFallbackHints++;
+                    bool fallbackApplied = _supportExecutor.TryExecute(fallback);
+                    if (fallbackApplied)
+                    {
+                        TotalDecisionsApplied++;
+                    }
                 }
             }
             else if (applied)
@@ -439,7 +465,9 @@ namespace Kuros.Companions
             return text;
         }
 
-        private static string BuildFallbackHint(string ruleKey, string rejectReason)
+        /// <summary>生成兜底提示 key：按被拒规则选择对应文本；返回空串表示不触发兜底提示。
+        /// enemy_too_close（护盾决策）在玩家已有护盾时返回空——有盾即无需告知"暂不可用"。</summary>
+        private string BuildFallbackHint(string ruleKey)
         {
             if (ruleKey == "low_hp_under_attack")
             {
@@ -448,6 +476,12 @@ namespace Kuros.Companions
 
             if (ruleKey == "enemy_too_close")
             {
+                // 玩家当前持有护盾：护盾决策被拒无需兜底提示（已有盾，不必提示"暂不可用"）
+                if (_supportExecutor != null && _supportExecutor.GetActiveShieldPoints() > 0)
+                {
+                    return string.Empty;
+                }
+
                 return "fallback_enemy_close";
             }
 
@@ -469,10 +503,19 @@ namespace Kuros.Companions
             if (!ReferenceEquals(nextCarrier, _weaponCarrier))
             {
                 if (_weaponCarrier != null)
+                {
+                    _weaponCarrier.WeaponTargetReached -= OnWeaponTargetReached;
+                    _weaponCarrier.WeaponPickedUp -= OnWeaponPickedUp;
                     _weaponCarrier.WeaponPlaced -= OnWeaponPlaced;
+                }
                 _weaponCarrier = nextCarrier;
                 if (_weaponCarrier != null)
+                {
+                    // 决策点事件：到达武器 / 拾取后 → AI 判断武器是否玩家需要（改向或中途放置）
+                    _weaponCarrier.WeaponTargetReached += OnWeaponTargetReached;
+                    _weaponCarrier.WeaponPickedUp += OnWeaponPickedUp;
                     _weaponCarrier.WeaponPlaced += OnWeaponPlaced; // 放置完成 → 开始拾取 CD
+                }
             }
 
             if (_supportExecutor == null || !IsInstanceValid(_supportExecutor) || !_supportExecutor.IsInsideTree())

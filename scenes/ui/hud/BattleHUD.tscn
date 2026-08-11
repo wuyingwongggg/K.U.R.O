@@ -1,21 +1,21 @@
-[gd_scene load_steps=13 format=3 uid="uid://c88kwpwoxtoev"]
+[gd_scene load_steps=17 format=3 uid="uid://c88kwpwoxtoev"]
 
 [ext_resource type="Script" uid="uid://3vrm8fkuw0da" path="res://scripts/ui/BattleHUD.cs" id="1_battle_hud"]
-[ext_resource type="Texture2D" uid="uid://tw6du7s4uppx" path="res://resources/ui/生命值.png" id="2_health_bar"]
-[ext_resource type="Texture2D" uid="uid://b65npykj1n37g" path="res://resources/ui/生命值条.png" id="2_health_fill"]
-[ext_resource type="Texture2D" uid="uid://b4bnmx44vnatg" path="res://resources/ui/生命值栏.png" id="3_health_bg"]
-[ext_resource type="Texture2D" uid="uid://5u8i4btpv0vi" path="res://resources/ui/暂停.png" id="5_l8vag"]
-[ext_resource type="Texture2D" uid="uid://vgh6xkgwp8w4" path="res://resources/ui/金币.png" id="6_gold"]
-[ext_resource type="Texture2D" uid="uid://cy0qwoe0qpjfb" path="res://resources/ui/武器栏底.png" id="7_weapon_bg"]
-[ext_resource type="Texture2D" uid="uid://dhj5yxqdvg6ju" path="res://resources/ui/武器栏框（未选中）.png" id="8_slot_normal"]
+[ext_resource type="Texture2D" uid="uid://dygd2n7t2oilt" path="res://assets/ui/hp&exp_bar/HP框底色.png" id="3_2bbve"]
+[ext_resource type="Texture2D" uid="uid://lnnyw36jkbtp" path="res://assets/ui/hp&exp_bar/HP红色.png" id="4_2b2wp"]
+[ext_resource type="Texture2D" uid="uid://c1c2gfwgvedyh" path="res://assets/ui/hp&exp_bar/HP底色.png" id="4_eqcu2"]
+[ext_resource type="Texture2D" uid="uid://de54souqub7j7" path="res://assets/ui/hp&exp_bar/EXP框.png" id="5_eqcu2"]
+[ext_resource type="Texture2D" uid="uid://vmhxliiru256" path="res://assets/ui/hp&exp_bar/HP框.png" id="5_thm3t"]
+[ext_resource type="Texture2D" uid="uid://tx5eyoqgl2ku" path="res://assets/ui/hp&exp_bar/EXP底色.png" id="5_wh53j"]
+[ext_resource type="Texture2D" uid="uid://cx8mvmvrwdlkj" path="res://assets/ui/金币.png" id="6_gold"]
+[ext_resource type="Texture2D" uid="uid://dmmps17mtfoi7" path="res://assets/ui/hp&exp_bar/EXP框底色.png" id="7_thm3t"]
+[ext_resource type="Texture2D" uid="uid://dhj5yxqdvg6ju" path="res://assets/ui/武器栏框（未选中）.png" id="8_slot_normal"]
+[ext_resource type="Texture2D" uid="uid://d2bkxepnw5v0s" path="res://assets/ui/hp&exp_bar/EXP绿色.png" id="8_wh53j"]
 [ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/BuildCoreHUD.tscn" id="9_core_hud"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_domk2"]
-atlas = ExtResource("2_health_fill")
-region = Rect2(416, 1992, 3184, 656)
+[ext_resource type="Script" uid="uid://d2bak4x8m7c3" path="res://scripts/ui/DashIconControl.cs" id="10_dash_icon"]
+[ext_resource type="Texture2D" uid="uid://dxuph0ta265n1" path="res://assets/ui/设置.png" id="13_thm3t"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_weapon_bg"]
-texture = ExtResource("7_weapon_bg")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slot_normal"]
 texture = ExtResource("8_slot_normal")
@@ -95,58 +95,167 @@ color = Color(1, 0, 0, 1)
 [node name="PlayerStats" type="Label" parent="."]
 layout_mode = 1
 
-[node name="HealthBarBackground" type="TextureRect" parent="."]
+[node name="TextureProgressBar" type="TextureProgressBar" parent="."]
 layout_mode = 1
-offset_left = 68.0
-offset_top = -61.0
-offset_right = 5428.0
-offset_bottom = 3959.0
-scale = Vector2(0.09344275, 0.06638585)
-texture = ExtResource("3_health_bg")
+anchors_preset = -1
+anchor_top = 0.05
+anchor_right = 0.25
+anchor_bottom = 0.15
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+
+[node name="ExpBarBackBorderShadow" type="TextureRect" parent="TextureProgressBar"]
+modulate = Color(1, 1, 1, 0.39215687)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.10130253
+anchor_top = -0.32930773
+anchor_right = 0.89100003
+anchor_bottom = 0.75000006
+offset_left = -0.22000122
+offset_top = 0.048000336
+offset_right = -0.11605835
+offset_bottom = -46.200012
+scale = Vector2(1, 1.7)
+texture = ExtResource("5_thm3t")
 stretch_mode = 5
+metadata/_edit_use_anchors_ = true
+
+[node name="ExpBarBackBorderBG" type="TextureRect" parent="TextureProgressBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1004958
+anchor_top = 0.30753848
+anchor_right = 0.8824958
+anchor_bottom = 0.6735385
+offset_left = 0.16399765
+offset_top = 0.01599884
+offset_right = -0.06802368
+offset_bottom = -0.04800415
+texture = ExtResource("7_thm3t")
+metadata/_edit_use_anchors_ = true
+
+[node name="ExpFillBar" type="TextureProgressBar" parent="TextureProgressBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.2394958
+anchor_top = 0.3846154
+anchor_right = 0.84449583
+anchor_bottom = 0.5965385
+offset_right = 0.019989014
+offset_bottom = -0.040000916
+value = 100.0
+texture_under = ExtResource("5_wh53j")
+texture_progress = ExtResource("8_wh53j")
+metadata/_edit_use_anchors_ = true
+
+[node name="ExpBarBackBorder" type="TextureRect" parent="TextureProgressBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.09710085
+anchor_top = 0.26876923
+anchor_right = 0.8824958
+anchor_bottom = 0.7117692
+offset_left = -0.22000122
+offset_top = 0.048000336
+offset_right = -0.06802368
+offset_bottom = -0.024002075
+texture = ExtResource("5_eqcu2")
+stretch_mode = 5
+metadata/_edit_use_anchors_ = true
+
+[node name="ExpValueLabel" type="Label" parent="TextureProgressBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.13235295
+anchor_top = 0.33653846
+anchor_right = 0.21630253
+anchor_bottom = 0.6056154
+offset_right = 0.039993286
+offset_bottom = 0.01599884
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 20
+text = "LV 1"
+metadata/_edit_use_anchors_ = true
 
 [node name="HealthBar" type="TextureProgressBar" parent="."]
 layout_mode = 1
-offset_left = 20.0
-offset_top = 82.0
-offset_right = 310.0
-offset_bottom = 112.0
+anchors_preset = -1
+anchor_right = 0.25
+anchor_bottom = 0.1
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
 value = 100.0
-tint_under = Color(0.5, 0, 0, 1)
-tint_progress = Color(1, 0, 0, 1)
+
+[node name="HealthBarBorderBG" type="TextureRect" parent="HealthBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.10294118
+anchor_top = 0.20192307
+anchor_right = 0.87404203
+anchor_bottom = 0.77892303
+offset_right = -0.044006348
+offset_bottom = -0.0079956055
+texture = ExtResource("3_2bbve")
+metadata/_edit_use_anchors_ = true
 
 [node name="HealthFillBar" type="TextureProgressBar" parent="HealthBar"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 87.747
-offset_top = -8.385
-offset_right = 2981.747
-offset_bottom = 620.3506
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.09208033, 0.05920435)
+anchors_preset = -1
+anchor_left = 0.13445379
+anchor_top = 0.32692307
+anchor_right = 0.845
+anchor_bottom = 0.67300004
 value = 100.0
-texture_progress = SubResource("AtlasTexture_domk2")
+texture_under = ExtResource("4_eqcu2")
+texture_progress = ExtResource("4_2b2wp")
+metadata/_edit_use_anchors_ = true
+
+[node name="HealthBarBorder" type="TextureRect" parent="HealthBar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.09620169
+anchor_top = 0.163
+anchor_right = 0.8827983
+anchor_bottom = 0.837
+offset_left = 0.20799637
+offset_top = 0.048000336
+offset_right = -0.21200562
+offset_bottom = -0.04800415
+texture = ExtResource("5_thm3t")
+stretch_mode = 5
+metadata/_edit_use_anchors_ = true
 
 [node name="HealthValueLabel" type="Label" parent="HealthBar"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 91.0
-offset_top = -5.0
-offset_right = 91.0
-offset_bottom = -5.0
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.35300002
+anchor_right = 0.6
+anchor_bottom = 0.62200004
+offset_top = 2.2879982
+offset_bottom = -2.2800026
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 20
 text = "100/100"
 horizontal_alignment = 1
 vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="ScoreLabel" type="Label" parent="."]
+visible = false
 layout_mode = 1
 offset_left = 424.0
 offset_top = 77.0
@@ -155,17 +264,8 @@ offset_bottom = 111.0
 theme_override_font_sizes/font_size = 24
 text = "0"
 
-[node name="HealthBarBackground2" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 9.000015
-offset_top = 27.0
-offset_right = 5369.0
-offset_bottom = 4047.0
-scale = Vector2(0.025328826, 0.026320279)
-texture = ExtResource("2_health_bar")
-stretch_mode = 5
-
 [node name="Instructions" type="Label" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -183,6 +283,7 @@ text = "WASD: Move | Space: Dash | Shift: Run | Left mouse: Attack|Right mouse &
 horizontal_alignment = 1
 
 [node name="QuickBarPanel" type="Panel" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -385,47 +486,74 @@ vertical_alignment = 2
 
 [node name="GoldIcon" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(36, 36)
-layout_mode = 0
-offset_left = 1558.0
-offset_top = -119.0
-offset_right = 1594.0
-offset_bottom = -83.0
-scale = Vector2(9.151882, 9.68226)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.90125006
+anchor_top = 0.9022223
+anchor_right = 0.9422501
+anchor_bottom = 0.9762223
+offset_left = -0.40014648
+offset_top = -0.40008545
+offset_right = 0.8798828
+offset_bottom = -0.32006836
 size_flags_vertical = 4
 texture = ExtResource("6_gold")
 expand_mode = 1
 stretch_mode = 5
+metadata/_edit_use_anchors_ = true
 
 [node name="GoldContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -284.0
-offset_top = 29.0
-offset_right = -194.0
-offset_bottom = 69.0
+anchors_preset = -1
+anchor_left = 0.90743756
+anchor_top = 0.8905556
+anchor_right = 1.0204375
+anchor_bottom = 0.9855556
+offset_left = 0.71984863
+offset_top = 0.19995117
+offset_right = -117.339966
+offset_bottom = -58.45752
 grow_horizontal = 0
 scale = Vector2(2.1840193, 2.3212185)
 theme_override_constants/separation = 6
 alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="GoldLabel" type="Label" parent="GoldContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/font_size = 25
 text = "0"
 vertical_alignment = 1
 
 [node name="PauseButton" type="Button" parent="."]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -122.99988
-offset_top = 15.0
-offset_right = 91.00012
-offset_bottom = 221.0
+anchors_preset = -1
+anchor_left = 0.95900005
+anchor_top = 0.014
+anchor_right = 1.0220001
+anchor_bottom = 0.127
+offset_left = -47.28015
+offset_top = -9.120001
+offset_right = -47.240112
+offset_bottom = -9.160004
 grow_horizontal = 0
-scale = Vector2(0.47342315, 0.4649675)
-icon = ExtResource("5_l8vag")
+icon = ExtResource("13_thm3t")
+
+[node name="DashIcon" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0265625
+anchor_top = 0.12407407
+anchor_right = 0.053000003
+anchor_bottom = 0.17
+offset_right = -0.76000977
+offset_bottom = 0.3999939
+mouse_filter = 2
+script = ExtResource("10_dash_icon")
+PointSize = Vector2(32, 32)
+metadata/_edit_use_anchors_ = true
