@@ -1,12 +1,12 @@
-[gd_scene load_steps=26 format=3 uid="uid://buksugecac2v0"]
+[gd_scene load_steps=30 format=3 uid="uid://buksugecac2v0"]
 
 [ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_iind0"]
-[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="2_t4r7x"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="2_t4r7x"]
 [ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_m23s5"]
 [ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_5xpw6"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="5_3he2p"]
 [ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="6_fo2um"]
-[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="7_4lc3o"]
+[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="7_3he2p"]
 [ext_resource type="Texture2D" uid="uid://bmlbrogdyoobg" path="res://assets/environments/scene_2_hotel/地板.png" id="8_dabol"]
 [ext_resource type="Texture2D" uid="uid://84ualture7v7" path="res://assets/environments/scene_2_hotel/地毯.png" id="9_vgrpl"]
 [ext_resource type="Texture2D" uid="uid://k45cthgn2dgq" path="res://assets/environments/scene_2_hotel/墙面.png" id="10_3rmo7"]
@@ -18,6 +18,10 @@
 [ext_resource type="PackedScene" uid="uid://kwbg3wy7rik" path="res://scenes/items/Furniture_B_chairA.tscn" id="16_gkkeb"]
 [ext_resource type="PackedScene" uid="uid://o3wponugixfj" path="res://scenes/items/Furniture_B_chairA_fwd.tscn" id="17_b2fbs"]
 [ext_resource type="PackedScene" uid="uid://cqpk38oxthrr1" path="res://scenes/items/Furniture_B_tableRoundA.tscn" id="18_ahuh7"]
+[ext_resource type="PackedScene" uid="uid://3c5l27vhvwni" path="res://scenes/items/Furniture_B_sofaA.tscn" id="19_5xpw6"]
+[ext_resource type="PackedScene" uid="uid://bkswj210r68h2" path="res://scenes/items/Furniture_B_sofaA_bwd.tscn" id="20_3he2p"]
+[ext_resource type="PackedScene" uid="uid://1mc4twnj45va" path="res://scenes/items/Furniture_B_tableRoundB.tscn" id="21_fo2um"]
+[ext_resource type="PackedScene" uid="uid://dmg1hgmpmsc05" path="res://scenes/items/Furniture_B_coffeeMachineA.tscn" id="22_3he2p"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4aqtp"]
 size = Vector2(5590, 3050)
@@ -82,7 +86,7 @@ shape = SubResource("RectangleShape2D_wh8eq")
 
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 script = ExtResource("3_m23s5")
-WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2"), NodePath("../EnemySpawneManager3")])
+WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2")])
 WaveClearDelay = 0.0
 PollInterval = 0.30000000000000004
 TriggerArea = NodePath("TriggerArea")
@@ -101,9 +105,9 @@ debug_color = Color(1, 0, 0, 0.19607843)
 top_level = true
 position = Vector2(0, 350)
 script = ExtResource("4_5xpw6")
-EnemyScenes = Array[PackedScene]([ExtResource("5_3he2p"), ExtResource("6_fo2um")])
+EnemyScenes = Array[PackedScene]([ExtResource("5_3he2p"), ExtResource("6_fo2um"), ExtResource("7_3he2p")])
 MultiEnemySelectionMode = 1
-SpawnCount = 2
+SpawnCount = 3
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -122,30 +126,9 @@ DebugLineWidth = 8.0
 top_level = true
 position = Vector2(0, 350)
 script = ExtResource("4_5xpw6")
-EnemyScenes = Array[PackedScene]([ExtResource("7_4lc3o"), ExtResource("5_3he2p"), ExtResource("6_fo2um")])
+EnemyScenes = Array[PackedScene]([ExtResource("5_3he2p"), ExtResource("6_fo2um"), ExtResource("7_3he2p")])
 MultiEnemySelectionMode = 1
-SpawnCount = 3
-SpawnInterval = 0.0
-SpawnParentPath = NodePath("..")
-SimultaneousSpawn = true
-EnableTrigger = false
-SpawnAreaExtents = Vector2(2000, 1000)
-EnemySpawnOffset = Vector2(0, 100)
-ObstacleCheckMask = 7
-EnemyAppearDelay = 1.0
-AutoLowerFrontEffectAfterEnemySpawn = true
-ShowDebugOverlay = false
-ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
-DebugLineWidth = 8.0
-
-[node name="EnemySpawneManager3" type="Node2D" parent="."]
-top_level = true
-position = Vector2(0, 350)
-script = ExtResource("4_5xpw6")
-EnemyScenes = Array[PackedScene]([ExtResource("6_fo2um"), ExtResource("7_4lc3o")])
-MultiEnemySelectionMode = 1
-SpawnCount = 3
+SpawnCount = 4
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -211,50 +194,113 @@ position = Vector2(-2, 900)
 [node name="FurniturePlantA1" parent="." instance=ExtResource("13_0euyy")]
 position = Vector2(-2207, -700)
 
-[node name="FurniturePlantA2" parent="." instance=ExtResource("13_0euyy")]
-position = Vector2(2048, -700)
-
 [node name="FurniturePlantA3" parent="." instance=ExtResource("13_0euyy")]
 position = Vector2(-2207, 1124)
 
 [node name="FurniturePlantA4" parent="." instance=ExtResource("13_0euyy")]
-position = Vector2(2048, 1124)
+position = Vector2(2306, 771)
 
 [node name="FurnitureGarbageCanA1" parent="." instance=ExtResource("14_fyv6c")]
-position = Vector2(-276, 900)
-
-[node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("15_bdhma")]
-position = Vector2(-62, 60)
-
-[node name="FurnitureCautionTape_fwd2" parent="." instance=ExtResource("15_bdhma")]
-position = Vector2(139, 275)
+position = Vector2(-530, 1253)
 
 [node name="FurnitureChairA" parent="." instance=ExtResource("16_gkkeb")]
-position = Vector2(-831, -586)
+position = Vector2(-351, 141)
 
 [node name="FurnitureChairA2" parent="." instance=ExtResource("16_gkkeb")]
-position = Vector2(-784, 1028)
-
-[node name="FurnitureChairA3" parent="." instance=ExtResource("16_gkkeb")]
-position = Vector2(1405, -419)
+position = Vector2(-323, 538)
 
 [node name="FurnitureChairA_fwd" parent="." instance=ExtResource("17_b2fbs")]
-position = Vector2(-1586, -575)
+position = Vector2(230, 145)
 
 [node name="FurnitureChairA_fwd2" parent="." instance=ExtResource("17_b2fbs")]
-position = Vector2(-1583, 1082)
-
-[node name="FurnitureChairA_fwd3" parent="." instance=ExtResource("17_b2fbs")]
-position = Vector2(700, 1024)
+position = Vector2(306, 545)
 
 [node name="FurnitureTableRoundA" parent="." instance=ExtResource("18_ahuh7")]
-position = Vector2(-1205, -558)
+position = Vector2(4, 389)
 
 [node name="FurnitureTableRoundA2" parent="." instance=ExtResource("18_ahuh7")]
-position = Vector2(-1159, 1058)
+position = Vector2(-393, 374)
+
+[node name="columnsB3" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2660, 1361)
+
+[node name="columnsB4" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2640, 1093)
+
+[node name="columnsB5" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2618, 840)
+
+[node name="columnsB6" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2667, -247)
+
+[node name="columnsB7" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2642, -511)
+
+[node name="columnsB8" parent="." instance=ExtResource("12_sawr5")]
+position = Vector2(2624, -784)
+
+[node name="FurniturePlantA" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(2070, 781)
+
+[node name="FurniturePlantA5" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1835, 787)
+
+[node name="FurniturePlantA6" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(2310, -116)
+
+[node name="FurniturePlantA7" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(2079, -109)
+
+[node name="FurniturePlantA8" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1846, -105)
+
+[node name="FurniturePlantA9" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1610, -109)
+
+[node name="FurniturePlantA10" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1604, 788)
+
+[node name="FurnitureCautionTape_fwd3" parent="." instance=ExtResource("15_bdhma")]
+position = Vector2(2701, 177)
 
 [node name="FurnitureTableRoundA3" parent="." instance=ExtResource("18_ahuh7")]
-position = Vector2(1035, -554)
+position = Vector2(389, 376)
 
 [node name="FurnitureTableRoundA4" parent="." instance=ExtResource("18_ahuh7")]
-position = Vector2(1071, 1144)
+position = Vector2(-15, 154)
+
+[node name="FurnitureTableRoundA5" parent="." instance=ExtResource("18_ahuh7")]
+position = Vector2(-1, 608)
+
+[node name="FurnitureSofaA" parent="." instance=ExtResource("19_5xpw6")]
+position = Vector2(-1381, -642)
+
+[node name="FurnitureSofaA_bwd" parent="." instance=ExtResource("20_3he2p")]
+position = Vector2(-1412, 1199)
+
+[node name="FurnitureTableRoundB" parent="." instance=ExtResource("21_fo2um")]
+position = Vector2(-1373, -251)
+
+[node name="FurnitureTableRoundB2" parent="." instance=ExtResource("21_fo2um")]
+position = Vector2(-1373, 928)
+
+[node name="FurniturePlantA2" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1368, 798)
+
+[node name="FurniturePlantA11" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1129, 812)
+
+[node name="FurniturePlantA12" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(894, 821)
+
+[node name="FurniturePlantA13" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1372, -102)
+
+[node name="FurniturePlantA14" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(1138, -107)
+
+[node name="FurniturePlantA15" parent="." instance=ExtResource("13_0euyy")]
+position = Vector2(899, -107)
+
+[node name="FurnitureCoffeeMachineA" parent="." instance=ExtResource("22_3he2p")]
+position = Vector2(2063, -737)

@@ -1,6 +1,6 @@
 [gd_scene load_steps=28 format=3 uid="uid://duv46pbl7d7l6"]
 
-[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="1_7rk8h"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="1_7rk8h"]
 [ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_foxgp"]
 [ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_gho62"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="3_moveh"]
@@ -107,12 +107,10 @@ script = ExtResource("2_foxgp")
 EnemyScenes = Array[PackedScene]([ExtResource("3_moveh"), ExtResource("6_c8qwy")])
 MultiEnemySelectionMode = 1
 SpawnCount = 3
-SpawnInterval = 1.5
+SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
 EnableTrigger = false
-TriggerCollisionLayer = 1
-TriggerCollisionMask = 1
 SpawnAreaExtents = Vector2(2000, 1000)
 EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7

@@ -1,8 +1,8 @@
 [gd_scene load_steps=8 format=3 uid="uid://bo6r21cbk3ftm"]
 
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="1_87lfk"]
-[ext_resource type="Script" uid="uid://ch3pldopfd7tr" path="res://scripts/effects/AreaSpriteFadeTrigger.cs" id="1_873p6"]
-[ext_resource type="Texture2D" uid="uid://c72hb4tqgnj5f" path="res://assets/furnitures/hotel_scene2/ColumnsB.png" id="1_mbnq6"]
+[ext_resource type="Script" uid="uid://chsev7qqlpcpx" path="res://scripts/effects/AreaSpriteFadeTrigger.cs" id="1_873p6"]
+[ext_resource type="Texture2D" uid="uid://dpqbwm4ml04fx" path="res://assets/furnitures/hotel_scene2/ColumnsB.png" id="1_mbnq6"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="2_873p6"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4do5r"]
@@ -49,7 +49,6 @@ position = Vector2(0, -450)
 shape = SubResource("RectangleShape2D_87lfk")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(12, 40)
