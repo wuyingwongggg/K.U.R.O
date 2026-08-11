@@ -398,6 +398,7 @@ RecoveryDuration = 0.47
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("17_13pt2")
+MaxCarriedWeaponCount = 3
 
 [node name="WeaponSkillController" type="Node" parent="." node_paths=PackedStringArray("Inventory")]
 script = ExtResource("18_utqjm")

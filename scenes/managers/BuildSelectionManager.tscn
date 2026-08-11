@@ -42,6 +42,6 @@ CorePool = Array[ExtResource("3_core")]([ExtResource("22"), ExtResource("23"), E
 EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("11_51j2i"), ExtResource("12_hmd15"), ExtResource("13_f1ni1"), ExtResource("14_28q7w"), ExtResource("15_sy28j"), ExtResource("16_o8bjk"), ExtResource("17_k6o6d"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("21_fiv8j"), ExtResource("22_f3soq"), ExtResource("23_a8dc1"), ExtResource("24_qq6bi"), ExtResource("25_y7t65"), ExtResource("26_gaso4"), ExtResource("27_tqvmv")])
 RarityMultiplier = Dictionary[String, float]({
 "Common": 3.0,
-"Epic": 3.0,
-"Rare": 3.0
+"Epic": 2.0,
+"Rare": 1.0
 })

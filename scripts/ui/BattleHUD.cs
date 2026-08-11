@@ -31,6 +31,12 @@ namespace Kuros.UI
 		[ExportCategory("Styles")]
 		// 快捷物品栏整体面板样式（例如使用武器栏底图做 StyleBoxTexture）
 		[Export] public StyleBox? QuickBarPanelStyle { get; set; }
+		// 非锁定武器槽的底层空白方块纹理（在所有已解锁槽位上持续显示，位于武器图标下方）
+		[Export] public Texture2D? EmptySlotFrameTexture { get; set; }
+		// 当前选中武器槽的高亮框架纹理（选中框，选中时替换 EmptySlotFrameTexture）
+		[Export] public Texture2D? SelectedFrameTexture { get; set; }
+		// 锁定武器槽的遮掩纹理（覆盖在未解锁的槽位上）
+		[Export] public Texture2D? LockedFrameTexture { get; set; }
 		// 金币文本样式（可配合金币图标背景）
 		[Export] public StyleBox? GoldLabelStyle { get; set; }
 		// 暂停键按钮样式（例如使用“暂停键底”资源）
@@ -61,9 +67,10 @@ namespace Kuros.UI
 		private readonly Label[] _quickSlotLabels = new Label[5];
 		private readonly Panel[] _quickSlotPanels = new Panel[5];
 		private readonly TextureRect[] _quickSlotIcons = new TextureRect[5];
-		// 武器栏框贴图样式：未选中 / 选中（用于 UpdateSlotPanelStyle）
-		private StyleBoxTexture? _quickSlotStyleNormal;
-		private StyleBoxTexture? _quickSlotStyleSelected;
+		// 槽位框架（SlotFrame）纹理：选中框/锁定遮罩由导出属性配置；解锁未选中槽无框
+		private readonly TextureRect?[] _quickSlotFrames = new TextureRect?[5];
+		private int _leftHandSlotIndex = -1;
+		private int _rightHandSlotIndex = -1;
 		// 投掷武器冷却遮罩覆盖层（每个快捷槽一个）
 		private readonly ThrowCooldownOverlay?[] _quickSlotCooldownOverlays = new ThrowCooldownOverlay?[5];
 		private float _throwCooldownUpdateTimer = 0f;
@@ -191,21 +198,26 @@ namespace Kuros.UI
 				_quickSlotLabels[i] = GetNodeOrNull<Label>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotLabel{i + 1}");
 				_quickSlotPanels[i] = GetNodeOrNull<Panel>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}");
 				_quickSlotIcons[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotIcon{i + 1}");
-				
+				_quickSlotFrames[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/SlotFrame");
+
 				if (_quickSlotLabels[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotLabel{i + 1}");
 				}
-				
+
 				if (_quickSlotPanels[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotPanel{i + 1}");
 				}
-				// 槽位样式在 ApplyCustomStyles 中统一用武器栏框贴图设置
 
 				if (_quickSlotIcons[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotIcon{i + 1}");
+				}
+
+				if (_quickSlotFrames[i] == null)
+				{
+					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotFrame{i + 1}");
 				}
 			}
 		}
@@ -354,31 +366,53 @@ namespace Kuros.UI
 
 			// u66f4u65b0u6295u63b7u51b7u5374u906eu7f69uff08u4eceu69fdu4f4d stack u8bfbu53d6uff09
 			UpdateThrowCooldownOverlay(slotIndex, stack);
+
+			// 槽位内容变化（如放入武器）后同步刷新框架纹理，保证物品不被锁定遮罩盖住
+			UpdateSlotFrames();
 		}
 		
 		/// <summary>
-		/// 更新快捷栏槽位面板样式：未选中用武器栏框（未选中），选中用武器栏框（选中）
-		/// </summary>
-		private void UpdateSlotPanelStyle(int slotIndex, bool selected)
-		{
-			if (slotIndex < 0 || slotIndex >= 5) return;
-			if (_quickSlotPanels[slotIndex] == null) return;
-			var style = selected ? _quickSlotStyleSelected : _quickSlotStyleNormal;
-			if (style == null) return;
-			_quickSlotPanels[slotIndex].AddThemeStyleboxOverride("panel", style);
-		}
-
-		/// <summary>
-		/// 更新左右手选择的快捷栏高亮（武器栏框选中/未选中贴图）
+		/// 更新左右手选择的快捷栏高亮（保存选中索引并刷新槽位框架纹理）
 		/// </summary>
 		/// <param name="leftHandSlotIndex">左手选择的槽位索引（0-4，-1表示未选择）</param>
 		/// <param name="rightHandSlotIndex">右手选择的槽位索引（-1表示不高亮右手）</param>
 		public void UpdateHandSlotHighlight(int leftHandSlotIndex, int rightHandSlotIndex = -1)
 		{
+			_leftHandSlotIndex = leftHandSlotIndex;
+			_rightHandSlotIndex = rightHandSlotIndex;
+			UpdateSlotFrames();
+		}
+
+		/// <summary>
+		/// 刷新 5 个槽位的框架纹理（底图不含槽位图案，槽位背景由纹理层负责）：
+		/// 锁定空槽 → 锁定遮罩（LockedFrameTexture）；锁定槽有物品 → 不遮掩（物品优先）；
+		/// 解锁槽被选中 → 选中框（SelectedFrameTexture，替换空白方块）；
+		/// 其余已解锁槽 → 空白方块（EmptySlotFrameTexture，持续显示在武器图标下方）。
+		/// 解锁数量来自玩家 GetUnlockedWeaponSlots（初始 3，Build 每次升级 +1）。
+		/// </summary>
+		private void UpdateSlotFrames()
+		{
+			int unlocked = _player?.InventoryComponent?.GetUnlockedWeaponSlots() ?? 5;
+
 			for (int i = 0; i < 5; i++)
 			{
-				bool selected = (i == rightHandSlotIndex && rightHandSlotIndex >= 0) || (i == leftHandSlotIndex && leftHandSlotIndex >= 0 && leftHandSlotIndex < 5);
-				UpdateSlotPanelStyle(i, selected);
+				var frame = _quickSlotFrames[i];
+				if (frame == null) continue;
+
+				bool hasItem = _player?.InventoryComponent?.QuickBar?.GetStack(i) is { } stack
+					&& !stack.IsEmpty && stack.Item.ItemId != "empty_item";
+
+				// 锁定遮罩只作用于空槽：有物品的槽位即使判定锁定也不遮掩
+				if (i >= unlocked && !hasItem)
+				{
+					frame.Texture = LockedFrameTexture;
+					continue;
+				}
+
+				bool selected = (i == _rightHandSlotIndex && _rightHandSlotIndex >= 0)
+					|| (i == _leftHandSlotIndex && _leftHandSlotIndex >= 0);
+				// 选中时用选中框替换空白方块，其余解锁槽持续显示空白方块
+				frame.Texture = selected ? SelectedFrameTexture : EmptySlotFrameTexture;
 			}
 		}
 
@@ -508,6 +542,8 @@ namespace Kuros.UI
 				ScoreLabel.Text = $"{_score}";
 			}
 			UpdateExpDisplay(_score);
+			// Build 升级（分数跨阈值）时刷新武器槽解锁框
+			UpdateSlotFrames();
 			// PlayerStatsLabel 保留原逻辑用于调试/回退需要
 		}
 
@@ -582,23 +618,7 @@ namespace Kuros.UI
 					quickBarPanel.AddThemeStyleboxOverride("panel", panelStyle);
 			}
 
-			// 每个快捷槽：武器栏框（未选中）/ 武器栏框（选中）
-			var texNormal = GD.Load<Texture2D>("res://resources/ui/武器栏框（未选中）.png");
-			var texSelected = GD.Load<Texture2D>("res://resources/ui/武器栏框（选中）.png");
-			if (texNormal != null)
-			{
-				_quickSlotStyleNormal = new StyleBoxTexture();
-				_quickSlotStyleNormal.Texture = texNormal;
-			}
-			if (texSelected != null)
-			{
-				_quickSlotStyleSelected = new StyleBoxTexture();
-				_quickSlotStyleSelected.Texture = texSelected;
-			}
-			for (int i = 0; i < 5; i++)
-			{
-				UpdateSlotPanelStyle(i, false);
-			}
+			// 槽位框架（解锁框/选中框）由 CacheQuickBarLabels 加载、UpdateSlotFrames 刷新，此处不再设置面板样式
 
 			// 金币文本样式
 			if (GoldLabel != null && GoldLabelStyle != null)

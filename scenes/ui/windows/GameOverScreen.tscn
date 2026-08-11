@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://e7mxr5xyyopy"]
 
 [ext_resource type="Script" uid="uid://cncpk1v5nf41r" path="res://scripts/ui/GameOverScreen.cs" id="1_gameover"]
-[ext_resource type="Texture2D" uid="uid://deb3e8fiay8lt" path="res://assets/ui/26_0002_失败画面gameover.png" id="2_ivj3t"]
+[ext_resource type="Texture2D" uid="uid://deb3e8fiay8lt" path="res://assets/ui/失败画面gameover.png" id="2_ivj3t"]
 [ext_resource type="Texture2D" uid="uid://bx2lb5fq15jqs" path="res://assets/effect/AttackEffect/ringA/ringB.png" id="2_w46le"]
 [ext_resource type="Texture2D" uid="uid://bdm27yiqdm8df" path="res://assets/effect/AttackEffect/traces/TracesOfBoom.png" id="3_qw0sw"]
 [ext_resource type="Texture2D" uid="uid://cnngeydj5ptrn" path="res://assets/effect/AttackEffect/ringA/ringB_2.png" id="4_u03cr"]

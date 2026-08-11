@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://cnkk83sm7ys0t"]
 
-[ext_resource type="Script" path="res://scripts/scenes/MainMenuManager.cs" id="1"]
+[ext_resource type="Script" uid="uid://cskt3sx0gi3j7" path="res://scripts/scenes/MainMenuManager.cs" id="1"]
 
 [node name="MainMenuScene" type="Control"]
 layout_mode = 3
@@ -10,7 +10,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
-BattleScenePath = "res://scenes/Stage_1.tscn"
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -42,32 +41,32 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
 theme_override_constants/separation = 15
+alignment = 1
 
 [node name="Title" type="Label" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 48
 text = "K.U.R.O"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 48
 
 [node name="HSeparator" type="HSeparator" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 
 [node name="StartGameButton" type="Button" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(300, 60)
-text = "开始游戏"
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
+text = "开始游戏"
 
 [node name="SettingsButton" type="Button" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(300, 60)
-text = "设置"
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
+text = "设置"
 
 [node name="QuitButton" type="Button" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(300, 60)
-text = "退出游戏"
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
+text = "退出游戏"

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Kuros.Scenes;
 using Kuros.Systems.Inventory;
 using Kuros.Actors.Heroes;
+using Kuros.Core;
 using Kuros.Items;
 
 namespace Kuros.Managers
@@ -471,8 +472,9 @@ namespace Kuros.Managers
             return data;
         }
 
-        /// <summary>将快照还原到玩家背包组件。调用方应在 _Ready 完成后调用。</summary>
-        public void RestoreTo(PlayerInventoryComponent inv)
+        /// <summary>将快照还原到玩家背包组件。调用方应在 _Ready 完成后调用。
+        /// owner 为玩家时用于恢复家具 OnEquip 效果（与运行时拾取行为一致）。</summary>
+        public void RestoreTo(PlayerInventoryComponent inv, GameActor? owner = null)
         {
             // ── 快捷栏 ──────────────────────────────────────────
             if (inv.QuickBar != null && QuickBarSlots.Count > 0)
@@ -524,7 +526,7 @@ namespace Kuros.Managers
                 {
                     // 先清空家具槽，确保 AddFurnitureItem 不会因槽已占用而失败
                     inv.ClearFurnitureSlot();
-                    inv.AddItemSmart(item, FurnitureSlot.Quantity);
+                    inv.AddItemSmart(item, FurnitureSlot.Quantity, owner);
                 }
             }
 

@@ -23,6 +23,18 @@ namespace Kuros.Managers
         [ExportGroup("Thresholds")]
         [Export] public ScoreThresholdCurve? ThresholdCurve { get; set; }
 
+        [ExportGroup("Weapon Slots")]
+        /// <summary>初始可用武器槽位数（Build 每次触发升级 +1）。</summary>
+        [Export(PropertyHint.Range, "1,10,1")] public int InitialWeaponSlotCount { get; set; } = 3;
+        /// <summary>武器槽位解锁上限。</summary>
+        [Export(PropertyHint.Range, "1,10,1")] public int MaxWeaponSlotCount { get; set; } = 5;
+
+        /// <summary>当前已解锁的武器快捷栏槽位数：初始值 + Build 触发次数，封顶 MaxWeaponSlotCount。</summary>
+        public int GetWeaponSlotUnlockCount()
+        {
+            return Mathf.Clamp(InitialWeaponSlotCount + _triggerCount, 1, Mathf.Max(1, MaxWeaponSlotCount));
+        }
+
         [ExportGroup("Core Pool")]
         [Export] public Godot.Collections.Array<BuildCoreDefinition> CorePool { get; set; } = new();
 
