@@ -19,8 +19,11 @@ namespace Kuros.Actors.Heroes
         /// <summary>背包容器格数（物品溢出快捷栏后放入背包的上限）。</summary>
         [Export(PropertyHint.Range, "1,200,1")] public int BackpackSlots { get; set; } = 5;
 
-        /// <summary>可携带武器总数上限</summary>
-        [Export(PropertyHint.Range, "1,20,1")] public int MaxCarriedWeaponCount { get; set; } = 5;
+        /// <summary>可携带武器总数上限（= 已解锁武器槽数）：初始值，Build 升级通过 UnlockWeaponSlot 增长。</summary>
+        [Export(PropertyHint.Range, "1,20,1")] public int MaxCarriedWeaponCount { get; set; } = 3;
+        /// <summary>武器槽位解锁封顶（MaxCarriedWeaponCount 增长上限，对应快捷栏槽位数）。</summary>
+        [Export(PropertyHint.Range, "1,20,1")] public int MaxCarriedWeaponSlots { get; set; } = 5;
+        private int _initialMaxCarriedWeaponCount = 3; // _Ready 时保存初始值，供 ResetWeaponSlots 还原
         public InventoryContainer Backpack { get; private set; } = null!;
         public InventoryContainer? QuickBar { get; set; }
 
@@ -126,6 +129,8 @@ namespace Kuros.Actors.Heroes
         public override void _Ready()
         {
             base._Ready();
+
+            _initialMaxCarriedWeaponCount = MaxCarriedWeaponCount; // 保存初始武器槽数（ResetWeaponSlots 还原用）
 
             Backpack = GetNodeOrNull<InventoryContainer>("Backpack") ?? CreateBackpack();
             Backpack.SlotCount = BackpackSlots;
@@ -918,15 +923,24 @@ namespace Kuros.Actors.Heroes
         }
 
         /// <summary>
-        /// 当前已解锁的武器快捷栏槽位数：由 BuildSelectionManager 按 Build 触发次数计算
-        /// （初始 InitialWeaponSlotCount，每次升级 +1，封顶 MaxWeaponSlotCount）。
-        /// 未挂载 BuildSelectionManager 时回退为 MaxCarriedWeaponCount（全部解锁）。
+        /// 当前已解锁的武器快捷栏槽位数 = MaxCarriedWeaponCount（单一数据源）。
+        /// Build 升级通过 UnlockWeaponSlot 增长该值；UI 锁图与 AddItemSmart 拾取范围共用。
         /// </summary>
         public int GetUnlockedWeaponSlots()
         {
-            int unlocked = Kuros.Managers.BuildSelectionManager.Instance?.GetWeaponSlotUnlockCount()
-                ?? MaxCarriedWeaponCount;
-            return Mathf.Clamp(unlocked, 1, Mathf.Max(1, MaxCarriedWeaponCount));
+            return Mathf.Clamp(MaxCarriedWeaponCount, 1, Mathf.Max(1, MaxCarriedWeaponSlots));
+        }
+
+        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 升级时调用）。</summary>
+        public void UnlockWeaponSlot()
+        {
+            MaxCarriedWeaponCount = Mathf.Min(MaxCarriedWeaponCount + 1, Mathf.Max(1, MaxCarriedWeaponSlots));
+        }
+
+        /// <summary>重置武器槽位到初始值（新游戏开始时调用）。</summary>
+        public void ResetWeaponSlots()
+        {
+            MaxCarriedWeaponCount = Mathf.Max(1, _initialMaxCarriedWeaponCount);
         }
 
         public int GetCarriedWeaponCount()

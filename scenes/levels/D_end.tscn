@@ -167,6 +167,7 @@ EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7
 EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
+ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
 LogSpawnEffectPositions = false
 DebugLineWidth = 8.0

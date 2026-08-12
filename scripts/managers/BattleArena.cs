@@ -192,12 +192,6 @@ namespace Kuros.Managers
 
             bool hasEnemies = _trackedEnemies.Count > 0;
 
-            // 【临时调试】打印追踪列表每个成员的状态
-            foreach (var enemy in _trackedEnemies)
-            {
-                GameLogger.Debug(nameof(BattleArena), $"[DBG] tracked: {enemy.Name} valid={IsInstanceValid(enemy)} dead={enemy.IsDead}");
-            }
-
             // 状态转移：无敌人 -> 有敌人
             if (hasEnemies && !_isBattleActive)
             {

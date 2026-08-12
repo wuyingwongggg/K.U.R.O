@@ -1,11 +1,12 @@
-[gd_scene load_steps=29 format=3 uid="uid://dboywwkmaxr72"]
+[gd_scene load_steps=30 format=3 uid="uid://dboywwkmaxr72"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
-[ext_resource type="Script" uid="uid://crsxnj6dphc7a" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
-[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="4_iqss4"]
-[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_f0bsw"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_qp7fd"]
+[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bo0js"]
+[ext_resource type="Resource" uid="uid://dtwgitwhpbxsm" path="res://resources/cutscene/C_end_intro.tres" id="3_emx2a"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_iqss4"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_f0bsw"]
 [ext_resource type="PackedScene" uid="uid://8ce54l6083nt" path="res://scenes/actors/characters/Enemy_C1_waiterB.tscn" id="6_emx2a"]
-[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_m4til"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_m4til"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="12_tl38j"]
 [ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="13_hlghd"]
 [ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="14_bf4xp"]
@@ -27,7 +28,7 @@ size = Vector2(5382, 3050)
 size = Vector2(2000, 1200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_omx51"]
-size = Vector2(1000, 1000)
+size = Vector2(400, 2500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mxkb7"]
 size = Vector2(5300, 3000)
@@ -59,6 +60,9 @@ agent_radius = 80.0
 
 [node name="CEnd" type="Node2D"]
 y_sort_enabled = true
+
+[node name="BossSpawnPoint" type="Node2D" parent="."]
+position = Vector2(1500, 60)
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-2000, 750)
@@ -101,14 +105,14 @@ position = Vector2(3970, 325)
 shape = SubResource("RectangleShape2D_qp7fd")
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
-visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_bo0js")
+Sequence = ExtResource("3_emx2a")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
-position = Vector2(-1008, 355)
+position = Vector2(-1280, 350)
 shape = SubResource("RectangleShape2D_omx51")
 debug_color = Color(1, 0, 1, 0.41960785)
 
@@ -128,7 +132,6 @@ ShowDebugOverlayInGame = true
 shape = SubResource("RectangleShape2D_mxkb7")
 
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
-visible = false
 script = ExtResource("5_f0bsw")
 WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager")])
 WaveClearDelay = 0.0
@@ -147,8 +150,9 @@ shape = SubResource("RectangleShape2D_7mqiy")
 debug_color = Color(1, 0, 0, 0.19607843)
 
 [node name="EnemySpawneManager" type="Node2D" parent="."]
+visible = false
 top_level = true
-position = Vector2(0, 356)
+position = Vector2(1500, 356)
 script = ExtResource("6_m4til")
 EnemyScenes = Array[PackedScene]([ExtResource("6_emx2a")])
 MultiEnemySelectionMode = 1
@@ -157,12 +161,11 @@ SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
 EnableTrigger = false
-SpawnAreaExtents = Vector2(2400, 1000)
+SpawnAreaExtents = Vector2(100, 100)
 EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7
 EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
-ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
 LogSpawnEffectPositions = false
 DebugLineWidth = 8.0

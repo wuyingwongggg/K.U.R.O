@@ -104,6 +104,8 @@ namespace Kuros.Companions
         private int _activeShieldPoints;      // 当前护盾剩余点数
         private ulong _shieldExpireAtMs;      // 护盾过期时间戳
         private Tween? _shieldFlashTween;     // 护盾格挡闪光动画
+        private Color _playerBaseModulate = Colors.White; // 玩家原始 Modulate（格挡闪光恢复目标，防连续伤害累积污染）
+        private Node? _shieldEffectInstance;  // 护盾特效实例（随护盾生命周期销毁：施加生成，超时/打破时消失）
 
         // ── 默认资源路径（无配置时自动加载） ──
         private const string ShieldSkillResourcePath = "res://resources/companions/P2SupportSkill_ShieldTest.tres";
@@ -120,6 +122,8 @@ namespace Kuros.Companions
         public override void _ExitTree()
         {
             UnbindShieldInterceptor(); // 退订玩家伤害拦截，防悬挂回调
+            _shieldEffectInstance?.QueueFree(); // 清理护盾特效，防悬挂
+            _shieldEffectInstance = null;
             base._ExitTree();
         }
 
@@ -362,6 +366,8 @@ namespace Kuros.Companions
                 Reject("fetch_weapon", "范围内没有可拾取的武器");
                 return false;
             }
+
+            _dialogue?.Speak(P2DialogueEvent.WeaponFetchStart); // 出发拾取气泡（fetch_weapon_N 随机变体）
 
             if (EnableLogging)
                 GD.Print("[P2SupportExecutor] applied fetch_weapon");
@@ -610,6 +616,8 @@ namespace Kuros.Companions
             BindShieldInterceptor();
             _player.SetShieldValue(_activeShieldPoints);
 
+            // 护盾特效（ActionEffectScenes[0]）：记录实例，随护盾生命周期销毁
+            _shieldEffectInstance = _companionController?.SpawnActionEffect(0);
             _dialogue?.Speak(P2DialogueEvent.ShieldApplied, _activeShieldPoints);
             detail = $"{skillId}|shield={_activeShieldPoints}|dur={duration:0.0}s";
             return true;
@@ -643,6 +651,7 @@ namespace Kuros.Companions
 
             // 治疗飘字（绿色 +数值 显示在玩家头上）
             FloatingDamageTextManager.Instance?.ShowFloatingHealing(finalHeal, _player.GlobalPosition, 0f);
+            _companionController?.SpawnActionEffect(1); // 治疗特效（ActionEffectScenes[1]）
 
             _dialogue?.Speak(P2DialogueEvent.Healed, finalHeal);
             detail = $"{skillId}|heal={finalHeal}|mult={multiplier:0.00}";
@@ -679,6 +688,7 @@ namespace Kuros.Companions
             _player.RestoreHealth(nextHealth, _player.MaxHealth);
             TotalHealFromEquipBonus += bonus;
             FloatingDamageTextManager.Instance?.ShowFloatingHealing(bonus, _player.GlobalPosition, 0f);
+            _companionController?.SpawnActionEffect(2); // 装备加成特效（ActionEffectScenes[2]）
             _dialogue?.Speak(P2DialogueEvent.EquipmentBonus, bonus);
 
             if (EnableLogging)
@@ -733,7 +743,8 @@ namespace Kuros.Companions
             return args.IsBlocked;
         }
 
-        /// <summary>清除护盾状态：清零点数/过期时间 + 清除玩家护盾值 + 退订拦截 + 可选气泡提示。</summary>
+        /// <summary>清除护盾状态：销毁护盾特效 + 清零点数/过期时间 + 清除玩家护盾值 + 退订拦截 + 可选气泡提示。
+        /// 所有护盾结束路径（超时/伤害耗尽）都汇聚于此，护盾特效随生命周期在此销毁。</summary>
         private void ClearShieldState(bool notifyHint)
         {
             if (_activeShieldPoints <= 0 && _shieldExpireAtMs == 0)
@@ -741,6 +752,8 @@ namespace Kuros.Companions
                 return;
             }
 
+            _shieldEffectInstance?.QueueFree();
+            _shieldEffectInstance = null;
             _activeShieldPoints = 0;
             _shieldExpireAtMs = 0;
             _player?.ClearShield();
@@ -792,7 +805,9 @@ namespace Kuros.Companions
                 _shieldFlashTween.Kill();
             }
 
-            Color baseColor = _player.Modulate;
+            // 恢复目标用缓存的玩家原始颜色：连续伤害时旧 Tween 被 Kill 停在中间色，
+            // 若读当前 Modulate 会以污染色为基准越偏越远；缓存值保证最终一定还原
+            Color baseColor = _playerBaseModulate;
             float strength = Mathf.Clamp(ShieldBlockFlashStrength, 0.1f, 1f);
             Color flashColor = baseColor.Lerp(ShieldBlockFlashColor, strength);
 
@@ -986,6 +1001,7 @@ namespace Kuros.Companions
             {
                 UnbindShieldInterceptor();
                 _player = nextPlayer;
+                _playerBaseModulate = nextPlayer?.Modulate ?? Colors.White; // 缓存原始颜色（玩家变更时刷新）
                 if (_activeShieldPoints > 0)
                 {
                     BindShieldInterceptor(); // 换玩家后护盾拦截重绑到新玩家

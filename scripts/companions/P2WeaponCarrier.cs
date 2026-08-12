@@ -82,6 +82,9 @@ namespace Kuros.Companions
 
         // ── 步骤控制接口（AI 可自由组合调用） ─────────────────────
 
+        /// <summary>搬运专用移动速度（px/秒）：拾取/拖拽期间覆盖 P2 的模式速度（跟随/游走）；0 = 不覆盖。</summary>
+        [Export(PropertyHint.Range, "0,3000,10")] public float CarrySpeed { get; set; } = 450f;
+
         /// <summary>开始前往范围内最近的武器（目标选择含最远优先/范围过滤）。失败返回 false。</summary>
         public bool StartFetchNearestWeapon()
         {
@@ -103,6 +106,7 @@ namespace Kuros.Companions
             _targetItem = ReadItem(weaponEntity);
             _targetReachedNotified = false;
             _controller.IgnoreMoveRange = true; // 拾取流程期间忽略移动范围约束/空气墙，不被打断
+            _controller.MoveSpeedOverride = CarrySpeed > 0f ? CarrySpeed : null; // 搬运专用速度（独立于跟随/游走模式）
             _controller.SetMoveTarget(weaponEntity.GlobalPosition);
             _step = CarrierStep.GoingToWeapon;
         }
@@ -315,13 +319,14 @@ namespace Kuros.Companions
             EmitSignal(SignalName.WeaponPlaced, placedItem); // 放置完成：Brain 据此开始拾取 CD
         }
 
-        /// <summary>还原到 Idle 并恢复移动范围约束。</summary>
+        /// <summary>还原到 Idle 并恢复移动范围约束/搬运速度覆盖。</summary>
         private void FinishToIdle()
         {
             _step = CarrierStep.Idle;
             if (_controller != null)
             {
                 _controller.IgnoreMoveRange = false;
+                _controller.MoveSpeedOverride = null; // 结束搬运：速度还原为模式速度
                 _controller.StopMoving();
             }
         }

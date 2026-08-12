@@ -42,12 +42,32 @@ label suggest_retreat
 P2: 先拉开距离更安全
 [end_timeline]
 
-label suggest_pickup_1
+label fetch_weapon_1
+P2: 发现武器了喵~ 我去捡回来喵~
+[end_timeline]
+
+label fetch_weapon_2
+P2: 看到武器了喵~ 这就出发喵~
+[end_timeline]
+
+label fetch_weapon_3
 P2: (^✪ω✪^)
 [end_timeline]
 
-label suggest_pickup_2
-P2: 发现宝物了喵~
+label follow_started_1
+P2: 来了喵~来了喵~
+[end_timeline]
+
+label follow_started_2
+P2: 等一等本喵~
+[end_timeline]
+
+label free_roam_started_1
+P2: 我先溜了喵~
+[end_timeline]
+
+label free_roam_started_2
+P2: 先摸一会儿鱼喵~
 [end_timeline]
 
 label ai_received
@@ -78,8 +98,12 @@ label ai_chatter
 P2: 收到，已按建议行动
 [end_timeline]
 
-label shield_expired
+label shield_expired_1
 P2: (*´･д･)?
+[end_timeline]
+
+label shield_expired_2
+P2: 哎呀护盾失效了喵~
 [end_timeline]
 
 label direct

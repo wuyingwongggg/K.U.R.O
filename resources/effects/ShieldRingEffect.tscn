@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://femgcn3uq40c"]
+
+[ext_resource type="Shader" uid="uid://cu3a01aco0kxs" path="res://shaders/materials/ring_of_power.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="2_noise"]
+[ext_resource type="Script" uid="uid://mbol0v4le42t" path="res://scripts/effects/FadeInOutDestroy.cs" id="3_fade"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
+shader = ExtResource("1_shader")
+shader_parameter/radius = 0.7999999821184
+shader_parameter/thickness = 0.02999999932944
+shader_parameter/color = Color(0.35, 0.75, 1, 1)
+shader_parameter/brightness = 1.499999966472
+shader_parameter/angular_speed = 2.5
+shader_parameter/radial_speed = 2.9999998211839998
+shader_parameter/alpha = 0.999999977648
+shader_parameter/noise = ExtResource("2_noise")
+
+[node name="ShieldRingEffect" type="Node2D"]
+
+[node name="Ring" type="Sprite2D" parent="."]
+y_sort_enabled = true
+material = SubResource("ShaderMaterial_ring")
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("2_noise")
+script = ExtResource("3_fade")
+FadeInDuration = 0.3
+HoldDuration = 6.2
+FadeOutDuration = 0.6
+TargetPath = NodePath("..")

@@ -131,7 +131,8 @@ namespace Kuros.Companions
             // 独立于攻击状态/J 面板切换——Executor 按 target "heal" 解析出治疗技能执行 ApplyHeal。
             // 不 return：技能治疗失败（冷却中/满血）时，后续极低血+被攻击仍可落食物路径兜底
             // （全局冷却会阻止同帧重复决策）。
-            if (hpRatio <= HealThresholdRatio)
+            // 方案 A：武器搬运进行中（WeaponCarrier.IsBusy）时让位，避免移动权冲突。
+            if (hpRatio <= HealThresholdRatio && !IsWeaponCarrierBusy())
             {
                 TryEmitDecision(
                     ruleKey: "heal_low_hp",
@@ -156,7 +157,10 @@ namespace Kuros.Companions
                 return;
             }
 
-            if (state.AliveEnemyCount > 0 && state.NearestEnemyDistance > 0f && state.NearestEnemyDistance <= EnemyDangerDistance)
+            // 方案 A：武器搬运进行中（WeaponCarrier.IsBusy）时护盾让位，避免移动权冲突
+            if (state.AliveEnemyCount > 0 && state.NearestEnemyDistance > 0f
+                && state.NearestEnemyDistance <= EnemyDangerDistance
+                && !IsWeaponCarrierBusy())
             {
                 TryEmitDecision(
                     ruleKey: "enemy_too_close",
@@ -504,6 +508,12 @@ namespace Kuros.Companions
             }
 
             return "fallback_generic";
+        }
+
+        /// <summary>武器搬运进行中（GoingToWeapon/PickedUp/Returning）——治疗/护盾决策让位，避免移动权冲突。</summary>
+        private bool IsWeaponCarrierBusy()
+        {
+            return _weaponCarrier != null && _weaponCarrier.IsBusy;
         }
 
         private void ResolveDependencies()

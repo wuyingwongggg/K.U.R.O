@@ -1,0 +1,58 @@
+[gd_scene load_steps=7 format=3 uid="uid://calasrptr0be2"]
+
+[ext_resource type="Script" uid="uid://e6e7psk7sgay" path="res://scripts/effects/LaserPointerBeam.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cv6ol02rd852j" path="res://assets/effect/LightEffect/spotlight_1.png" id="2_spot"]
+[ext_resource type="Shader" uid="uid://mgoi3nxo6p5p" path="res://shaders/materials/laser_blaster_glow.gdshader" id="3_shader"]
+[ext_resource type="Texture2D" uid="uid://bdh5uuivcd50q" path="res://assets/effect/LightEffect/laserpointer.png" id="4_beam"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow"]
+shader = ExtResource("3_shader")
+shader_parameter/glow_intensity = 40.0
+shader_parameter/core_width = 0.5
+shader_parameter/core_length = 0.95
+shader_parameter/fade = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_beam"]
+shader = ExtResource("3_shader")
+shader_parameter/glow_intensity = 2.5
+shader_parameter/core_width = 0.6
+shader_parameter/core_length = 0.92
+shader_parameter/fade = 1.0
+
+[node name="LaserPointerBeam" type="Node2D"]
+z_index = 2
+script = ExtResource("1_script")
+DelaySeconds = 0.35
+BeamLength = 2000.0
+BeamWidth = 60.0
+GlowWidth = 80.0
+BeamOffset = Vector2(420, -250)
+GrowDuration = 0.1
+FadeDuration = 0.3
+SpotlightDuration = 0.5
+SpotlightFadeIn = 0.1
+EffectId = "a64077ab-c175-4af9-8bb5-b45d0a8e9727"
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+target_position = Vector2(3000, 0)
+collision_mask = 4
+
+[node name="GlowSprite" type="Sprite2D" parent="."]
+modulate = Color(0, 0, 18.897633, 1)
+material = SubResource("ShaderMaterial_glow")
+texture = ExtResource("4_beam")
+centered = false
+offset = Vector2(0, -10)
+
+[node name="BeamSprite" type="Sprite2D" parent="."]
+modulate = Color(0.16078432, 0.39215687, 1, 1)
+material = SubResource("ShaderMaterial_beam")
+texture = ExtResource("4_beam")
+centered = false
+offset = Vector2(0, -10)
+
+[node name="Spotlight" type="Sprite2D" parent="."]
+modulate = Color(0, 0.59351265, 18.897633, 1)
+self_modulate = Color(0, 0.81066054, 18.897633, 1)
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_spot")

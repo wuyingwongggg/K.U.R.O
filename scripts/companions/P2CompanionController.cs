@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Core;
@@ -36,20 +37,24 @@ namespace Kuros.Companions
         [Export] public NodePath PlayerPath { get; set; } = new("../MainCharacter");
         /// <summary>玩家身上的跟随锚点节点（MainCharacter 无此节点时回退玩家位置）。</summary>
         [Export] public NodePath CompanionAnchorPath { get; set; } = new("CompanionAnchor");
-        /// <summary>跟随偏移（相对玩家，X 按朝向反侧取符号，Y 叠加浮动）。</summary>
-        [Export] public Vector2 FollowOffset { get; set; } = new(320f, -80f);
-        /// <summary>Lerp 收敛平滑度：越大越快地接近目标。</summary>
-        [Export(PropertyHint.Range, "0.1,30,0.1")] public float FollowSmoothing { get; set; } = 8.5f;
-        /// <summary>自由游走速度上限（px/秒）：游走/随机目标移动用。</summary>
-        [Export(PropertyHint.Range, "10,3000,10")] public float FreeRoamSpeed { get; set; } = 300f;
-        /// <summary>跟随速度上限（px/秒）：跟随模式接近玩家用，应大于 FreeRoamSpeed 保证追上玩家。</summary>
-        [Export(PropertyHint.Range, "10,5000,10")] public float FollowSpeed { get; set; } = 700f;
-        /// <summary>跟随模式最大持续时间（秒）：超过后即使距离未达标也恢复自由模式，避免无限跟随。</summary>
+        /// <summary>跟随模式距离带下限：P2 与玩家距离低于此值时向后退回带内。</summary>
+        [Export(PropertyHint.Range, "0,1000,10")] public float FollowRangeMin { get; set; } = 300f;
+        /// <summary>跟随模式距离带上限：P2 与玩家距离高于此值时靠近；动作在进入此范围内触发。</summary>
+        [Export(PropertyHint.Range, "0,2000,10")] public float FollowRangeMax { get; set; } = 500f;
+        /// <summary>跟随模式最大持续时间（秒）：超过后恢复自由模式，避免无限跟随。</summary>
         [Export(PropertyHint.Range, "0.5,30,0.5")] public float FollowMaxDuration { get; set; } = 5f;
+        /// <summary>跟随速度上限（px/秒）：跟随模式靠近玩家用，应大于 FreeRoamSpeed 保证追上玩家。</summary>
+        [Export(PropertyHint.Range, "10,5000,10")] public float FollowSpeed { get; set; } = 700f;
         /// <summary>始终跟随玩家背后（偏移取玩家朝向反侧）。</summary>
         [Export] public bool AlwaysFollowBehindPlayer { get; set; } = true;
         /// <summary>保持固定在玩家朝向侧（转身不穿越玩家）。</summary>
         [Export] public bool KeepCompanionOnFacingSide { get; set; } = false;
+        /// <summary>跟随偏移（相对玩家，X 按朝向反侧取符号，Y 叠加浮动）。</summary>
+        [Export] public Vector2 FollowOffset { get; set; } = new(320f, -80f);
+        /// <summary>Lerp 收敛平滑度：越大越快地接近目标。</summary>
+        [Export(PropertyHint.Range, "0.1,30,0.1")] public float FollowSmoothing { get; set; } = 8.5f;
+        /// <summary>目标点平滑速度：对移动目标做指数平滑，消除目标突变（跟随/游走/搬运切换）造成的方向跳变。</summary>
+        [Export(PropertyHint.Range, "1,30,0.5")] public float TargetSmoothing { get; set; } = 10f;
 
         [ExportCategory("Floating")]
         /// <summary>跟随点的正弦浮动振幅（px）。</summary>
@@ -78,14 +83,12 @@ namespace Kuros.Companions
         [ExportCategory("Free Roam")]
         /// <summary>自由移动开关：在玩家周围环形区域内游走（决策/脚本目标点）。关闭则纯跟随。</summary>
         [Export] public bool EnableFreeRoam { get; set; } = true;
+        /// <summary>自由游走速度上限（px/秒）：游走/随机目标移动用。</summary>
+        [Export(PropertyHint.Range, "10,3000,10")] public float FreeRoamSpeed { get; set; } = 300f;
         /// <summary>自由模式环形区域内半径：随机游走点的最小半径。</summary>
         [Export(PropertyHint.Range, "0,1000,10")] public float MoveRangeMin { get; set; } = 500f;
         /// <summary>自由模式环形区域外半径：超出此距离切换到跟随模式。</summary>
         [Export(PropertyHint.Range, "0,2000,10")] public float MoveRangeMax { get; set; } = 2000f;
-        /// <summary>跟随模式最小距离：回到此区间内即恢复自由模式。</summary>
-        [Export(PropertyHint.Range, "0,1000,10")] public float FollowRangeMin { get; set; } = 300f;
-        /// <summary>跟随模式最大距离：跟随模式的目标是进入此区间（接近玩家到 FollowRangeMin~Max 内）。</summary>
-        [Export(PropertyHint.Range, "0,2000,10")] public float FollowRangeMax { get; set; } = 500f;
         /// <summary>空闲游走间隔（秒）：每隔一段时间随机生成新目标点。</summary>
         [Export(PropertyHint.Range, "0.1,10,0.1")] public float WanderInterval { get; set; } = 2.0f;
         /// <summary>到达目标点的判定距离（px）。</summary>
@@ -103,6 +106,21 @@ namespace Kuros.Companions
         /// <summary>对话控制器节点路径（P2.tscn 的 AI_Dialogue，气泡逻辑已独立）。</summary>
         [Export] public NodePath DialogueControllerPath { get; set; } = new("AI_Dialogue");
 
+        [ExportCategory("Action Effects")]
+        /// <summary>
+        /// 动作特效场景数组（PackedScene），按用途约定索引，各动作独立配置、互不共用：
+        ///   [0] 护盾施加（ApplyShield 触发，P2 放盾时在玩家身上生成）
+        ///   [1] 治疗（ApplyHeal 触发，P2 回血时在玩家身上生成）
+        ///   [2] 装备加成恢复（ApplyHealingAmplifierBonus 触发，食物治疗的倍率加成部分）
+        /// 行为说明：
+        /// - 触发时机 = 动作成功执行瞬间（与飘字/气泡同一帧），特效挂载在玩家节点下跟随移动
+        /// - 未配置的索引（空槽/越界）直接跳过，不影响动作本身（飘字、气泡、回血照常）
+        /// - 特效节点需自带生命周期管理（如 FadeInOutDestroy 淡入保持淡出销毁，或 EffectAutoDestroy），
+        ///   否则会一直挂在玩家身上
+        /// - 特效尺寸可通过场景根节点 Scale 调整（挂玩家后继承玩家自身的缩放）
+        /// </summary>
+        [Export] public Godot.Collections.Array<PackedScene> ActionEffectScenes { get; set; } = new();
+
         [ExportCategory("Debug")]
         /// <summary>调试热键开关（按下推送 "combat" 气泡）。</summary>
         [Export] public bool EnableDebugHintHotkey { get; set; } = true;
@@ -114,13 +132,35 @@ namespace Kuros.Companions
         private Node2D? _sprite;
         private float _hoverClock;      // 跟随浮动时钟
         private int _layerSign = 1;     // 当前前后层符号
-        /// <summary>移动模式：自由游走（环形范围）或跟随（接近玩家到跟随范围）。</summary>
-        private enum RoamMode { FreeRoam, Follow }
+        /// <summary>移动模式：自由游走（环形范围）或跟随（保持距离带）。</summary>
+        public enum RoamMode { FreeRoam, Follow }
 
         private RoamMode _mode = RoamMode.FreeRoam;
 
+        /// <summary>模式切换钩子：自由模式 ⇄ 跟随模式切换时触发（参数 = 新模式）。外部系统可订阅。</summary>
+        public event Action<RoamMode>? RoamModeChanged;
+
         /// <summary>当前是否处于跟随模式（Walk 状态据此切换 move/walk 动画）。</summary>
         public bool IsFollowingMode => _mode == RoamMode.Follow;
+
+        /// <summary>
+        /// 统一的模式切换入口：触发 RoamModeChanged 钩子 + 可选对话气泡。
+        /// notifyDialogue = true 时弹模式切换台词（越界跟随/超时恢复自由等"自然切换"）；
+        /// 动作流程内的切换（TriggerAction/TryFirePendingAction）传 false——已有动作气泡，避免三连气泡。
+        /// </summary>
+        private void ChangeRoamMode(RoamMode newMode, bool notifyDialogue)
+        {
+            if (_mode == newMode) return;
+            _mode = newMode;
+            RoamModeChanged?.Invoke(newMode);
+
+            if (notifyDialogue && _dialogue != null)
+            {
+                _dialogue.Speak(newMode == RoamMode.Follow
+                    ? P2DialogueEvent.FollowStarted
+                    : P2DialogueEvent.FreeRoamStarted);
+            }
+        }
 
         /// <summary>玩家当前位置（供外部系统做距离判定）。</summary>
         public Vector2 PlayerPosition => _player?.GlobalPosition ?? GlobalPosition;
@@ -128,7 +168,10 @@ namespace Kuros.Companions
         /// <summary>拾取/拖回武器期间忽略移动范围约束（由 P2WeaponCarrier 设置），
         /// 防止玩家移动导致 P2 被持续拉回打断拾取流程。</summary>
         public bool IgnoreMoveRange { get; set; }
+        /// <summary>移动速度覆盖（px/秒）：任务（如武器搬运）设置后优先于模式速度（FollowSpeed/FreeRoamSpeed）；null 按模式取。</summary>
+        public float? MoveSpeedOverride { get; set; }
         private Vector2? _moveTarget;              // 决策/游走指定的移动目标（世界坐标），null = 跟随
+        private Vector2? _smoothTarget;            // 目标平滑缓冲（对移动目标做指数平滑，消除方向突变）
         private float _wanderTimer;                // 空闲游走计时
         private float _hitInvincibilityRemaining;  // 受击免疫剩余时间
         private bool _pendingAction;               // 等待接近玩家后触发的 action（决策动作两阶段）
@@ -198,13 +241,22 @@ namespace Kuros.Companions
             if (_hitInvincibilityRemaining > 0f)
                 _hitInvincibilityRemaining -= (float)delta;
 
-            // 计算移动目标（双模式：自由游走/跟随），Lerp 指数平滑 + 限速位移
-            Vector2 target = ComputeMovementTarget((float)delta);
+            // 计算移动目标（双模式：自由游走/跟随）
+            Vector2 rawTarget = ComputeMovementTarget((float)delta);
+
+            // 目标平滑：对移动目标做指数平滑，消除目标突变（跟随↔游走↔搬运切换）造成的方向跳变；
+            // 位置移动仍由下方 FollowSmoothing + 速度钳制执行（近距离减速 + 匀速上限）
+            if (!_smoothTarget.HasValue)
+                _smoothTarget = rawTarget;
+            else
+                _smoothTarget = _smoothTarget.Value.Lerp(rawTarget, 1f - Mathf.Exp(-Mathf.Max(0.1f, TargetSmoothing) * (float)delta));
+            Vector2 target = _smoothTarget.Value;
+
             float blend = 1f - Mathf.Exp(-Mathf.Max(0.1f, FollowSmoothing) * (float)delta);
             Vector2 next = GlobalPosition.Lerp(target, blend);
 
-            // 速度上限按模式区分：跟随速度 > 自由游走速度（保证跟上玩家）
-            float speedLimit = _mode == RoamMode.Follow ? FollowSpeed : FreeRoamSpeed;
+            // 速度上限：任务覆盖（如武器搬运 CarrySpeed）优先，否则按模式区分（跟随 > 自由游走，保证跟上玩家）
+            float speedLimit = MoveSpeedOverride ?? (_mode == RoamMode.Follow ? FollowSpeed : FreeRoamSpeed);
             float maxStep = Mathf.Max(10f, speedLimit) * (float)delta;
             Vector2 step = next - GlobalPosition;
             if (step.Length() > maxStep)
@@ -238,20 +290,13 @@ namespace Kuros.Companions
             Vector2 anchor = _companionAnchor?.GlobalPosition ?? _player!.GlobalPosition;
             float distToPlayer = GlobalPosition.DistanceTo(anchor);
 
-            // ── 模式切换 ──────────────────────────────────────────
+            // ── 模式切换：唯一出口 = FollowMaxDuration 超时（非挂起 action 时计时）──
             if (!IgnoreMoveRange && _mode == RoamMode.FreeRoam && distToPlayer > MoveRangeMax)
             {
-                // 超出自由范围 → 切跟随模式（清空目标，接近玩家，开始计时）
-                _mode = RoamMode.Follow;
+                // 超出自由范围 → 切跟随模式（清空目标，开始计时）；自然切换 → 弹"跟随开始"对话
+                ChangeRoamMode(RoamMode.Follow, notifyDialogue: true);
                 _moveTarget = null;
                 _followElapsed = 0f;
-            }
-            else if (_mode == RoamMode.Follow && !_pendingAction
-                     && distToPlayer <= FollowRangeMax
-                     && distToPlayer >= FollowRangeMin)
-            {
-                // 回到跟随范围区间 → 恢复自由模式（挂起 action 时保持跟随直到触发）
-                _mode = RoamMode.FreeRoam;
             }
             else if (_mode == RoamMode.Follow && !_pendingAction)
             {
@@ -259,16 +304,31 @@ namespace Kuros.Companions
                 _followElapsed += delta;
                 if (_followElapsed >= FollowMaxDuration)
                 {
-                    _mode = RoamMode.FreeRoam;
+                    ChangeRoamMode(RoamMode.FreeRoam, notifyDialogue: true); // 超时恢复自由 → 弹"自由游走"对话
                     _moveTarget = null;
                 }
             }
 
-            // ── 跟随模式：目标 = 玩家位置（接近到 FollowRange 区间后由模式切换恢复自由）──
+            // ── 跟随模式：保持 [FollowRangeMin, FollowRangeMax] 距离带（近了后退、远了靠近、带内原地）──
+            // 有显式目标（如 WeaponCarrier 搬运）时让位于它（方案 C）
             if (_mode == RoamMode.Follow)
             {
-                TryFirePendingAction(distToPlayer); // 两阶段动作：接近到 FollowRangeMin 内触发
-                return anchor;
+                TryFirePendingAction(distToPlayer); // 进入动作范围（≤FollowRangeMax）即触发，不贴脸
+                if (_moveTarget.HasValue)
+                    return _moveTarget.Value;
+
+                if (distToPlayer > FollowRangeMax)
+                    return anchor; // 太远：靠近玩家
+
+                if (distToPlayer < FollowRangeMin)
+                {
+                    // 太近：沿远离方向后退到带内（防玩家重合时方向不稳，退向最小边距点）
+                    Vector2 away = GlobalPosition - anchor;
+                    Vector2 dir = away.LengthSquared() > 0.01f ? away.Normalized() : Vector2.Right;
+                    return anchor + dir * FollowRangeMin;
+                }
+
+                return GlobalPosition; // 带内：原地保持
             }
 
             // ── 自由模式 ──────────────────────────────────────────
@@ -373,10 +433,12 @@ namespace Kuros.Companions
             return anchor + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
         }
 
-        /// <summary>设置移动目标（世界坐标）。决策/游走调用；null 恢复跟随。</summary>
+        /// <summary>设置移动目标（世界坐标）。决策/游走调用；null 恢复跟随。
+        /// 新任务重置目标平滑缓冲，避免从旧轨迹过渡（如武器搬运切换目标）。</summary>
         public void SetMoveTarget(Vector2? target)
         {
             _moveTarget = target;
+            _smoothTarget = null;
         }
 
         /// <summary>停止当前移动目标（受击硬直时由 Hit 状态调用）。</summary>
@@ -391,17 +453,62 @@ namespace Kuros.Companions
         /// </summary>
         public void TriggerAction()
         {
-            _mode = RoamMode.Follow;
+            ChangeRoamMode(RoamMode.Follow, notifyDialogue: false); // 动作流程内切换：不发模式对话（已有动作气泡）
             _moveTarget = null;
             _pendingAction = true;
         }
 
-        /// <summary>跟随模式接近玩家到 FollowRangeMin 内时，触发挂起的 action 动画。</summary>
+        /// <summary>
+        /// 在玩家身上生成动作特效（如护盾/治疗/装备加成），返回生成的实例（供调用方按生命周期销毁）。
+        /// effectIndex 对应 ActionEffectScenes 数组约定索引：[0] 护盾、[1] 治疗、[2] 装备加成恢复；
+        /// 越界/空场景/玩家缺失时返回 null。特效挂玩家节点下（跟随移动），
+        /// 位置定位到玩家 GrabArea 中心（拾取交互区域）而非玩家原点；无 GrabArea 时回退玩家原点。
+        /// 特效需自带自动销毁（EffectAutoDestroy/FadeInOutDestroy）。
+        /// </summary>
+        public Node? SpawnActionEffect(int effectIndex)
+        {
+            if (_player == null || ActionEffectScenes == null) return null;
+            if (effectIndex < 0 || effectIndex >= ActionEffectScenes.Count) return null;
+
+            var scene = ActionEffectScenes[effectIndex];
+            if (scene == null) return null;
+
+            var instance = scene.Instantiate<Node>();
+            _player.AddChild(instance);
+
+            if (instance is Node2D fxNode)
+            {
+                var grabArea = FindGrabArea(_player);
+                if (grabArea != null)
+                    fxNode.GlobalPosition = GetGrabAreaCenter(grabArea);
+            }
+
+            return instance;
+        }
+
+        /// <summary>查找玩家 GrabArea（三级回退：SpineCharacter/GrabArea → GrabArea → 递归查找），与拾取组件一致。</summary>
+        private static Area2D? FindGrabArea(MainCharacter player)
+        {
+            return player.GetNodeOrNull<Area2D>("SpineCharacter/GrabArea")
+                ?? player.GetNodeOrNull<Area2D>("GrabArea")
+                ?? player.FindChild("GrabArea", recursive: true) as Area2D;
+        }
+
+        /// <summary>GrabArea 中心：取碰撞形状中心（形状无偏移时等价于节点原点）。</summary>
+        private static Vector2 GetGrabAreaCenter(Area2D grabArea)
+        {
+            var shape = grabArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            return shape?.GlobalPosition ?? grabArea.GlobalPosition;
+        }
+
+        /// <summary>跟随模式进入动作范围（≤ FollowRangeMax，即带内）时触发挂起的 action 动画——不贴脸。
+        /// 触发即恢复自由模式；保留 _moveTarget（方案 C：不破坏 WeaponCarrier 搬运目标）。</summary>
         private void TryFirePendingAction(float distToPlayer)
         {
             if (!_pendingAction) return;
-            if (distToPlayer > FollowRangeMin) return; // 还没接近到动作范围
+            if (distToPlayer > FollowRangeMax) return; // 还没进入动作范围
             _pendingAction = false;
+            ChangeRoamMode(RoamMode.FreeRoam, notifyDialogue: false); // 动作流程内切换：不发模式对话
             GetNodeOrNull<Kuros.Systems.FSM.StateMachine>("StateMachine")?.ChangeState("Action");
         }
 

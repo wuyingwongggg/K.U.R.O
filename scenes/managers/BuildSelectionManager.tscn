@@ -45,4 +45,3 @@ RarityMultiplier = Dictionary[String, float]({
 "Epic": 2.0,
 "Rare": 1.0
 })
-DebugTrigger = true

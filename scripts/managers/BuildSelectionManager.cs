@@ -23,18 +23,6 @@ namespace Kuros.Managers
         [ExportGroup("Thresholds")]
         [Export] public ScoreThresholdCurve? ThresholdCurve { get; set; }
 
-        [ExportGroup("Weapon Slots")]
-        /// <summary>初始可用武器槽位数（Build 每次触发升级 +1）。</summary>
-        [Export(PropertyHint.Range, "1,10,1")] public int InitialWeaponSlotCount { get; set; } = 3;
-        /// <summary>武器槽位解锁上限。</summary>
-        [Export(PropertyHint.Range, "1,10,1")] public int MaxWeaponSlotCount { get; set; } = 5;
-
-        /// <summary>当前已解锁的武器快捷栏槽位数：初始值 + Build 触发次数，封顶 MaxWeaponSlotCount。</summary>
-        public int GetWeaponSlotUnlockCount()
-        {
-            return Mathf.Clamp(InitialWeaponSlotCount + _triggerCount, 1, Mathf.Max(1, MaxWeaponSlotCount));
-        }
-
         [ExportGroup("Core Pool")]
         [Export] public Godot.Collections.Array<BuildCoreDefinition> CorePool { get; set; } = new();
 
@@ -157,6 +145,9 @@ namespace Kuros.Managers
             if (newScore >= nextThreshold)
             {
                 _triggerCount++;
+                // Build 升级解锁一个武器槽位：直接增长玩家 MaxCarriedWeaponCount
+                // （单一数据源，UI 锁图与拾取上限共用；封顶由玩家组件 MaxCarriedWeaponSlots 控制）
+                _boundPlayer?.InventoryComponent?.UnlockWeaponSlot();
                 TriggerSelection();
             }
         }
@@ -258,6 +249,7 @@ namespace Kuros.Managers
             _pendingScore = 0;
             _lastKnownScore = 0;
             _triggerCount = 0;
+            _boundPlayer?.InventoryComponent?.ResetWeaponSlots(); // 武器槽位还原到初始值
         }
 
         private PackedScene? _windowScene;

@@ -564,7 +564,7 @@ _data = {
 &"SpawnRight": SubResource("Animation_vrs0s")
 }
 
-[sub_resource type="Animation" id="Animation_6klu3"]
+[sub_resource type="Animation" id="Animation_h36re"]
 resource_name = "attack_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -592,7 +592,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_p687a"]
+[sub_resource type="Animation" id="Animation_6klu3"]
 resource_name = "attack"
 length = 1.3333334
 tracks/0/type = "value"
@@ -620,7 +620,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_atge7"]
+[sub_resource type="Animation" id="Animation_p687a"]
 resource_name = "death_looped"
 length = 0.8333333
 tracks/0/type = "value"
@@ -648,7 +648,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_f6l1a"]
+[sub_resource type="Animation" id="Animation_atge7"]
 resource_name = "death"
 length = 0.8333333
 tracks/0/type = "value"
@@ -676,7 +676,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_quoob"]
+[sub_resource type="Animation" id="Animation_f6l1a"]
 resource_name = "hit_looped"
 length = 0.3333333
 tracks/0/type = "value"
@@ -704,7 +704,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_7lah1"]
+[sub_resource type="Animation" id="Animation_quoob"]
 resource_name = "hit"
 length = 0.3333333
 tracks/0/type = "value"
@@ -732,7 +732,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_wysxf"]
+[sub_resource type="Animation" id="Animation_7lah1"]
 resource_name = "idle_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -760,7 +760,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_io72d"]
+[sub_resource type="Animation" id="Animation_wysxf"]
 resource_name = "idle"
 length = 1.3333334
 tracks/0/type = "value"
@@ -788,7 +788,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_087n4"]
+[sub_resource type="Animation" id="Animation_io72d"]
 resource_name = "stun_looped"
 length = 1.3333334
 tracks/0/type = "value"
@@ -816,7 +816,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_6sast"]
+[sub_resource type="Animation" id="Animation_087n4"]
 resource_name = "stun"
 length = 1.3333334
 tracks/0/type = "value"
@@ -844,7 +844,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_ydenh"]
+[sub_resource type="Animation" id="Animation_6sast"]
 resource_name = "walk_looped"
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -871,7 +871,7 @@ tracks/1/keys = {
 "values": [true]
 }
 
-[sub_resource type="Animation" id="Animation_dbj3d"]
+[sub_resource type="Animation" id="Animation_ydenh"]
 resource_name = "walk"
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -898,7 +898,7 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="Animation" id="Animation_2u22f"]
+[sub_resource type="Animation" id="Animation_dbj3d"]
 resource_name = "RESET"
 length = 0.5
 tracks/0/type = "value"
@@ -926,22 +926,22 @@ tracks/1/keys = {
 "values": [false]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_l540q"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2u22f"]
 _data = {
-&"-- Empty --": SubResource("Animation_2u22f"),
-&"RESET": SubResource("Animation_2u22f"),
-&"attack": SubResource("Animation_p687a"),
-&"attack_looped": SubResource("Animation_6klu3"),
-&"death": SubResource("Animation_f6l1a"),
-&"death_looped": SubResource("Animation_atge7"),
-&"hit": SubResource("Animation_7lah1"),
-&"hit_looped": SubResource("Animation_quoob"),
-&"idle": SubResource("Animation_io72d"),
-&"idle_looped": SubResource("Animation_wysxf"),
-&"stun": SubResource("Animation_6sast"),
-&"stun_looped": SubResource("Animation_087n4"),
-&"walk": SubResource("Animation_dbj3d"),
-&"walk_looped": SubResource("Animation_ydenh")
+&"-- Empty --": SubResource("Animation_dbj3d"),
+&"RESET": SubResource("Animation_dbj3d"),
+&"attack": SubResource("Animation_6klu3"),
+&"attack_looped": SubResource("Animation_h36re"),
+&"death": SubResource("Animation_atge7"),
+&"death_looped": SubResource("Animation_p687a"),
+&"hit": SubResource("Animation_quoob"),
+&"hit_looped": SubResource("Animation_f6l1a"),
+&"idle": SubResource("Animation_wysxf"),
+&"idle_looped": SubResource("Animation_7lah1"),
+&"stun": SubResource("Animation_087n4"),
+&"stun_looped": SubResource("Animation_io72d"),
+&"walk": SubResource("Animation_ydenh"),
+&"walk_looped": SubResource("Animation_6sast")
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4job6"]
@@ -1166,7 +1166,7 @@ track_index = 0
 
 [node name="SpineSprite Track 0" type="AnimationPlayer" parent="DroneVisual2/SpineSprite/SpineAnimationTrack"]
 libraries = {
-&"": SubResource("AnimationLibrary_l540q")
+&"": SubResource("AnimationLibrary_2u22f")
 }
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual2"]

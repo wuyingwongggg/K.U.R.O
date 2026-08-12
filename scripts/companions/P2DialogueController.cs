@@ -18,6 +18,9 @@ namespace Kuros.Companions
         FallbackLowHp,      // 治疗决策被拒兜底（dtl: fallback_low_hp）
         FallbackEnemyClose, // 护盾决策被拒兜底（dtl: fallback_enemy_close）
         FallbackGeneric,    // 通用兜底（dtl: fallback_generic）
+        WeaponFetchStart,   // 出发拾取武器（dtl: fetch_weapon_N，自动随机变体）
+        FollowStarted,      // 进入跟随模式（dtl: follow_started_N，自动随机变体；越界跟随触发）
+        FreeRoamStarted,    // 恢复自由模式（dtl: free_roam_started_N，自动随机变体；跟随超时触发）
         AiChatter,          // AI 个性台词（dtl: ai_chatter）
     }
 
@@ -109,6 +112,15 @@ namespace Kuros.Companions
                     break;
                 case P2DialogueEvent.FallbackGeneric:
                     PushHint("fallback_generic");
+                    break;
+                case P2DialogueEvent.WeaponFetchStart:
+                    PushHint("fetch_weapon");
+                    break;
+                case P2DialogueEvent.FollowStarted:
+                    PushHint("follow_started");
+                    break;
+                case P2DialogueEvent.FreeRoamStarted:
+                    PushHint("free_roam_started");
                     break;
                 case P2DialogueEvent.AiChatter:
                     // 带参数动态文本（保留备用）：PushHintDirect(args[0]?.ToString() ?? string.Empty);
