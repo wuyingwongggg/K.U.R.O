@@ -29,6 +29,7 @@ CrtOverlay="res://scenes/ui/CrtOverlay.tscn"
 Dialogic="*res://addons/dialogic/Core/DialogicGameHandler.gd"
 BuildSelectionManager="res://scenes/managers/BuildSelectionManager.tscn"
 DialogicBridge="*res://scripts/utils/DialogicBridge.gd"
+WeaponBatteryManager="*res://scripts/managers/WeaponBatteryManager.cs"
 
 [dialogic]
 

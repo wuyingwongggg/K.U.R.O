@@ -96,6 +96,12 @@ namespace Kuros.Actors.Heroes
             return _defaultActiveSkill;
         }
 
+        /// <summary>当前已加载技能集是否包含指定技能（供电量等效果自检"技能是否仍属于当前武器"）。</summary>
+        public bool HasSkill(string skillId)
+        {
+            return !string.IsNullOrEmpty(skillId) && _skills.ContainsKey(skillId);
+        }
+
         public bool TriggerDefaultSkill(GameActor? target = null)
         {
             if (_defaultActiveSkill == null)

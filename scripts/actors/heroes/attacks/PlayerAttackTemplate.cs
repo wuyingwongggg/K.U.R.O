@@ -252,7 +252,7 @@ namespace Kuros.Actors.Heroes.Attacks
 
             if (_phase == AttackPhase.Recovery && AllowRecoveryCancel)
             {
-                if (IsInputTriggered())
+                if (IsInputTriggered() && CanCancelRecoveryForRestart())
                 {
                     _wantsRestart = true;
                     SetPhase(AttackPhase.Idle);
@@ -415,6 +415,10 @@ namespace Kuros.Actors.Heroes.Attacks
         }
 
         protected virtual bool MeetsCustomConditions() => true;
+
+        /// <summary>Recovery 期间是否允许输入打断重启连击。默认允许；
+        /// 返回 false 时不切断后摇，当前攻击的 Recovery 自然播放完毕（如电量耗尽时）。</summary>
+        protected virtual bool CanCancelRecoveryForRestart() => true;
 
         protected virtual void ConsumeResources() { }
 

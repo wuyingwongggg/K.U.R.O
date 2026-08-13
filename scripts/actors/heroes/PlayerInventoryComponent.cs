@@ -924,14 +924,15 @@ namespace Kuros.Actors.Heroes
 
         /// <summary>
         /// 当前已解锁的武器快捷栏槽位数 = MaxCarriedWeaponCount（单一数据源）。
-        /// Build 升级通过 UnlockWeaponSlot 增长该值；UI 锁图与 AddItemSmart 拾取范围共用。
+        /// 与 Build 等级解耦：仅由 Build 效果（解锁武器槽卡片）调用 UnlockWeaponSlot 增长；
+        /// UI 锁图与 AddItemSmart 拾取范围共用。
         /// </summary>
         public int GetUnlockedWeaponSlots()
         {
             return Mathf.Clamp(MaxCarriedWeaponCount, 1, Mathf.Max(1, MaxCarriedWeaponSlots));
         }
 
-        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 升级时调用）。</summary>
+        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 解锁槽位效果调用）。</summary>
         public void UnlockWeaponSlot()
         {
             MaxCarriedWeaponCount = Mathf.Min(MaxCarriedWeaponCount + 1, Mathf.Max(1, MaxCarriedWeaponSlots));

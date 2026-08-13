@@ -145,9 +145,8 @@ namespace Kuros.Managers
             if (newScore >= nextThreshold)
             {
                 _triggerCount++;
-                // Build 升级解锁一个武器槽位：直接增长玩家 MaxCarriedWeaponCount
-                // （单一数据源，UI 锁图与拾取上限共用；封顶由玩家组件 MaxCarriedWeaponSlots 控制）
-                _boundPlayer?.InventoryComponent?.UnlockWeaponSlot();
+                // 武器槽解锁与 Build 等级完全解耦：仅由 Build 效果（解锁武器槽卡片）调用
+                // PlayerInventoryComponent.UnlockWeaponSlot，升级本身不再自动加槽。
                 TriggerSelection();
             }
         }

@@ -11,7 +11,7 @@ namespace Kuros.Actors.Heroes.Attacks
     /// 切换动画时必须同步 Spine hit 事件匹配名，否则新动画的 hit 事件被过滤、伤害消失。
     /// Active 期间移动时按移动方向接管位移：移动速度 = 当前实际速度 × MoveSpeedPercent%。
     /// </summary>
-    public partial class PlayerLaserPointerAttack : PlayerBasicMeleeAttack
+    public partial class PlayerLaserPointerAttack : PlayerBatteryAttack
     {
         [Export] public string ForwardAnimationName = "Weapon_Stab_LaserPointer_fwd";
         [Export] public string BackwardAnimationName = "Weapon_Stab_LaserPointer_bwd";
