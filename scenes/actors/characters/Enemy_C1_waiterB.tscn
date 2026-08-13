@@ -1,8 +1,8 @@
 [gd_scene load_steps=44 format=3 uid="uid://8ce54l6083nt"]
 
-[ext_resource type="Script" uid="uid://c4u7nx0qq3gjm" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
+[ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
-[ext_resource type="Script" uid="uid://d2sy6q8lksykw" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_m8hjw"]
+[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_m8hjw"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_st2e3"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_effect_controller"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_evlou"]
@@ -10,27 +10,27 @@
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="4_state_machine"]
 [ext_resource type="Resource" uid="uid://d13rra8f1j6ep" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_0r650"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="5_idle_state"]
-[ext_resource type="Script" uid="uid://ctbvpnue2rlif" path="res://scripts/controllers/SpineController.gd" id="5_muxhp"]
+[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="5_muxhp"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="6_walk_state"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="7_attack_state"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="8_hit_state"]
-[ext_resource type="Script" uid="uid://cddf4uyd7uwex" path="res://scripts/controllers/ShadowFollower.cs" id="8_r5hc0"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="8_r5hc0"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="9_frozen_state"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="10_cooldown_state"]
-[ext_resource type="Script" uid="uid://b3b0ono1e58x0" path="res://scripts/actors/enemies/attacks/EnemyC1WaiterBAttackController.cs" id="10_st2e3"]
-[ext_resource type="Script" uid="uid://8u07jh53uv1s" path="res://scripts/actors/enemies/attacks/EnemyDashSlashAttack.cs" id="11_5drfe"]
+[ext_resource type="Script" uid="uid://gmfkjmmrq05b" path="res://scripts/actors/enemies/attacks/EnemyC1WaiterBAttackController.cs" id="10_st2e3"]
+[ext_resource type="Script" uid="uid://c8dl2dxj817c1" path="res://scripts/actors/enemies/attacks/EnemyDashSlashAttack.cs" id="11_5drfe"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="11_dying_state"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="12_dead_state"]
 [ext_resource type="PackedScene" uid="uid://bso7mhhjbapey" path="res://shaders/laser_beam_ultimate.tscn" id="15_evlou"]
-[ext_resource type="Script" uid="uid://ds848cptvk6n4" path="res://scripts/actors/enemies/attacks/EnemyUltimateBeamAttack.cs" id="15_ultbeam"]
+[ext_resource type="Script" uid="uid://pq441lqdfxhh" path="res://scripts/actors/enemies/attacks/EnemyUltimateBeamAttack.cs" id="15_ultbeam"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="16_eyt4q"]
 [ext_resource type="PackedScene" uid="uid://l6qj8m327ght" path="res://shaders/laser_beamA.tscn" id="17_eyt4q"]
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="18_r5hc0"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="18_r5hc0"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c8ikhh4fs46ba" path="res://animations/spine/Enemy_C1_waiterB.tres" id="18_t4d47"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_uohhx"]
-[ext_resource type="Script" uid="uid://d2cwcuvyy8as4" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
-[ext_resource type="Script" uid="uid://bprxf1sr1x5q4" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="23_eyt4q"]
-[ext_resource type="Script" uid="uid://b5xux064reomb" path="res://scripts/core/effects/AfterimageController.gd" id="24_afterimage"]
+[ext_resource type="Script" uid="uid://dvu6xk56lp65v" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
+[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="23_eyt4q"]
+[ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="24_afterimage"]
 
 [sub_resource type="Resource" id="Resource_r5hc0"]
 script = ExtResource("2_m8hjw")
@@ -91,14 +91,13 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_enemy_script")
 BehaviorConfig = SubResource("Resource_r5hc0")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 80
 Speed = 600.0
-AttackDamage = 50.0
+AttackDamage = 30.0
 MaxHealth = 1000
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")

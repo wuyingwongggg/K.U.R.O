@@ -45,4 +45,3 @@ script = ExtResource("2_bob04")
 SequenceId = "A_end_intro"
 Steps = Array[ExtResource("1_brdtp")]([SubResource("Resource_rfho0"), SubResource("Resource_nyepk"), SubResource("Resource_hfoi8"), SubResource("Resource_008jv"), SubResource("Resource_e8fuv")])
 TakeOverCamera = true
-metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

@@ -39,6 +39,7 @@ directories/dch_directory={
 directories/dtl_directory={
 "A_begin_timeline": "res://dialogic/timeline/A_begin_timeline.dtl",
 "B_begin_timeline": "res://dialogic/timeline/B_begin_timeline.dtl",
+"B_end_timeline": "res://dialogic/timeline/B_end_timeline.dtl",
 "p2_hint": "res://dialogic/timeline/p2_hint.dtl"
 }
 layout/style_directory={

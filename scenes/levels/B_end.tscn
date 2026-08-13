@@ -1,9 +1,11 @@
-[gd_scene load_steps=35 format=3 uid="uid://bco3niswcahcc"]
+[gd_scene load_steps=38 format=3 uid="uid://bco3niswcahcc"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_b2kum"]
 [ext_resource type="Texture2D" uid="uid://behye8vdgemoq" path="res://assets/environments/scene_2_hotel/地板.png" id="1_fjfxm"]
+[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_oh5lj"]
 [ext_resource type="Texture2D" uid="uid://dw2alagwosewh" path="res://assets/environments/scene_2_hotel/地毯.png" id="2_qtmhi"]
 [ext_resource type="Texture2D" uid="uid://k45cthgn2dgq" path="res://assets/environments/scene_2_hotel/墙面.png" id="3_le30p"]
+[ext_resource type="Resource" uid="uid://d4jfs520gfwmm" path="res://resources/cutscene/B_end_intro.tres" id="3_oh5lj"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="3_rvxy7"]
 [ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="5_le30p"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="6_b2kum"]
@@ -16,13 +18,13 @@
 [ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="13_6oh11"]
 [ext_resource type="PackedScene" uid="uid://51x1ik7ixw7w" path="res://scenes/items/Furniture_B_counterA.tscn" id="14_b2kum"]
 [ext_resource type="PackedScene" uid="uid://0anrcfm2pnsd" path="res://scenes/items/Furniture_B_luggageCartA.tscn" id="15_oh5lj"]
-[ext_resource type="PackedScene" uid="uid://bkxqiwlgdq03s" path="res://scenes/items/Furniture_B_sofaA_fwd.tscn" id="16_3a114"]
-[ext_resource type="PackedScene" uid="uid://d02ytff0caglq" path="res://scenes/items/Furniture_B_sofaA_rwd.tscn" id="17_g4yxj"]
 [ext_resource type="PackedScene" uid="uid://kwbg3wy7rik" path="res://scenes/items/Furniture_B_chairA.tscn" id="18_ukwhi"]
 [ext_resource type="PackedScene" uid="uid://o3wponugixfj" path="res://scenes/items/Furniture_B_chairA_fwd.tscn" id="19_a0rdn"]
 [ext_resource type="PackedScene" uid="uid://1mc4twnj45va" path="res://scenes/items/Furniture_B_tableRoundB.tscn" id="20_g030u"]
 [ext_resource type="PackedScene" uid="uid://dmg1hgmpmsc05" path="res://scenes/items/Furniture_B_coffeeMachineA.tscn" id="21_vrh0j"]
 [ext_resource type="PackedScene" uid="uid://c5bi1g6rymvgo" path="res://scenes/items/Furniture_B_vendingMachineA.tscn" id="22_6oh11"]
+[ext_resource type="PackedScene" uid="uid://3c5l27vhvwni" path="res://scenes/items/Furniture_B_sofaA.tscn" id="24_oh5lj"]
+[ext_resource type="PackedScene" uid="uid://bkswj210r68h2" path="res://scenes/items/Furniture_B_sofaA_bwd.tscn" id="25_3a114"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oqqdb"]
 size = Vector2(5610, 3050)
@@ -33,11 +35,14 @@ size = Vector2(5592, 3050)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oh5lj"]
 size = Vector2(1950, 1200)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4yxj"]
+size = Vector2(300, 2500)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jopov"]
 size = Vector2(5500, 3050)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oox7u"]
-size = Vector2(400, 2500)
+size = Vector2(300, 2500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qtmhi"]
 size = Vector2(6000, 700)
@@ -63,6 +68,12 @@ agent_radius = 80.0
 
 [node name="BEnd" type="Node2D"]
 y_sort_enabled = true
+
+[node name="PlayerSpawnPoint" type="Node2D" parent="."]
+position = Vector2(-2600, 194)
+
+[node name="BossSpawnPoint" type="Node2D" parent="."]
+position = Vector2(1050, 300)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false
@@ -101,6 +112,18 @@ ZoomLevel = 0.95
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone2"]
 shape = SubResource("RectangleShape2D_oh5lj")
 
+[node name="CutsceneTrigger" type="Area2D" parent="."]
+z_index = 10
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("2_oh5lj")
+Sequence = ExtResource("3_oh5lj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
+position = Vector2(-1600, 350)
+shape = SubResource("RectangleShape2D_g4yxj")
+debug_color = Color(1, 0, 1, 0.41960785)
+
 [node name="BattleArena" type="Area2D" parent="."]
 visible = false
 z_index = 10
@@ -118,6 +141,7 @@ DebugLineWidth = 8.0
 shape = SubResource("RectangleShape2D_jopov")
 
 [node name="EnemySpawneManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
+visible = false
 top_level = true
 position = Vector2(1058, 350)
 script = ExtResource("5_le30p")
@@ -126,7 +150,7 @@ MultiEnemySelectionMode = 1
 SpawnInterval = 2.0
 SpawnParentPath = NodePath("..")
 TriggerArea = NodePath("Area2D")
-SpawnAreaExtents = Vector2(200, 200)
+SpawnAreaExtents = Vector2(100, 100)
 EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7
 EnemyAppearDelay = 1.0
@@ -137,7 +161,7 @@ LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="Area2D" type="Area2D" parent="EnemySpawneManager"]
-position = Vector2(-1673, 0)
+position = Vector2(-2700, 0)
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemySpawneManager/Area2D"]
@@ -220,19 +244,19 @@ position = Vector2(-1795, 951)
 position = Vector2(-1995, -649)
 
 [node name="FurniturePlantA2" parent="." instance=ExtResource("11_uu2d7")]
-position = Vector2(255, -649)
+position = Vector2(-432, -797)
 
 [node name="FurniturePlantA3" parent="." instance=ExtResource("11_uu2d7")]
 position = Vector2(-1995, 1175)
 
 [node name="FurniturePlantA4" parent="." instance=ExtResource("11_uu2d7")]
-position = Vector2(255, 1175)
+position = Vector2(-181, 1175)
 
 [node name="FurnitureGarbageCanA" parent="." instance=ExtResource("12_vrh0j")]
-position = Vector2(-1481, -272)
+position = Vector2(503, -272)
 
 [node name="FurnitureGarbageCanA2" parent="." instance=ExtResource("12_vrh0j")]
-position = Vector2(2393, 356)
+position = Vector2(2381, 378)
 
 [node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("13_6oh11")]
 position = Vector2(2420, -136)
@@ -243,26 +267,26 @@ position = Vector2(1244, -501)
 [node name="FurnitureLuggageCartA" parent="." instance=ExtResource("15_oh5lj")]
 position = Vector2(1960, 961)
 
-[node name="FurnitureSofaA_fwd" parent="." instance=ExtResource("16_3a114")]
-position = Vector2(-148, 350)
-
-[node name="FurnitureSofaA_rwd" parent="." instance=ExtResource("17_g4yxj")]
-position = Vector2(-1758, 350)
-
 [node name="FurnitureChairA" parent="." instance=ExtResource("18_ukwhi")]
-position = Vector2(1621, -235)
+position = Vector2(1629, -210)
 
 [node name="FurnitureChairA_fwd" parent="." instance=ExtResource("19_a0rdn")]
-position = Vector2(839, -235)
+position = Vector2(831, -210)
 
 [node name="FurnitureChairA_fwd2" parent="." instance=ExtResource("19_a0rdn")]
-position = Vector2(1186, -226)
+position = Vector2(1186, -209)
 
 [node name="FurnitureTableRoundB" parent="." instance=ExtResource("20_g030u")]
-position = Vector2(-955, 382)
+position = Vector2(-983, 351)
 
 [node name="FurnitureCoffeeMachineA" parent="." instance=ExtResource("21_vrh0j")]
-position = Vector2(-875, -818)
+position = Vector2(-862, -818)
 
 [node name="FurnitureVendingMachineA" parent="." instance=ExtResource("22_6oh11")]
 position = Vector2(-1300, -818)
+
+[node name="FurnitureSofaA" parent="." instance=ExtResource("24_oh5lj")]
+position = Vector2(-1017, -217)
+
+[node name="FurnitureSofaA_bwd" parent="." instance=ExtResource("25_3a114")]
+position = Vector2(-1008, 749)

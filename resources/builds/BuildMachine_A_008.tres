@@ -19,7 +19,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 script = ExtResource("1_77l4c")
 Scene = ExtResource("3_scene")
 PropertyOverrides = Dictionary[String, Variant]({
-"BurnEffectEntries": Array[ExtResource("1_77l4c")]([SubResource("BurnEntry_A008")]),
+"BurnEffectEntries": [SubResource("BurnEntry_A008")],
 "TierValues": [100.0, 80.0]
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"

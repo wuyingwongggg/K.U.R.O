@@ -266,14 +266,17 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (player == null)
 				return false;
 
+			// DealDamage 必须在 Player 检测之前无条件调用，
+			// 确保非 Player 目标（WorldItem 等）也能被处理
+			ApplyAttackAreaMaskOverride(_kickArea);
+			DealDamage(_kickArea!);
+
 		            if (!IsPlayerInsideKickAttackZone(player))
 	            {
 				_playerInsideDetection = false;
 				return false;
 	            }
 
-			ApplyAttackAreaMaskOverride(_kickArea);
-			DealDamage(_kickArea!);
 			ApplyKickKnockback(player);
 			return true;
 	        }

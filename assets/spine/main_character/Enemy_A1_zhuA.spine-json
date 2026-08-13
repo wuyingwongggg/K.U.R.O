@@ -1,6 +1,6 @@
 {
 "skeleton": {
-	"hash": "U6mzK2vzz4A",
+	"hash": "DLoCACdbDM8",
 	"spine": "4.2-from-4.3.23",
 	"x": -548.5872,
 	"y": -20.84992,
@@ -183,7 +183,6 @@
 	{ "name": "SLASH_B0002", "bone": "bone66" },
 	{ "name": "SLASH_A0002", "bone": "bone67" },
 	{ "name": "jgb_1", "bone": "root" },
-	{ "name": "jgb_2", "bone": "root", "blend": "screen" },
 	{ "name": "bhs_1", "bone": "root" }
 ],
 "skins": [
@@ -802,18 +801,16 @@
 					"edges": [ 0, 2, 2, 4, 4, 6, 0, 6 ],
 					"width": 947.0,
 					"height": 355.0
-				}
-			},
-			"jgb_2": {
+				},
 				"jgb_2": {
 					"type": "mesh",
 					"uvs": [ 1, 1, 0, 1, 0, 0, 1, 0 ],
 					"triangles": [ 1, 2, 3, 1, 3, 0 ],
-					"vertices": [ 1.0, 72.0, 897.06, -128.08, 1.0, 1.0, 72.0, 504.09, -133.18, 1.0, 1.0, 72.0, 500.76, 123.8, 1.0, 1.0, 72.0, 893.72, 128.9, 1.0 ],
+					"vertices": [ 1.0, 72.0, 897.16, -131.03, 1.0, 1.0, 72.0, -49.76, -143.33, 1.0, 1.0, 72.0, -54.37, 211.64, 1.0, 1.0, 72.0, 892.55, 223.94, 1.0 ],
 					"hull": 4,
 					"edges": [ 0, 2, 2, 4, 4, 6, 0, 6 ],
-					"width": 393.0,
-					"height": 257.0
+					"width": 947.0,
+					"height": 355.0
 				}
 			},
 			"JX05": {
@@ -40210,9 +40207,8 @@
 		],
 		"events": [
 			{ "time": 0.6, "name": "hit" },
-			{ "time": 0.8, "name": "hit" },
-			{ "time": 1.0, "name": "hit" },
-			{ "time": 1.2, "name": "hit" },
+			{ "time": 0.85, "name": "hit" },
+			{ "time": 1.15, "name": "hit" },
 			{ "time": 1.4, "name": "hit" }
 		]
 	},
@@ -40239,14 +40235,9 @@
 			},
 			"jgb_1": {
 				"attachment": [
-					{ "name": "jgb_1" }
-				]
-			},
-			"jgb_2": {
-				"attachment": [
-					{},
+					{ "name": "jgb_1" },
 					{ "time": 0.3333333, "name": "jgb_2" },
-					{ "time": 1.3666667 }
+					{ "time": 1.3666667, "name": "jgb_1" }
 				]
 			}
 		},
@@ -42946,66 +42937,67 @@
 		"drawOrder": [
 			{
 				"offsets": [
-					{ "slot": "015", "offset": 51 },
-					{ "slot": "014", "offset": 51 },
-					{ "slot": "007", "offset": 44 },
-					{ "slot": "006", "offset": 44 },
-					{ "slot": "003", "offset": 42 }
+					{ "slot": "015", "offset": 50 },
+					{ "slot": "014", "offset": 50 },
+					{ "slot": "007", "offset": 43 },
+					{ "slot": "006", "offset": 43 },
+					{ "slot": "003", "offset": 41 }
 				]
 			},
 			{
 				"time": 0.3,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.3333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.6,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.8333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.1,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.3333334,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.5,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_bwd": {
@@ -43031,14 +43023,8 @@
 			"jgb_1": {
 				"attachment": [
 					{ "name": "jgb_1" },
-					{ "time": 0.3333333, "name": "jgb_1" }
-				]
-			},
-			"jgb_2": {
-				"attachment": [
-					{},
 					{ "time": 0.3333333, "name": "jgb_2" },
-					{ "time": 1.3666667 }
+					{ "time": 1.3666667, "name": "jgb_1" }
 				]
 			}
 		},
@@ -45726,73 +45712,74 @@
 		"drawOrder": [
 			{
 				"offsets": [
-					{ "slot": "015", "offset": 51 },
-					{ "slot": "014", "offset": 51 },
-					{ "slot": "007", "offset": 44 },
-					{ "slot": "006", "offset": 44 },
-					{ "slot": "003", "offset": 42 }
+					{ "slot": "015", "offset": 50 },
+					{ "slot": "014", "offset": 50 },
+					{ "slot": "007", "offset": 43 },
+					{ "slot": "006", "offset": 43 },
+					{ "slot": "003", "offset": 41 }
 				]
 			},
 			{
 				"time": 0.3,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.3333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.4333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.6,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.8333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.1,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.3333334,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.5,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_fwd": {
@@ -45817,14 +45804,9 @@
 			},
 			"jgb_1": {
 				"attachment": [
-					{ "name": "jgb_1" }
-				]
-			},
-			"jgb_2": {
-				"attachment": [
-					{},
+					{ "name": "jgb_1" },
 					{ "time": 0.3333333, "name": "jgb_2" },
-					{ "time": 1.3666667 }
+					{ "time": 1.3666667, "name": "jgb_1" }
 				]
 			}
 		},
@@ -48579,45 +48561,46 @@
 		"drawOrder": [
 			{
 				"offsets": [
-					{ "slot": "015", "offset": 51 },
-					{ "slot": "014", "offset": 51 },
-					{ "slot": "007", "offset": 44 },
-					{ "slot": "006", "offset": 44 },
-					{ "slot": "003", "offset": 42 }
+					{ "slot": "015", "offset": 50 },
+					{ "slot": "014", "offset": 50 },
+					{ "slot": "007", "offset": 43 },
+					{ "slot": "006", "offset": 43 },
+					{ "slot": "003", "offset": 41 }
 				]
 			},
 			{
 				"time": 0.3,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 0.3333333,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.3333334,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			},
 			{
 				"time": 1.5,
 				"offsets": [
 					{ "slot": "015", "offset": 6 },
-					{ "slot": "014", "offset": 54 }
+					{ "slot": "014", "offset": 53 }
 				]
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_Umbrella": {

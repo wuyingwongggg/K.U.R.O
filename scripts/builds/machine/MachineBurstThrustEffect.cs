@@ -7,8 +7,8 @@ using Kuros.Core.Events;
 namespace Kuros.Builds.Machine
 {
     /// <summary>
-    /// 爆发推力：攻击命中（DirectAttack 伤害判定）时自动释放核心技能，
-    /// 该次命中即为释放后的首次攻击，造成额外击退（距离）并提升该次伤害
+    /// 爆发推力：当前热量为最大值（Heat &gt;= MaxHeat）时攻击命中（DirectAttack 伤害判定）
+    /// 自动释放核心技能，该次命中即为释放后的首次攻击，造成额外击退（距离）并提升该次伤害
     /// （追加伤害，不触发暴击等武器词条）。每个 buff 周期只触发一次。
     /// 与武器前摇时长解耦：无论前摇长短，释放时机永远紧跟命中瞬间。
     /// </summary>
@@ -74,12 +74,12 @@ namespace Kuros.Builds.Machine
             // 崩溃或"首次攻击"名额被无效目标消耗
             if (target == null) return;
 
-            // 伤害判定时自动释放核心技能（受释放 CD 与热量约束）。
+            // 满热量（Heat >= MaxHeat，含超频突破）命中时自动释放核心技能（受释放 CD 约束）。
             // _originalAttackDamage 由机器核从每帧缓存的基础攻击力捕获，
             // 不受命中检测临时 DamageOverride 污染，因此可以同步释放。
             // 本次命中触发的新释放 → 本次命中即为释放后首次攻击，立即武装
             bool triggeredReleaseByThisHit = false;
-            if (_core != null)
+            if (_core != null && _core.Heat >= _core.MaxHeat)
             {
                 bool wasBuffActive = _core.IsBuffActive;
                 _core.TryReleaseCoreSkill();

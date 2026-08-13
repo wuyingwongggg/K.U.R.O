@@ -4,6 +4,5 @@
 
 [node name="MachineBurstThrustEffect" type="Node"]
 script = ExtResource("1")
-ReleaseDelay = 0.3
 EffectId = "f2e3d4c5-6a7b-4c8d-9e0f-1a2b3c4d5e6f"
-Description = "热量释放强化：buff 期间第一次攻击附加击退与伤害提升 "
+Description = "热量释放强化：热量度达到最大值时，攻击命中自动释放核心技能，buff 期间第一次攻击附加击退与伤害提升 "

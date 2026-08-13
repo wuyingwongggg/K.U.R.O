@@ -429,9 +429,16 @@ namespace Kuros.Actors.Enemies.Attacks
 				}
 			}
 
-			if (!RequireAnimationHitTrigger && _canAttemptSmash && Enemy.PlayerTarget != null && IsPlayerInsideSmashZone(Enemy.PlayerTarget))
+			// DealDamage 必须无条件调用，确保非 Player 目标也能被处理；
+			// 击退和眩晕仅对 Player 且在范围内时生效
+			if (!RequireAnimationHitTrigger && _canAttemptSmash && Enemy.PlayerTarget != null)
 			{
-				ApplySmashEffects(Enemy.PlayerTarget);
+				ApplySmashDamage(Enemy.PlayerTarget);
+				if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
+				{
+					TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+					ApplyStunState(Enemy.PlayerTarget);
+				}
 			}
 
 			Vector2 toTarget = _dashTarget - Enemy.GlobalPosition;
@@ -471,8 +478,13 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptSmash) return;
 
+			// DealDamage 必须在 Player 检测之前无条件调用，确保非 Player 目标也能被处理
+			ApplySmashDamage(Enemy.PlayerTarget);
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
-				ApplySmashEffects(Enemy.PlayerTarget);
+			{
+				TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+				ApplyStunState(Enemy.PlayerTarget);
+			}
 		}
 
         private Area2D? ResolveArea(NodePath path)

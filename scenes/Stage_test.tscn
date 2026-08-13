@@ -1,12 +1,12 @@
-[gd_scene load_steps=54 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=58 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="2_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="2_v4xrh"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="2_ybuta"]
-[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_6eerp"]
 [ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_v4xrh"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_ve5oi"]
 [ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="4_7yh4q"]
 [ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_dhx6f"]
 [ext_resource type="Resource" uid="uid://duea1v557tmn0" path="res://resources/builds/buildcore/ThrowCore.tres" id="4_kwrre"]
@@ -16,8 +16,8 @@
 [ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="6_5vpwd"]
 [ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_6eerp"]
 [ext_resource type="PackedScene" uid="uid://blwgkboyojmcq" path="res://scenes/weapons/Weapon_Brawl_riotGlove.tscn" id="6_28ted"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="7_4yi35"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_bnjvr"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="7_nviv8"]
 [ext_resource type="PackedScene" uid="uid://2pny8f8vuu3j" path="res://scenes/weapons/Weapon_Slash_barrierGate.tscn" id="7_pja2j"]
 [ext_resource type="Resource" uid="uid://bf6fw01kvd61g" path="res://resources/builds/BuildMachine_B_005.tres" id="8_8rv4v"]
 [ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_eh1sc"]
@@ -39,11 +39,15 @@
 [ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="19_dxexl"]
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
+[ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="22_ve5oi"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
 [ext_resource type="PackedScene" uid="uid://daek68pd4nvyr" path="res://scenes/weapons/Weapon_Stab_laserPointer.tscn" id="35_4yi35"]
 [ext_resource type="PackedScene" uid="uid://dbp28lqhfd5dq" path="res://scenes/weapons/Weapon_Throw_boomerang.tscn" id="35_bnjvr"]
 [ext_resource type="PackedScene" uid="uid://dco3a60ge2arj" path="res://scenes/weapons/Weapon_Throw_briefcase.tscn" id="36_eh1sc"]
 [ext_resource type="PackedScene" uid="uid://elnc1v25l2w1" path="res://scenes/weapons/Weapon_Throw_eCore.tscn" id="36_kwrre"]
+[ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="44_w0sof"]
+[ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="45_ve5oi"]
+[ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="46_4yi35"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -85,8 +89,8 @@ LevelName = "test"
 y_sort_enabled = true
 
 [node name="BuildSelectionManager" parent="World" instance=ExtResource("2_v4xrh")]
-CorePool = Array[ExtResource("3_6eerp")]([ExtResource("4_kwrre"), ExtResource("5_e5fdm"), ExtResource("6_5vpwd")])
-EffectPool = Array[ExtResource("7_nviv8")]([ExtResource("8_8rv4v"), ExtResource("9_rf3xq"), ExtResource("10_w0sof"), ExtResource("11_ve5oi")])
+CorePool = Array[ExtResource("3_ve5oi")]([ExtResource("4_kwrre"), ExtResource("5_e5fdm"), ExtResource("6_5vpwd")])
+EffectPool = Array[ExtResource("7_4yi35")]([ExtResource("8_8rv4v"), ExtResource("9_rf3xq"), ExtResource("10_w0sof"), ExtResource("11_ve5oi")])
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="World"]
 position = Vector2(-2306, 0)
@@ -200,6 +204,8 @@ PlayerAttackHitHitStopDuration = 0.1
 PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
 
+[node name="P2" parent="World" instance=ExtResource("22_ve5oi")]
+
 [node name="WeaponBrawlDiscoBall" parent="World" instance=ExtResource("17_pja2j")]
 position = Vector2(-2120, -1540.9999)
 
@@ -266,6 +272,15 @@ script = ExtResource("16_28ted")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
 NextStagePath = "uid://qd5abd4opeob"
 LoadDistance = 2000.0
+
+[node name="FurnitureBedA" parent="World" instance=ExtResource("44_w0sof")]
+position = Vector2(477, -105)
+
+[node name="FurnitureChairOfficeA" parent="World" instance=ExtResource("45_ve5oi")]
+position = Vector2(-1176, 741)
+
+[node name="FurnitureSofaB" parent="World" instance=ExtResource("46_4yi35")]
+position = Vector2(1456, 698)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

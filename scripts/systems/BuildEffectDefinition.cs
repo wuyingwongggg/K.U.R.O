@@ -76,5 +76,41 @@ namespace Kuros.Systems
         {
             return GetOverrideFloatArray("TierValues");
         }
+
+        private static readonly System.Text.RegularExpressions.Regex TierTokenRegex = new(
+            @"{([A-Za-z_][A-Za-z0-9_]*)?:?(\d+)}");
+
+        /// <summary>
+        /// 描述模板填充：把 {数组名:下标} 占位符替换为 PropertyOverrides 中对应数组的实际数值。
+        /// 简写 {i} 等价于 {TierValues:i}；多个数组（如 GainValues/HeatCostValues）共享同一当前层索引。
+        /// 当前层（stacks）金色高亮，其余层暗色；找不到数组 / 下标越界 / 无占位符时原样返回。
+        /// 用于三选一卡片与技能详情窗口显示效果的实际数值。
+        /// </summary>
+        public string BuildDescriptionWithValues(int stacks)
+        {
+            string template = Description;
+            if (!template.Contains('{'))
+                return template;
+
+            return TierTokenRegex.Replace(template, match =>
+            {
+                string arrayName = match.Groups[1].Success && match.Groups[1].Value.Length > 0
+                    ? match.Groups[1].Value
+                    : "TierValues";
+                int index = int.Parse(match.Groups[2].Value);
+
+                var values = GetOverrideFloatArray(arrayName);
+                if (values == null || index < 0 || index >= values.Length)
+                    return match.Value; // 无数据 → 保留原文
+
+                int tierIndex = Mathf.Clamp(stacks, 0, values.Length - 1);
+
+                // 修改器百分比为负（减容/缓速类）时，描述按数值大小显示（降低 10%，而非 -10%）
+                string valueText = Mathf.Abs(values[index]).ToString();
+                return index == tierIndex
+                    ? $"[color=#FFD700]{valueText}[/color]"
+                    : $"[color=#8A8A8A]{valueText}[/color]";
+            });
+        }
     }
 }

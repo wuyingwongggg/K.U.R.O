@@ -134,7 +134,7 @@ namespace Kuros.UI
                 card.NameLabel!.Text = effect.DisplayName;
                 int currentStacks = 0;
                 _stacksByEffectId?.TryGetValue(effect.EffectId, out currentStacks);
-                card.DescLabel!.Text = BuildTierDescription(effect, currentStacks);
+                card.DescLabel!.Text = effect.BuildDescriptionWithValues(currentStacks);
                 card.BuildClassLabel!.Text = !string.IsNullOrWhiteSpace(effect.BuildClass)
                     ? $"[{GetBuildClassName(effect.BuildClass)}]"
                     : "";
@@ -155,42 +155,6 @@ namespace Kuros.UI
                 card.ApplyRarityVisuals(effect.Rarity);
                 _cards.Add(card);
             }
-        }
-
-        private static readonly System.Text.RegularExpressions.Regex TierTokenRegex = new(
-            @"{([A-Za-z_][A-Za-z0-9_]*)?:?(\d+)}");
-
-        /// <summary>
-        /// 描述模板填充：把 {数组名:下标} 占位符替换为对应数组的值并做 BBCode 高亮。
-        /// 简写 {i} 等价于 {TierValues:i}；多个数组（如 GainValues/CapValues）共享同一当前层索引。
-        /// 当前可获得层（stacks 0 起 → 下标 stacks）金色高亮，其余层暗色。
-        /// 找不到数组 / 下标越界 / 描述无占位符时原样返回。
-        /// </summary>
-        private static string BuildTierDescription(BuildEffectDefinition effect, int stacks)
-        {
-            string template = effect.Description;
-            if (!template.Contains('{'))
-                return template;
-
-            return TierTokenRegex.Replace(template, match =>
-            {
-                string arrayName = match.Groups[1].Success && match.Groups[1].Value.Length > 0
-                    ? match.Groups[1].Value
-                    : "TierValues";
-                int index = int.Parse(match.Groups[2].Value);
-
-                var values = effect.GetOverrideFloatArray(arrayName);
-                if (values == null || index < 0 || index >= values.Length)
-                    return match.Value; // 无数据 → 保留原文
-
-                int tierIndex = Mathf.Clamp(stacks, 0, values.Length - 1);
-
-                // 修改器百分比为负（减容/缓速类）时，描述按数值大小显示（降低 10%，而非 -10%）
-                string valueText = Mathf.Abs(values[index]).ToString();
-                return index == tierIndex
-                    ? $"[color=#FFD700]{valueText}[/color]"
-                    : $"[color=#8A8A8A]{valueText}[/color]";
-            });
         }
 
         private void OnCardConfirmed(int index)

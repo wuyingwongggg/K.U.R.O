@@ -491,16 +491,13 @@ namespace Kuros.Actors.Heroes
 				baseDamage = WeaponSkillController.ModifyAttackDamage(baseDamage);
 			}
 
-			int loggedDamage = Mathf.Max(0, Mathf.RoundToInt(baseDamage));
-			int hitCount = ApplyDamageWithArea(baseDamage, (target, isFallback) =>
-			{
-				GameLogger.Info(nameof(MainCharacter), $"击中敌人: {target.Name}, 伤害: {loggedDamage}");
-			});
+			// int loggedDamage = Mathf.Max(0, Mathf.RoundToInt(baseDamage));
+			int hitCount = ApplyDamageWithArea(baseDamage, null);
 
-			if (hitCount == 0)
-			{
-				GameLogger.Info(nameof(MainCharacter), "未击中任何敌人");
-			}
+			// if (hitCount == 0)
+			// {
+			// 	GameLogger.Info(nameof(MainCharacter), "未击中任何敌人");
+			// }
 		}
 
 	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)
@@ -516,7 +513,9 @@ namespace Kuros.Actors.Heroes
 
 		int previousHealth = CurrentHealth;
 		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
-		_pendingHitKnockback = CurrentHealth < previousHealth;
+		// IgnoreHitStateOnDamage（如齿轮关节 buff）时连击退一起抑制：
+		// 敌人击退依赖 ConsumePendingHitKnockback，保留标记会导致不打断攻击却仍被击退
+		_pendingHitKnockback = CurrentHealth < previousHealth && !IgnoreHitStateOnDamage;
 		// 状态机会处理受伤状态切换，不需要额外逻辑
 	}
 

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://cmfoxkcmji62r"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://cmfoxkcmji62r"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_0pigg"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_qsi71"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="4_gcwx5"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_v7bbq"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_gcwx5"]
+[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="6_4avql"]
 
 [sub_resource type="Resource" id="Resource_0pigg"]
 script = ExtResource("1_0pigg")
@@ -39,6 +40,14 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
+[sub_resource type="Resource" id="Resource_m4ykj"]
+script = ExtResource("2_qsi71")
+Trigger = 4
+EffectScene = ExtResource("6_4avql")
+Notes = "生成的治疗物品
+"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
 [resource]
 script = ExtResource("4_gcwx5")
 ItemId = "Furniture_B_VendingMachineA"
@@ -49,7 +58,7 @@ Category = "Furniture"
 Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_0pigg")]([SubResource("Resource_0pigg")])
-EffectEntries = Array[ExtResource("2_qsi71")]([SubResource("Resource_v7bbq"), SubResource("Resource_gcwx5"), SubResource("Resource_4avql")])
+EffectEntries = Array[ExtResource("2_qsi71")]([SubResource("Resource_v7bbq"), SubResource("Resource_gcwx5"), SubResource("Resource_4avql"), SubResource("Resource_m4ykj")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicPeakHeight = 100.0

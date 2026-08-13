@@ -1,14 +1,13 @@
-[gd_scene load_steps=29 format=3 uid="uid://cnrdifmso2jps"]
+[gd_scene load_steps=28 format=3 uid="uid://cnrdifmso2jps"]
 
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_pkdn6"]
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_x5dwv"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_m6is1"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_x5dwv"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="1_pkdn6"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_x5dwv"]
+[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_m6is1"]
+[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_x5dwv"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="4_wv8k2"]
-[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="5_x5dwv"]
-[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="6_p2pbh"]
-[ext_resource type="Texture2D" uid="uid://behye8vdgemoq" path="res://assets/environments/scene_2_hotel/地板.png" id="7_tehpy"]
-[ext_resource type="Texture2D" uid="uid://dw2alagwosewh" path="res://assets/environments/scene_2_hotel/地毯.png" id="8_hkdru"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="6_wv8k2"]
+[ext_resource type="Texture2D" uid="uid://bmlbrogdyoobg" path="res://assets/environments/scene_2_hotel/地板.png" id="7_tehpy"]
+[ext_resource type="Texture2D" uid="uid://84ualture7v7" path="res://assets/environments/scene_2_hotel/地毯.png" id="8_hkdru"]
 [ext_resource type="Texture2D" uid="uid://k45cthgn2dgq" path="res://assets/environments/scene_2_hotel/墙面.png" id="9_i6sc2"]
 [ext_resource type="Texture2D" uid="uid://cu2c3j0gpbqhb" path="res://assets/environments/scene_2_hotel/无缝窗户模块.png" id="10_bufht"]
 [ext_resource type="PackedScene" uid="uid://bo6r21cbk3ftm" path="res://scenes/environments/columnsB.tscn" id="11_gy8v2"]
@@ -106,9 +105,9 @@ debug_color = Color(1, 0, 0, 0.19607843)
 top_level = true
 position = Vector2(0, 350)
 script = ExtResource("2_m6is1")
-EnemyScenes = Array[PackedScene]([ExtResource("4_wv8k2")])
+EnemyScenes = Array[PackedScene]([ExtResource("4_wv8k2"), ExtResource("6_wv8k2")])
 MultiEnemySelectionMode = 1
-SpawnCount = 2
+SpawnCount = 3
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -127,9 +126,7 @@ DebugLineWidth = 8.0
 top_level = true
 position = Vector2(0, 350)
 script = ExtResource("2_m6is1")
-EnemyScenes = Array[PackedScene]([ExtResource("6_p2pbh"), ExtResource("5_x5dwv")])
 MultiEnemySelectionMode = 1
-SpawnCount = 3
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -211,37 +208,37 @@ position = Vector2(-276, 900)
 position = Vector2(-62, 60)
 
 [node name="FurnitureCautionTape_fwd2" parent="." instance=ExtResource("14_emnwu")]
-position = Vector2(103, 309)
+position = Vector2(176, 287)
 
 [node name="FurnitureChairA" parent="." instance=ExtResource("15_4thqh")]
-position = Vector2(-419, 350)
+position = Vector2(-367, 347)
 
 [node name="FurnitureChairA2" parent="." instance=ExtResource("15_4thqh")]
-position = Vector2(-1604, 350)
+position = Vector2(-1581, 342)
 
 [node name="FurnitureChairA3" parent="." instance=ExtResource("15_4thqh")]
-position = Vector2(-801, 32)
+position = Vector2(-678, 2)
 
 [node name="FurnitureChairA_fwd" parent="." instance=ExtResource("16_ww5v0")]
-position = Vector2(-1156, 350)
+position = Vector2(-1119, 342)
 
 [node name="FurnitureChairA_fwd2" parent="." instance=ExtResource("16_ww5v0")]
 position = Vector2(-801, 661)
 
 [node name="FurnitureChairA_fwd3" parent="." instance=ExtResource("16_ww5v0")]
-position = Vector2(-2271, 350)
+position = Vector2(-2323, 335)
 
 [node name="FurnitureTableRoundA" parent="." instance=ExtResource("17_o1b0f")]
 position = Vector2(-1950, 350)
 
 [node name="FurnitureTableRoundA2" parent="." instance=ExtResource("17_o1b0f")]
-position = Vector2(-796, 369)
+position = Vector2(-746, 351)
 
 [node name="FurnitureChairA_fwd4" parent="." instance=ExtResource("16_ww5v0")]
-position = Vector2(-1936, 645)
+position = Vector2(-1936, 594)
 
 [node name="FurnitureChairA_fwd5" parent="." instance=ExtResource("16_ww5v0")]
-position = Vector2(-1931, 60)
+position = Vector2(-1930, -2)
 
 [node name="FurnitureLuggageCartA" parent="." instance=ExtResource("16_m6is1")]
 position = Vector2(-226, -712)

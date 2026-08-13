@@ -85,6 +85,9 @@ namespace Kuros.Managers
             _forceLocked = locked;
             GameLogger.Debug(nameof(BattleArena), $"SetForceLock({locked})");
 
+            // 【临时调试】打印调用栈，定位锁定/解锁的来源
+            GD.Print($"[BattleArena] SetForceLock({locked}) 调用栈:\n{new System.Diagnostics.StackTrace()}\n");
+
             // 解锁时若当前无敌人则立即停用
             if (!locked && _isBattleActive && _trackedEnemies.Count == 0)
                 DeactivateBattle();
@@ -198,6 +201,11 @@ namespace Kuros.Managers
             else if (!hasEnemies && _isBattleActive && !_forceLocked)
             {
                 DeactivateBattle();
+            }
+            // 【临时调试】0 敌人但被锁阻止解除
+            else if (!hasEnemies && _isBattleActive && _forceLocked)
+            {
+                GameLogger.Warn(nameof(BattleArena), "[DBG] 检测到 0 个敌人，但 _forceLocked=true 阻止了解除空气墙！");
             }
         }
 

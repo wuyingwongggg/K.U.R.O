@@ -73,18 +73,21 @@ namespace Kuros.Effects
             var node = scene.Instantiate();
             if (node is Node2D node2D)
             {
-                world.AddChild(node2D);
-                node2D.GlobalPosition = pos;
-
-                if (node2D is BoomDmgEffect boom)
-                    boom.Attacker = Actor;
-
+                // 先应用覆盖属性（AddChild 之前），确保子场景 _Ready 时读取到正确值。
+                // 若在 AddChild 之后才 Set，_Ready 已按默认值分支执行（如 SpawnDelay=0
+                // 时定时器分支未挂载、ScaleSpawnWithSelf 读取到 false），覆盖全部失效
                 foreach (var pair in overrides)
                 {
                     if (pair.Key == null) continue;
                     try { node2D.Set(pair.Key, pair.Value); }
                     catch (System.Exception ex) { GD.PushWarning($"[EmojiBoomEffect] override '{pair.Key}' failed: {ex.Message}"); }
                 }
+
+                if (node2D is BoomDmgEffect boom)
+                    boom.Attacker = Actor;
+
+                world.AddChild(node2D);
+                node2D.GlobalPosition = pos;
             }
             else
             {

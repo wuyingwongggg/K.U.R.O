@@ -22,12 +22,21 @@ namespace Kuros.UI
 	// 叠加在生命条上的数字显示
 	[Export] public Label? HealthValueLabel { get; private set; } = null!;
 	[Export] public Label ScoreLabel { get; private set; } = null!;
+	// 经验条：按 Build 阈值曲线显示当前等级区间内的进度（0-100），升级时自动归零
+	[Export] public TextureProgressBar? ExpFillBar { get; private set; } = null!;
+	[Export] public Label? ExpValueLabel { get; private set; } = null!;
 	[Export] public Button PauseButton { get; private set; } = null!;
 	[Export] public Label GoldLabel { get; private set; } = null!;
 
 		[ExportCategory("Styles")]
 		// 快捷物品栏整体面板样式（例如使用武器栏底图做 StyleBoxTexture）
 		[Export] public StyleBox? QuickBarPanelStyle { get; set; }
+		// 非锁定武器槽的底层空白方块纹理（在所有已解锁槽位上持续显示，位于武器图标下方）
+		[Export] public Texture2D? EmptySlotFrameTexture { get; set; }
+		// 当前选中武器槽的高亮框架纹理（选中框，选中时替换 EmptySlotFrameTexture）
+		[Export] public Texture2D? SelectedFrameTexture { get; set; }
+		// 锁定武器槽的遮掩纹理（覆盖在未解锁的槽位上）
+		[Export] public Texture2D? LockedFrameTexture { get; set; }
 		// 金币文本样式（可配合金币图标背景）
 		[Export] public StyleBox? GoldLabelStyle { get; set; }
 		// 暂停键按钮样式（例如使用“暂停键底”资源）
@@ -58,9 +67,10 @@ namespace Kuros.UI
 		private readonly Label[] _quickSlotLabels = new Label[5];
 		private readonly Panel[] _quickSlotPanels = new Panel[5];
 		private readonly TextureRect[] _quickSlotIcons = new TextureRect[5];
-		// 武器栏框贴图样式：未选中 / 选中（用于 UpdateSlotPanelStyle）
-		private StyleBoxTexture? _quickSlotStyleNormal;
-		private StyleBoxTexture? _quickSlotStyleSelected;
+		// 槽位框架（SlotFrame）纹理：选中框/锁定遮罩由导出属性配置；解锁未选中槽无框
+		private readonly TextureRect?[] _quickSlotFrames = new TextureRect?[5];
+		private int _leftHandSlotIndex = -1;
+		private int _rightHandSlotIndex = -1;
 		// 投掷武器冷却遮罩覆盖层（每个快捷槽一个）
 		private readonly ThrowCooldownOverlay?[] _quickSlotCooldownOverlays = new ThrowCooldownOverlay?[5];
 		private float _throwCooldownUpdateTimer = 0f;
@@ -116,6 +126,16 @@ namespace Kuros.UI
 				ScoreLabel = GetNodeOrNull<Label>("ScoreLabel");
 			}
 
+			if (ExpFillBar == null)
+			{
+				ExpFillBar = GetNodeOrNull<TextureProgressBar>("TextureProgressBar/ExpFillBar");
+			}
+
+			if (ExpValueLabel == null)
+			{
+				ExpValueLabel = GetNodeOrNull<Label>("TextureProgressBar/ExpValueLabel");
+			}
+
 			if (PauseButton == null)
 			{
 				PauseButton = GetNodeOrNull<Button>("PauseButton");
@@ -153,7 +173,9 @@ namespace Kuros.UI
 
 			// 尝试自动连接玩家（如果场景中已有玩家）
 			CallDeferred(MethodName.TryAutoConnectPlayer);
-			CreateDashIndicator();
+
+			// 缓存 Dash 充能点指示器节点引用（节点本身在 BattleHUD.tscn 中布局）
+			_dashIcon = GetNodeOrNull<DashIconControl>("DashIcon");
 
 			// 发出就绪信号
 			EmitSignal(SignalName.HUDReady);
@@ -176,21 +198,26 @@ namespace Kuros.UI
 				_quickSlotLabels[i] = GetNodeOrNull<Label>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotLabel{i + 1}");
 				_quickSlotPanels[i] = GetNodeOrNull<Panel>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}");
 				_quickSlotIcons[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotIcon{i + 1}");
-				
+				_quickSlotFrames[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/SlotFrame");
+
 				if (_quickSlotLabels[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotLabel{i + 1}");
 				}
-				
+
 				if (_quickSlotPanels[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotPanel{i + 1}");
 				}
-				// 槽位样式在 ApplyCustomStyles 中统一用武器栏框贴图设置
 
 				if (_quickSlotIcons[i] == null)
 				{
 					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotIcon{i + 1}");
+				}
+
+				if (_quickSlotFrames[i] == null)
+				{
+					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotFrame{i + 1}");
 				}
 			}
 		}
@@ -339,31 +366,53 @@ namespace Kuros.UI
 
 			// u66f4u65b0u6295u63b7u51b7u5374u906eu7f69uff08u4eceu69fdu4f4d stack u8bfbu53d6uff09
 			UpdateThrowCooldownOverlay(slotIndex, stack);
+
+			// 槽位内容变化（如放入武器）后同步刷新框架纹理，保证物品不被锁定遮罩盖住
+			UpdateSlotFrames();
 		}
 		
 		/// <summary>
-		/// 更新快捷栏槽位面板样式：未选中用武器栏框（未选中），选中用武器栏框（选中）
-		/// </summary>
-		private void UpdateSlotPanelStyle(int slotIndex, bool selected)
-		{
-			if (slotIndex < 0 || slotIndex >= 5) return;
-			if (_quickSlotPanels[slotIndex] == null) return;
-			var style = selected ? _quickSlotStyleSelected : _quickSlotStyleNormal;
-			if (style == null) return;
-			_quickSlotPanels[slotIndex].AddThemeStyleboxOverride("panel", style);
-		}
-
-		/// <summary>
-		/// 更新左右手选择的快捷栏高亮（武器栏框选中/未选中贴图）
+		/// 更新左右手选择的快捷栏高亮（保存选中索引并刷新槽位框架纹理）
 		/// </summary>
 		/// <param name="leftHandSlotIndex">左手选择的槽位索引（0-4，-1表示未选择）</param>
 		/// <param name="rightHandSlotIndex">右手选择的槽位索引（-1表示不高亮右手）</param>
 		public void UpdateHandSlotHighlight(int leftHandSlotIndex, int rightHandSlotIndex = -1)
 		{
+			_leftHandSlotIndex = leftHandSlotIndex;
+			_rightHandSlotIndex = rightHandSlotIndex;
+			UpdateSlotFrames();
+		}
+
+		/// <summary>
+		/// 刷新 5 个槽位的框架纹理（底图不含槽位图案，槽位背景由纹理层负责）：
+		/// 锁定空槽 → 锁定遮罩（LockedFrameTexture）；锁定槽有物品 → 不遮掩（物品优先）；
+		/// 解锁槽被选中 → 选中框（SelectedFrameTexture，替换空白方块）；
+		/// 其余已解锁槽 → 空白方块（EmptySlotFrameTexture，持续显示在武器图标下方）。
+		/// 解锁数量来自玩家 GetUnlockedWeaponSlots（初始 3，Build 每次升级 +1）。
+		/// </summary>
+		private void UpdateSlotFrames()
+		{
+			int unlocked = _player?.InventoryComponent?.GetUnlockedWeaponSlots() ?? 5;
+
 			for (int i = 0; i < 5; i++)
 			{
-				bool selected = (i == rightHandSlotIndex && rightHandSlotIndex >= 0) || (i == leftHandSlotIndex && leftHandSlotIndex >= 0 && leftHandSlotIndex < 5);
-				UpdateSlotPanelStyle(i, selected);
+				var frame = _quickSlotFrames[i];
+				if (frame == null) continue;
+
+				bool hasItem = _player?.InventoryComponent?.QuickBar?.GetStack(i) is { } stack
+					&& !stack.IsEmpty && stack.Item.ItemId != "empty_item";
+
+				// 锁定遮罩只作用于空槽：有物品的槽位即使判定锁定也不遮掩
+				if (i >= unlocked && !hasItem)
+				{
+					frame.Texture = LockedFrameTexture;
+					continue;
+				}
+
+				bool selected = (i == _rightHandSlotIndex && _rightHandSlotIndex >= 0)
+					|| (i == _leftHandSlotIndex && _leftHandSlotIndex >= 0);
+				// 选中时用选中框替换空白方块，其余解锁槽持续显示空白方块
+				frame.Texture = selected ? SelectedFrameTexture : EmptySlotFrameTexture;
 			}
 		}
 
@@ -492,7 +541,43 @@ namespace Kuros.UI
 				// 只显示数字，便于与图标/背景组合
 				ScoreLabel.Text = $"{_score}";
 			}
+			UpdateExpDisplay(_score);
+			// Build 升级（分数跨阈值）时刷新武器槽解锁框
+			UpdateSlotFrames();
 			// PlayerStatsLabel 保留原逻辑用于调试/回退需要
+		}
+
+		/// <summary>
+		/// 按 Build 阈值曲线更新经验条：显示当前等级区间内的进度（0-100），
+		/// 跨越阈值时等级 +1 且进度自动归零（新的等级区间起点）。
+		/// 曲线取 BuildSelectionManager 的 ThresholdCurve，与 Build 三选一的触发曲线一致。
+		/// </summary>
+		private void UpdateExpDisplay(int score)
+		{
+			if (ExpFillBar == null) return;
+
+			var curve = BuildSelectionManager.Instance?.ThresholdCurve;
+			if (curve == null)
+			{
+				ExpFillBar.Value = 0f;
+				return;
+			}
+
+			int triggerCount = curve.GetTriggerCount(score);      // 已触发的次数（累计阈值已达标数）
+			int level = triggerCount + 1;                         // 当前等级（第 1 次触发前为 LV 1）
+			int start = curve.GetCumulativeScore(triggerCount);   // 本等级起点总分
+			int end = curve.GetCumulativeScore(triggerCount + 1); // 升级所需总分
+			float progress = end > start
+				? Mathf.Clamp((score - start) / (float)(end - start), 0f, 1f)
+				: 0f;
+
+			ExpFillBar.MaxValue = 100f;
+			ExpFillBar.Value = progress * 100f;
+
+			if (ExpValueLabel != null)
+			{
+				ExpValueLabel.Text = $"LV {level}";
+			}
 		}
 
 		private void ConfigureHealthFillBar()
@@ -533,23 +618,7 @@ namespace Kuros.UI
 					quickBarPanel.AddThemeStyleboxOverride("panel", panelStyle);
 			}
 
-			// 每个快捷槽：武器栏框（未选中）/ 武器栏框（选中）
-			var texNormal = GD.Load<Texture2D>("res://resources/ui/武器栏框（未选中）.png");
-			var texSelected = GD.Load<Texture2D>("res://resources/ui/武器栏框（选中）.png");
-			if (texNormal != null)
-			{
-				_quickSlotStyleNormal = new StyleBoxTexture();
-				_quickSlotStyleNormal.Texture = texNormal;
-			}
-			if (texSelected != null)
-			{
-				_quickSlotStyleSelected = new StyleBoxTexture();
-				_quickSlotStyleSelected.Texture = texSelected;
-			}
-			for (int i = 0; i < 5; i++)
-			{
-				UpdateSlotPanelStyle(i, false);
-			}
+			// 槽位框架（解锁框/选中框）由 CacheQuickBarLabels 加载、UpdateSlotFrames 刷新，此处不再设置面板样式
 
 			// 金币文本样式
 			if (GoldLabel != null && GoldLabelStyle != null)
@@ -755,10 +824,8 @@ namespace Kuros.UI
 			}));
 		}
 
-		// Dash 指示器
-	private Control? _dashIcon;
-	private ThrowCooldownOverlay? _dashCooldownOverlay;
-	private Label? _dashChargeLabel;
+		// Dash 充能点指示器（节点在 BattleHUD.tscn 中布局，这里只缓存引用）
+	private DashIconControl? _dashIcon;
 	private PlayerDashState? _dashState;
 	private float _dashUpdateTimer;
 
@@ -888,46 +955,6 @@ namespace Kuros.UI
 				}
 			}
 		}
-	private void CreateDashIndicator()
-	{
-		_dashIcon = new DashIconControl
-		{
-			Name = "DashIndicator",
-		};
-		_dashIcon.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-		_dashIcon.OffsetLeft = 20;
-		_dashIcon.OffsetTop = 120;
-		_dashIcon.OffsetRight = 60;
-		_dashIcon.OffsetBottom = 160;
-		AddChild(_dashIcon);
-
-		_dashCooldownOverlay = new ThrowCooldownOverlay();
-		_dashCooldownOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		_dashCooldownOverlay.OffsetLeft = 0;
-		_dashCooldownOverlay.OffsetTop = 0;
-		_dashCooldownOverlay.OffsetRight = 0;
-		_dashCooldownOverlay.OffsetBottom = 0;
-		_dashIcon.AddChild(_dashCooldownOverlay);
-
-		_dashChargeLabel = new Label
-		{
-			Name = "DashChargeLabel",
-			HorizontalAlignment = HorizontalAlignment.Right,
-			VerticalAlignment = VerticalAlignment.Bottom,
-			MouseFilter = MouseFilterEnum.Ignore
-		};
-		_dashChargeLabel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_dashChargeLabel.OffsetLeft = -28;
-		_dashChargeLabel.OffsetTop = -18;
-		_dashChargeLabel.OffsetRight = 0;
-		_dashChargeLabel.OffsetBottom = 0;
-		_dashChargeLabel.AddThemeColorOverride("font_color", Colors.White);
-		_dashChargeLabel.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.8f));
-		_dashChargeLabel.AddThemeConstantOverride("outline_size", 2);
-		_dashChargeLabel.AddThemeFontSizeOverride("font_size", 14);
-		_dashIcon.AddChild(_dashChargeLabel);
-	}
-
 	private void UpdateDashDisplay(float delta)
 	{
 		if (_dashState == null || _dashIcon == null) return;
@@ -936,94 +963,8 @@ namespace Kuros.UI
 		if (_dashUpdateTimer > 0f) return;
 		_dashUpdateTimer = 0.05f;
 
-		if (_dashCooldownOverlay != null)
-			_dashCooldownOverlay.Progress = 1f - _dashState.RechargeProgress;
-
-		if (_dashChargeLabel != null)
-			_dashChargeLabel.Text = $"{_dashState.Charges}";
+		// 充能点：左侧 Charges 个亮色（可用），其余暗色（CD），从右往左变化
+		_dashIcon.SetCharges(_dashState.Charges, _dashState.MaxCharges);
 	}
-
-		/// <summary>
-		private partial class DashIconControl : Control
-		{
-			public override void _Ready()
-			{
-				MouseFilter = MouseFilterEnum.Ignore;
-			}
-			public override void _Draw()
-			{
-				var size = Size;
-				var center = size * 0.5f;
-				var r = Mathf.Min(size.X, size.Y) * 0.38f;
-				var color = new Color(0.4f, 0.7f, 1f, 0.9f);
-				var points = new Vector2[]
-				{
-					center + new Vector2(0, -r),
-					center + new Vector2(r, 0),
-					center + new Vector2(0, r),
-					center + new Vector2(-r, 0)
-				};
-				DrawPolygon(points, new Color[] { color });
-			}
-		}
-
-		/// 投掷武器冷却扇形遮罩控件
-		/// 从12点钟方向顺时针绘制半透明扇形，覆盖图标表示冷却剩余时间
-		/// </summary>
-		private partial class ThrowCooldownOverlay : Control
-		{
-			private float _progress;
-			public float Progress
-			{
-				get => _progress;
-				set { _progress = Mathf.Clamp(value, 0f, 1f); QueueRedraw(); }
-			}
-
-			public override void _Ready()
-			{
-				base._Ready();
-				MouseFilter = MouseFilterEnum.Ignore;
-			}
-
-			public override void _Draw()
-			{
-				base._Draw();
-				if (_progress <= 0f) return;
-
-				Vector2 rectSize = Size;
-				Vector2 center = rectSize * 0.5f;
-				Vector2 halfSize = rectSize * 0.5f;
-
-				var overlayColor = new Color(0f, 0f, 0f, 0.5f);
-
-				int steps = 48;
-				float startAngle = -Mathf.Pi / 2f; // 从12点钟方向开始
-				float endAngle = startAngle + Mathf.Pi * 2f * _progress;
-				var points = new Vector2[steps + 2];
-				points[0] = center;
-				for (int i = 0; i <= steps; i++)
-				{
-					float t = (float)i / steps;
-					float angle = Mathf.Lerp(startAngle, endAngle, t);
-					Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-					points[i + 1] = center + GetRectEdgePoint(dir, halfSize);
-				}
-				DrawPolygon(points, new Color[] { overlayColor });
-			}
-
-			private static Vector2 GetRectEdgePoint(Vector2 direction, Vector2 halfSize)
-			{
-				if (direction == Vector2.Zero) return Vector2.Zero;
-				float tx = direction.X != 0f ? halfSize.X / Mathf.Abs(direction.X) : float.MaxValue;
-				float ty = direction.Y != 0f ? halfSize.Y / Mathf.Abs(direction.Y) : float.MaxValue;
-				return direction * Mathf.Min(tx, ty);
-			}
-
-			public override void _Notification(int what)
-			{
-				base._Notification(what);
-				if (what == NotificationResized) QueueRedraw();
-			}
-		}
 	}
 }

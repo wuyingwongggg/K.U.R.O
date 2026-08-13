@@ -162,6 +162,9 @@ namespace Kuros.Environments
         /// <summary>close 动画结束后调用：启动异步加载 + 播放 loading 动画。</summary>
         private void BeginLoading()
         {
+            // 每次电梯 loading 时自动保存元数据（进度/时间）
+            SaveManager.Instance?.AutosaveCurrentSlot();
+
             _state     = ElevatorState.Loading;
             _rideTimer = 0;
 

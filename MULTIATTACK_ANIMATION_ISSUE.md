@@ -43,10 +43,10 @@ MultiAttack #2:
 // EnemyNetAdminMultiMeleeAttack.OnWarmupStarted
 protected override void OnWarmupStarted()
 {
-    _invokeCount++;
-    _isActiveHeld = true;
-    _activeElapsed = 0f;   // ← 关键：每次攻击开头清零计时器
-    base.OnWarmupStarted();
+	_invokeCount++;
+	_isActiveHeld = true;
+	_activeElapsed = 0f;   // ← 关键：每次攻击开头清零计时器
+	base.OnWarmupStarted();
 }
 ```
 
@@ -62,21 +62,21 @@ protected override void OnWarmupStarted()
 // ✓ PinballAttack: OnAttackStarted 重置所有计时字段
 protected override void OnAttackStarted()
 {
-    base.OnAttackStarted();
-    IsStopping = false;
-    _isDashing = false;
-    _dashTimeElapsed = 0f;    // ← 重置
-    // ... 其他字段
+	base.OnAttackStarted();
+	IsStopping = false;
+	_isDashing = false;
+	_dashTimeElapsed = 0f;    // ← 重置
+	// ... 其他字段
 }
 
 // ✓ OnePunchAttack: OnAttackStarted 同样处理
 protected override void OnAttackStarted()
 {
-    base.OnAttackStarted();
-    _isDashing = false;
-    _dashFinalized = false;
-    _dashDistanceTraveled = 0f; // ← 重置
-    // ... 其他字段
+	base.OnAttackStarted();
+	_isDashing = false;
+	_dashFinalized = false;
+	_dashDistanceTraveled = 0f; // ← 重置
+	// ... 其他字段
 }
 ```
 
@@ -86,7 +86,7 @@ protected override void OnAttackStarted()
 // ✗ 只在 OnActivePhase 重置，OnWarmupStarted 不碰
 protected override void OnActivePhase()
 {
-    _activeElapsed = 0f;  // 太晚：Warmup 期间的 _PhysicsProcess 看不到
+	_activeElapsed = 0f;  // 太晚：Warmup 期间的 _PhysicsProcess 看不到
 }
 ```
 

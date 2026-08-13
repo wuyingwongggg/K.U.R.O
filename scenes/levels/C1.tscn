@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://cqdtru26cvd8g"]
+[gd_scene load_steps=32 format=3 uid="uid://cqdtru26cvd8g"]
 
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_65ofg"]
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_v2w3b"]
@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="17_i8k3d"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="18_8qudx"]
 [ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="19_fmu77"]
+[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="24_ihbuc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3x13k"]
 size = Vector2(5100, 3050)
@@ -105,6 +106,7 @@ shape = SubResource("RectangleShape2D_ccheo")
 debug_color = Color(1, 0, 0, 0.19607843)
 
 [node name="EnemySpawneManager" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("3_5qtsb")
@@ -123,6 +125,7 @@ AutoLowerFrontEffectAfterEnemySpawn = true
 DebugLineWidth = 8.0
 
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("3_5qtsb")
@@ -184,10 +187,10 @@ position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_qym5g")
 
 [node name="FurnitureChairB" parent="." instance=ExtResource("12_jgb2w")]
-position = Vector2(-680, -648)
+position = Vector2(-651, -648)
 
 [node name="FurnitureChairB2" parent="." instance=ExtResource("12_jgb2w")]
-position = Vector2(-622, 1092)
+position = Vector2(-599, 1122)
 
 [node name="FurnitureChairB3" parent="." instance=ExtResource("12_jgb2w")]
 position = Vector2(1582, -567)
@@ -196,7 +199,7 @@ position = Vector2(1582, -567)
 position = Vector2(1626, 1205)
 
 [node name="FurnitureChairB_fwd" parent="." instance=ExtResource("13_ihbuc")]
-position = Vector2(-1383, -593)
+position = Vector2(-1408, -600)
 
 [node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("13_ihbuc")]
 position = Vector2(-1366, 1112)
@@ -220,7 +223,7 @@ position = Vector2(1188, -589)
 position = Vector2(1240, 1249)
 
 [node name="FurnitureTableRoundC" parent="." instance=ExtResource("15_wx5h1")]
-position = Vector2(20, 300)
+position = Vector2(20, 212)
 
 [node name="FurnitureFoodCartA" parent="." instance=ExtResource("16_k8h6y")]
 position = Vector2(-643, -244)
@@ -238,10 +241,13 @@ position = Vector2(-1124, -344)
 position = Vector2(1140, -381)
 
 [node name="FurnitureGarbageCanA3" parent="." instance=ExtResource("18_8qudx")]
-position = Vector2(-833, 908)
+position = Vector2(-866, 854)
 
 [node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("18_8qudx")]
 position = Vector2(1392, 923)
 
 [node name="FurnitureCautionTape_fwd" parent="." instance=ExtResource("19_fmu77")]
-position = Vector2(153, 813)
+position = Vector2(18, 997)
+
+[node name="HealItemA" parent="." instance=ExtResource("24_ihbuc")]
+position = Vector2(2, 269)

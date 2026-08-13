@@ -26,8 +26,10 @@ script = ExtResource("1_script")
 MaxLength = 1500.0
 BeamWidth = 20.0
 GlowWidth = 60.0
+GrowDuration = 0.15
 Lifetime = 0.4
 FadeDuration = 0.3
+SpotlightDuration = 0.5
 Damage = 20
 KnockbackDistance = 50.0
 KnockbackSpeed = 1000.0
@@ -54,21 +56,5 @@ offset = Vector2(0, -10)
 [node name="Spotlight" type="Sprite2D" parent="."]
 modulate = Color(18.892157, 0, 0, 1)
 self_modulate = Color(18.892157, 0, 0, 1)
-scale = Vector2(0.8, 0.6)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight" type="Sprite2D" parent="Spotlight"]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight2" type="Sprite2D" parent="Spotlight"]
-visible = false
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
-texture = ExtResource("2_spot")
-
-[node name="Spotlight3" type="Sprite2D" parent="Spotlight"]
-modulate = Color(18.892157, 0, 0, 1)
-self_modulate = Color(18.892157, 0, 0, 1)
+scale = Vector2(0.8, 0.8)
 texture = ExtResource("2_spot")

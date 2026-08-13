@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://cqpk38oxthrr1"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ovrx3"]
+[ext_resource type="Script" uid="uid://cp63hl1ekodjm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ovrx3"]
 [ext_resource type="Resource" uid="uid://c7jdth6f5oxhn" path="res://resources/items/Furniture_B_TableRoundA.tres" id="2_ovrx3"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_swb57"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_1l8mh"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_0vipg"]
-[ext_resource type="Texture2D" uid="uid://o26hv4moeu57" path="res://assets/furnitures/hotel_scene2/TableRoundA.png" id="5_xulvd"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_0vipg"]
+[ext_resource type="Texture2D" uid="uid://bjl80txpcoi8g" path="res://assets/furnitures/hotel_scene2/TableRoundA.png" id="5_xulvd"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_swb57")
@@ -21,13 +21,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(430, 100)
+size = Vector2(350, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ovrx3"]
-size = Vector2(490, 310)
+size = Vector2(410, 310)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(480, 300)
+size = Vector2(400, 300)
 
 [node name="FurnitureTableRoundA" type="Node2D"]
 z_index = 2

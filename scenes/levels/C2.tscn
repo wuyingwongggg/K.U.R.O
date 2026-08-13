@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://dhpq7nfmc0ou"]
+[gd_scene load_steps=32 format=3 uid="uid://dhpq7nfmc0ou"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_5fh3w"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_vmsro"]
@@ -18,7 +18,6 @@
 [ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="14_iayla"]
 [ext_resource type="PackedScene" uid="uid://dnq70gu3rymcb" path="res://scenes/items/Furniture_C_chairB_fwd.tscn" id="14_yk5e0"]
 [ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="15_k3los"]
-[ext_resource type="Texture2D" uid="uid://cdjudn5m4ke4e" path="res://assets/furnitures/hotel_scene3/PodiumA.png" id="16_877mo"]
 [ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="17_ce7uw"]
 [ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="18_goeyp"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="19_bkfee"]
@@ -47,21 +46,6 @@ size = Vector2(1338, 363)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iayla"]
 size = Vector2(1295, 400)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_adxda"]
-size = Vector2(1247, 109)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_igmpq"]
-size = Vector2(80, 889)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_pylio"]
-size = Vector2(80, 882)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_beaqa"]
-size = Vector2(100, 400)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_42ca4"]
-size = Vector2(100, 400)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_qym5g"]
 vertices = PackedVector2Array(972.0625, 510.59375, 2047, -315, 2336.0703, -315, 2327.9297, 1616, 1737, 1213, 1452, 1010, 1072, -455, 2047, -455, 937, 468.8125, 937, -462, 1072, -574, -1254, -501, -1254, -574, 697, -462, -890, -464, -1130, -464, -1130, -202, -1920, -202, -2225, -310, -2225, -501, -1920, 206, -1130, 206, -1130, 585, -1255, 1120, -1735, 1120, 1737, 1616, 1452, 1213, 613, 811.8828, 1091, 1010, 613, 866, 1091, 1203.5, 968, 1203.5, 968, 1143, 548.52344, 866, 488, 1143, 543.0703, 870.5703, 488, 1606, 823.5, 1606, 823.5, 1616, 20, 1616, 20, 886.5, 539.2422, 866, -723.8906, 866, -258, 886.5, -258, 1616, -821.5, 1616, -821.5, 1563, -511, 1563, -511, 1100, -731.0703, 874.5625, -741.27344, 866, -991, 1100, -794, 866, -1076.1563, 585, -991, 1216.5, -1255, 1216.5, -1735, 1212, -2004, 1212, -2541.1094, -310, -2004, 1476, -1735, 1476, -1735, 1583, -2545.5, 1616, -1410.5, 1583, -1410.5, 1616, -794, 821.75, 697, 402, 464.6172, 597, -657.3828, 597, -890, 401.79688)
@@ -126,6 +110,7 @@ shape = SubResource("RectangleShape2D_ccheo")
 debug_color = Color(1, 0, 0, 0.19607843)
 
 [node name="EnemySpawneManager" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("4_iayla")
@@ -141,9 +126,13 @@ EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7
 EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
+ShowDebugOverlay = false
+ShowDebugOverlayInGame = false
+LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("4_iayla")
@@ -159,6 +148,9 @@ EnemySpawnOffset = Vector2(0, 100)
 ObstacleCheckMask = 7
 EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
+ShowDebugOverlay = false
+ShowDebugOverlayInGame = false
+LogSpawnEffectPositions = false
 SpawnDebugColor = Color(1, 0.8509804, 0.2509804, 0)
 DebugLineWidth = 8.0
 
@@ -187,22 +179,6 @@ texture = ExtResource("12_5fh3w")
 region_enabled = true
 region_rect = Rect2(90.670074, 0, 5167.051, 848)
 
-[node name="podium" type="Sprite2D" parent="Environments"]
-position = Vector2(29, -663)
-texture = ExtResource("16_877mo")
-
-[node name="podium" type="Sprite2D" parent="Environments/podium"]
-position = Vector2(-1, 385)
-texture = ExtResource("16_877mo")
-region_enabled = true
-region_rect = Rect2(218.33838, 372.20538, 1899.1426, 685.7946)
-
-[node name="podium" type="Sprite2D" parent="Environments/podium/podium"]
-position = Vector2(-1, 200)
-texture = ExtResource("16_877mo")
-region_enabled = true
-region_rect = Rect2(218.33838, 372.20538, 1899.1426, 685.7946)
-
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 1
 
@@ -226,46 +202,19 @@ position = Vector2(1921.5, -931)
 shape = SubResource("RectangleShape2D_iayla")
 debug_color = Color(0, 0, 0, 0.21568628)
 
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(31.5, 535.5)
-shape = SubResource("RectangleShape2D_adxda")
-debug_color = Color(0, 0, 0, 0.21568628)
-
-[node name="CollisionShape2D6" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-888, -135.5)
-shape = SubResource("RectangleShape2D_igmpq")
-debug_color = Color(0, 0, 0, 0.21568628)
-
-[node name="CollisionShape2D7" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(939, -137)
-shape = SubResource("RectangleShape2D_pylio")
-debug_color = Color(0, 0, 0, 0.21568628)
-
-[node name="CollisionShape2D8" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-740, 399)
-rotation = -0.87266463
-shape = SubResource("RectangleShape2D_beaqa")
-debug_color = Color(0, 0, 0, 0.21568628)
-
-[node name="CollisionShape2D9" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(796, 395.00003)
-rotation = 0.87266463
-shape = SubResource("RectangleShape2D_42ca4")
-debug_color = Color(0, 0, 0, 0.21568628)
-
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_qym5g")
 
 [node name="FurnitureChairB2" parent="." instance=ExtResource("13_h2mmi")]
-position = Vector2(-622, 1092)
+position = Vector2(-612, 1092)
 
 [node name="FurnitureChairB4" parent="." instance=ExtResource("13_h2mmi")]
 position = Vector2(1626, 1205)
 
 [node name="FurnitureChairB_fwd2" parent="." instance=ExtResource("14_yk5e0")]
-position = Vector2(-1366, 1112)
+position = Vector2(-1375, 1115)
 
 [node name="FurnitureChairB_fwd4" parent="." instance=ExtResource("14_yk5e0")]
 position = Vector2(857, 1135)

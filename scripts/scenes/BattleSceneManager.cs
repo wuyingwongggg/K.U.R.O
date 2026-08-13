@@ -145,7 +145,8 @@ namespace Kuros.Scenes
 			if (inv == null) return;
 
 			var transit = SaveManager.Instance.PendingInventoryTransit;
-			transit.RestoreTo(inv);
+			// 传入玩家引用：恢复家具槽时应用 OnEquip 效果（与运行时拾取一致）
+			transit.RestoreTo(inv, sp);
 
 			// 如果过渡数据中保存了 HP，也一并恢复
 			if (transit.CurrentHealth > 0)

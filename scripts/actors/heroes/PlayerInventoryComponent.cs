@@ -16,19 +16,28 @@ namespace Kuros.Actors.Heroes
     /// </summary>
     public partial class PlayerInventoryComponent : Node
     {
-        [Export(PropertyHint.Range, "1,200,1")]
-        public int BackpackSlots { get; set; } = 5;
-        [Export(PropertyHint.Range, "1,20,1")]
-        public int MaxCarriedWeaponCount { get; set; } = 5;
+        /// <summary>背包容器格数（物品溢出快捷栏后放入背包的上限）。</summary>
+        [Export(PropertyHint.Range, "1,200,1")] public int BackpackSlots { get; set; } = 5;
 
+        /// <summary>可携带武器总数上限（= 已解锁武器槽数）：初始值，Build 升级通过 UnlockWeaponSlot 增长。</summary>
+        [Export(PropertyHint.Range, "1,20,1")] public int MaxCarriedWeaponCount { get; set; } = 3;
+        /// <summary>武器槽位解锁封顶（MaxCarriedWeaponCount 增长上限，对应快捷栏槽位数）。</summary>
+        [Export(PropertyHint.Range, "1,20,1")] public int MaxCarriedWeaponSlots { get; set; } = 5;
+        private int _initialMaxCarriedWeaponCount = 3; // _Ready 时保存初始值，供 ResetWeaponSlots 还原
         public InventoryContainer Backpack { get; private set; } = null!;
         public InventoryContainer? QuickBar { get; set; }
+
+        /// <summary>空手默认武器定义（未装备任何武器时使用的武器/技能）。</summary>
         [Export] public ItemDefinition? UnarmedWeaponDefinition { get; set; }
+        
+        /// <summary>是否保留快捷栏第 1 格（索引 0）给默认武器，新拾取的物品从第 2 格开始放置。</summary>
         [Export] public bool ReserveQuickBarSlot0ForDefaultWeapon { get; set; } = false;
+        /// <summary>是否显示"获得新物品"弹窗（首次获得武器/物品时的信息弹窗；关闭后不再弹出）。</summary>
+        [Export] public bool ShowObtainedPopupEnabled { get; set; } = true;
         private const string DefaultUnarmedWeaponPath = "res://resources/items/Weapon_Unarmed_Default.tres";
 
         // 跟踪已获得的物品ID（用于判断是否是第一次获得）
-private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
+        private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
 
 		/// <summary>
 		/// 飞行中的投掷武器所占用的快捷栏槽位索引集合。
@@ -48,6 +57,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
 		public bool HasFurnitureItem => FurnitureSlotStack != null && !FurnitureSlotStack.IsEmpty
 			&& FurnitureSlotStack.Item.ItemId != "empty_item";
 
+        /// <summary>特殊装备槽配置列表（如主武器槽）；未配置时自动兜底创建默认主武器槽。</summary>
         [ExportGroup("Special Slots")]
         [Export] public Godot.Collections.Array<SpecialInventorySlotConfig> SpecialSlotConfigs
         {
@@ -120,6 +130,8 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
         {
             base._Ready();
 
+            _initialMaxCarriedWeaponCount = MaxCarriedWeaponCount; // 保存初始武器槽数（ResetWeaponSlots 还原用）
+
             Backpack = GetNodeOrNull<InventoryContainer>("Backpack") ?? CreateBackpack();
             Backpack.SlotCount = BackpackSlots;
             Backpack.InventoryChanged += OnBackpackInventoryChanged;
@@ -146,6 +158,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
 			stack.ThrowCooldownRemaining -= (float)delta;
 		}
 	}
+        /// <summary>创建背包容器（场景中无 Backpack 节点时兜底创建）。</summary>
         private InventoryContainer CreateBackpack()
         {
             var container = new InventoryContainer
@@ -158,7 +171,8 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
         }
 
         /// <summary>
-        /// 设置快捷栏容器引用
+        /// 设置快捷栏容器引用（由 HUD 在连接玩家时传入其创建的 5 槽容器）。
+        /// 绑定成功触发 QuickBarAssigned 事件。
         /// </summary>
         public void SetQuickBar(InventoryContainer quickBar)
         {
@@ -251,7 +265,8 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             if (QuickBar != null && remaining > 0)
             {
                 int quickBarStart = ReserveQuickBarSlot0ForDefaultWeapon ? 1 : 0;
-                const int quickBarEndExclusive = 5;
+                // 武器只放入已解锁的槽位（Build 升级解锁）；非武器物品可放入全部槽位
+                int quickBarEndExclusive = IsWeaponItem(item) ? GetUnlockedWeaponSlots() : 5;
 
                 // 步驟1：優先嘗試放入當前選中的快捷欄槽位
                 if (SelectedQuickBarSlot >= quickBarStart && SelectedQuickBarSlot < quickBarEndExclusive)
@@ -393,7 +408,9 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
         }
 
         /// <summary>
-        /// 清除家具槽（用于丢弃/投掷后清除）
+        /// 清除家具槽（用于丢弃/投掷后清除）。
+        /// 与 TryExtractFromFurnitureSlot 一致，清空后触发 FurnitureSlotChanged，
+        /// 供 SamplePlayer 恢复左手持有、PlayerWeaponSkillController 重估武器技能。
         /// </summary>
         public void ClearFurnitureSlot(GameActor? owner = null)
         {
@@ -402,9 +419,16 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
                 FurnitureSlotStack.Item.RemoveEffects(owner, ItemEffectTrigger.OnEquip);
             }
             FurnitureSlotStack = null;
+            FurnitureSlotChanged?.Invoke();
         }
         private void ShowItemObtainedPopup(ItemDefinition item)
         {
+            // 全局开关：关闭后跳过弹窗（不打断游戏流程）
+            if (!ShowObtainedPopupEnabled)
+            {
+                return;
+            }
+
             if (item == null)
             {
                 return;
@@ -426,16 +450,22 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             }
         }
 
+        /// <summary>直接向背包容器添加物品（不走快捷栏优先逻辑）。</summary>
         public bool TryAddItem(ItemDefinition item, int amount)
         {
             return Backpack.TryAddItem(item, amount);
         }
 
+        /// <summary>从背包容器移除指定数量的物品（按物品 ID 匹配）。</summary>
         public int RemoveItem(string itemId, int amount)
         {
             return Backpack.RemoveItem(itemId, amount);
         }
 
+        /// <summary>
+        /// 从背包指定槽位转移物品到特殊装备槽（如主武器槽）。
+        /// 槽位为空且物品满足 CanAccept 时执行；主武器槽成功会触发 WeaponEquipped。
+        /// </summary>
         public bool TryAssignSpecialSlotFromBackpack(string specialSlotId, int backpackSlotIndex, int requestedQuantity = 0)
         {
             if (!TryResolveSpecialSlot(specialSlotId, out var slot) || Backpack == null) return false;
@@ -467,11 +497,16 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return false;
         }
 
+        /// <summary>将背包指定槽位的物品装备为主武器（等价于 TryAssignSpecialSlotFromBackpack 主武器槽）。</summary>
         public bool TryEquipWeaponFromBackpack(int backpackSlotIndex)
         {
             return TryAssignSpecialSlotFromBackpack(SpecialInventorySlotIds.PrimaryWeapon, backpackSlotIndex);
         }
 
+        /// <summary>
+        /// 将特殊装备槽（如主武器）卸下放回背包。
+        /// 背包放满时部分放回失败会把剩余数量重新放回槽位。
+        /// </summary>
         public bool TryUnequipSpecialSlotToBackpack(string specialSlotId)
         {
             if (!TryResolveSpecialSlot(specialSlotId, out var slot) || Backpack == null) return false;
@@ -506,6 +541,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return false;
         }
 
+        /// <summary>从背包中移除第一个匹配指定 ID 的整组物品，并发出 ItemRemoved 通知。</summary>
         public bool RemoveFirstItem(string itemId)
         {
             if (Backpack == null) return false;
@@ -523,11 +559,13 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return false;
         }
 
+        /// <summary>卸下主武器放回背包。</summary>
         public bool TryUnequipWeaponToBackpack()
         {
             return TryUnequipSpecialSlotToBackpack(SpecialInventorySlotIds.PrimaryWeapon);
         }
 
+        /// <summary>从当前选中的背包槽位提取指定数量物品。</summary>
         public bool TryExtractFromSelectedSlot(int amount, out InventoryItemStack? extracted)
         {
             extracted = null;
@@ -535,6 +573,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return Backpack.TryExtractFromSlot(SelectedBackpackSlot, amount, out extracted);
         }
 
+        /// <summary>将物品堆叠归还到当前选中的背包槽位（部分归还时从原堆叠扣除已接受数量）。</summary>
         public bool TryReturnStackToSelectedSlot(InventoryItemStack? stack, out int acceptedQuantity)
         {
             acceptedQuantity = 0;
@@ -624,6 +663,11 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return true;
         }
 
+        /// <summary>
+        /// 消耗背包中第一个带指定标签的可食用物品：
+        /// 走耐久度扣除（DurabilityConfig）或数量扣除两种路径，
+        /// 消耗成功时触发 OnConsume 效果并发送槽位/物品栏变更信号。
+        /// </summary>
         public bool TryConsumeFirstTaggedItem(string requiredTag, GameActor? consumer)
         {
             if (Backpack == null || string.IsNullOrWhiteSpace(requiredTag))
@@ -699,6 +743,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return false;
         }
 
+        /// <summary>向当前选中的背包槽位添加物品，成功时发出 ItemPicked 通知。</summary>
         public int TryAddItemToSelectedSlot(ItemDefinition item, int quantity)
         {
             if (Backpack == null || item == null || quantity <= 0) return 0;
@@ -713,18 +758,21 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return 0;
         }
 
+        /// <summary>选中下一个背包槽位（循环）。</summary>
         public void SelectNextBackpackSlot()
         {
             if (Backpack == null || Backpack.Slots.Count == 0) return;
             SetSelectedBackpackSlot(SelectedBackpackSlot + 1);
         }
 
+        /// <summary>选中上一个背包槽位（循环）。</summary>
         public void SelectPreviousBackpackSlot()
         {
             if (Backpack == null || Backpack.Slots.Count == 0) return;
             SetSelectedBackpackSlot(SelectedBackpackSlot - 1);
         }
 
+        /// <summary>获取当前选中背包槽位的物品堆叠。</summary>
         public InventoryItemStack? GetSelectedBackpackStack()
         {
             return Backpack?.GetStack(SelectedBackpackSlot);
@@ -755,11 +803,13 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return defaultValue;
         }
 
+        /// <summary>获取当前武器定义：战斗武器（装备槽/快捷栏/背包依次）或空手默认武器。</summary>
         public ItemDefinition? GetCurrentWeaponDefinition()
         {
             return GetActiveCombatWeaponDefinition() ?? UnarmedWeaponDefinition;
         }
 
+        /// <summary>获取主武器特殊槽中的物品堆叠（未装备返回 null）。</summary>
         public InventoryItemStack? GetEquippedWeaponStack()
         {
             var slot = GetSpecialSlot(SpecialInventorySlotIds.PrimaryWeapon);
@@ -777,6 +827,9 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return stack;
         }
 
+        /// <summary>
+        /// 获取当前参与战斗的武器定义，优先级：主武器装备槽 → 快捷栏选中槽 → 背包选中槽。
+        /// </summary>
         public ItemDefinition? GetActiveCombatWeaponDefinition()
         {
             var equippedStack = GetEquippedWeaponStack();
@@ -869,6 +922,27 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return true;
         }
 
+        /// <summary>
+        /// 当前已解锁的武器快捷栏槽位数 = MaxCarriedWeaponCount（单一数据源）。
+        /// Build 升级通过 UnlockWeaponSlot 增长该值；UI 锁图与 AddItemSmart 拾取范围共用。
+        /// </summary>
+        public int GetUnlockedWeaponSlots()
+        {
+            return Mathf.Clamp(MaxCarriedWeaponCount, 1, Mathf.Max(1, MaxCarriedWeaponSlots));
+        }
+
+        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 升级时调用）。</summary>
+        public void UnlockWeaponSlot()
+        {
+            MaxCarriedWeaponCount = Mathf.Min(MaxCarriedWeaponCount + 1, Mathf.Max(1, MaxCarriedWeaponSlots));
+        }
+
+        /// <summary>重置武器槽位到初始值（新游戏开始时调用）。</summary>
+        public void ResetWeaponSlots()
+        {
+            MaxCarriedWeaponCount = Mathf.Max(1, _initialMaxCarriedWeaponCount);
+        }
+
         public int GetCarriedWeaponCount()
         {
             int total = 0;
@@ -895,42 +969,50 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return total;
         }
 
+        /// <summary>按属性 ID 汇总背包中所有物品的属性值（带默认值兜底）。</summary>
         public float GetBackpackAttributeValue(string attributeId, float baseValue = 0f)
         {
             return Backpack?.GetAttributeValue(attributeId, baseValue) ?? baseValue;
         }
 
+        /// <summary>获取背包全部物品属性的汇总快照。</summary>
         public Dictionary<string, float> GetBackpackAttributeSnapshot()
         {
             return Backpack?.GetAttributeSnapshot() ?? new Dictionary<string, float>();
         }
 
+        /// <summary>按 ID 查找特殊装备槽（如主武器槽）。</summary>
         public SpecialInventorySlot? GetSpecialSlot(string slotId)
         {
             if (string.IsNullOrWhiteSpace(slotId)) return null;
             return _specialSlots.TryGetValue(slotId, out var slot) ? slot : null;
         }
 
+        /// <summary>物品拾取通知：触发 ItemPicked 事件并调用可重写钩子（子类可扩展）。</summary>
         internal void NotifyItemPicked(ItemDefinition item)
         {
             ItemPicked?.Invoke(item);
             OnItemPicked(item);
         }
 
+        /// <summary>子类钩子：物品拾取后调用。</summary>
         protected virtual void OnItemPicked(ItemDefinition item)
         {
         }
 
+        /// <summary>物品移除通知：触发 ItemRemoved 事件并调用可重写钩子。</summary>
         internal void NotifyItemRemoved(string itemId)
         {
             ItemRemoved?.Invoke(itemId);
             OnItemRemoved(itemId);
         }
 
+        /// <summary>子类钩子：物品移除后调用。</summary>
         protected virtual void OnItemRemoved(string itemId)
         {
         }
 
+        /// <summary>解析特殊装备槽（不存在返回 false）。</summary>
         private bool TryResolveSpecialSlot(string slotId, out SpecialInventorySlot slot)
         {
             slot = null!;
@@ -940,6 +1022,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return true;
         }
 
+        /// <summary>判断物品是否为武器（Weapon 标签或 Category 为 "Weapon"，排除空物品）。</summary>
         private static bool IsWeaponItem(ItemDefinition? item)
         {
             if (item == null || string.IsNullOrWhiteSpace(item.ItemId) || item.ItemId == "empty_item")
@@ -951,6 +1034,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
                    string.Equals(item.Category, "Weapon", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>统计容器内武器数量（每格按 1 计，用于武器携带上限判断）。</summary>
         private static int CountWeaponStacksInContainer(InventoryContainer? container)
         {
             if (container == null)
@@ -975,6 +1059,10 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             return total;
         }
 
+        /// <summary>
+        /// 初始化特殊装备槽：从配置创建（如主武器槽）；未配置主武器槽时
+        /// 兜底创建默认武器槽（空手定义）。
+        /// </summary>
         private void InitializeSpecialSlots()
         {
             _specialSlots.Clear();
@@ -998,6 +1086,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             }
         }
 
+        /// <summary>初始化选中槽位为 0，并通知订阅者。</summary>
         private void InitializeSelection()
         {
             if (Backpack == null || Backpack.Slots.Count == 0)
@@ -1011,6 +1100,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             ActiveBackpackSlotChanged?.Invoke(SelectedBackpackSlot);
         }
 
+        /// <summary>设置选中背包槽位（循环取模，变化时发出 ActiveBackpackSlotChanged）。</summary>
         private void SetSelectedBackpackSlot(int index)
         {
             if (Backpack == null || Backpack.Slots.Count == 0) return;
@@ -1022,6 +1112,7 @@ private readonly HashSet<string> _obtainedItemIds = new HashSet<string>();
             ActiveBackpackSlotChanged?.Invoke(SelectedBackpackSlot);
         }
 
+        /// <summary>背包内容变化时校正选中槽位索引（越界则回退到最后一个槽位）。</summary>
         private void OnBackpackInventoryChanged()
         {
             if (Backpack == null || Backpack.Slots.Count == 0)

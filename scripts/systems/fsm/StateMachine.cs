@@ -13,15 +13,16 @@ namespace Kuros.Systems.FSM
         public State CurrentState { get; private set; } = null!;
         
         private Dictionary<string, State> _states = new Dictionary<string, State>();
-        private GameActor _actor = null!;
-        
+        private Node _actor = null!;
+
         public override void _Ready()
         {
             // Wait for owner to be ready implies we initialize manually or in Ready if actor is parent
              _actor = GetParentOrNull<GameActor>();
         }
 
-        public void Initialize(GameActor actor)
+        /// <summary>初始化状态机。参数为状态机所控制的节点（GameActor 或 P2 等自定义节点）。</summary>
+        public void Initialize(Node actor)
         {
             _actor = actor;
             

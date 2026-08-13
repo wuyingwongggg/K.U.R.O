@@ -25,7 +25,10 @@ namespace Kuros.Systems.Cutscene
         /// <summary>目标缩放级别。1.0 = 100%（无缩放），0.5 = 50%（放大），2.0 = 200%（缩小）。若为 <= 0，则不改变缩放。</summary>
         [Export] public float TargetZoom { get; set; } = 0f;
 
+        /// <summary>是否立即完成移动/缩放，无动画。</summary>
         [Export] public bool Instant { get; set; } = false;
+
+        /// <summary>移动/缩放的持续时间（秒）。若 <= 0，则立即完成。</summary>
         [Export] public float Duration { get; set; } = 1.0f;
 
         [Export] public Tween.EaseType Ease { get; set; } = Tween.EaseType.InOut;

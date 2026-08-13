@@ -11,8 +11,9 @@ namespace Kuros.Effects
     [GlobalClass]
     public partial class HealOnContact : Node
     {
-        [Export(PropertyHint.Range, "1,9999,1")]
-        public int HealAmount { get; set; } = 10;
+        /// <summary>治疗量：按目标最大血量的百分比（1-100）。</summary>
+        [Export(PropertyHint.Range, "1,100,1")]
+        public int HealAmount { get; set; } = 5;
 
         [Export]
         public string TargetGroup { get; set; } = "player";
@@ -44,8 +45,11 @@ namespace Kuros.Effects
             if (!body.IsInGroup(TargetGroup)) return;
             if (body is not GameActor actor) return;
 
-            actor.RestoreHealth(actor.CurrentHealth + HealAmount);
-            FloatingDamageTextManager.Instance.ShowFloatingHealing(HealAmount, _owner?.GlobalPosition ?? actor.GlobalPosition);
+            // 按最大血量百分比计算实际治疗量（至少 1 点）
+            int heal = Mathf.Max(1, Mathf.RoundToInt(actor.MaxHealth * HealAmount / 100f));
+
+            actor.RestoreHealth(actor.CurrentHealth + heal);
+            FloatingDamageTextManager.Instance.ShowFloatingHealing(heal, _owner?.GlobalPosition ?? actor.GlobalPosition);
             _owner?.QueueFree();
         }
     }

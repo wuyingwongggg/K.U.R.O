@@ -1,12 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://cx81yiwuaqfyq"]
+[gd_scene load_steps=6 format=3 uid="uid://cx81yiwuaqfyq"]
 
 [ext_resource type="Script" uid="uid://n1112647r6l5" path="res://scripts/ui/CoreHUD.cs" id="1_42qdb"]
-[ext_resource type="Texture2D" uid="uid://b4bnmx44vnatg" path="res://resources/ui/生命值栏.png" id="2_fmoog"]
-[ext_resource type="Texture2D" uid="uid://b65npykj1n37g" path="res://resources/ui/生命值条.png" id="2_heat_fill"]
+[ext_resource type="Texture2D" uid="uid://b3ivifwfidxpp" path="res://assets/ui/machine_bar/热度条底色.png" id="2_fmoog"]
+[ext_resource type="Texture2D" uid="uid://cv8hedbhh1l0e" path="res://assets/ui/machine_bar/热度条蒙版.png" id="3_tnvdm"]
+[ext_resource type="Texture2D" uid="uid://bebfyuvo8p5ri" path="res://assets/ui/machine_bar/热度条框.png" id="4_tnvdm"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_heat"]
-atlas = ExtResource("2_heat_fill")
-region = Rect2(416, 1992, 3184, 656)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bmvh"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="CoreHUD" type="Control" node_paths=PackedStringArray("MachinePanel", "WaiterPanel", "ThrowPanel")]
 layout_mode = 3
@@ -20,100 +20,66 @@ script = ExtResource("1_42qdb")
 MachinePanel = NodePath("MachinePanel")
 WaiterPanel = NodePath("WaiterPanel")
 ThrowPanel = NodePath("ThrowPanel")
+PlayerAnchorOffset = Vector2(-125, -20)
+SmoothSpeed = 20.0
 
 [node name="MachinePanel" type="Panel" parent="."]
 visible = false
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.8
-anchor_right = 0.04
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
+anchor_right = 0.104
+anchor_bottom = 0.185
+offset_right = 0.31999207
+offset_bottom = 0.19999695
 grow_vertical = 0
+scale = Vector2(0.33, 0.33)
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bmvh")
 metadata/_edit_use_anchors_ = true
 
-[node name="TitleLabel" type="Label" parent="MachinePanel"]
+[node name="HeatBarBorderBG" type="TextureRect" parent="MachinePanel"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.1
-anchor_right = 0.9
-anchor_bottom = 0.15
-offset_left = 5.0
-offset_top = 5.0
-offset_right = -5.0
-offset_bottom = -5.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 11
-text = "HEAT"
-horizontal_alignment = 1
-
-[node name="HealthBarBackground" type="TextureRect" parent="MachinePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -42.504883
-offset_top = 201.0
-offset_right = 5260.6953
-offset_bottom = 4141.8315
-grow_horizontal = 2
-grow_vertical = 2
 rotation = -1.5707964
-scale = Vector2(0.045, 0.03)
 texture = ExtResource("2_fmoog")
-stretch_mode = 5
 
-[node name="HeatBar" type="TextureProgressBar" parent="MachinePanel"]
+[node name="HeatFillBar" type="TextureProgressBar" parent="MachinePanel"]
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = -1.0
-offset_bottom = -1.0
-grow_vertical = 0
-value = 50.0
-tint_under = Color(0.15, 0.15, 0.15, 1)
-tint_progress = Color(1, 0.35, 0.1, 1)
-
-[node name="HeatFillBar" type="TextureProgressBar" parent="MachinePanel/HeatBar"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.317
-anchor_top = 0.061000004
-anchor_right = 0.67
-anchor_bottom = 0.91600007
-offset_left = 1.0
-offset_top = 141.0
-offset_right = 3175.3093
-offset_bottom = 655.82635
-grow_horizontal = 2
-grow_vertical = 2
+anchor_left = 0.015151517
+anchor_top = -0.015151515
+anchor_right = 0.015151519
+anchor_bottom = -0.015151519
+offset_left = -0.03030324
+offset_top = 0.030303001
+offset_right = 149.9697
+offset_bottom = 43.030304
 rotation = -1.5707964
-scale = Vector2(0.044, 0.028)
-value = 50.0
-texture_progress = SubResource("AtlasTexture_heat")
+texture_progress = ExtResource("3_tnvdm")
+metadata/_edit_use_anchors_ = true
 
-[node name="HeatValueLabel" type="Label" parent="MachinePanel/HeatBar"]
+[node name="HeatBarBorder" type="TextureRect" parent="MachinePanel"]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 5.0
-offset_right = -5.0
-offset_bottom = -5.0
+offset_right = 156.0
+offset_bottom = 49.0
+rotation = -1.5707964
+texture = ExtResource("4_tnvdm")
+metadata/_edit_use_anchors_ = true
+
+[node name="HeatValueLabel" type="Label" parent="MachinePanel"]
+layout_mode = 1
+anchors_preset = -1
+offset_top = -8.0
+offset_right = 50.0
+offset_bottom = 42.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 12
-text = "0/100"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 40
+text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 

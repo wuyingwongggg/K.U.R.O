@@ -1,0 +1,83 @@
+[gd_scene load_steps=3 format=3 uid="uid://e7mxr5xyyopy"]
+
+[ext_resource type="Script" uid="uid://cncpk1v5nf41r" path="res://scripts/ui/GameOverScreen.cs" id="1_gameover"]
+[ext_resource type="Texture2D" uid="uid://deb3e8fiay8lt" path="res://assets/ui/失败画面gameover.png" id="2_ivj3t"]
+
+[node name="GameOverScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_gameover")
+TitleTexture = ExtResource("2_ivj3t")
+TitlePath = NodePath("TitleRect")
+RetryButtonPath = NodePath("ButtonRow/RetryButton")
+MenuButtonPath = NodePath("ButtonRow/MenuButton")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.65)
+
+[node name="TitleRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.25, 0.2, 1)
+theme_override_font_sizes/font_size = 64
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="ButtonRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -232.0
+offset_top = -140.0
+offset_right = 232.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="RetryButton" type="TextureButton" parent="ButtonRow"]
+custom_minimum_size = Vector2(220, 64)
+layout_mode = 2
+
+[node name="MenuButton" type="TextureButton" parent="ButtonRow"]
+custom_minimum_size = Vector2(220, 64)
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true

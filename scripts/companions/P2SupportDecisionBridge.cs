@@ -30,9 +30,9 @@ namespace Kuros.Companions
             // Map combat intents into companion-support intents.
             string mappedIntent = intent switch
             {
-                "retreat" => "suggest_retreat",
-                "reposition" => "suggest_retreat",
-                "loot" => "suggest_pickup",
+                "retreat" => "move_to",       // 远离敌人（移动决策）
+                "reposition" => "move_to",    // 重新站位（移动决策）
+                "loot" => "fetch_weapon",     // 拾取武器（实际前往拾取并拖回）
                 "use_skill" => "trigger_support_skill",
                 "use_support_item" => "use_support_item",
                 "heal" => "use_support_item",
@@ -42,12 +42,7 @@ namespace Kuros.Companions
                 _ => intent
             };
 
-            string message = mappedIntent switch
-            {
-                "suggest_retreat" => "suggest_retreat",
-                "suggest_pickup" => "suggest_pickup",
-                _ => string.Empty
-            };
+            string message = string.Empty;
 
             return TryBuildDecisionCore(
                 mappedIntent,
@@ -130,6 +125,7 @@ namespace Kuros.Companions
                     target: target),
 
                 "suggest_pickup" => SupportDecision.Hint(
+                    // 无后缀 key：PushHint 会自动发现 dtl 中 suggest_pickup_N 变体并随机
                     message: string.IsNullOrWhiteSpace(message) ? "suggest_pickup" : message,
                     sourceRule: "ai_bridge",
                     reason: string.IsNullOrWhiteSpace(reason) ? "ai suggested pickup" : reason,

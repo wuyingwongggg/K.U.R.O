@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci4cr12pmownt"]
+
+[ext_resource type="Script" uid="uid://n7r4x9c2v5j8s" path="res://scripts/builds/machine/MachineDelayedDamageEffect.cs" id="1"]
+
+[node name="MachineDelayedDamageEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "8d4c6e1f-2a3b-4c5d-9e7f-1b2c3d4e5f6a"
+Description = "热量释放强化：buff 期间受到的所有伤害在 buff 结束时统一结算"

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dngolc07wtr11" path="res://scripts/effects/BlackHoleEffect.cs" id="1_7j3d2"]
 [ext_resource type="Shader" uid="uid://ivc0uarjx68f" path="res://shaders/materials/blackhole.gdshader" id="1_xjlwi"]
-[ext_resource type="Texture2D" uid="uid://ci4fm1v108nw6" path="res://resources/ui/武器栏框（选中）.png" id="2_7j3d2"]
+[ext_resource type="Texture2D" uid="uid://ci4fm1v108nw6" path="res://assets/ui/武器栏框（选中）.png" id="2_7j3d2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2afgt"]
 shader = ExtResource("1_xjlwi")

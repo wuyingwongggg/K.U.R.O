@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using Kuros.Managers;
+using Kuros.Systems;
 
 namespace Kuros.UI
 {
@@ -45,28 +46,59 @@ namespace Kuros.UI
 
         private void CacheNodeReferences()
         {
-            CloseButton ??= GetNodeOrNull<Button>("MainPanel/Header/CloseButton");
+            CloseButton ??= GetNodeOrNull<Button>("MainPanel/CloseButton");
             SkillsScrollContainer ??= GetNodeOrNull<ScrollContainer>("MainPanel/Body/SkillsScroll");
             SkillsContainer ??= GetNodeOrNull<VBoxContainer>("MainPanel/Body/SkillsScroll/SkillsContainer");
 
             ConnectButtonSignal(CloseButton, nameof(HideWindow));
         }
 
+        /// <summary>
+        /// 从 BuildSelectionManager 读取全部已选构筑效果，组装详情卡片数据。
+        /// 当前数值 = 堆叠数对应的层级值（TierValues[堆叠-1]）。
+        /// </summary>
         private void RefreshSkillData()
         {
             _allSkills.Clear();
 
-            _allSkills.Add(new SkillDetailData
+            var bsm = BuildSelectionManager.Instance;
+            if (bsm == null || bsm.PickedEffectIds.Count == 0)
             {
-                Id = "no_skills",
-                Name = "技能详情",
-                Description = "当前尚未拥有技能。",
-                Icon = null,
-                IsActive = false,
-                Damage = "N/A",
-                Range = "N/A",
-                ManaCost = "N/A"
-            });
+                _allSkills.Add(new SkillDetailData
+                {
+                    Id = "no_skills",
+                    Name = "技能详情",
+                    Description = "当前尚未拥有技能。",
+                    Icon = null,
+                    IsActive = false,
+                    Damage = "N/A",
+                    Range = "N/A",
+                    ManaCost = "N/A"
+                });
+                return;
+            }
+
+            foreach (var kvp in bsm.PickedEffectIds)
+            {
+                var def = bsm.FindEffectById(kvp.Key);
+                if (def == null) continue;
+
+                int stacks = kvp.Value;
+
+                _allSkills.Add(new SkillDetailData
+                {
+                    Id = def.EffectId,
+                    Name = def.DisplayName,
+                    // 模板填充：{HeatCostValues:0} 等占位符替换为 PropertyOverrides 中的实际数值
+                    Description = def.BuildDescriptionWithValues(stacks - 1),
+                    Icon = def.Icon,
+                    Rarity = def.Rarity,
+                    IsActive = false,
+                    Damage = "N/A",
+                    Range = "N/A",
+                    ManaCost = "N/A"
+                });
+            }
         }
 
         private void UpdateSkillDisplay()
@@ -93,16 +125,21 @@ namespace Kuros.UI
         {
             var card = new Panel();
             card.CustomMinimumSize = new Vector2(600, 200);
+            // 水平扩展填充：让卡片横向填满 SkillsContainer 宽度
+            card.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 
+            // 关键：card 是 Panel（非 Container），子节点必须显式锚定 FullRect 才能铺满卡片
             var margin = new MarginContainer();
-            margin.AddThemeConstantOverride("margin_left", 16);
-            margin.AddThemeConstantOverride("margin_top", 16);
-            margin.AddThemeConstantOverride("margin_right", 16);
-            margin.AddThemeConstantOverride("margin_bottom", 16);
+            margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+            margin.OffsetLeft = 16;
+            margin.OffsetTop = 16;
+            margin.OffsetRight = -16;
+            margin.OffsetBottom = -16;
             card.AddChild(margin);
 
             var vbox = new VBoxContainer();
             vbox.AddThemeConstantOverride("separation", 12);
+            vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             margin.AddChild(vbox);
 
             var headerHbox = new HBoxContainer();
@@ -126,23 +163,16 @@ namespace Kuros.UI
             var nameLabel = new Label();
             nameLabel.Text = skill.Name;
             nameLabel.AddThemeFontSizeOverride("font_size", 24);
+            // 按稀有度着色：Common 蓝 / Rare 紫 / Epic 黄
+            nameLabel.AddThemeColorOverride("font_color", GetRarityColor(skill.Rarity));
             nameVbox.AddChild(nameLabel);
-
-            var typeLabel = new Label();
-            typeLabel.Text = skill.IsActive ? "主技能" : "被动技能";
-            typeLabel.AddThemeFontSizeOverride("font_size", 18);
-            typeLabel.AddThemeColorOverride(
-                "font_color",
-                skill.IsActive
-                    ? new Color(0.3f, 0.7f, 1.0f)
-                    : new Color(1.0f, 0.7f, 0.3f));
-            nameVbox.AddChild(typeLabel);
 
             var descLabel = new RichTextLabel();
             descLabel.Text = skill.Description;
             descLabel.BbcodeEnabled = true;
             descLabel.FitContent = true;
             descLabel.CustomMinimumSize = new Vector2(0, 60);
+            descLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             vbox.AddChild(descLabel);
 
             if (skill.IsActive)
@@ -341,6 +371,15 @@ namespace Kuros.UI
             return result;
         }
 
+        /// <summary>Build 稀有度 → 名称颜色：Common 蓝 / Rare 紫 / Epic 黄 / Core 金。</summary>
+        private static Color GetRarityColor(BuildRarity rarity) => rarity switch
+        {
+            BuildRarity.Common => new Color(0.35f, 0.6f, 1.0f),   // 蓝
+            BuildRarity.Rare => new Color(0.7f, 0.4f, 1.0f),      // 紫
+            BuildRarity.Epic => new Color(1.0f, 0.85f, 0.3f),     // 黄
+            _ => Colors.White,
+        };
+
         internal class SkillDetailData
         {
             public string Id { get; set; } = string.Empty;
@@ -348,6 +387,7 @@ namespace Kuros.UI
             public string Description { get; set; } = string.Empty;
             public Texture2D? Icon { get; set; }
             public float Cooldown { get; set; } = 0.0f;
+            public BuildRarity Rarity { get; set; } = BuildRarity.Common;
             public bool IsActive { get; set; } = true;
             public string Damage { get; set; } = "0";
             public string Range { get; set; } = "0";

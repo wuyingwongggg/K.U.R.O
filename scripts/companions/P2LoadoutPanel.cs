@@ -7,7 +7,7 @@ namespace Kuros.Companions
     public partial class P2LoadoutPanel : CanvasLayer
     {
         [ExportCategory("References")]
-        [Export] public NodePath SupportExecutorPath { get; set; } = new("../SupportExecutor");
+        [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
 
         [ExportCategory("UI")]
         [Export] public NodePath PanelRootPath { get; set; } = new("Panel");

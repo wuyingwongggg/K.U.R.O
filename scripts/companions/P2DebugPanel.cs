@@ -12,8 +12,8 @@ namespace Kuros.Companions
     {
         [ExportCategory("References")]
         [Export] public NodePath CompanionControllerPath { get; set; } = new("..");
-        [Export] public NodePath SupportBrainPath { get; set; } = new("../SupportBrain");
-        [Export] public NodePath SupportExecutorPath { get; set; } = new("../SupportExecutor");
+        [Export] public NodePath SupportBrainPath { get; set; } = new("../AI_Brain");
+        [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
         [Export] public NodePath HintBubblePath { get; set; } = new("../HintBubble");
         [Export] public NodePath GameStateProviderPath { get; set; } = new("../MainCharacter/GameStateProvider");
 
@@ -194,11 +194,11 @@ namespace Kuros.Companions
 
             _brain ??= GetNodeOrNull<P2SupportBrain>(SupportBrainPath)
                 ?? GetNodeOrNull<P2SupportBrain>(NormalizeRelativePath(SupportBrainPath))
-                ?? GetParent()?.GetNodeOrNull<P2SupportBrain>("SupportBrain");
+                ?? GetParent()?.GetNodeOrNull<P2SupportBrain>("AI_Brain");
 
             _executor ??= GetNodeOrNull<P2SupportExecutor>(SupportExecutorPath)
                 ?? GetNodeOrNull<P2SupportExecutor>(NormalizeRelativePath(SupportExecutorPath))
-                ?? GetParent()?.GetNodeOrNull<P2SupportExecutor>("SupportExecutor");
+                ?? GetParent()?.GetNodeOrNull<P2SupportExecutor>("AI_Executor");
 
             _hintBubble ??= GetNodeOrNull<P2HintBubble>(HintBubblePath)
                 ?? GetNodeOrNull<P2HintBubble>(NormalizeRelativePath(HintBubblePath))

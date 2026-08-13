@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Kuros.Scenes;
 using Kuros.Systems.Inventory;
 using Kuros.Actors.Heroes;
+using Kuros.Core;
 using Kuros.Items;
 
 namespace Kuros.Managers
@@ -328,6 +329,23 @@ namespace Kuros.Managers
             PendingInventoryTransit = data;
         }
 
+        /// <summary>
+        /// 自动存档：刷新当前存档的元数据（保存时间/累计游玩时长）并写回当前槽位。
+        /// 供电梯加载、玩家死亡等自动保存点调用；无当前游戏数据时不写盘。
+        /// </summary>
+        public bool AutosaveCurrentSlot()
+        {
+            if (CurrentGameData == null)
+            {
+                GD.PushWarning("SaveManager: 无当前游戏数据，自动存档已跳过");
+                return false;
+            }
+
+            CurrentGameData.SaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            CurrentGameData.PlayTimeSeconds = _totalPlayTimeSeconds;
+            return SaveGame(CurrentGameData.SlotIndex, CurrentGameData);
+        }
+
         /// <summary>新游戏：在空槽位写入初始永久进度数据。</summary>
         public void NewGame(int slotIndex)
         {
@@ -454,8 +472,9 @@ namespace Kuros.Managers
             return data;
         }
 
-        /// <summary>将快照还原到玩家背包组件。调用方应在 _Ready 完成后调用。</summary>
-        public void RestoreTo(PlayerInventoryComponent inv)
+        /// <summary>将快照还原到玩家背包组件。调用方应在 _Ready 完成后调用。
+        /// owner 为玩家时用于恢复家具 OnEquip 效果（与运行时拾取行为一致）。</summary>
+        public void RestoreTo(PlayerInventoryComponent inv, GameActor? owner = null)
         {
             // ── 快捷栏 ──────────────────────────────────────────
             if (inv.QuickBar != null && QuickBarSlots.Count > 0)
@@ -507,7 +526,7 @@ namespace Kuros.Managers
                 {
                     // 先清空家具槽，确保 AddFurnitureItem 不会因槽已占用而失败
                     inv.ClearFurnitureSlot();
-                    inv.AddItemSmart(item, FurnitureSlot.Quantity);
+                    inv.AddItemSmart(item, FurnitureSlot.Quantity, owner);
                 }
             }
 

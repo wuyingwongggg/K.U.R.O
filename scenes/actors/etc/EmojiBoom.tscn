@@ -140,6 +140,11 @@ scale = Vector2(0.33, 0.33)
 script = ExtResource("31_script")
 BoomScene = ExtResource("32_boom_b")
 BoomDmgScene = ExtResource("33_boom_dmg")
+BoomSceneOverrides = Dictionary[String, Variant]({
+"ScaleSpawnWithSelf": true,
+"SpawnDelay": 0.2,
+"scale": Vector2(1, 1)
+})
 EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
 Duration = 1.3
 

@@ -62,7 +62,7 @@ namespace Kuros.UI
             CloseButton ??= GetNodeOrNull<Button>("MainPanel/Header/CloseButton");
             PassiveSkillsContainer ??= GetNodeOrNull<VBoxContainer>("MainPanel/Body/SkillsVBox/PassiveSkillsSection/PassiveSkillsScroll/PassiveSkillsContainer");
             PassiveSkillsTitle ??= GetNodeOrNull<Label>("MainPanel/Body/SkillsVBox/PassiveSkillsSection/PassiveSkillsTitle");
-            DetailButton ??= GetNodeOrNull<Button>("MainPanel/Body/DetailButton");
+            DetailButton ??= GetNodeOrNull<Button>("MainPanel/DetailButton");
             if (DetailButton != null) DetailButton.FocusMode = Control.FocusModeEnum.None;
             ConnectButtonSignal(CloseButton, nameof(HideWindow));
             ConnectButtonSignal(DetailButton, nameof(OnDetailButtonPressed));
