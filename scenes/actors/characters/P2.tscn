@@ -29,7 +29,7 @@ shader_parameter/alpha = 0.4
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tiaay"]
 size = Vector2(200, 250)
 
-[node name="CharacterBody2D" type="CharacterBody2D"]
+[node name="P2" type="CharacterBody2D"]
 z_index = 2
 y_sort_enabled = true
 scale = Vector2(0.33, 0.33)

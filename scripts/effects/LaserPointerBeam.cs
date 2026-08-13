@@ -13,11 +13,7 @@ namespace Kuros.Effects
     [GlobalClass]
     public partial class LaserPointerBeam : ActorEffect
     {
-        /// <summary>延迟射出时长（秒）：施加后整体隐藏（光束+光点），到点才显示并开始生长/淡入。
-        /// 延迟是纯前置时间，不占用 Duration（光束显示时长）与 SpotlightDuration（光点时长）。</summary>
-        [Export(PropertyHint.Range, "0,2,0.05")] public float DelaySeconds { get; set; } = 0f;
-        /// <summary>光束最大长度（像素，无遮挡时的长度）。</summary>
-        [Export(PropertyHint.Range, "100,3000,10")] public float BeamLength { get; set; } = 1200f;
+        [ExportCategory("Nodes")]
         /// <summary>命中检测射线节点路径（RayCast2D，决定光束长度）。</summary>
         [Export] public NodePath RayCastPath { get; set; } = new("RayCast2D");
         /// <summary>光晕层节点路径（Sprite2D，宽 GlowWidth）。</summary>
@@ -26,6 +22,15 @@ namespace Kuros.Effects
         [Export] public NodePath BeamSpritePath { get; set; } = new("BeamSprite");
         /// <summary>发光点节点路径（Sprite2D，独立生命周期）。</summary>
         [Export] public NodePath SpotlightPath { get; set; } = new("Spotlight");
+
+        [ExportCategory("Delay")]
+        /// <summary>延迟射出时长（秒）：施加后整体隐藏（光束+光点），到点才显示并开始生长/淡入。
+        /// 延迟是纯前置时间，不占用 Duration（光束显示时长）与 SpotlightDuration（光点时长）。</summary>
+        [Export(PropertyHint.Range, "0,2,0.05")] public float DelaySeconds { get; set; } = 0f;
+
+        [ExportCategory("Beam")]
+        /// <summary>光束最大长度（像素，无遮挡时的长度）。</summary>
+        [Export(PropertyHint.Range, "100,3000,10")] public float BeamLength { get; set; } = 1200f;
         /// <summary>核心光束宽度（像素）。</summary>
         [Export(PropertyHint.Range, "1,200,1")] public float BeamWidth { get; set; } = 20f;
         /// <summary>光晕宽度（像素）。</summary>
@@ -34,9 +39,13 @@ namespace Kuros.Effects
         [Export] public Vector2 BeamOffset { get; set; } = new Vector2(80f, -30f);
         /// <summary>生长动画时长（秒）：从 0 生长到命中长度。</summary>
         [Export(PropertyHint.Range, "0,1,0.05")] public float GrowDuration { get; set; } = 0.12f;
-        /// <summary>淡出时长（秒）：到期前开始 shader fade。</summary>
+        /// <summary>光束淡出时长（秒）：到期前开始 shader fade。</summary>
         [Export(PropertyHint.Range, "0,1,0.05")] public float FadeDuration { get; set; } = 0.25f;
-        /// <summary>发光点（Spotlight）独立存活时长（秒）：光束结束后光点继续存在并自毁（不受 Duration 限制）。</summary>
+        /// <summary>攻击结束收尾时长（秒）：玩家退出攻击状态后光束与光点同步快速淡出销毁，不残留跟随朝向反转。</summary>
+        [Export(PropertyHint.Range, "0,1,0.05")] public float EndingFadeDuration { get; set; } = 0.18f;
+
+        [ExportCategory("Spotlight")]
+        /// <summary>发光点独立存活时长（秒）：光束结束后光点继续存在并自毁（不受 Duration 限制）。</summary>
         [Export(PropertyHint.Range, "0.1,10,0.1")] public float SpotlightDuration { get; set; } = 1.6f;
         /// <summary>发光点淡入时长（秒）：生成时从透明渐显。</summary>
         [Export(PropertyHint.Range, "0,1,0.05")] public float SpotlightFadeIn { get; set; } = 0.15f;
@@ -54,6 +63,8 @@ namespace Kuros.Effects
         private float _currentLength;     // 当前光束长度（生长动画插值）
         private bool _emitted;            // 是否已射出（延迟结束后置位，首次显示特效）
         private float _configDuration;    // 配置的光束显示时长（不含延迟；基类 Duration 延迟期间被临时放大）
+        private bool _ending;             // 攻击状态结束收尾中（锁定朝向 + 快速淡出）
+        private float _endingElapsed;     // 收尾已进行时长
 
         /// <summary>施加时：重挂到角色自身（Node2D，有变换）保证位置继承玩家；
         /// 否则留在 Node 类型的 EffectController 下会丢失玩家位置，生成在场景原点附近。</summary>
@@ -130,6 +141,41 @@ namespace Kuros.Effects
             base.OnTick(delta);
             _lifeElapsed += (float)delta;
 
+            // 攻击状态感知收尾：玩家离开 Attack 状态（攻击结束/打断/dash/后摇移动）→
+            // 锁定朝向快速淡出，防止残留激光跟随 FacingRight 反转
+            if (!_ending && ShouldEndWithAttack())
+            {
+                _ending = true;
+                _endingElapsed = 0f;
+                if (!_emitted)
+                {
+                    // 延迟期被打断：无可见内容，直接移除（跳过光点分离）
+                    if (_spotlight != null) { _spotlight.QueueFree(); _spotlight = null; }
+                    Controller?.RemoveEffect(this);
+                    return;
+                }
+            }
+
+            if (_ending)
+            {
+                _endingElapsed += (float)delta;
+                float t = Mathf.Clamp(1f - _endingElapsed / Mathf.Max(EndingFadeDuration, 0.01f), 0f, 1f);
+                _glowMat?.SetShaderParameter("fade", t);
+                _beamMat?.SetShaderParameter("fade", t);
+                if (_spotlight != null)
+                {
+                    var sc = _spotlight.Modulate;
+                    _spotlight.Modulate = new Color(sc.R, sc.G, sc.B, t);
+                }
+                if (_endingElapsed >= EndingFadeDuration)
+                {
+                    // 收尾结束：光点一并销毁，不分离残留
+                    if (_spotlight != null) { _spotlight.QueueFree(); _spotlight = null; }
+                    Controller?.RemoveEffect(this);
+                }
+                return;
+            }
+
             // 延迟阶段：整体隐藏，只跟随朝向（光束出现时朝向已正确），到点首次显示
             if (_lifeElapsed < DelaySeconds)
             {
@@ -174,6 +220,13 @@ namespace Kuros.Effects
         {
             DetachSpotlight();
             base.OnRemoved();
+        }
+
+        /// <summary>玩家是否已退出攻击状态（无状态机的 actor 不做感知，保持原生命周期）。</summary>
+        private bool ShouldEndWithAttack()
+        {
+            if (Actor == null || Actor.StateMachine == null) return false;
+            return Actor.StateMachine.CurrentState?.Name != "Attack";
         }
 
         /// <summary>朝向跟随：朝右 → 光束伸向右（Rotation 0）；朝左 → 旋转 180° 镜像 + 偏移取反侧。</summary>

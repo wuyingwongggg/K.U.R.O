@@ -40207,9 +40207,8 @@
 		],
 		"events": [
 			{ "time": 0.6, "name": "hit" },
-			{ "time": 0.8, "name": "hit" },
-			{ "time": 1.0, "name": "hit" },
-			{ "time": 1.2, "name": "hit" },
+			{ "time": 0.85, "name": "hit" },
+			{ "time": 1.15, "name": "hit" },
 			{ "time": 1.4, "name": "hit" }
 		]
 	},
@@ -42996,8 +42995,9 @@
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_bwd": {
@@ -45777,8 +45777,9 @@
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_LaserPointer_fwd": {
@@ -48597,8 +48598,9 @@
 			}
 		],
 		"events": [
-			{ "time": 0.7, "name": "hit" },
-			{ "time": 1.0, "name": "hit" }
+			{ "time": 0.61, "name": "hit" },
+			{ "time": 0.93, "name": "hit" },
+			{ "time": 1.25, "name": "hit" }
 		]
 	},
 	"Weapon_Stab_Umbrella": {

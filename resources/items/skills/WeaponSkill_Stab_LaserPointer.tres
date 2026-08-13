@@ -19,9 +19,9 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("1_g83ek")
 Trigger = 1
 EffectScene = ExtResource("4_laserbeam")
-Notes = "天蓝激光（跟随朝向反转）"
+Notes = "激光（跟随朝向反转）"
 PropertyOverrides = Dictionary[String, Variant]({
-"Duration": 0.9
+"Duration": 1.25
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
@@ -32,6 +32,7 @@ DisplayName = "激光笔攻击"
 SkillType = 1
 AnimationName = "Weapon_Stab_LaserPointer"
 DamageMultiplier = 0.6
+ShowHitboxDebug = false
 Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt"), SubResource("Resource_laserbeam")])
 WarmupDuration = 0.3500000000000001
 ActiveDuration = 0.95

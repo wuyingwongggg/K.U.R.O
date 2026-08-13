@@ -1091,7 +1091,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public void PerformAttackCheck()
 	{
 		AttackTimer = AttackCooldown;
-		GameLogger.Info(nameof(SamplePlayer), "=== Player attacking frame! ===");
+		// GameLogger.Info(nameof(SamplePlayer), "=== Player attacking frame! ===");
 
 		var activeAttackArea = ResolveAttackAreaForHitDetection(out string areaSource);
 		if (activeAttackArea == null)
@@ -1100,18 +1100,18 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			return;
 		}
 
-		GameLogger.Info(nameof(SamplePlayer), $"AttackArea Source: {areaSource}, Node: {activeAttackArea.GetPath()}");
-		GameLogger.Info(nameof(SamplePlayer), $"AttackArea Detail: {DescribeAttackArea(activeAttackArea)}");
+		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Source: {areaSource}, Node: {activeAttackArea.GetPath()}");
+		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Detail: {DescribeAttackArea(activeAttackArea)}");
 
 		int hitCount = ApplyDamageWithArea(AttackDamage, (target, isFallback) =>
 		{
-			string suffix = isFallback ? " (fallback)" : string.Empty;
-			GameLogger.Info(nameof(SamplePlayer), $"Hit enemy{suffix}: {target.Name}");
+			// string suffix = isFallback ? " (fallback)" : string.Empty;
+			// GameLogger.Info(nameof(SamplePlayer), $"Hit enemy{suffix}: {target.Name}");
 		});
 
 		if (hitCount == 0)
 		{
-			GameLogger.Info(nameof(SamplePlayer), "No enemies hit!");
+			// GameLogger.Info(nameof(SamplePlayer), "No enemies hit!");
 		}
 	}
 
@@ -1124,12 +1124,12 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 
 		int hitCount = ApplyDamageWithSpecificArea(activeAttackArea, damageAmount, onHit);
-		GameLogger.Info(nameof(SamplePlayer), $"AttackArea hit test: {activeAttackArea.GetPath()} -> {hitCount} hit(s)");
+		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea hit test: {activeAttackArea.GetPath()} -> {hitCount} hit(s)");
 		if (hitCount == 0 && AttackArea != null && activeAttackArea != AttackArea)
 		{
-			GameLogger.Info(nameof(SamplePlayer), $"WeaponArea produced 0 hit(s), fallback to PlayerArea: {AttackArea.GetPath()}");
+			// GameLogger.Info(nameof(SamplePlayer), $"WeaponArea produced 0 hit(s), fallback to PlayerArea: {AttackArea.GetPath()}");
 			hitCount = ApplyDamageWithSpecificArea(AttackArea, damageAmount, onHit);
-			GameLogger.Info(nameof(SamplePlayer), $"PlayerArea fallback hit test: {AttackArea.GetPath()} -> {hitCount} hit(s)");
+			// GameLogger.Info(nameof(SamplePlayer), $"PlayerArea fallback hit test: {AttackArea.GetPath()} -> {hitCount} hit(s)");
 		}
 
 		return hitCount;
@@ -1254,7 +1254,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 
 		if (hitCount == 0)
 		{
-			LogNoHitDiagnostics(attackArea);
+			// LogNoHitDiagnostics(attackArea);
 		}
 
 		DealDamageToDestructiblesViaShape(attackArea, damageAmount);
@@ -1582,32 +1582,33 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		return duplicated;
 	}
 
-	private void LogNoHitDiagnostics(Area2D attackArea)
-	{
-		var overlapAreas = attackArea.GetOverlappingAreas();
-		foreach (Node node in overlapAreas)
-		{
-			if (node is not Area2D area)
-			{
-				continue;
-			}
+	// 调试诊断方法（当前已注释调用，保留待排查命中问题时使用）
+	// private void LogNoHitDiagnostics(Area2D attackArea)
+	// {
+	// 	var overlapAreas = attackArea.GetOverlappingAreas();
+	// 	foreach (Node node in overlapAreas)
+	// 	{
+	// 		if (node is not Area2D area)
+	// 		{
+	// 			continue;
+	// 		}
 
-			bool actorResolved = TryResolveActorFromHitArea(area, out GameActor resolvedActor);
-			string actorName = actorResolved ? resolvedActor.Name : "None";
-			bool isEnemy = actorResolved && IsValidAttackTarget(resolvedActor);
-			bool areaHit = actorResolved && resolvedActor.IsHitByArea(attackArea);
-			GameLogger.Info(nameof(SamplePlayer), $"NoHit Diagnose Area: {area.GetPath()}, actor={actorName}, validEnemy={isEnemy}, actorHitCheck={areaHit}");
-		}
+	// 		bool actorResolved = TryResolveActorFromHitArea(area, out GameActor resolvedActor);
+	// 		string actorName = actorResolved ? resolvedActor.Name : "None";
+	// 		bool isEnemy = actorResolved && IsValidAttackTarget(resolvedActor);
+	// 		bool areaHit = actorResolved && resolvedActor.IsHitByArea(attackArea);
+	// 		GameLogger.Info(nameof(SamplePlayer), $"NoHit Diagnose Area: {area.GetPath()}, actor={actorName}, validEnemy={isEnemy}, actorHitCheck={areaHit}");
+	// 	}
 
-		var overlapBodies = attackArea.GetOverlappingBodies();
-		foreach (Node body in overlapBodies)
-		{
-			string name = body.Name;
-			bool isActor = body is GameActor;
-			bool isEnemy = isActor && IsValidAttackTarget((GameActor)body);
-			GameLogger.Info(nameof(SamplePlayer), $"NoHit Diagnose Body: {name}, isGameActor={isActor}, validEnemy={isEnemy}");
-		}
-	}
+	// 	var overlapBodies = attackArea.GetOverlappingBodies();
+	// 	foreach (Node body in overlapBodies)
+	// 	{
+	// 		string name = body.Name;
+	// 		bool isActor = body is GameActor;
+	// 		bool isEnemy = isActor && IsValidAttackTarget((GameActor)body);
+	// 		GameLogger.Info(nameof(SamplePlayer), $"NoHit Diagnose Body: {name}, isGameActor={isActor}, validEnemy={isEnemy}");
+	// 	}
+	// }
 
 	protected virtual bool IsValidAttackTarget(GameActor candidate)
 	{

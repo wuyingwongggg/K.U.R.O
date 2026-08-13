@@ -6,16 +6,43 @@ namespace Kuros.Fx
 {
 	public partial class LaserBeamA : Node2D, IFacingDirectional
 	{
-		[ExportCategory("Beam")]
-		[Export] public float MaxLength = 3000f;
-		[Export(PropertyHint.Range, "1,2000,1")] public float BeamWidth = 32f;
-		[Export(PropertyHint.Range, "1,2000,1")] public float GlowWidth = 96f;
-		[Export(PropertyHint.Range, "0,5,0.05")] public float GrowDuration = 0.1f;
-		[Export(PropertyHint.Range, "0,3000,10")] public float MinLength = 0f;
+		[ExportCategory("Nodes")]
+		/// <summary>命中检测射线节点路径（RayCast2D，决定光束长度）。</summary>
+		[Export] public NodePath RayCastPath { get; set; } = new("RayCast2D");
+		/// <summary>光晕层节点路径（Sprite2D）。</summary>
+		[Export] public NodePath GlowSpritePath { get; set; } = new("GlowSprite");
+		/// <summary>核心光束层节点路径（Sprite2D）。</summary>
+		[Export] public NodePath BeamSpritePath { get; set; } = new("BeamSprite");
+		/// <summary>发光点节点路径（Sprite2D，独立生命周期）。</summary>
+		[Export] public NodePath SpotlightPath { get; set; } = new("Spotlight");
 
-		[ExportCategory("Timing")]
+		[ExportCategory("Delay")]
+		/// <summary>延迟射出时长（秒）：施加后整体隐藏，到点才显示。纯前置时间，不占用 Lifetime 与 SpotlightDuration。</summary>
+		[Export(PropertyHint.Range, "0,2,0.05")] public float DelaySeconds { get; set; } = 0f;
+
+		[ExportCategory("Beam")]
+		/// <summary>光束最大长度（像素，无遮挡时的长度）。</summary>
+		[Export] public float MaxLength = 3000f;
+		/// <summary>核心光束宽度（像素）。</summary>
+		[Export(PropertyHint.Range, "1,2000,1")] public float BeamWidth = 32f;
+		/// <summary>光晕宽度（像素）。</summary>
+		[Export(PropertyHint.Range, "1,2000,1")] public float GlowWidth = 96f;
+		/// <summary>生长动画时长（秒）：从 MinLength 生长到命中长度。</summary>
+		[Export(PropertyHint.Range, "0,5,0.05")] public float GrowDuration = 0.1f;
+		/// <summary>初始长度（像素，生长起点）。</summary>
+		[Export(PropertyHint.Range, "0,3000,10")] public float MinLength = 0f;
+		/// <summary>光束总存活时长（秒，不含 Delay）。</summary>
 		[Export] public float Lifetime = 0.45f;
+		/// <summary>光束淡出时长（秒）：到期前 shader fade。</summary>
 		[Export] public float FadeDuration = 0.15f;
+
+		[ExportCategory("Spotlight")]
+		/// <summary>发光点独立存活时长（秒）：光束结束后光点继续存在并自毁。</summary>
+		[Export(PropertyHint.Range, "0.1,10,0.1")] public float SpotlightDuration { get; set; } = 1.6f;
+		/// <summary>发光点淡入时长（秒）：射出时从透明渐显。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float SpotlightFadeIn { get; set; } = 0.15f;
+		/// <summary>发光点淡出时长（秒）：分离后到点前渐隐再销毁。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float SpotlightFadeOut { get; set; } = 0.3f;
 
 		[ExportCategory("Damage")]
 		[Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -45,13 +72,16 @@ namespace Kuros.Fx
 		private bool _hasDamaged;
 		private Node2D? _cachedPlayer;
 		private GameActor? _attacker;
+		private float _emitElapsed;      // 射出后已过时间（延迟期间为负/0，生长/淡入基于此）
+		private bool _emitted;           // 是否已射出（延迟结束置位，首次显示）
 
 		public override void _Ready()
 		{
-			_ray = GetNodeOrNull<RayCast2D>("RayCast2D");
-			_glowSprite = GetNodeOrNull<Sprite2D>("GlowSprite");
-			_beamSprite = GetNodeOrNull<Sprite2D>("BeamSprite");
-			_spotlight = GetNodeOrNull<Sprite2D>("Spotlight");
+			// 节点引用全部走导出路径（可重命名场景节点，无需改脚本）
+			_ray = RayCastPath != null && !RayCastPath.IsEmpty ? GetNodeOrNull<RayCast2D>(RayCastPath) : null;
+			_glowSprite = GlowSpritePath != null && !GlowSpritePath.IsEmpty ? GetNodeOrNull<Sprite2D>(GlowSpritePath) : null;
+			_beamSprite = BeamSpritePath != null && !BeamSpritePath.IsEmpty ? GetNodeOrNull<Sprite2D>(BeamSpritePath) : null;
+			_spotlight = SpotlightPath != null && !SpotlightPath.IsEmpty ? GetNodeOrNull<Sprite2D>(SpotlightPath) : null;
 
 			if (_ray == null || _beamSprite == null)
 			{
@@ -89,10 +119,28 @@ namespace Kuros.Fx
 			ResolveAttacker();
 			_timer = Lifetime;
 			_pendingAutoAim = AutoAimAtPlayer;
+			_emitElapsed = 0f;
+			_emitted = false;
+
+			// 延迟射出：DelaySeconds 内整体隐藏（光束+光点），到点才显示
+			if (DelaySeconds > 0f)
+				Visible = false;
+			else
+				_emitted = true;
 		}
 
 		public override void _Process(double delta)
 		{
+			// 延迟阶段：整体隐藏，不消耗 Lifetime（纯前置时间），到点首次显示
+			if (!_emitted)
+			{
+				_emitElapsed += (float)delta;
+				if (_emitElapsed < DelaySeconds) return;
+				_emitted = true;
+				Visible = true;
+				_pendingAutoAim = AutoAimAtPlayer;
+			}
+
 			if (_pendingAutoAim)
 			{
 				_pendingAutoAim = false;
@@ -110,9 +158,16 @@ namespace Kuros.Fx
 			}
 
 			_timer -= (float)delta;
-			if (_timer <= 0f) { QueueFree(); return; }
+			if (_timer <= 0f)
+			{
+				DetachSpotlight(); // 光束结束：光点分离继续存活（独立生命周期）
+				QueueFree();
+				return;
+			}
 
-			// 淡出：shader 通过 uniform fade 控制，spotlight 用 modulate.a
+			// 淡出：shader 通过 uniform fade 控制（仅光束层）。
+			// Spotlight 不参与光束淡出——它有独立生命周期（SpotlightDuration/淡入淡出），
+			// 否则 FadeDuration ≥ Lifetime 时光点从第一帧就被衰减到不可见，结束后又"突然出现"。
 			if (_timer < FadeDuration && FadeDuration > 0f)
 			{
 				float t = _timer / FadeDuration;
@@ -120,11 +175,14 @@ namespace Kuros.Fx
 					gm.SetShaderParameter("fade", t);
 				if (_beamSprite?.Material is ShaderMaterial bm)
 					bm.SetShaderParameter("fade", t);
-				if (_spotlight != null)
-				{
-					var c = _spotlight.Modulate;
-					_spotlight.Modulate = new Color(c.R, c.G, c.B, c.A * t);
-				}
+			}
+
+			// 光点淡入（射出后前 SpotlightFadeIn 秒 0 → 1），完成后保持全亮
+			if (_spotlight != null && SpotlightFadeIn > 0f)
+			{
+				var sc = _spotlight.Modulate;
+				float fadeInT = Mathf.Clamp((Lifetime - _timer) / SpotlightFadeIn, 0f, 1f);
+				_spotlight.Modulate = new Color(sc.R, sc.G, sc.B, fadeInT);
 			}
 
 			UpdateBeam();
@@ -132,6 +190,50 @@ namespace Kuros.Fx
 			// 生长完成后触发伤害，与视觉同步
 			if (!_hasDamaged && Lifetime - _timer >= GrowDuration)
 				TryDamagePlayer();
+		}
+
+		/// <summary>
+		/// 分离发光点：光束结束时把 Spotlight 重新挂到当前父级，保持全局位置跟随移动，
+		/// 重新亮起（光束淡出可能已压低 alpha），再存活 SpotlightDuration 秒（最后 SpotlightFadeOut 淡出）后自毁。
+		/// </summary>
+		private void DetachSpotlight()
+		{
+			if (_spotlight == null || !IsInstanceValid(_spotlight)) return;
+
+			var newParent = GetParent();
+			if (newParent == null) return;
+
+			Vector2 globalPos = _spotlight.GlobalPosition;
+			_spotlight.GetParent()?.RemoveChild(_spotlight);
+			newParent.AddChild(_spotlight);
+			_spotlight.GlobalPosition = globalPos;
+
+			var c = _spotlight.Modulate;
+			_spotlight.Modulate = new Color(c.R, c.G, c.B, 1f);
+
+			var spotlight = _spotlight;
+			_spotlight = null;
+			var tree = GetTree();
+			if (tree == null) return;
+
+			float fadeOut = Mathf.Max(0f, SpotlightFadeOut);
+			float delay = Mathf.Max(0f, SpotlightDuration - fadeOut);
+			tree.CreateTimer(delay).Timeout += () =>
+			{
+				if (!IsInstanceValid(spotlight)) return;
+				if (fadeOut <= 0f)
+				{
+					spotlight.QueueFree();
+					return;
+				}
+				var tween = tree.CreateTween();
+				tween.TweenProperty(spotlight, "modulate:a", 0f, fadeOut);
+				tween.TweenCallback(Callable.From(() =>
+				{
+					if (IsInstanceValid(spotlight))
+						spotlight.QueueFree();
+				}));
+			};
 		}
 
 		public void AimHorizontalWithVerticalTilt(Vector2 globalTarget)

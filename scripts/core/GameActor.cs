@@ -56,6 +56,11 @@ namespace Kuros.Core
 		[Export(PropertyHint.Range, "0,1,0.01,or_greater")]
 		public float DamageFlashDuration { get; set; } = 0.1f;
 
+		[ExportCategory("Damage Merge")]
+		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（扣血/日志/闪白/Hit 状态/事件只执行一次），
+		/// 避免极短时间内大量多段伤害逐段放大主线程开销（日志、Spine 闪白、受击动画、事件广播）。0 = 禁用合并。</summary>
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.1f;
+
 		// Exposed state for States to use
 		public int CurrentHealth { get; protected set; }
 		public int CurrentShield { get; private set; }
@@ -86,6 +91,14 @@ namespace Kuros.Core
 		private Area2D? _cachedHitArea;
 		private bool _hitAreaResolved;
 		private ulong _lastDamageTakenAtMs = 0;
+
+		// 伤害合并窗口状态：窗口内多段伤害累计，到期统一结算
+		private int _pendingDamageTotal = 0;
+		private GameActor? _pendingAttacker;
+		private Vector2? _pendingOrigin;
+		private Events.DamageSource _pendingSource;
+		private float _damageMergeTimer = 0f;
+		private bool _hasPendingDamage = false;
 
 		public bool IsDeathSequenceActive => _deathStarted && !_deathFinalized;
 		public bool IsDead => _deathFinalized;
@@ -242,7 +255,17 @@ namespace Kuros.Core
 		public override void _PhysicsProcess(double delta)
 		{
 			if (AttackTimer > 0) AttackTimer -= (float)delta;
-			
+
+			// 伤害合并窗口到期：统一结算累计伤害（每帧递减计时器，窗口结束只结算一次）
+			if (_hasPendingDamage)
+			{
+				_damageMergeTimer -= (float)delta;
+				if (_damageMergeTimer <= 0f)
+				{
+					FlushPendingDamage();
+				}
+			}
+
 			// FSM handles logic, but we can keep global helpers here
 			// If using FSM, ensure it is processed either here or by itself (Node process)
 			// StateMachine._PhysicsProcess is called automatically by Godot if it's in the tree
@@ -321,15 +344,61 @@ namespace Kuros.Core
 				}
 			}
 
+			// 保持实时更新"最近受击时刻"，AI 的受击判断（GetSecondsSinceLastDamageTaken）不因合并延迟而失真
+			_lastDamageTakenAtMs = Time.GetTicksMsec();
+
+			// 伤害合并窗口：窗口内多段伤害累计，到期统一结算（扣血/通知/日志/闪白/Hit 状态/事件只执行一次）。
+			// 极短时间内大量多段伤害（如连击多段判定）不再逐段放大主线程开销。
+			if (DamageMergeWindow > 0f)
+			{
+				_pendingDamageTotal += damage;
+				_pendingAttacker ??= attacker;
+				_pendingOrigin ??= attackOrigin;
+				_pendingSource = damageSource;
+				_damageMergeTimer = DamageMergeWindow;
+				_hasPendingDamage = true;
+
+				// 累计已达致死量 → 立即结算，避免死亡反馈延迟
+				if (CurrentHealth - _pendingDamageTotal <= 0)
+				{
+					FlushPendingDamage();
+				}
+				return;
+			}
+
+			ApplyPendingDamage(damage, attackOrigin, attacker, damageSource);
+		}
+
+		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。</summary>
+		private void FlushPendingDamage()
+		{
+			if (!_hasPendingDamage) return;
+
+			int total = _pendingDamageTotal;
+			var attacker = _pendingAttacker;
+			var origin = _pendingOrigin;
+			var source = _pendingSource;
+
+			_hasPendingDamage = false;
+			_pendingDamageTotal = 0;
+			_pendingAttacker = null;
+			_pendingOrigin = null;
+			_damageMergeTimer = 0f;
+
+			ApplyPendingDamage(total, origin, attacker, source);
+		}
+
+		/// <summary>实际扣血与全部副作用（原 TakeDamage 扣血后的部分，合并窗口内仅执行一次）。</summary>
+		private void ApplyPendingDamage(int damage, Vector2? attackOrigin, GameActor? attacker, Events.DamageSource damageSource)
+		{
 			CurrentHealth -= damage;
 			CurrentHealth = Mathf.Max(CurrentHealth, 0);
-			_lastDamageTakenAtMs = Time.GetTicksMsec();
 			NotifyHealthChanged();
 			DamageTaken?.Invoke(damage);
 			AnyDamageTaken?.Invoke(this, attacker, damage);
 
-			GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");
-			
+			//GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");
+
 			FlashDamageEffect();
 
 			if (CurrentHealth <= 0)
