@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 using Kuros.Actors.Heroes.States;
 using Kuros.Core;
 using Kuros.Systems.Inventory;
@@ -19,6 +20,10 @@ namespace Kuros.UI
 	[Export] public ProgressBar HealthBar { get; private set; } = null!;
 	// 生命值条内部用于遮罩数值的进度条（新节点），不改变 HealthBar 本身的贴图
 	[Export] public TextureProgressBar? HealthFillBar { get; private set; } = null!;
+	// 虚血条（深红）：受伤时停留后缓慢下降；治疗时停留后缓慢上升
+	[Export] public TextureProgressBar? HurtBar { get; private set; } = null!;
+	// 恢复条（青色）：治疗时立即显示恢复量（露出青色段），受伤时与红条同步下降
+	[Export] public TextureProgressBar? RecoveryBar { get; private set; } = null!;
 	// 叠加在生命条上的数字显示
 	[Export] public Label? HealthValueLabel { get; private set; } = null!;
 	[Export] public Label ScoreLabel { get; private set; } = null!;
@@ -57,6 +62,8 @@ namespace Kuros.UI
 		private int _currentHealth = 100;
 		private int _maxHealth = 100;
 		private int _score = 0;
+		// 虚血组件（玩家根节点下的 GhostHealthComponent，驱动三层血条动画）
+		private GhostHealthComponent? _ghostComponent;
 
 		// 物品栏相关
 		private InventoryWindow? _inventoryWindow;
@@ -114,7 +121,18 @@ namespace Kuros.UI
 				HealthFillBar = GetNodeOrNull<TextureProgressBar>("HealthBar/HealthFillBar");
 			}
 
+			if (HurtBar == null)
+			{
+				HurtBar = GetNodeOrNull<TextureProgressBar>("HealthBar/HurtBar");
+			}
+
+			if (RecoveryBar == null)
+			{
+				RecoveryBar = GetNodeOrNull<TextureProgressBar>("HealthBar/RecoveryBar");
+			}
+
 			ConfigureHealthFillBar();
+			ConfigureGhostBars();
 
 			if (HealthValueLabel == null)
 			{
@@ -523,12 +541,12 @@ namespace Kuros.UI
 				HealthBar.Value = safeHealth;
 			}
 
-			// 使用单独的遮罩进度条来表现生命值长度
+			// 使用单独的遮罩进度条来表现生命值长度（动画值由 GhostHealthComponent 驱动，此处只同步基线）
 			if (HealthFillBar != null)
 			{
 				HealthFillBar.MinValue = 0;
 				HealthFillBar.MaxValue = safeMaxHealth;
-				HealthFillBar.Value = safeHealth;
+				HealthFillBar.Value = _ghostComponent != null ? _ghostComponent.FillValue : safeHealth;
 			}
 
 			// 在生命条中央叠加数值显示
@@ -591,6 +609,26 @@ namespace Kuros.UI
 			HealthFillBar.MinValue = 0;
 			HealthFillBar.MaxValue = Mathf.Max(1, _maxHealth);
 			HealthFillBar.Value = Mathf.Clamp(_currentHealth, 0, Mathf.Max(1, _maxHealth));
+		}
+
+		/// <summary>初始化虚血条/恢复条（LeftToRight + 初始 0 值，防止 tscn 默认 100 闪出错误全条）。</summary>
+		private void ConfigureGhostBars()
+		{
+			if (HurtBar != null)
+			{
+				HurtBar.FillMode = (int)TextureProgressBar.FillModeEnum.LeftToRight;
+				HurtBar.MinValue = 0;
+				HurtBar.MaxValue = 1;
+				HurtBar.Value = 0;
+			}
+
+			if (RecoveryBar != null)
+			{
+				RecoveryBar.FillMode = (int)TextureProgressBar.FillModeEnum.LeftToRight;
+				RecoveryBar.MinValue = 0;
+				RecoveryBar.MaxValue = 1;
+				RecoveryBar.Value = 0;
+			}
 		}
 
 		/// <summary>
@@ -694,6 +732,7 @@ namespace Kuros.UI
 			if (actor is SamplePlayer samplePlayer)
 			{
 				_player = samplePlayer;
+				_ghostComponent = samplePlayer.GetNodeOrNull<GhostHealthComponent>("GhostHealthComponent");
 
 				// 使用 C# 事件驱动血量/分数更新，避免仅依赖未触发的 Godot 信号。
 				samplePlayer.StatsUpdated -= OnPlayerStatsUpdated;
@@ -885,6 +924,7 @@ namespace Kuros.UI
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
+			UpdateGhostHealthBars();
 			UpdateDashDisplay((float)delta);
 			// u5b9au671fu5237u65b0u6295u63b7u6b66u5668u69fdu4f4d CD u906eu7f69
 			_throwCooldownUpdateTimer -= (float)delta;
@@ -897,6 +937,36 @@ namespace Kuros.UI
 					if (qbStack != null)
 						UpdateQuickBarSlot(i);
 				}
+			}
+		}
+
+		/// <summary>
+		/// 每帧驱动三层血条：HealthFillBar（红，虚血组件动画值）、RecoveryBar（青，当前血量）、
+		/// HurtBar（深红，虚血显示值）。RecoveryBar 治疗时立即=当前血量露出恢复段；无组件时回退为当前血量。
+		/// </summary>
+		private void UpdateGhostHealthBars()
+		{
+			if (_player == null) return;
+
+			float maxH = Mathf.Max(1f, _player.MaxHealth);
+			float currentH = Mathf.Max(0f, _player.CurrentHealth);
+
+			if (HealthFillBar != null)
+			{
+				HealthFillBar.MaxValue = maxH;
+				HealthFillBar.Value = _ghostComponent != null ? _ghostComponent.FillValue : currentH;
+			}
+
+			if (RecoveryBar != null)
+			{
+				RecoveryBar.MaxValue = maxH;
+				RecoveryBar.Value = currentH;
+			}
+
+			if (HurtBar != null)
+			{
+				HurtBar.MaxValue = maxH;
+				HurtBar.Value = _ghostComponent != null ? _ghostComponent.HurtDisplay : currentH;
 			}
 		}
 

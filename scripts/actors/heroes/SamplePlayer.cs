@@ -1681,11 +1681,12 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		return attackerArea.OverlapsBody(this);
 	}
 	
-	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)
+	public override bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 	{
 		_pendingAttackSourceState = string.Empty;
-		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
+		bool dealt = base.TakeDamage(damage, attackOrigin, attacker, damageSource, bypassMergeWindow);
 		UpdateStatsUI();
+		return dealt;
 	}
 	
 	public void AddScore(int points)
