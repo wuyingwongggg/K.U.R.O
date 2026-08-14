@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 using Kuros.Data;
 using Kuros.Core;
 using Kuros.Managers;
@@ -254,7 +255,7 @@ namespace Kuros.Actors.NPC
 			// 检查玩家是否在范围内并按下交互键
 			if (_playerInRange != null && !_isInteracting && DialogueData != null)
 			{
-				if (Input.IsActionJustPressed("interact"))
+				if (SamplePlayer.IsActionJustPressedGlobal("interact"))
 				{
 					StartInteraction();
 				}

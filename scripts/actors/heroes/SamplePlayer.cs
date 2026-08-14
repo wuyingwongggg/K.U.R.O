@@ -142,8 +142,17 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		base._Ready();
 		AddToGroup("player");
-		// dash/run 已拆分独立按键，不再需要 InputHoldTracker 区分长短按
-		_holdTracker.Register("take_up", longPressThreshold: 0.35f);
+		// 长按阈值与长按标志从设置读取（设置菜单可调）：
+		// 白名单动作全部注册进仲裁器——同键时长按动作阈值触发、短按动作按下即触发
+		// （如 dash=短按Shift、run=长按Shift 分流）；place 恒为长按（放置=长按，拾取=短按）
+		ReapplyLongPressFlags();
+
+		// 设置菜单勾选/取消"长按触发"或调阈值后即时同步到仲裁器（否则已实例化玩家用旧标志）
+		var gsmSettings = Kuros.Managers.GameSettingsManager.Instance;
+		if (gsmSettings != null)
+		{
+			gsmSettings.InputBindingsChanged += ReapplyLongPressFlags;
+		}
 		
 		// Fallback: Try to find nodes if not assigned in editor (Backward compatibility)
 		if (AttackArea == null) AttackArea = GetNodeOrNull<Area2D>("AttackArea");
@@ -206,6 +215,12 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 
 	public override void _ExitTree()
 	{
+		var gsmSettings = Kuros.Managers.GameSettingsManager.Instance;
+		if (gsmSettings != null)
+		{
+			gsmSettings.InputBindingsChanged -= ReapplyLongPressFlags;
+		}
+
 		if (_itemAttachment != null)
 		{
 			var callable = new Callable(this, MethodName.OnEquippedAttackAreaChanged);
@@ -632,7 +647,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		{
 			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
 				return false;
-			return Input.IsActionPressed(actionName);
+			// 走仲裁器：同键长短按分流（run 等长按动作达阈值后才视为按住）
+			return _holdTracker.IsActionHeld(actionName);
 		}
 
 		return actionName switch
@@ -648,7 +664,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		{
 			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
 				return false;
-			return Input.IsActionJustPressed(actionName);
+			// 走仲裁器：同键长短按分流（短按动作延迟到松开确认）
+			return _holdTracker.WasActionJustPressed(actionName);
 		}
 
 		return actionName switch
@@ -659,6 +676,44 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			"move_right" => ConsumeAiFlag(ref _aiMoveRightQueued),
 			_ => false
 		};
+	}
+
+	/// <summary>重新应用全部动作的长按标志与阈值到仲裁器（初始与设置变更时调用）。</summary>
+	private void ReapplyLongPressFlags()
+	{
+		var gsm = Kuros.Managers.GameSettingsManager.Instance;
+		float holdThreshold = gsm?.HoldThresholdSeconds ?? 0.35f;
+		foreach (var (action, _) in Kuros.Core.InputActions.RebindableActions)
+		{
+			bool isLongPress = gsm?.IsActionLongPress(action) ?? action == "place";
+			_holdTracker.Register(action, longPressThreshold: holdThreshold, isLongPress: isLongPress);
+		}
+	}
+
+	/// <summary>全局仲裁即时按下查询（NPC/电梯/对话等外部节点无玩家引用时用）：
+	/// 从 player 组解析玩家走仲裁器；玩家不可用时回退 Input 直读。</summary>
+	public static bool IsActionJustPressedGlobal(string actionName)
+	{
+		if (Godot.Engine.GetMainLoop() is SceneTree tree
+			&& tree.GetFirstNodeInGroup("player") is SamplePlayer player)
+		{
+			return player.IsActionJustPressedArbitrated(actionName);
+		}
+		return Godot.Input.IsActionJustPressed(actionName);
+	}
+
+	/// <summary>非消耗的仲裁即时按下查询（攻击模板等每帧多调场景用；同键长按激活时短按动作返回 false）。</summary>
+	public bool IsActionJustPressedArbitrated(string actionName)
+	{
+		if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left))
+			return false;
+		return _holdTracker.WasActionJustPressed(actionName);
+	}
+
+	/// <summary>仲裁按住查询（长按激活时短按动作的 hold 被屏蔽，避免同键长按连击）。</summary>
+	public bool IsActionHeldArbitrated(string actionName)
+	{
+		return _holdTracker.IsActionHeld(actionName);
 	}
 
 	private static bool ConsumeAiFlag(ref bool flag)

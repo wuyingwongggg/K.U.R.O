@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -214,7 +215,7 @@ namespace Kuros.Environments
 
         public override void _Process(double delta)
         {
-            if (_playerInRange && Input.IsActionJustPressed("interact"))
+            if (_playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
             {
                 OpenSpawnWindow();
             }

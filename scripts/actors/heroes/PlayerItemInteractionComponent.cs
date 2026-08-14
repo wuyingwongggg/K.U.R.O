@@ -147,12 +147,12 @@ namespace Kuros.Actors.Heroes
 
             var player = _actor as SamplePlayer;
 
-            if (player != null && player.WasActionLongPressTriggered("take_up") && CanPerformItemAction())
+            if (player != null && player.WasActionLongPressTriggered("place") && CanPerformItemAction())
             {
                 TryHandleDrop(DropDisposition.Place);
             }
 
-            if (Input.IsActionJustPressed("throw") && CanPerformItemAction())
+            if ((_actor is SamplePlayer sp && sp.IsActionJustPressedArbitrated("throw")) && CanPerformItemAction())
             {
                 GD.Print($"[PlayerItemInteractionComponent] throw 快捷键被按下");
                 GD.Print($"[PlayerItemInteractionComponent] EnableInput={EnableInput}, Backpack={InventoryComponent?.Backpack != null}");
@@ -162,17 +162,17 @@ namespace Kuros.Actors.Heroes
                 TryHandleDrop(DropDisposition.Throw);
             }
 
-            if (Input.IsActionJustPressed("item_select_right") && CanSwitchEquipment())
+            if ((_actor is SamplePlayer sp2 && sp2.IsActionJustPressedArbitrated("item_select_right")) && CanSwitchEquipment())
             {
                 InventoryComponent?.SelectNextBackpackSlot();
             }
 
-            if (Input.IsActionJustPressed("item_select_left") && CanSwitchEquipment())
+            if ((_actor is SamplePlayer sp3 && sp3.IsActionJustPressedArbitrated("item_select_left")) && CanSwitchEquipment())
             {
                 InventoryComponent?.SelectPreviousBackpackSlot();
             }
 
-            if (Input.IsActionJustPressed("item_use"))
+            if (_actor is SamplePlayer sp4 && sp4.IsActionJustPressedArbitrated("item_use"))
             {
                 TryUseSelectedItem();
             }

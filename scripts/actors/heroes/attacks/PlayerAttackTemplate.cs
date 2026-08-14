@@ -434,12 +434,14 @@ namespace Kuros.Actors.Heroes.Attacks
 
             foreach (var action in TriggerActions)
             {
-                if (Input.IsActionJustPressed(action))
+                // 走仲裁器：同键长短按分流（攻击为短按动作时延迟到松开确认；
+                // 长按激活时 hold 被屏蔽，避免同键长按连击）
+                if (Player.IsActionJustPressedArbitrated(action))
                 {
                     return true;
                 }
 
-                if (holdAllowed && Input.IsActionPressed(action))
+                if (holdAllowed && Player.IsActionHeldArbitrated(action))
                 {
                     return true;
                 }

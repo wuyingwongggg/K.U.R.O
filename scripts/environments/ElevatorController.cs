@@ -108,7 +108,7 @@ namespace Kuros.Environments
             switch (_state)
             {
                 case ElevatorState.Idle:
-                    if (_playerInRange && Input.IsActionJustPressed("interact"))
+                    if (_playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
                         StartClosing();
                     break;
 

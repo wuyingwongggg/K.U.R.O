@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 
 namespace Kuros.Actors.Npc
 {
@@ -125,7 +126,7 @@ namespace Kuros.Actors.Npc
 				return;
 			}
 
-			if (!string.IsNullOrEmpty(PromptText) && _playerInRange && Input.IsActionJustPressed("interact"))
+			if (!string.IsNullOrEmpty(PromptText) && _playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
 			{
 				StartDialogue();
 			}

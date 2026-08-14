@@ -1,4 +1,5 @@
 ﻿using Godot;
+using Kuros.Actors.Heroes;
 using Kuros.Systems.Cutscene;
 
 namespace Kuros.Environments
@@ -74,7 +75,7 @@ namespace Kuros.Environments
             switch (_state)
             {
                 case TaxiState.Idle:
-                    if (_playerInRange && Input.IsActionJustPressed("interact"))
+                    if (_playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
                         StartCalling();
                     break;
 
@@ -84,7 +85,7 @@ namespace Kuros.Environments
 
                 case TaxiState.Called:
                     PollSceneLoad();
-                    if (_playerInRange && Input.IsActionJustPressed("interact"))
+                    if (_playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
                         StartTriggering();
                     break;
 

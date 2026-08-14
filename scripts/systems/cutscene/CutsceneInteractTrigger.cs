@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 
 namespace Kuros.Systems.Cutscene
 {
@@ -71,7 +72,7 @@ namespace Kuros.Systems.Cutscene
             if (!_playerInRange) return;
             if (TriggerOnce && _triggered) return;
 
-            if (Input.IsActionJustPressed(InteractAction))
+            if (SamplePlayer.IsActionJustPressedGlobal(InteractAction))
                 TryTrigger();
         }
 

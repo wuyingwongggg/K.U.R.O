@@ -22,7 +22,6 @@ namespace Kuros.Managers
 		private const string MAIN_MENU_PATH = "res://scenes/ui/menus/MainMenu.tscn";
 		private const string MODE_SELECTION_PATH = "res://scenes/ui/menus/ModeSelectionMenu.tscn";
 		private const string SETTINGS_MENU_PATH = "res://scenes/ui/menus/SettingsMenu.tscn";
-		private const string AI_SETTINGS_MENU_PATH = "res://scenes/ui/menus/AiSettingsMenu.tscn";
 		private const string SAVE_SLOT_SELECTION_PATH = "res://scenes/ui/menus/SaveSlotSelection.tscn";
 		private const string DIALOGUE_WINDOW_PATH = "res://scenes/ui/windows/DialogueWindow.tscn";
 		private const string SKILL_WINDOW_PATH = "res://scenes/ui/windows/SkillWindow.tscn";
@@ -231,12 +230,6 @@ namespace Kuros.Managers
 		public SettingsMenu LoadSettingsMenu()
 		{
 			return LoadUI<SettingsMenu>(SETTINGS_MENU_PATH, UILayer.Menu, "SettingsMenu");
-		}
-
-		// 便捷方法：加载 AI 助手 API 设置菜单（叠加在 SettingsMenu 上，返回时隐藏自身）
-		public AiSettingsMenu LoadAiSettingsMenu()
-		{
-			return LoadUI<AiSettingsMenu>(AI_SETTINGS_MENU_PATH, UILayer.Menu, "AiSettingsMenu");
 		}
 
 		// 便捷方法：加载存档选择菜单
