@@ -163,7 +163,6 @@ DefaultStream = true
 
 [node name="AiDecisionBridge" type="Node" parent="."]
 script = ExtResource("19_ai_decision_bridge")
-Model = "qwen3.5:latest"
 
 [node name="GameStateDebugPanel" type="CanvasLayer" parent="."]
 layer = 100
@@ -195,6 +194,7 @@ scroll_following = true
 
 [node name="AiOutputDebugPanel" type="CanvasLayer" parent="."]
 layer = 101
+visible = false
 script = ExtResource("21_ai_output_debug_panel")
 
 [node name="Panel" type="PanelContainer" parent="AiOutputDebugPanel"]

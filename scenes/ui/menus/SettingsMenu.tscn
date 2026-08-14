@@ -134,6 +134,11 @@ text = "CRT滤镜:"
 [node name="HSeparator5" type="HSeparator" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 
+[node name="AiSettingsButton" type="Button" parent="MenuPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "AI 助手 API 设置"
+
 [node name="BackButton" type="Button" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20

@@ -10,6 +10,7 @@ namespace Kuros.UI
     {
         [ExportCategory("UI References")]
         [Export] public Button BackButton { get; private set; } = null!;
+        [Export] public Button AiSettingsButton { get; private set; } = null!;
         [Export] public HSlider MasterVolumeSlider { get; private set; } = null!;
         [Export] public HSlider MusicVolumeSlider { get; private set; } = null!;
         [Export] public HSlider SFXVolumeSlider { get; private set; } = null!;
@@ -118,6 +119,13 @@ namespace Kuros.UI
                 LanguageOption.AddItem("English");
             }
 
+            // AI 助手 API 设置入口按钮：叠加打开独立设置界面
+            if (AiSettingsButton == null)
+            {
+                AiSettingsButton = GetNodeOrNull<Button>("MenuPanel/VBoxContainer/AiSettingsButton");
+            }
+            ConnectButtonSignal(AiSettingsButton, nameof(OnAiSettingsPressed));
+
             // 使用 Godot 原生 Connect 方法连接信号，在导出版本中更可靠
             ConnectButtonSignal(BackButton, nameof(OnBackPressed));
 
@@ -207,6 +215,12 @@ namespace Kuros.UI
         private void OnBackPressed()
         {
             EmitSignal(SignalName.BackRequested);
+        }
+
+        private void OnAiSettingsPressed()
+        {
+            // 叠加打开 AI 设置（本菜单不隐藏，AI 设置返回时 Hide 自身回到这里）
+            UIManager.Instance?.LoadAiSettingsMenu();
         }
 
         private void OnCrtToggled(bool enabled)

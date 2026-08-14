@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://g2c5rcy37owd" path="res://scripts/fx/RotatingCube.cs" id="1_p08mm"]
 [ext_resource type="Shader" uid="uid://c6esdptyi4vs3" path="res://shaders/materials/canvas_cube_faces.gdshader" id="2_qa3ch"]
-[ext_resource type="Texture2D" uid="uid://bdusy0qqtw0th" path="res://demo/assets/smoke.png" id="3_p08mm"]
+[ext_resource type="Texture2D" uid="uid://cpxmg0883jvj" path="res://assets/effect/AttackEffect/smoke_c/smoke.png" id="3_p08mm"]
 [ext_resource type="Shader" uid="uid://dpj7cb1n0f80r" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="4_np7yu"]
 [ext_resource type="Shader" uid="uid://bld8m4k2q7x1w" path="res://shaders/materials/canvas_cube_build.gdshader" id="5_ibmpm"]
 

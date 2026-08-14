@@ -92,6 +92,36 @@ namespace Kuros.Companions
         public ulong TotalAiMappedApplied { get; private set; }
         public ulong TotalPersonalityChatters { get; private set; }
 
+        public override void _Ready()
+        {
+            // LLM 启用状态由玩家设置驱动（默认关 = P2 纯规则模式，不发 LLM 请求）；
+            // P2.tscn 的 EnableAiDecisionBridge 仅作为进树初值，_Ready 时被设置覆盖
+            ApplyAiEnabledFromSettings();
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings != null)
+            {
+                settings.AiSettingsChanged += ApplyAiEnabledFromSettings;
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings != null)
+            {
+                settings.AiSettingsChanged -= ApplyAiEnabledFromSettings;
+            }
+            base._ExitTree();
+        }
+
+        /// <summary>从 GameSettingsManager 同步 AI 启用开关。</summary>
+        private void ApplyAiEnabledFromSettings()
+        {
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings == null) return;
+            EnableAiDecisionBridge = settings.AiEnabled;
+        }
+
         public override void _Process(double delta)
         {
             ResolveDependencies();

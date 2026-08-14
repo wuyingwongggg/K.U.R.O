@@ -11,11 +11,26 @@ namespace Kuros.Managers
 		public static GameSettingsManager Instance { get; private set; } = null!;
 
 		[Signal] public delegate void CrtEnabledChangedEventHandler(bool enabled);
+		/// <summary>AI 助手 API 配置变化时触发（OllamaClient 订阅以即时应用）。</summary>
+		[Signal] public delegate void AiSettingsChangedEventHandler();
 
 		private const string ConfigPath = "user://config/window_settings.cfg";
 		private const string WindowSection = "Window";
 		private const string PresetKey = "Preset";
 		private const string CrtKey = "CrtEnabled";
+		private const string AiSection = "AI";
+		private const string AiProviderKey = "AiProvider";
+		private const string AiEndpointKey = "AiEndpoint";
+		private const string AiApiKeyKey = "AiApiKey";
+		private const string AiModelKey = "AiModel";
+		private const string AiEnabledKey = "AiEnabled";
+
+		/// <summary>AI 提供商默认值（"openai_compat" = OpenAI 兼容协议，玩家场景主流是云 API；
+		/// 开发用本地 Ollama 时在游戏内设置中切换为 "ollama" 并填本地地址）。</summary>
+		public const string DefaultAiProvider = "openai_compat";
+		/// <summary>端点/模型默认为空 = 未配置状态（玩家需自行填写自己的 API 配置；不回退开发默认值）。</summary>
+		public const string DefaultAiEndpoint = "";
+		public const string DefaultAiModel = "";
 
 		private readonly WindowPreset[] _presets =
 		{
@@ -27,10 +42,22 @@ namespace Kuros.Managers
 
 		private string _currentPresetId = "window_1080p";
 		private bool _crtEnabled = false;
+		private string _aiProvider = DefaultAiProvider;
+		private string _aiEndpoint = DefaultAiEndpoint;
+		// 注意：ApiKey 明文存储于 user://config（单机 demo 可接受；联网发布时需自行加密）
+		private string _aiApiKey = string.Empty;
+		private string _aiModel = DefaultAiModel;
+		private bool _aiEnabled = false;
 
 		public WindowPreset CurrentPreset => GetPresetById(_currentPresetId);
 		public WindowPreset[] Presets => _presets;
 		public bool CrtEnabled => _crtEnabled;
+		public string AiProvider => _aiProvider;
+		public string AiEndpoint => _aiEndpoint;
+		public string AiApiKey => _aiApiKey;
+		public string AiModel => _aiModel;
+		/// <summary>AI 助手是否启用（默认关——玩家未配置 API 时 P2 纯规则模式，不发 LLM 请求）。</summary>
+		public bool AiEnabled => _aiEnabled;
 
 		public override void _Ready()
 		{
@@ -108,6 +135,27 @@ namespace Kuros.Managers
 			EmitSignal(SignalName.CrtEnabledChanged, _crtEnabled);
 		}
 
+		/// <summary>保存 AI 助手 API 配置（改内存 → 存 cfg → 广播 AiSettingsChanged 即时应用）。
+		/// provider："ollama" / "openai_compat"；端点/模型允许空值（未配置状态，玩家自行填写）。</summary>
+		public void SetAiSettings(string provider, string endpoint, string apiKey, string model)
+		{
+			_aiProvider = string.IsNullOrWhiteSpace(provider) ? DefaultAiProvider : provider;
+			_aiEndpoint = endpoint ?? string.Empty;
+			_aiApiKey = apiKey ?? string.Empty;
+			_aiModel = model ?? string.Empty;
+			SaveSettings();
+			EmitSignal(SignalName.AiSettingsChanged);
+		}
+
+		/// <summary>启用/停用 AI 助手（存 cfg + 广播 AiSettingsChanged）。</summary>
+		public void SetAiEnabled(bool enabled)
+		{
+			if (_aiEnabled == enabled) return;
+			_aiEnabled = enabled;
+			SaveSettings();
+			EmitSignal(SignalName.AiSettingsChanged);
+		}
+
 		private WindowPreset GetDefaultPreset()
 		{
 			return _presets[0];
@@ -155,6 +203,11 @@ namespace Kuros.Managers
 			{
 				_currentPresetId = (string)config.GetValue(WindowSection, PresetKey, _currentPresetId);
 				_crtEnabled = (bool)config.GetValue(WindowSection, CrtKey, false);
+				_aiProvider = (string)config.GetValue(AiSection, AiProviderKey, DefaultAiProvider);
+				_aiEndpoint = (string)config.GetValue(AiSection, AiEndpointKey, DefaultAiEndpoint);
+				_aiApiKey = (string)config.GetValue(AiSection, AiApiKeyKey, string.Empty);
+				_aiModel = (string)config.GetValue(AiSection, AiModelKey, DefaultAiModel);
+				_aiEnabled = (bool)config.GetValue(AiSection, AiEnabledKey, false);
 			}
 			else
 			{
@@ -168,6 +221,11 @@ namespace Kuros.Managers
 			var config = new ConfigFile();
 			config.SetValue(WindowSection, PresetKey, _currentPresetId);
 			config.SetValue(WindowSection, CrtKey, _crtEnabled);
+			config.SetValue(AiSection, AiProviderKey, _aiProvider);
+			config.SetValue(AiSection, AiEndpointKey, _aiEndpoint);
+			config.SetValue(AiSection, AiApiKeyKey, _aiApiKey);
+			config.SetValue(AiSection, AiModelKey, _aiModel);
+			config.SetValue(AiSection, AiEnabledKey, _aiEnabled);
 
 			var err = config.Save(ConfigPath);
 			if (err != Error.Ok)

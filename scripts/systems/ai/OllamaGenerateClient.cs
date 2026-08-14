@@ -23,10 +23,19 @@ namespace Kuros.Systems.AI
         /// <summary>请求失败时触发（errorMessage 为错误描述）。</summary>
         [Signal] public delegate void RequestFailedEventHandler(string errorMessage);
 
-        /// <summary>Ollama 服务地址（本地默认 11434 端口 /api/generate）。</summary>
+        /// <summary>服务端点完整 URL。Ollama 协议填 /api/generate；
+        /// OpenAI 兼容模式（UseOpenAICompat）填 /chat/completions（如 https://api.deepseek.com/chat/completions，
+        /// 或本地 Ollama 自带的 OpenAI 兼容端点 http://localhost:11434/v1/chat/completions）。</summary>
         [Export] public string Endpoint { get; set; } = "http://localhost:11434/api/generate";
         /// <summary>默认模型名。</summary>
         [Export] public string DefaultModel { get; set; } = "llama3";
+
+        [ExportCategory("OpenAI Compatible")]
+        /// <summary>true = 按 OpenAI 兼容协议组请求/解析响应（messages 数组、SSE 流式、choices[0].message.content）；
+        /// false = 原生 Ollama 协议。切换外部平台（DeepSeek/OpenAI/Qwen/中转站）时开启并改 Endpoint/ApiKey。</summary>
+        [Export] public bool UseOpenAICompat { get; set; } = false;
+        /// <summary>Bearer 鉴权密钥（OpenAI 兼容模式）。留空不带 Authorization 头（本地中转/无鉴权场景）。</summary>
+        [Export] public string ApiKey { get; set; } = string.Empty;
         /// <summary>默认是否流式输出。</summary>
         [Export] public bool DefaultStream { get; set; } = false;
         /// <summary>请求超时（秒）。</summary>
@@ -43,6 +52,50 @@ namespace Kuros.Systems.AI
         /// <summary>共享 HTTP 客户端（复用连接，避免每次请求重建）。</summary>
         private static readonly System.Net.Http.HttpClient SharedHttpClient = new();
 
+        public override void _Ready()
+        {
+            // 玩家配置优先：启动时从 GameSettingsManager 拉取覆盖 Inspector 导出值
+            // （主菜单改的配置在进入战斗场景时生效）
+            ApplySettingsFromManager();
+
+            // 战斗内从设置菜单改配置 → 信号广播即时应用
+            if (Kuros.Managers.GameSettingsManager.Instance != null)
+            {
+                Kuros.Managers.GameSettingsManager.Instance.AiSettingsChanged += ApplySettingsFromManager;
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            if (Kuros.Managers.GameSettingsManager.Instance != null)
+            {
+                Kuros.Managers.GameSettingsManager.Instance.AiSettingsChanged -= ApplySettingsFromManager;
+            }
+            base._ExitTree();
+        }
+
+        /// <summary>从 GameSettingsManager 应用 AI 配置。
+        /// 端点/模型为空（玩家未配置）时保持节点导出值（开发默认），玩家配置后覆盖。</summary>
+        private void ApplySettingsFromManager()
+        {
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings == null)
+            {
+                return;
+            }
+
+            UseOpenAICompat = settings.AiProvider == "openai_compat";
+            ApiKey = settings.AiApiKey;
+            if (!string.IsNullOrWhiteSpace(settings.AiEndpoint))
+            {
+                Endpoint = settings.AiEndpoint;
+            }
+            if (!string.IsNullOrWhiteSpace(settings.AiModel))
+            {
+                DefaultModel = settings.AiModel;
+            }
+        }
+
         /// <summary>发起一次生成请求。参数缺省时回退到导出默认值。</summary>
         /// <param name="prompt">喂给模型的提示文本。</param>
         /// <param name="model">模型名（空 = DefaultModel）。</param>
@@ -57,31 +110,61 @@ namespace Kuros.Systems.AI
             string requestModel = string.IsNullOrWhiteSpace(model) ? DefaultModel : model;
             bool requestStream = stream ?? DefaultStream;
 
-            // 组装 Ollama 请求体
-            var payload = new Godot.Collections.Dictionary<string, Variant>
+            Godot.Collections.Dictionary<string, Variant> payload;
+            if (UseOpenAICompat)
             {
-                ["model"] = requestModel,
-                ["prompt"] = prompt,
-                ["stream"] = requestStream
-            };
+                // OpenAI 兼容协议：messages 数组（system 可选 + user），采样参数顶层
+                var messages = new Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>>();
+                if (!string.IsNullOrWhiteSpace(system))
+                {
+                    messages.Add(new Godot.Collections.Dictionary<string, Variant>
+                    {
+                        ["role"] = "system",
+                        ["content"] = system
+                    });
+                }
+                messages.Add(new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["role"] = "user",
+                    ["content"] = prompt
+                });
 
-            // 采样参数
-            payload["options"] = new Godot.Collections.Dictionary<string, Variant>
-            {
-                ["num_predict"] = Mathf.Max(16, MaxPredictTokens),
-                ["temperature"] = Mathf.Clamp(Temperature, 0f, 2f)
-            };
-
-            if (!string.IsNullOrWhiteSpace(system))
-            {
-                payload["system"] = system;
+                payload = new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["model"] = requestModel,
+                    ["messages"] = messages,
+                    ["max_tokens"] = Mathf.Max(16, MaxPredictTokens),
+                    ["temperature"] = Mathf.Clamp(Temperature, 0f, 2f),
+                    ["stream"] = requestStream
+                };
             }
-
-            if (DisableThinking)
+            else
             {
-                // Qwen 系模型可能只输出 thinking 而 response 为空。
-                // 请求非思考模式，提高直接输出最终答案文本的概率。
-                payload["think"] = false;
+                // 原生 Ollama 协议
+                payload = new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["model"] = requestModel,
+                    ["prompt"] = prompt,
+                    ["stream"] = requestStream
+                };
+
+                payload["options"] = new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["num_predict"] = Mathf.Max(16, MaxPredictTokens),
+                    ["temperature"] = Mathf.Clamp(Temperature, 0f, 2f)
+                };
+
+                if (!string.IsNullOrWhiteSpace(system))
+                {
+                    payload["system"] = system;
+                }
+
+                if (DisableThinking)
+                {
+                    // Qwen 系模型可能只输出 thinking 而 response 为空。
+                    // 请求非思考模式，提高直接输出最终答案文本的概率。
+                    payload["think"] = false;
+                }
             }
 
             return await SendGenerateRequestAsync(payload, requestStream);
@@ -227,6 +310,13 @@ namespace Kuros.Systems.AI
                     Content = new StringContent(Json.Stringify(payload), Encoding.UTF8, "application/json")
                 };
 
+                // OpenAI 兼容模式 + 配置了密钥：附 Bearer 鉴权头（本地中转/无鉴权场景留空即不带）
+                if (UseOpenAICompat && !string.IsNullOrWhiteSpace(ApiKey))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ApiKey);
+                }
+
                 // 超时控制（读到响应头即开始，流式逐行消费）
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(Mathf.Max(1, TimeoutSeconds)));
 
@@ -245,10 +335,14 @@ namespace Kuros.Systems.AI
 
                 if (streaming)
                 {
-                    return await ParseStreamingResponseAsync(response, cts.Token);
+                    return UseOpenAICompat
+                        ? await ParseOpenAiStreamingResponseAsync(response, cts.Token)
+                        : await ParseStreamingResponseAsync(response, cts.Token);
                 }
 
-                return await ParseSingleJsonResponseAsync(response, cts.Token);
+                return UseOpenAICompat
+                    ? await ParseOpenAiSingleJsonResponseAsync(response, cts.Token)
+                    : await ParseSingleJsonResponseAsync(response, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -262,6 +356,150 @@ namespace Kuros.Systems.AI
                 EmitSignal(SignalName.RequestFailed, err);
                 return OllamaGenerateResult.FromError(err);
             }
+        }
+
+        /// <summary>解析 OpenAI 兼容非流式响应：choices[0].message.content；
+        /// error 体（{"error":{"message"}}）转失败；DeepSeek 系 reasoning_content 映射 ThinkingText（保留 thinking 回退）。</summary>
+        private async Task<OllamaGenerateResult> ParseOpenAiSingleJsonResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            string body = await response.Content.ReadAsStringAsync(cancellationToken);
+            Variant parsed = Json.ParseString(body);
+            if (parsed.VariantType != Variant.Type.Dictionary)
+            {
+                string err = "OpenAI-compatible non-stream response is not a JSON object.";
+                EmitSignal(SignalName.RequestFailed, err);
+                return OllamaGenerateResult.FromError(err);
+            }
+
+            var dict = parsed.AsGodotDictionary();
+
+            if (dict.TryGetValue("error", out Variant errV) && errV.VariantType == Variant.Type.Dictionary)
+            {
+                string err = $"OpenAI-compatible request failed: {GetString(errV.AsGodotDictionary(), "message")}";
+                EmitSignal(SignalName.RequestFailed, err);
+                return OllamaGenerateResult.FromError(err);
+            }
+
+            string text = string.Empty;
+            string thinking = string.Empty;
+            if (dict.TryGetValue("choices", out Variant choicesV) && choicesV.VariantType == Variant.Type.Array)
+            {
+                var choices = choicesV.AsGodotArray();
+                if (choices.Count > 0 && choices[0].VariantType == Variant.Type.Dictionary)
+                {
+                    var choice = choices[0].AsGodotDictionary();
+                    if (choice.TryGetValue("message", out Variant msgV) && msgV.VariantType == Variant.Type.Dictionary)
+                    {
+                        var msg = msgV.AsGodotDictionary();
+                        text = GetString(msg, "content");
+                        // 思考字段名因平台而异：DeepSeek 系 reasoning_content；Ollama 兼容端点 reasoning
+                        thinking = GetString(msg, "reasoning_content");
+                        if (string.IsNullOrEmpty(thinking))
+                        {
+                            thinking = GetString(msg, "reasoning");
+                        }
+                    }
+                }
+            }
+
+            var result = new OllamaGenerateResult
+            {
+                Success = true,
+                Model = GetString(dict, "model"),
+                ResponseText = text,
+                ThinkingText = thinking,
+                Done = true,
+                RawFinalObject = dict
+            };
+
+            ApplyThinkingFallbackIfNeeded(result);
+
+            EmitSignal(SignalName.StreamCompleted, result.ResponseText);
+            return result;
+        }
+
+        /// <summary>解析 OpenAI 兼容流式响应（SSE）：逐行 "data: {...}" 累积 delta.content，
+        /// "data: [DONE]" 终止；delta.reasoning_content 累积为思考文本。</summary>
+        private async Task<OllamaGenerateResult> ParseOpenAiStreamingResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            var result = new OllamaGenerateResult { Success = true };
+            var sb = new StringBuilder(1024);
+            var thinkingSb = new StringBuilder(1024);
+
+            await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+
+            while (!reader.EndOfStream)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string? line = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                string s = line.Trim();
+                if (s == "data: [DONE]")
+                {
+                    break;
+                }
+                if (!s.StartsWith("data:", System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                string json = s["data:".Length..].Trim();
+                Variant parsed = Json.ParseString(json);
+                if (parsed.VariantType != Variant.Type.Dictionary)
+                {
+                    continue;
+                }
+
+                var chunkObj = parsed.AsGodotDictionary();
+                result.RawChunks.Add(chunkObj);
+
+                if (string.IsNullOrEmpty(result.Model))
+                {
+                    result.Model = GetString(chunkObj, "model");
+                }
+
+                if (chunkObj.TryGetValue("choices", out Variant choicesV) && choicesV.VariantType == Variant.Type.Array)
+                {
+                    var choices = choicesV.AsGodotArray();
+                    if (choices.Count > 0 && choices[0].VariantType == Variant.Type.Dictionary)
+                    {
+                        var choice = choices[0].AsGodotDictionary();
+                        if (choice.TryGetValue("delta", out Variant deltaV) && deltaV.VariantType == Variant.Type.Dictionary)
+                        {
+                            var delta = deltaV.AsGodotDictionary();
+                            string chunkText = GetString(delta, "content");
+                            if (!string.IsNullOrEmpty(chunkText))
+                            {
+                                sb.Append(chunkText);
+                                EmitSignal(SignalName.StreamChunkReceived, chunkText);
+                            }
+
+                            // 思考字段名因平台而异：DeepSeek 系 reasoning_content；Ollama 兼容端点 reasoning
+                            string reasoning = GetString(delta, "reasoning_content");
+                            if (string.IsNullOrEmpty(reasoning))
+                            {
+                                reasoning = GetString(delta, "reasoning");
+                            }
+                            if (!string.IsNullOrEmpty(reasoning))
+                            {
+                                thinkingSb.Append(reasoning);
+                            }
+                        }
+                    }
+                }
+            }
+
+            result.ResponseText = sb.ToString();
+            result.ThinkingText = thinkingSb.ToString();
+            result.Done = true;
+            ApplyThinkingFallbackIfNeeded(result);
+            EmitSignal(SignalName.StreamCompleted, result.ResponseText);
+            return result;
         }
 
         /// <summary>解析非流式响应：整个响应体是一个 JSON 对象，提取 response/thinking 及统计字段。</summary>
