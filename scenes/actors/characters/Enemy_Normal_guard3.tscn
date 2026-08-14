@@ -79,13 +79,14 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 0.0
+AttackDamage = 0
 MaxHealth = 120
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_3kv8y")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用手枪攻击客户，会朝客户投掷炸弹，建议优先击破"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")

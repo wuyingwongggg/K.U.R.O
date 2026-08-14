@@ -83,13 +83,14 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 10.0
+AttackDamage = 10
 MaxHealth = 150
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_a0306")
 DamageFlashColor = Color(18.68087, 18.540012, 18.892157, 1)
 
+AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")

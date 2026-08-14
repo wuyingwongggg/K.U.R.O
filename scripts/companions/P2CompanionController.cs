@@ -111,7 +111,7 @@ namespace Kuros.Companions
         /// 动作特效场景数组（PackedScene），按用途约定索引，各动作独立配置、互不共用：
         ///   [0] 护盾施加（ApplyShield 触发，P2 放盾时在玩家身上生成）
         ///   [1] 治疗（ApplyHeal 触发，P2 回血时在玩家身上生成）
-        ///   [2] 装备加成恢复（ApplyHealingAmplifierBonus 触发，食物治疗的倍率加成部分）
+        ///   [2] 预留（原装备加成特效，食物路径已废弃）
         /// 行为说明：
         /// - 触发时机 = 动作成功执行瞬间（与飘字/气泡同一帧），特效挂载在玩家节点下跟随移动
         /// - 未配置的索引（空槽/越界）直接跳过，不影响动作本身（飘字、气泡、回血照常）
@@ -287,6 +287,12 @@ namespace Kuros.Companions
         /// </summary>
         private Vector2 ComputeMovementTarget(float delta)
         {
+            // 玩家死亡：守尸——唯一移动目标 = 玩家位置（走向玩家停在身边），忽略游走/距离带/范围约束
+            if (_player != null && (_player.IsDeathSequenceActive || _player.IsDead))
+            {
+                return _player.GlobalPosition;
+            }
+
             Vector2 anchor = _companionAnchor?.GlobalPosition ?? _player!.GlobalPosition;
             float distToPlayer = GlobalPosition.DistanceTo(anchor);
 

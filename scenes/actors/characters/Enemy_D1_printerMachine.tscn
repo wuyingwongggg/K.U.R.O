@@ -80,14 +80,15 @@ DebugOverlayOffset = Vector2(-1200, 100)
 DebugOverlayFontSize = 64
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 400.0
-AttackDamage = 0.0
+Speed = 400
+AttackDamage = 0
 MaxHealth = 100
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_v1b7h")
 DamageFlashColor = Color(18.892, 18.892, 18.892, 1)
 
+AiDescription = "安保无人机，普通敌人，似乎错误的把我们识别为非法入侵对象，伪装成打印机的样子，当客户接近时暴露伪装从打印机转变成无人机模式，使用高射炮和高速飞行的A4纸攻击客户"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")

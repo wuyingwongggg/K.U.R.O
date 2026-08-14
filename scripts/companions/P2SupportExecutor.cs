@@ -9,7 +9,7 @@ namespace Kuros.Companions
 {
     /// <summary>
     /// P2 支持动作执行器：通过本地白名单应用结构化的支持决策（SupportDecision）。
-    /// 负责意图分发（show_hint / trigger_support_skill / use_support_item / move_to / fetch_weapon / hold）、
+    /// 负责意图分发（show_hint / trigger_support_skill / move_to / fetch_weapon / hold）、
     /// 技能/物品冷却、护盾拦截玩家伤害、治疗与装备加成、骨骼 action 动画触发。
     /// 由 AI_Brain（规则/LLM）发出决策，本类校验并执行。
     /// </summary>
@@ -35,12 +35,8 @@ namespace Kuros.Companions
         [ExportCategory("Support Execution")]
         /// <summary>默认支持的武器技能动作名（技能处理器使用）。</summary>
         [Export] public string DefaultSupportSkillAction { get; set; } = "weapon_skill_block";
-        /// <summary>消耗支持物品时是否只匹配指定标签（如 Food）。</summary>
-        [Export] public bool ConsumeOnlyMatchingTag { get; set; } = true;
         /// <summary>支持技能执行冷却（秒）。</summary>
         [Export(PropertyHint.Range, "0,20,0.1")] public float SupportSkillCooldownSeconds { get; set; } = 3.0f;
-        /// <summary>支持物品（食物）执行冷却（秒）。</summary>
-        [Export(PropertyHint.Range, "0,20,0.1")] public float SupportItemCooldownSeconds { get; set; } = 6.0f;
         /// <summary>执行日志开关。</summary>
         [Export] public bool EnableLogging { get; set; } = false;
 
@@ -95,12 +91,9 @@ namespace Kuros.Companions
         public int TotalShieldAbsorbedDamage { get; private set; }
         /// <summary>技能累计治疗量。</summary>
         public int TotalHealFromSkills { get; private set; }
-        /// <summary>装备加成累计额外治疗量。</summary>
-        public int TotalHealFromEquipBonus { get; private set; }
 
         // ── 冷却与护盾状态 ──
         private readonly Dictionary<string, ulong> _supportSkillCooldownsMs = new(StringComparer.OrdinalIgnoreCase); // 技能冷却表（技能ID → 可用时间戳）
-        private ulong _nextSupportItemAtMs;   // 物品冷却可用时间戳
         private int _activeShieldPoints;      // 当前护盾剩余点数
         private ulong _shieldExpireAtMs;      // 护盾过期时间戳
         private Tween? _shieldFlashTween;     // 护盾格挡闪光动画
@@ -200,18 +193,6 @@ namespace Kuros.Companions
             }
 
             return (nextAt - now) / 1000f;
-        }
-
-        /// <summary>获取物品（食物）剩余冷却（秒）。</summary>
-        public float GetSupportItemCooldownRemainingSeconds()
-        {
-            ulong now = Time.GetTicksMsec();
-            if (now >= _nextSupportItemAtMs)
-            {
-                return 0f;
-            }
-
-            return (_nextSupportItemAtMs - now) / 1000f;
         }
 
         /// <summary>获取当前装备的治疗倍率（最小 0.1）。</summary>
@@ -324,9 +305,6 @@ namespace Kuros.Companions
 
                 case "trigger_support_skill":
                     return ExecuteSupportSkill(decision);
-
-                case "use_support_item":
-                    return ExecuteSupportItem(decision);
 
                 case "move_to":
                     return ExecuteMoveTo(decision);
@@ -539,62 +517,6 @@ namespace Kuros.Companions
             return true;
         }
 
-        /// <summary>执行食物治疗：冷却检查 → 消耗玩家背包食物 → 治疗（含装备倍率）→ 成功触发 action 动画 + 设置物品冷却。</summary>
-        private bool ExecuteSupportItem(SupportDecision decision)
-        {
-            if (_player?.InventoryComponent == null)
-            {
-                TotalDecisionRejected++;
-                LastRejectedReason = "inventory component unavailable for support item";
-                LastResult = "rejected";
-                LastActionDetail = "use_support_item";
-                EmitSignal(SignalName.DecisionRejected, "inventory component unavailable for support item");
-                return false;
-            }
-
-            ulong now = Time.GetTicksMsec();
-            if (now < _nextSupportItemAtMs)
-            {
-                TotalDecisionRejected++;
-                LastRejectedReason = "support item on cooldown";
-                LastResult = "rejected";
-                LastActionDetail = "use_support_item";
-                EmitSignal(SignalName.DecisionRejected, "support item on cooldown");
-                return false;
-            }
-
-            var inventory = _player.InventoryComponent;
-            string requiredTag = string.IsNullOrWhiteSpace(decision.ItemTag) ? ItemTagIds.Food : decision.ItemTag;
-            int healthBefore = _player.CurrentHealth;
-            if (!inventory.TryConsumeFirstTaggedItem(requiredTag, _player))
-            {
-                TotalDecisionRejected++;
-                LastRejectedReason = $"no consumable support item found for tag '{requiredTag}'";
-                LastResult = "rejected";
-                LastActionDetail = requiredTag;
-                EmitSignal(SignalName.DecisionRejected, $"no consumable support item found for tag '{requiredTag}'");
-                return false;
-            }
-
-            ApplyHealingAmplifierBonus(healthBefore, "support item"); // 治疗 + 装备额外加成
-
-            if (EnableLogging)
-            {
-                GD.Print($"[P2SupportExecutor] applied use_support_item: tag={requiredTag}");
-            }
-
-            _companionController?.TriggerAction(); // 动作成功 → 两阶段 action 动画
-
-            LastAppliedDecisionJson = decision.ToJson(pretty: false);
-            LastRejectedReason = string.Empty;
-            LastResult = "applied";
-            LastActionDetail = requiredTag;
-            TotalDecisionApplied++;
-            _nextSupportItemAtMs = now + SecondsToMs(SupportItemCooldownSeconds);
-            EmitSignal(SignalName.DecisionApplied, decision.ToJson(pretty: false));
-            return true;
-        }
-
         /// <summary>
         /// 施加护盾（技能 Handler 调用）：累加护盾点数 + 设定过期时间 + 绑定玩家伤害拦截 + 更新玩家护盾值 + 气泡提示。
         /// </summary>
@@ -605,6 +527,13 @@ namespace Kuros.Companions
             {
                 rejectReason = "player not available for shield skill";
                 detail = "shield_player_missing";
+                return false;
+            }
+
+            if (_player.IsDeathSequenceActive || _player.IsDead)
+            {
+                rejectReason = "player is dying or dead, shield rejected";
+                detail = "shield_player_dead";
                 return false;
             }
 
@@ -636,6 +565,13 @@ namespace Kuros.Companions
                 return false;
             }
 
+            if (_player.IsDeathSequenceActive || _player.IsDead)
+            {
+                rejectReason = "player is dying or dead, heal rejected";
+                detail = "heal_player_dead";
+                return false;
+            }
+
             if (_player.MaxHealth <= 0 || _player.CurrentHealth >= _player.MaxHealth)
             {
                 rejectReason = "player hp already full for heal skill";
@@ -656,45 +592,6 @@ namespace Kuros.Companions
             _dialogue?.Speak(P2DialogueEvent.Healed, finalHeal);
             detail = $"{skillId}|heal={finalHeal}|mult={multiplier:0.00}";
             return true;
-        }
-
-        /// <summary>装备治疗加成：比较消耗物品前后的生命差，按（倍率-1）追加治疗（只对支持物品路径生效）。</summary>
-        private void ApplyHealingAmplifierBonus(int healthBefore, string source)
-        {
-            if (_player == null)
-            {
-                return;
-            }
-
-            float multiplier = GetCurrentHealPowerMultiplier();
-            if (multiplier <= 1.001f)
-            {
-                return;
-            }
-
-            int gained = Mathf.Max(0, _player.CurrentHealth - healthBefore);
-            if (gained <= 0)
-            {
-                return;
-            }
-
-            int bonus = Mathf.Max(0, Mathf.RoundToInt(gained * (multiplier - 1f)));
-            if (bonus <= 0)
-            {
-                return;
-            }
-
-            int nextHealth = Mathf.Min(_player.MaxHealth, _player.CurrentHealth + bonus);
-            _player.RestoreHealth(nextHealth, _player.MaxHealth);
-            TotalHealFromEquipBonus += bonus;
-            FloatingDamageTextManager.Instance?.ShowFloatingHealing(bonus, _player.GlobalPosition, 0f);
-            _companionController?.SpawnActionEffect(2); // 装备加成特效（ActionEffectScenes[2]）
-            _dialogue?.Speak(P2DialogueEvent.EquipmentBonus, bonus);
-
-            if (EnableLogging)
-            {
-                GD.Print($"[P2SupportExecutor] {source} heal bonus applied: +{bonus}");
-            }
         }
 
         /// <summary>

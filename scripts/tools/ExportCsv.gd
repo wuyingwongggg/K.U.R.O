@@ -227,7 +227,7 @@ func _export_characters() -> void:
 		push_warning("[ExportCsv] No .tscn found in " + CHAR_DIR)
 		return
 
-	var headers := ["file", "Speed", "AttackDamage", "AttackCooldown", "MaxHealth"]
+	var headers := ["file", "Speed", "AttackDamage", "AttackCooldown", "MaxHealth", "AiDescription"]
 	var rows: Array = [headers]
 
 	for fpath_v in files:
@@ -241,7 +241,8 @@ func _export_characters() -> void:
 			props.get("Speed", ""),
 			props.get("AttackDamage", ""),
 			props.get("AttackCooldown", ""),
-			props.get("MaxHealth", "")
+			props.get("MaxHealth", ""),
+			_str(str(props.get("AiDescription", "")))
 		])
 
 	_write_csv(OUT_CHARACTERS, rows)

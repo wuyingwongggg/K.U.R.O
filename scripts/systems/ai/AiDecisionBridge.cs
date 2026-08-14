@@ -20,13 +20,35 @@ namespace Kuros.Systems.AI
         [Export] public NodePath GameStateProviderPath { get; set; } = new("../GameStateProvider");
         [Export] public NodePath OllamaClientPath { get; set; } = new("../OllamaClient");
         [Export(PropertyHint.MultilineText)] public string DefaultInstruction { get; set; } = "You are deciding for a fast-paced action game. Prefer proactive combat decisions. When enemies are present, usually choose attack, use_skill, or switch_weapon. Only choose retreat when the player is in genuine lethal danger.";
+        /// <summary>
+        /// P2 人设 system 提示词（传给 Ollama 的 system 字段）：定义 P2 的性格与说话语气，
+        /// 让 LLM 生成的 reason 直接就是 P2 口吻的台词（代码不再拼前缀）。
+        /// 留空则不传 system（无 persona 引导）。
+        /// </summary>
+        [Export(PropertyHint.MultilineText)] public string PersonaSystemPrompt { get; set; } =
+            "你是 Yui，一位活泼忠诚的猫娘伙伴，和受博士委托的玩家同伴一起调查一座失控AI管理的酒店。\n" +
+            "说话语气：亲切、俏皮，偶尔带一点小傲娇，句尾常用\"喵\"。\n" +
+            "输出 JSON 中的 reason 字段必须用 P2 的口吻写，一句话说完，简短自然（如\"喵！有敌人，小心呀~\"）。\n" +
+            "每次都用不同的说法和句式，不要重复之前用过的表达，避免千篇一律。\n" +
+            "不要解释，不要说教，不要用书面语，要有剧情代入感，不要用玩家来称呼玩家。";
         [Export] public string Model { get; set; } = string.Empty;
         [Export] public bool Stream { get; set; } = true;
         [Export(PropertyHint.Range, "0,60,0.1")] public float MinRequestIntervalSeconds { get; set; } = 0.5f;
 
+        [ExportCategory("Prompt Template")]
+        /// <summary>提示词模板（手写文本段，Inspector 维护）：
+        /// 角色行/任务行/策略规则/输出格式/示例——BuildGameStatePrompt 只负责拼接，动态段（Situation/JSON）代码生成。</summary>
+        [Export(PropertyHint.MultilineText)] public string PromptRoleLine { get; set; } = AiPromptTemplate.DefaultRoleLine;
+        [Export(PropertyHint.MultilineText)] public string PromptTaskLine { get; set; } = AiPromptTemplate.DefaultTaskLine;
+        [Export(PropertyHint.MultilineText)] public string PromptPolicy { get; set; } = AiPromptTemplate.DefaultPolicy;
+        [Export(PropertyHint.MultilineText)] public string PromptOutputFormat { get; set; } = AiPromptTemplate.DefaultOutputFormat;
+        [Export(PropertyHint.MultilineText)] public string PromptExample { get; set; } = AiPromptTemplate.DefaultExample;
+
         public bool RequestInFlight => _requestInFlight;
         public string LastPromptText { get; private set; } = string.Empty;
         public string LastDecisionText { get; private set; } = string.Empty;
+        /// <summary>最近一次请求实际使用的模型名（来自 Ollama 响应 result.Model；无成功响应时为空）。</summary>
+        public string LastModelName { get; private set; } = string.Empty;
         public AiDecision LastStructuredDecision { get; private set; } = AiDecision.FromError(string.Empty, "No decision parsed yet.");
         public string LastStructuredDecisionJson => LastStructuredDecision.ToJson(pretty: true);
         public string LastDecisionParseError { get; private set; } = string.Empty;
@@ -86,16 +108,26 @@ namespace Kuros.Systems.AI
             {
                 string effectiveInstruction = string.IsNullOrWhiteSpace(instruction) ? DefaultInstruction : instruction!;
                 var state = _gameStateProvider.CaptureGameState();
-                LastPromptText = OllamaGenerateClient.BuildGameStatePrompt(state, effectiveInstruction);
+                var template = new AiPromptTemplate
+                {
+                    RoleLine = string.IsNullOrWhiteSpace(PromptRoleLine) ? AiPromptTemplate.DefaultRoleLine : PromptRoleLine,
+                    TaskLine = string.IsNullOrWhiteSpace(PromptTaskLine) ? AiPromptTemplate.DefaultTaskLine : PromptTaskLine,
+                    Policy = string.IsNullOrWhiteSpace(PromptPolicy) ? AiPromptTemplate.DefaultPolicy : PromptPolicy,
+                    OutputFormat = string.IsNullOrWhiteSpace(PromptOutputFormat) ? AiPromptTemplate.DefaultOutputFormat : PromptOutputFormat,
+                    Example = string.IsNullOrWhiteSpace(PromptExample) ? AiPromptTemplate.DefaultExample : PromptExample
+                };
+                LastPromptText = OllamaGenerateClient.BuildGameStatePrompt(state, effectiveInstruction, template);
                 EmitSignal(SignalName.DecisionPromptBuilt, LastPromptText);
 
                 var result = await _ollamaClient.GenerateAsync(
                     LastPromptText,
                     string.IsNullOrWhiteSpace(Model) ? null : Model,
-                    Stream);
+                    Stream,
+                    string.IsNullOrWhiteSpace(PersonaSystemPrompt) ? null : PersonaSystemPrompt);
 
                 if (result.Success)
                 {
+                    LastModelName = result.Model;
                     LastDecisionText = result.ResponseText;
                     LastStructuredDecision = AiDecision.Parse(result.ResponseText);
                     LastDecisionParseError = LastStructuredDecision.IsValid ? string.Empty : LastStructuredDecision.ParseError;

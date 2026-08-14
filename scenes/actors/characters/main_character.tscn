@@ -1,4 +1,4 @@
-[gd_scene load_steps=55 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=49 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="Script" uid="uid://dj1eq3skmq5qf" path="res://scripts/actors/heroes/attacks/PlayerLaserPointerAttack.cs" id="0_laserptr"]
 [ext_resource type="Script" uid="uid://12wblt72y8xt" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
@@ -38,12 +38,6 @@
 [ext_resource type="Script" uid="uid://c060w6pctgir3" path="res://scripts/actors/heroes/attacks/AttackHitboxDebugDrawer.cs" id="22_hitbox_debug"]
 [ext_resource type="PackedScene" uid="uid://ch7507iroiljg" path="res://scenes/ui/hud/EscapeHUD.tscn" id="24_tdm7a"]
 [ext_resource type="Resource" uid="uid://dc7u7akvpcjtn" path="res://resources/items/skills/WeaponSkill_Stab_Umbrella.tres" id="26_hitbox_preview_skill"]
-[ext_resource type="Script" uid="uid://bi2qqqs7h8pdp" path="res://scripts/systems/ai/GameStateProvider.cs" id="27_game_state_provider"]
-[ext_resource type="Script" uid="uid://b04ejw6pwys28" path="res://scripts/systems/ai/OllamaGenerateClient.cs" id="28_ollama_client"]
-[ext_resource type="Script" uid="uid://dv3qa4rhngv5v" path="res://scripts/systems/ai/AiDecisionBridge.cs" id="29_ai_decision_bridge"]
-[ext_resource type="Script" uid="uid://wi8yrx6su0t7" path="res://scripts/systems/ai/GameStateDebugPanel.cs" id="30_game_state_debug_panel"]
-[ext_resource type="Script" uid="uid://ihixldc0uwkm" path="res://scripts/systems/ai/AiOutputDebugPanel.cs" id="31_ai_output_debug_panel"]
-[ext_resource type="Script" uid="uid://ddrw67q4fyjya" path="res://scripts/systems/ai/AiDecisionExecutor.cs" id="33_ai_decision_executor"]
 [ext_resource type="Script" uid="uid://0jtxqm11tc2f" path="res://scripts/items/world/ThrowTrajectoryPreview.cs" id="43_throwpreview"]
 [ext_resource type="Script" uid="uid://dc7rmaqqyg4vn" path="res://scripts/actors/heroes/states/PlayerDashState.cs" id="44_dashstate"]
 [ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="45_afterimage"]
@@ -84,13 +78,14 @@ DebugOverlayFontSize = 128
 DebugOverlayColor = Color(0, 0.76862746, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
-Speed = 500.0
-AttackDamage = 10.0
-MaxHealth = 15000
+Speed = 500
+AttackDamage = 10
+MaxHealth = 150
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "玩家，受博士委托前来调查失控酒店AI的搭档、伙伴"
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0y2r2")
 scale = Vector2(12, 5)
@@ -436,78 +431,6 @@ script = ExtResource("21_utqjm")
 [node name="AfterimageController" type="Node" parent="."]
 script = ExtResource("45_afterimage")
 lifetime = 0.2
-
-[node name="GameStateProvider" type="Node" parent="."]
-script = ExtResource("27_game_state_provider")
-PlayerPath = NodePath("..")
-
-[node name="OllamaClient" type="Node" parent="."]
-script = ExtResource("28_ollama_client")
-DefaultModel = "qwen3.5:latest"
-DefaultStream = true
-
-[node name="AiDecisionBridge" type="Node" parent="."]
-script = ExtResource("29_ai_decision_bridge")
-Model = "qwen3.5:latest"
-
-[node name="AiDecisionExecutor" type="Node" parent="."]
-script = ExtResource("33_ai_decision_executor")
-
-[node name="GameStateDebugPanel" type="CanvasLayer" parent="."]
-layer = 100
-visible = false
-script = ExtResource("30_game_state_debug_panel")
-
-[node name="Panel" type="PanelContainer" parent="GameStateDebugPanel"]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 560.0
-offset_bottom = 420.0
-
-[node name="VBox" type="VBoxContainer" parent="GameStateDebugPanel/Panel"]
-layout_mode = 2
-
-[node name="RefreshButton" type="Button" parent="GameStateDebugPanel/Panel/VBox"]
-layout_mode = 2
-text = "Refresh GameState"
-
-[node name="ToggleButton" type="Button" parent="GameStateDebugPanel/Panel/VBox"]
-layout_mode = 2
-text = "Hide"
-
-[node name="StateText" type="RichTextLabel" parent="GameStateDebugPanel/Panel/VBox"]
-custom_minimum_size = Vector2(520, 360)
-layout_mode = 2
-size_flags_vertical = 3
-scroll_following = true
-
-[node name="AiOutputDebugPanel" type="CanvasLayer" parent="."]
-layer = 101
-visible = false
-script = ExtResource("31_ai_output_debug_panel")
-
-[node name="Panel" type="PanelContainer" parent="AiOutputDebugPanel"]
-offset_left = 580.0
-offset_top = 16.0
-offset_right = 1120.0
-offset_bottom = 420.0
-
-[node name="VBox" type="VBoxContainer" parent="AiOutputDebugPanel/Panel"]
-layout_mode = 2
-
-[node name="Title" type="Label" parent="AiOutputDebugPanel/Panel/VBox"]
-layout_mode = 2
-text = "AI Output"
-
-[node name="ToggleButton" type="Button" parent="AiOutputDebugPanel/Panel/VBox"]
-layout_mode = 2
-text = "Hide"
-
-[node name="OutputText" type="RichTextLabel" parent="AiOutputDebugPanel/Panel/VBox"]
-custom_minimum_size = Vector2(520, 340)
-layout_mode = 2
-size_flags_vertical = 3
-scroll_following = true
 
 [node name="HitboxEditorPreview" type="Node2D" parent="."]
 visible = false

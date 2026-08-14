@@ -34,20 +34,26 @@ namespace Kuros.Companions
                 "reposition" => "move_to",    // 重新站位（移动决策）
                 "loot" => "fetch_weapon",     // 拾取武器（实际前往拾取并拖回）
                 "use_skill" => "trigger_support_skill",
-                "use_support_item" => "use_support_item",
-                "heal" => "use_support_item",
-                "use_item" => "use_support_item",
+                "use_support_item" => "trigger_support_skill",  // 治疗统一走技能路径（食物路径已废弃）
+                "heal" => "trigger_support_skill",
+                "use_item" => "trigger_support_skill",
                 "attack" => "hold",
                 "switch_weapon" => "hold",
                 _ => intent
             };
+
+            // heal 类意图映射为治疗技能：目标固定 "heal"（避免落到默认 "player"→护盾）
+            if (mappedIntent == "trigger_support_skill"
+                && intent is "heal" or "use_item" or "use_support_item")
+            {
+                target = "heal";
+            }
 
             string message = string.Empty;
 
             return TryBuildDecisionCore(
                 mappedIntent,
                 target,
-                ItemTagIds.Food,
                 urgency,
                 duration,
                 reason,
@@ -83,19 +89,24 @@ namespace Kuros.Companions
             }
 
             string target = GetString(dict, "target", "player");
-            string itemTag = GetString(dict, "item_tag", ItemTagIds.Food);
             string urgency = NormalizeUrgency(GetString(dict, "urgency", "medium"));
             float duration = Mathf.Clamp(GetFloat(dict, "duration", 1.8f), 0f, 8f);
             string reason = GetString(dict, "reason");
             string message = GetString(dict, "message");
 
-            return TryBuildDecisionCore(intent, target, itemTag, urgency, duration, reason, message, out decision, out rejectReason);
+            // heal 类意图映射为治疗技能：目标固定 "heal"（食物路径已废弃）
+            if (intent is "heal" or "use_item" or "use_support_item")
+            {
+                intent = "trigger_support_skill";
+                target = "heal";
+            }
+
+            return TryBuildDecisionCore(intent, target, urgency, duration, reason, message, out decision, out rejectReason);
         }
 
         private static bool TryBuildDecisionCore(
             string intent,
             string target,
-            string itemTag,
             string urgency,
             float duration,
             string reason,
@@ -131,13 +142,6 @@ namespace Kuros.Companions
                     reason: string.IsNullOrWhiteSpace(reason) ? "ai suggested pickup" : reason,
                     urgency: urgency,
                     durationSeconds: Mathf.Max(1.2f, duration),
-                    target: target),
-
-                "use_support_item" => SupportDecision.UseSupportItem(
-                    sourceRule: "ai_bridge",
-                    reason: string.IsNullOrWhiteSpace(reason) ? "ai suggested support item" : reason,
-                    itemTag: string.IsNullOrWhiteSpace(itemTag) ? ItemTagIds.Food : itemTag,
-                    urgency: urgency,
                     target: target),
 
                 "trigger_support_skill" => SupportDecision.TriggerSupportSkill(
@@ -181,17 +185,10 @@ namespace Kuros.Companions
             if (intent != "show_hint" &&
                 intent != "suggest_retreat" &&
                 intent != "suggest_pickup" &&
-                intent != "use_support_item" &&
                 intent != "trigger_support_skill" &&
                 intent != "hold")
             {
                 rejectReason = $"intent '{intent}' is not in local whitelist";
-                return false;
-            }
-
-            if (intent == "use_support_item" && state.PlayerMaxHp > 0 && state.PlayerHp >= state.PlayerMaxHp)
-            {
-                rejectReason = "player hp already full";
                 return false;
             }
 

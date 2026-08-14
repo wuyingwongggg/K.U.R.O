@@ -24,6 +24,9 @@ namespace Kuros.Scenes
 		[Export] public bool AutoLoadSkillWindow = true;
 		[Export] public bool AutoShowLevelName = true;
 		[Export] public string LevelName = "关卡 1"; // 关卡名称，如果为空则使用场景名称
+		/// <summary>AI 可读关卡描述（供 GameStateProvider 快照喂给 LLM——本关地形/敌人构成等情境说明）。
+		/// 各战斗场景的 BattleSceneManager 节点 Inspector 配置。</summary>
+		[Export(PropertyHint.MultilineText)] public string AiLevelDescription { get; set; } = string.Empty;
 
 		private BattleHUD? _battleHUD;
 		private BattleMenu? _battleMenu;

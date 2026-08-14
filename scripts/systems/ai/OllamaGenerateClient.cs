@@ -32,9 +32,10 @@ namespace Kuros.Systems.AI
         /// <summary>请求超时（秒）。</summary>
         [Export(PropertyHint.Range, "1,600,1")] public int TimeoutSeconds { get; set; } = 120;
         /// <summary>最大生成 token 数。</summary>
-        [Export(PropertyHint.Range, "16,4096,1")] public int MaxPredictTokens { get; set; } = 512;
-        /// <summary>采样温度（越低越确定性）。</summary>
-        [Export(PropertyHint.Range, "0,2,0.01")] public float Temperature { get; set; } = 0.2f;
+        [Export(PropertyHint.Range, "16,4096,1")] public int MaxPredictTokens { get; set; } = 128;
+        /// <summary>采样温度（越低越确定性）。决策 JSON 结构化、模型指令跟随能力强，
+        /// 0.7 下 intent/target 仍稳定而 reason（P2 台词）更多样化，降低台词雷同。</summary>
+        [Export(PropertyHint.Range, "0,2,0.01")] public float Temperature { get; set; } = 0.7f;
         /// <summary>请求关闭思考模式（think=false）。Qwen 系模型可能只输出 thinking 而 response 为空，
         /// 关闭思考可提高直接返回最终答案的概率。</summary>
         [Export] public bool DisableThinking { get; set; } = true;
@@ -102,53 +103,116 @@ namespace Kuros.Systems.AI
             return await GenerateAsync(prompt, model, stream);
         }
 
-        /// <summary>把游戏状态快照拼装成模型提示词：说明游戏类型、决策策略、JSON 状态与输出格式要求。</summary>
-        public static string BuildGameStatePrompt(GameState state, string instruction)
+        /// <summary>把游戏状态快照拼装成模型提示词：手写文本段来自 AiPromptTemplate（Inspector 维护），
+        /// 动态段（Situation 情境行 / GameState JSON）由代码生成，此处只负责拼接。</summary>
+        public static string BuildGameStatePrompt(GameState state, string instruction, AiPromptTemplate? template = null)
         {
+            template ??= new AiPromptTemplate();
+
             string safeInstruction = string.IsNullOrWhiteSpace(instruction)
                 ? "Decide the next action for a fast-paced action game and prefer proactive combat behavior."
                 : instruction.Trim();
 
-            return string.Join("\n", new[]
+            var parts = new System.Collections.Generic.List<string>
             {
-                "You are an in-game decision model.",
-                "This is a fast-paced action game, not a cautious turn-based tactics game.",
-                "Given the following current game state, return one executable decision.",
+                template.RoleLine,
+                template.TaskLine,
                 string.Empty,
                 "Instruction:",
                 safeInstruction,
                 string.Empty,
-                "Decision policy:",
-                "- When enemies are present, default to proactive combat behavior.",
-                "- Prefer attack, use_skill, or switch_weapon over retreat.",
-                "- Do not choose retreat just because enemies are nearby.",
-                "- Choose retreat only if the player is in clear lethal danger, such as very low hp or being overwhelmed while under attack.",
-                "- Prefer use_skill when pressure is high and a stronger immediate action makes sense.",
-                "- Prefer switch_weapon only when it clearly improves the current combat situation.",
-                "- Do not choose loot while enemies are actively threatening the player.",
-                "- Reposition should stay combat-focused and short-term, not passive avoidance.",
-                "- If alive_enemy_count > 0 and player hp is not critically low, usually return attack or use_skill.",
-                "- Avoid repeating the same intent too many times in a row when situation is unchanged.",
-                "- Under close-range pressure, alternate between attack and reposition to kite instead of face-tanking forever.",
-                "- If hp is low and under_attack is true, prefer retreat or reposition over direct attack.",
-                string.Empty,
-                "GameState(JSON):",
-                state.ToAiInputJson(pretty: false),
-                string.Empty,
-                "Output format:",
-                "- Return strict JSON object only",
-                "- Do not wrap JSON in markdown code fences",
-                "- Required keys: intent, target, urgency, duration_seconds, reason",
-                "- intent must be a short snake_case action such as attack, retreat, reposition, loot, switch_weapon, use_skill",
-                "- target must be a short target label such as nearest_enemy, lowest_hp_enemy, safe_position, nearby_loot, none",
-                "- urgency must be one of: low, medium, high, critical",
-                "- duration_seconds must be a non-negative number",
-                "- reason must be one short sentence",
-                "- Keep the reason grounded in immediate action-game combat logic",
-                string.Empty,
-                "Example:",
-                "{\"intent\":\"attack\",\"target\":\"nearest_enemy\",\"urgency\":\"high\",\"duration_seconds\":1.2,\"reason\":\"A nearby enemy is within range and the player is not under immediate lethal threat.\"}"
-            });
+                "Policy:"
+            };
+
+            // Policy 多行文本逐行加入（- 开头的规则行）
+            foreach (string line in SplitTemplateLines(template.Policy))
+            {
+                parts.Add(line);
+            }
+
+            parts.Add(string.Empty);
+            parts.Add("Situation:");
+            parts.Add(BuildSituationText(state));
+            parts.Add(string.Empty);
+            parts.Add("GameState(JSON):");
+            parts.Add(state.ToAiInputJson(pretty: false));
+            parts.Add(string.Empty);
+
+            foreach (string line in SplitTemplateLines(template.OutputFormat))
+            {
+                parts.Add(line);
+            }
+
+            parts.Add(string.Empty);
+            parts.Add("Example:");
+            parts.Add(template.Example);
+
+            return string.Join("\n", parts);
+        }
+
+        /// <summary>模板多行文本按行拆分（跳过空行）。</summary>
+        private static System.Collections.Generic.IEnumerable<string> SplitTemplateLines(string text)
+        {
+            foreach (string rawLine in (text ?? string.Empty).Split('\n'))
+            {
+                string line = rawLine.TrimEnd('\r');
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+                yield return line;
+            }
+        }
+
+        /// <summary>情境描述（代码确定性生成，模型只负责措辞）：
+        /// 最近敌人的具体指代（名称/类型/描述/血量）+ 距离分带 + 接近方向——
+        /// 让 reason 能说"那个拿警棍的守卫"而非抽象的"敌人"，且用词与事实锚定一致。</summary>
+        private static string BuildSituationText(GameState state)
+        {
+            if (state.AliveEnemyCount <= 0)
+            {
+                return "无敌人";
+            }
+
+            string band = ClassifyDistanceBand(state.NearestEnemyDistance);
+            string approach = state.ApproachSituation switch
+            {
+                "enemy_approaching" => "敌人正在接近玩家",
+                "player_approaching" => "玩家主动接近敌人",
+                "mutual" => "双方正在对冲",
+                "receding" => "双方正在拉开",
+                _ => "距离稳定"
+            };
+
+            // 最近敌人的具体指代：reason 引用敌人时应使用这些特征（而非抽象说法或数值）
+            EnemyState? nearest = null;
+            foreach (var enemy in state.Enemies)
+            {
+                if (nearest == null || enemy.Distance < nearest.Distance)
+                {
+                    nearest = enemy;
+                }
+            }
+
+            if (nearest != null)
+            {
+                string desc = string.IsNullOrWhiteSpace(nearest.AiDescription)
+                    ? string.Empty
+                    : $"（{nearest.AiDescription}）";
+                return $"最近敌人：{nearest.Name}（{nearest.TypeName}）{desc}，血量 {nearest.CurrentHp}/{nearest.MaxHp}，" +
+                       $"距离 {state.NearestEnemyDistance:0}px（{band}），{approach}";
+            }
+
+            return $"距离 {state.NearestEnemyDistance:0}px（{band}），{approach}";
+        }
+
+        /// <summary>距离分带（阈值对齐游戏数值：AttackRange≈120、护盾危险圈 EnemyDangerDistance=320）。</summary>
+        private static string ClassifyDistanceBand(float distance)
+        {
+            if (distance < 200f) return "极近";
+            if (distance < 600f) return "近（危险范围）";
+            if (distance < 1200f) return "中等距离";
+            return "远";
         }
 
         /// <summary>发送 HTTP POST 请求并按流式/非流式分支解析响应。超时与异常统一转成失败结果。</summary>

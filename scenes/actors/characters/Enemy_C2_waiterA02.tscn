@@ -70,6 +70,7 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_561kr")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "黄色机器女仆，普通敌人，似乎已经失控，会四处乱甩整理好的碟子，会向其他酒店员工提供茶水服务，建议优先击破"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_sycgy")

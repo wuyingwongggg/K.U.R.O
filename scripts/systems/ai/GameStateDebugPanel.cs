@@ -59,7 +59,8 @@ namespace Kuros.Systems.AI
         {
             base._Process(delta);
 
-            if (!AutoRefresh)
+            // 隐藏时不刷新（RichTextLabel 大 JSON 渲染是主线程开销，隐藏时无意义）
+            if (!Visible || !AutoRefresh)
             {
                 return;
             }

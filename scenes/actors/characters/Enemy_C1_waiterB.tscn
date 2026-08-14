@@ -96,8 +96,8 @@ DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 80
-Speed = 600.0
-AttackDamage = 30.0
+Speed = 600
+AttackDamage = 30
 MaxHealth = 1000
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -105,6 +105,7 @@ StatProfile = SubResource("Resource_f4qnp")
 LootTable = ExtResource("5_0r650")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "仿生兔女郎，精英敌人，似乎是失控的表演型号，使用应援棒和表演用激光浮游炮攻击观众"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_eqcia")

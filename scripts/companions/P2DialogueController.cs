@@ -13,15 +13,13 @@ namespace Kuros.Companions
         QuietScenePickup,   // 安静场景提示（dtl: quiet_scene_pickup_N，自动随机变体）
         ShieldApplied,      // 护盾施加（dtl: shield_applied_N，自动随机变体）
         Healed,             // 治疗恢复（dtl: healed）
-        EquipmentBonus,     // 装备加成恢复（dtl: equipment_bonus）
         ShieldExpired,      // 护盾到期（dtl: shield_expired）
-        FallbackLowHp,      // 治疗决策被拒兜底（dtl: fallback_low_hp）
         FallbackEnemyClose, // 护盾决策被拒兜底（dtl: fallback_enemy_close）
         FallbackGeneric,    // 通用兜底（dtl: fallback_generic）
         WeaponFetchStart,   // 出发拾取武器（dtl: fetch_weapon_N，自动随机变体）
         FollowStarted,      // 进入跟随模式（dtl: follow_started_N，自动随机变体；越界跟随触发）
         FreeRoamStarted,    // 恢复自由模式（dtl: free_roam_started_N，自动随机变体；跟随超时触发）
-        AiChatter,          // AI 个性台词（dtl: ai_chatter）
+        PlayerDying,        // 玩家死亡（dtl: player_dying_N，自动随机变体；规则路径触发，不依赖 LLM）
     }
 
     /// <summary>
@@ -49,6 +47,7 @@ namespace Kuros.Companions
         private readonly Queue<string> _hintQueue = new();
         private bool _dialogicBusy;                // 气泡正在播放
         private bool _waitingForHintEnd;           // 等待当前气泡结束
+        private int _hintGeneration;               // 气泡代际：抢占/取消时递增，失效旧气泡的自动结束计时器
 
         public override void _Ready()
         {
@@ -97,15 +96,8 @@ namespace Kuros.Companions
                     // 带参数动态文本（保留备用）：PushHintDirect($"P2 恢复 +{args[0]}");
                     PushHint("healed");
                     break;
-                case P2DialogueEvent.EquipmentBonus:
-                    // 带参数动态文本（保留备用）：PushHintDirect($"装备加成额外恢复 +{args[0]}");
-                    PushHint("equipment_bonus");
-                    break;
                 case P2DialogueEvent.ShieldExpired:
                     PushHint("shield_expired");
-                    break;
-                case P2DialogueEvent.FallbackLowHp:
-                    PushHint("fallback_low_hp");
                     break;
                 case P2DialogueEvent.FallbackEnemyClose:
                     PushHint("fallback_enemy_close");
@@ -122,9 +114,9 @@ namespace Kuros.Companions
                 case P2DialogueEvent.FreeRoamStarted:
                     PushHint("free_roam_started");
                     break;
-                case P2DialogueEvent.AiChatter:
-                    // 带参数动态文本（保留备用）：PushHintDirect(args[0]?.ToString() ?? string.Empty);
-                    PushHint("ai_chatter");
+                case P2DialogueEvent.PlayerDying:
+                    // 死亡台词抢占式：清空排队 + 打断当前气泡立即播放（死亡窗口仅 1 秒，不能排队）
+                    PushHintUrgent("player_dying");
                     break;
             }
         }
@@ -239,9 +231,46 @@ namespace Kuros.Companions
             if (!_waitingForHintEnd) return;
             _waitingForHintEnd = false;
             _dialogicBusy = false;
+            _hintGeneration++; // 失效旧气泡的自动结束计时器
             _dialogic ??= GetNodeOrNull("/root/Dialogic");
             if (_dialogic != null && IsInstanceValid(_dialogic) && _dialogic.HasMethod("end_timeline"))
                 _dialogic.Call("end_timeline");
+        }
+
+        /// <summary>抢占式提示：清空排队 + 打断 P2 自己的气泡后立即播放（玩家死亡等终局事件用，
+        /// 保证及时显示而非排队等待）。若 Dialogic 正在播放剧情 timeline（非 P2 气泡）则不打断，
+        /// 按普通 PushHint 路径处理（被门控丢弃，不破坏剧情流程）。</summary>
+        public void PushHintUrgent(string hintKey)
+        {
+            if (string.IsNullOrWhiteSpace(hintKey))
+                return;
+
+            hintKey = ResolveVariant(hintKey);
+
+            _dialogic ??= GetNodeOrNull("/root/Dialogic");
+            if (_dialogic == null || !IsInstanceValid(_dialogic))
+                return;
+
+            // 清空排队中的旧气泡
+            _hintQueue.Clear();
+
+            if (_waitingForHintEnd)
+            {
+                // 打断 P2 自己的气泡并立即播放抢占内容
+                _waitingForHintEnd = false;
+                _dialogicBusy = false;
+                _hintGeneration++; // 失效旧气泡的自动结束计时器
+                if (_dialogic.HasMethod("end_timeline"))
+                    _dialogic.Call("end_timeline");
+            }
+            else if (_dialogic.Get("current_timeline").VariantType != Variant.Type.Nil)
+            {
+                // 剧情 timeline 播放中：不打断剧情，走普通路径（被门控丢弃）
+                PushHint(hintKey);
+                return;
+            }
+
+            StartDialogicHint(hintKey);
         }
 
         /// <summary>启动一条 Dialogic 气泡（标记忙碌 → 定位角色 → 到时自动结束）。</summary>
@@ -252,6 +281,7 @@ namespace Kuros.Companions
 
             _dialogicBusy = true;
             _waitingForHintEnd = true;
+            int generation = ++_hintGeneration; // 本气泡的代际：自动结束计时器只对当前代际生效
 
             // 若还没有激活的 Layout，先加载 textbubble_A 样式
             var styles = _dialogic.Get("Styles").AsGodotObject();
@@ -269,11 +299,12 @@ namespace Kuros.Companions
                     layoutNode.CallDeferred("register_character", P2CharacterPath, anchor);
             }
 
-            // 到时后自动结束（若玩家未手动推进）
+            // 到时后自动结束（若玩家未手动推进）；代际校验防止旧气泡计时器误杀抢占后的新气泡
             float delay = Mathf.Max(0.5f, HintDisplaySeconds);
             GetTree().CreateTimer(delay).Timeout += () =>
             {
-                if (_waitingForHintEnd && _dialogic != null && IsInstanceValid(_dialogic))
+                if (_waitingForHintEnd && generation == _hintGeneration
+                    && _dialogic != null && IsInstanceValid(_dialogic))
                     _dialogic.Call("end_timeline");
             };
         }

@@ -15,7 +15,7 @@ namespace Kuros.Companions
         [Export] public NodePath SupportBrainPath { get; set; } = new("../AI_Brain");
         [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
         [Export] public NodePath HintBubblePath { get; set; } = new("../HintBubble");
-        [Export] public NodePath GameStateProviderPath { get; set; } = new("../MainCharacter/GameStateProvider");
+        [Export] public NodePath GameStateProviderPath { get; set; } = new("../GameStateProvider");
 
         [ExportCategory("UI")]
         [Export] public NodePath ToggleButtonPath { get; set; } = new("Panel/VBox/ToggleButton");
@@ -165,10 +165,10 @@ namespace Kuros.Companions
                 sb.AppendLine($"result: {Safe(_executor.LastResult)}");
                 sb.AppendLine($"action: {Safe(_executor.LastIntent)}");
                 sb.AppendLine($"loadout: skill={Safe(_executor.GetEquippedSupportSkillId())} | equip={Safe(_executor.GetEquippedEquipmentId())}");
-                sb.AppendLine($"cooldown: skill={_executor.GetSupportSkillCooldownRemainingSeconds():0.0}s | item={_executor.GetSupportItemCooldownRemainingSeconds():0.0}s");
+                sb.AppendLine($"cooldown: skill={_executor.GetSupportSkillCooldownRemainingSeconds():0.0}s");
                 sb.AppendLine($"shield: {_executor.GetActiveShieldPoints()} | remain={_executor.GetShieldRemainingSeconds():0.0}s");
                 sb.AppendLine($"exec_stats: req={_executor.TotalDecisionRequests} apply={_executor.TotalDecisionApplied} reject={_executor.TotalDecisionRejected}");
-                sb.AppendLine($"exec_stats2: absorbed={_executor.TotalShieldAbsorbedDamage} heal_skill={_executor.TotalHealFromSkills} heal_bonus={_executor.TotalHealFromEquipBonus}");
+                sb.AppendLine($"exec_stats2: absorbed={_executor.TotalShieldAbsorbedDamage} heal_skill={_executor.TotalHealFromSkills}");
                 if (!string.IsNullOrWhiteSpace(_executor.LastActionDetail))
                 {
                     sb.AppendLine($"detail: {Safe(_executor.LastActionDetail)}");

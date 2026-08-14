@@ -117,14 +117,15 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350.0
-AttackDamage = 40.0
+Speed = 350
+AttackDamage = 40
 MaxHealth = 1250
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_geb57")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "网络管理员仿生人，精英敌人，召唤无人机追杀客户，注意常态无法攻击到，只有使用无人机核心才能使其受到伤害"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")

@@ -7,7 +7,7 @@ P2: （＾3＾）~♪
 [end_timeline]
 
 label combat
-P2: 注意节奏，先稳住站位
+P2: 注意喽喵~敌人接近喵~
 [end_timeline]
 
 label quiet_scene_pickup_1
@@ -20,10 +20,6 @@ P2: d(=^･ω･^=)b
 
 label quiet_scene_pickup_3
 P2: 打得不错喵~
-[end_timeline]
-
-label fallback_low_hp
-P2: 补给暂不可用，先撤一步保命
 [end_timeline]
 
 label fallback_enemy_close
@@ -47,7 +43,7 @@ P2: 发现武器了喵~ 我去捡回来喵~
 [end_timeline]
 
 label fetch_weapon_2
-P2: 看到武器了喵~ 这就出发喵~
+P2: 看到装备了喵~ 这就出发喵~
 [end_timeline]
 
 label fetch_weapon_3
@@ -63,11 +59,11 @@ P2: 等一等本喵~
 [end_timeline]
 
 label free_roam_started_1
-P2: 我先溜了喵~
+P2: 看看附近有什么喵~
 [end_timeline]
 
 label free_roam_started_2
-P2: 先摸一会儿鱼喵~
+P2: 先四周逛逛喵~
 [end_timeline]
 
 label ai_received
@@ -90,20 +86,20 @@ label healed_2
 P2: 给你治疗喵~
 [end_timeline]
 
-label equipment_bonus
-P2: 装备加成恢复了一些体力
-[end_timeline]
-
-label ai_chatter
-P2: 收到，已按建议行动
-[end_timeline]
-
 label shield_expired_1
 P2: (*´･д･)?
 [end_timeline]
 
 label shield_expired_2
 P2: 哎呀护盾失效了喵~
+[end_timeline]
+
+label player_dying_1
+P2: 别倒下啊喵(´;ω;`)
+[end_timeline]
+
+label player_dying_2
+P2: 怎么回事喵( ´ﾟДﾟ`)
 [end_timeline]
 
 label direct

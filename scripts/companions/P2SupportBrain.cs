@@ -13,11 +13,12 @@ namespace Kuros.Companions
     public partial class P2SupportBrain : Node
     {
         [ExportCategory("References")]
-        [Export] public NodePath GameStateProviderPath { get; set; } = new("../MainCharacter/GameStateProvider");
+        [Export] public NodePath GameStateProviderPath { get; set; } = new("../GameStateProvider");
         [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
         [Export] public NodePath SupportDecisionBridgePath { get; set; } = new("../AI_DecisionBridge");
-        [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../MainCharacter/AiDecisionBridge");
+        [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../AiDecisionBridge");
         [Export] public NodePath WeaponCarrierPath { get; set; } = new("../AI_WeaponCarrier");
+        [Export] public NodePath DialogueControllerPath { get; set; } = new("../AI_Dialogue");
 
         [ExportCategory("AI Bridge")]
         [Export] public bool EnableAiDecisionBridge { get; set; } = false;
@@ -45,7 +46,6 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "0.1,20,0.1")] public float GlobalHintCooldownSeconds { get; set; } = 2.2f;
 
         [ExportCategory("Rules")]
-        [Export(PropertyHint.Range, "0.05,1,0.01")] public float LowHpThresholdRatio { get; set; } = 0.35f;
         /// <summary>自动治疗阈值：玩家血量比例 ≤ 此值时 P2 主动释放治疗技能（不依赖攻击状态/J 面板切换）。</summary>
         [Export(PropertyHint.Range, "0.05,1,0.01")] public float HealThresholdRatio { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "10,2000,1")] public float EnemyDangerDistance { get; set; } = 320f;
@@ -64,13 +64,16 @@ namespace Kuros.Companions
         private P2SupportDecisionBridge? _decisionBridge;
         private AiDecisionBridge? _aiDecisionBridge;
         private P2WeaponCarrier? _weaponCarrier;
+        private P2DialogueController? _dialogue;
         private float _tickAccum;
         private ulong _globalNextHintAtMs;
         private ulong _nextAiRequestAtMs;
         private ulong _nextPersonalityChatterAtMs;
         private string _lastConsumedAiDecisionSignature = string.Empty;
-        private string _lastPersonalitySourceSignature = string.Empty;
+        private readonly System.Collections.Generic.Queue<string> _personalitySignatureHistory = new();
+        private const int PersonalitySignatureHistoryMax = 5; // 台词去重窗口：与最近 5 条签名不同才说
         private readonly Dictionary<string, ulong> _ruleCooldownUntilMs = new();
+        private bool _playerDyingDialogueEmitted; // 死亡台词只说一次（场景重载自然重置）
 
         public ulong LastEvaluateAtMs { get; private set; }
         public string LastTriggeredRuleKey { get; private set; } = string.Empty;
@@ -111,6 +114,14 @@ namespace Kuros.Companions
         {
             LastEvaluateAtMs = Time.GetTicksMsec();
 
+            // 玩家死亡：最高优先级——抑制 LLM 桥、个性台词与全部支持规则，触发一次死亡台词
+            // （规则路径 dtl 文本，不依赖 LLM；有/无 LLM 均正常工作）
+            if (IsPlayerDying(state))
+            {
+                TryEmitPlayerDyingDialogue();
+                return;
+            }
+
             // Personality chatter runs on its own low-frequency gate and should not depend on rule branch returns.
             TryEmitPersonalityChatter(state);
 
@@ -142,19 +153,6 @@ namespace Kuros.Companions
                         target: "heal",
                         urgency: "high"),
                     perRuleCooldownSeconds: HealRuleCooldownSeconds);
-            }
-
-            if (hpRatio <= LowHpThresholdRatio && state.PlayerUnderAttack)
-            {
-                TryEmitDecision(
-                    ruleKey: "low_hp_under_attack",
-                    decision: SupportDecision.UseSupportItem(
-                        sourceRule: "low_hp_under_attack",
-                        reason: "player hp below threshold while under attack",
-                        itemTag: ItemTagIds.Food,
-                        urgency: "high"),
-                    perRuleCooldownSeconds: HealRuleCooldownSeconds);
-                return;
             }
 
             // 方案 A：武器搬运进行中（WeaponCarrier.IsBusy）时护盾让位，避免移动权冲突
@@ -432,7 +430,8 @@ namespace Kuros.Companions
 
             var decision = _aiDecisionBridge.LastStructuredDecision;
             string sourceSignature = BuildAiDecisionSignature(decision);
-            if (sourceSignature == _lastPersonalitySourceSignature)
+            // 去重：与最近 N 条台词签名都不同才说（消除相同状态下的雷同）
+            if (_personalitySignatureHistory.Contains(sourceSignature))
             {
                 _nextPersonalityChatterAtMs = now + SecondsToMs(PersonalityChatterMinIntervalSeconds * 0.75f);
                 return;
@@ -455,30 +454,28 @@ namespace Kuros.Companions
 
             if (_supportExecutor.TryExecute(hint))
             {
-                _lastPersonalitySourceSignature = sourceSignature;
+                // 记录签名到历史窗口（超出容量移除最旧）
+                _personalitySignatureHistory.Enqueue(sourceSignature);
+                while (_personalitySignatureHistory.Count > PersonalitySignatureHistoryMax)
+                {
+                    _personalitySignatureHistory.Dequeue();
+                }
                 TotalPersonalityChatters++;
             }
 
             _nextPersonalityChatterAtMs = now + SecondsToMs(PersonalityChatterMinIntervalSeconds);
         }
 
+        /// <summary>个性台词：直接使用 LLM 生成的 reason——语气已由 AiDecisionBridge 的
+        /// PersonaSystemPrompt（P2 人设 system 提示）引导，代码不再拼前缀。</summary>
         private string BuildPersonalityText(AiDecision decision)
         {
-            string reason = (decision.Reason ?? string.Empty).Trim();
-            string intent = (decision.Intent ?? string.Empty).Trim().ToLowerInvariant();
-
-            string prefix = intent switch
+            string text = (decision.Reason ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(text))
             {
-                "attack" => "我觉得可以主动压一下，",
-                "use_skill" => "这波节奏不错，",
-                "retreat" => "先别贪，我建议稳一手，",
-                "reposition" => "换个站位更舒服，",
-                "loot" => "安全的话顺手摸掉落，",
-                _ => "我这边判断是，"
-            };
+                return string.Empty;
+            }
 
-            string core = string.IsNullOrWhiteSpace(reason) ? "当前局势可以再快一点。" : reason;
-            string text = $"{prefix}{core}";
             if (text.Length > Mathf.Max(8, PersonalityChatterMaxChars))
             {
                 text = text[..Mathf.Max(8, PersonalityChatterMaxChars)] + "...";
@@ -491,11 +488,6 @@ namespace Kuros.Companions
         /// enemy_too_close（护盾决策）在玩家已有护盾时返回空——有盾即无需告知"暂不可用"。</summary>
         private string BuildFallbackHint(string ruleKey)
         {
-            if (ruleKey == "low_hp_under_attack")
-            {
-                return "fallback_low_hp";
-            }
-
             if (ruleKey == "enemy_too_close")
             {
                 // 玩家当前持有护盾：护盾决策被拒无需兜底提示（已有盾，不必提示"暂不可用"）
@@ -563,6 +555,37 @@ namespace Kuros.Companions
                 _aiDecisionBridge = GetNodeOrNull<AiDecisionBridge>(AiDecisionBridgePath)
                     ?? GetNodeOrNull<AiDecisionBridge>(NormalizeRelativePath(AiDecisionBridgePath));
             }
+
+            if (_dialogue == null || !IsInstanceValid(_dialogue) || !_dialogue.IsInsideTree())
+            {
+                _dialogue = GetNodeOrNull<P2DialogueController>(DialogueControllerPath)
+                    ?? GetNodeOrNull<P2DialogueController>(NormalizeRelativePath(DialogueControllerPath));
+            }
+        }
+
+        /// <summary>玩家是否处于死亡流程（Dying/Dead 状态或血量为 0）。</summary>
+        private static bool IsPlayerDying(GameState state)
+        {
+            if (state.PlayerHp <= 0)
+            {
+                return true;
+            }
+
+            string stateName = state.PlayerStateName ?? string.Empty;
+            return stateName == "Dying" || stateName == "Dead";
+        }
+
+        /// <summary>死亡台词：规则路径 dtl 文本（player_dying_N 随机变体），整个死亡窗口只说一次。
+        /// 不依赖 LLM——有/无 LLM 接入均正常触发。</summary>
+        private void TryEmitPlayerDyingDialogue()
+        {
+            if (_playerDyingDialogueEmitted)
+            {
+                return;
+            }
+
+            _playerDyingDialogueEmitted = true;
+            _dialogue?.Speak(P2DialogueEvent.PlayerDying);
         }
 
         private static ulong SecondsToMs(float seconds)

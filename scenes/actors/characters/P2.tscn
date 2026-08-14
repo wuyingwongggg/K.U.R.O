@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://cgjrdwkemgrcy"]
+[gd_scene load_steps=28 format=3 uid="uid://cgjrdwkemgrcy"]
 
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_87y7c"]
 [ext_resource type="Script" uid="uid://csll5ffp7awd5" path="res://scripts/companions/P2CompanionController.cs" id="2_p2follow"]
@@ -20,6 +20,11 @@
 [ext_resource type="Script" uid="uid://cnp1ua5f38uyt" path="res://scripts/companions/states/P2StunState.cs" id="14_p2stun"]
 [ext_resource type="Script" uid="uid://yh01qcriwen2" path="res://scripts/companions/P2WeaponCarrier.cs" id="15_weaponcarrier"]
 [ext_resource type="Script" uid="uid://c0h11rcqixei5" path="res://scripts/companions/P2DialogueController.cs" id="16_dialogue"]
+[ext_resource type="Script" uid="uid://bi2qqqs7h8pdp" path="res://scripts/systems/ai/GameStateProvider.cs" id="17_game_state_provider"]
+[ext_resource type="Script" uid="uid://b04ejw6pwys28" path="res://scripts/systems/ai/OllamaGenerateClient.cs" id="18_ollama_client"]
+[ext_resource type="Script" uid="uid://dv3qa4rhngv5v" path="res://scripts/systems/ai/AiDecisionBridge.cs" id="19_ai_decision_bridge"]
+[ext_resource type="Script" uid="uid://wi8yrx6su0t7" path="res://scripts/systems/ai/GameStateDebugPanel.cs" id="20_game_state_debug_panel"]
+[ext_resource type="Script" uid="uid://ihixldc0uwkm" path="res://scripts/systems/ai/AiOutputDebugPanel.cs" id="21_ai_output_debug_panel"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_v2uuc"]
 shader = ExtResource("2_87y7c")
@@ -126,7 +131,11 @@ y_sort_enabled = true
 
 [node name="AI_Brain" type="Node" parent="."]
 script = ExtResource("4_p2brain")
+EnableAiDecisionBridge = true
 CarryRangeMax = 3000.0
+AiRequestIntervalSeconds = 10.0
+PersonalityChatterMinIntervalSeconds = 10.0
+PersonalityChatterChance = 1.0
 
 [node name="AI_Dialogue" type="Node" parent="."]
 script = ExtResource("16_dialogue")
@@ -142,6 +151,74 @@ script = ExtResource("5_p2executor")
 
 [node name="AI_DecisionBridge" type="Node" parent="."]
 script = ExtResource("6_p2bridge")
+
+[node name="GameStateProvider" type="Node" parent="."]
+script = ExtResource("17_game_state_provider")
+PlayerPath = NodePath("../MainCharacter")
+
+[node name="OllamaClient" type="Node" parent="."]
+script = ExtResource("18_ollama_client")
+DefaultModel = "qwen3.5:latest"
+DefaultStream = true
+
+[node name="AiDecisionBridge" type="Node" parent="."]
+script = ExtResource("19_ai_decision_bridge")
+Model = "qwen3.5:latest"
+
+[node name="GameStateDebugPanel" type="CanvasLayer" parent="."]
+layer = 100
+visible = false
+script = ExtResource("20_game_state_debug_panel")
+
+[node name="Panel" type="PanelContainer" parent="GameStateDebugPanel"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 560.0
+offset_bottom = 420.0
+
+[node name="VBox" type="VBoxContainer" parent="GameStateDebugPanel/Panel"]
+layout_mode = 2
+
+[node name="RefreshButton" type="Button" parent="GameStateDebugPanel/Panel/VBox"]
+layout_mode = 2
+text = "Refresh GameState"
+
+[node name="ToggleButton" type="Button" parent="GameStateDebugPanel/Panel/VBox"]
+layout_mode = 2
+text = "Hide"
+
+[node name="StateText" type="RichTextLabel" parent="GameStateDebugPanel/Panel/VBox"]
+custom_minimum_size = Vector2(520, 360)
+layout_mode = 2
+size_flags_vertical = 3
+scroll_following = true
+
+[node name="AiOutputDebugPanel" type="CanvasLayer" parent="."]
+layer = 101
+script = ExtResource("21_ai_output_debug_panel")
+
+[node name="Panel" type="PanelContainer" parent="AiOutputDebugPanel"]
+offset_left = 580.0
+offset_top = 16.0
+offset_right = 1120.0
+offset_bottom = 420.0
+
+[node name="VBox" type="VBoxContainer" parent="AiOutputDebugPanel/Panel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="AiOutputDebugPanel/Panel/VBox"]
+layout_mode = 2
+text = "AI Output"
+
+[node name="ToggleButton" type="Button" parent="AiOutputDebugPanel/Panel/VBox"]
+layout_mode = 2
+text = "Hide"
+
+[node name="OutputText" type="RichTextLabel" parent="AiOutputDebugPanel/Panel/VBox"]
+custom_minimum_size = Vector2(520, 340)
+layout_mode = 2
+size_flags_vertical = 3
+scroll_following = true
 
 [node name="HitArea" type="Area2D" parent="."]
 

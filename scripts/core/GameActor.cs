@@ -33,6 +33,9 @@ namespace Kuros.Core
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
 		[Export] public float AttackCooldown = 1f;
 		[Export] public int MaxHealth = 15;
+		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
+		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
+		[Export(PropertyHint.MultilineText)] public string AiDescription { get; set; } = string.Empty;
 		[Export] public bool FaceLeftByDefault = false;
 		/// <summary>
 		/// 初始朝向。true=朝右，false=朝左。在 _Ready 时应用，不影响行为逻辑。

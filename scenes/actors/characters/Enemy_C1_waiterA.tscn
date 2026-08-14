@@ -71,13 +71,14 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 1.0
+AttackDamage = 1
 MaxHealth = 100
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_ikeql")
 DamageFlashColor = Color(18.892, 18.892, 18.892, 1)
 
+AiDescription = "蓝色机器女仆，普通敌人，似乎已经失控，远距离朝顾客投掷茶壶，会向其他酒店员工提供茶水服务，建议优先击破"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_sycgy")
