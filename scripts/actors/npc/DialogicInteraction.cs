@@ -32,9 +32,9 @@ namespace Kuros.Actors.Npc
 		[Export] public NodePath BubbleAnchorPath { get; set; } = "Marker2D";
 
 		/// <summary>
-		/// 交互提示文字
+		/// 交互提示文字（{KEY} 由当前 interact 绑定键替换）
 		/// </summary>
-		[Export] public string PromptText { get; set; } = "[E] 交互";   //留空时进入area2d范围自动触发对话
+		[Export] public string PromptText { get; set; } = "[{KEY}] 交互";   //留空时进入area2d范围自动触发对话
 
 		/// <summary>
 		/// 是否只触发一次（触发后禁用交互）
@@ -92,6 +92,10 @@ namespace Kuros.Actors.Npc
 					GD.PrintErr($"DialogicInteraction: 清理 Area2D 信号时出错：{ex.Message}");
 				}
 			}
+
+			// 清理改键刷新订阅
+			if (Kuros.Managers.GameSettingsManager.Instance != null)
+				Kuros.Managers.GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
 		}
 
 		public override void _Ready()
@@ -113,6 +117,9 @@ namespace Kuros.Actors.Npc
 
 			CreatePromptLabel();
 			UpdatePrompt();
+
+			// 改键后实时刷新提示文本
+			Kuros.Managers.GameSettingsManager.Instance.InputBindingsChanged += OnInputBindingsChanged;
 		}
 
 		public override void _Process(double delta)
@@ -317,10 +324,22 @@ namespace Kuros.Actors.Npc
 			UpdatePrompt();
 		}
 
+		/// <summary>用当前 interact 绑定键格式化提示文本（模板中的 {KEY} 占位符）。</summary>
+		private string FormatPromptText()
+		{
+			return Kuros.Managers.GameSettingsManager.Instance?.FormatActionPrompt(PromptText, "interact") ?? PromptText;
+		}
+
+		private void OnInputBindingsChanged()
+		{
+			if (_promptLabel != null && GodotObject.IsInstanceValid(_promptLabel))
+				_promptLabel.Text = FormatPromptText();
+		}
+
 		private void CreatePromptLabel()
 		{
 			_promptLabel = new Label();
-			_promptLabel.Text = PromptText;
+			_promptLabel.Text = FormatPromptText();
 			_promptLabel.HorizontalAlignment = HorizontalAlignment.Center;
 			_promptLabel.Visible = false;
 			_promptLabel.Position = new Vector2(-60, -90);

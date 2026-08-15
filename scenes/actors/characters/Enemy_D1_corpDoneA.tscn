@@ -4,9 +4,9 @@
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_55fyn"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_h8ewy"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_njyiu"]
-[ext_resource type="Script" uid="uid://cddf4uyd7uwex" path="res://scripts/controllers/ShadowFollower.cs" id="4_xtsxx"]
+[ext_resource type="Script" uid="uid://cbasgy23b5jmr" path="res://scripts/controllers/ShadowFollower.cs" id="4_xtsxx"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://bt6sfk2an8qv7" path="res://animations/spine/Enemy_D1_CorpDoneA.tres" id="5_scapk"]
-[ext_resource type="Script" uid="uid://ctbvpnue2rlif" path="res://scripts/controllers/SpineController.gd" id="6_jn4m8"]
+[ext_resource type="Script" uid="uid://vrprwog5yn1j" path="res://scripts/controllers/SpineController.gd" id="6_jn4m8"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="7_tcukf"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="8_nfqhi"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="9_hspxy"]
@@ -68,18 +68,19 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_hglex")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 AttackDamage = 10
 MaxHealth = 150
+AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，坐在办公椅上攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_55fyn")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，坐在办公椅上攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -140,7 +141,7 @@ skeleton_data_res = ExtResource("5_scapk")
 preview_skin = "Default"
 preview_animation = "attack"
 preview_frame = true
-preview_time = 0.0
+preview_time = 3.2
 script = ExtResource("6_jn4m8")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]

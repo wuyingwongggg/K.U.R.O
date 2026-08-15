@@ -10,10 +10,10 @@ namespace Kuros.Environments
     /// 电梯加载控制器 — 将 Stage_loading 场景中的电梯作为可交互过渡界面。
     ///
     /// 状态流程：
-    ///   Idle    → 玩家进入交互区域，显示"[E] 进入下一楼层"提示
-    ///   Loading → 玩家按 E 后：播放 loading 动画 + 后台异步加载目标场景
+    ///   Idle    → 玩家进入交互区域，显示"[{KEY}] 进入下一楼层"提示（{KEY}=当前 interact 绑定键）
+    ///   Loading → 玩家按交互键后：播放 loading 动画 + 后台异步加载目标场景
     ///             满足【动画已播放 MinRideDuration 秒 AND 场景已加载】才进入 Arrived
-    ///   Arrived → 停止动画，显示"[E] 离开电梯"提示
+    ///   Arrived → 停止动画，显示"[{KEY}] 离开电梯"提示
     ///   （玩家进入指定区域后）→ ChangeSceneToPacked 切换到目标场景
     ///
     /// 使用方式：
@@ -86,6 +86,9 @@ namespace Kuros.Environments
                 GD.PushWarning("[ElevatorController] PendingNextStagePath 为空，请在切换到 Stage_loading 前设置目标路径或在 Inspector 中设置 NextStagePath。");
 
             UpdateHintLabel();
+
+            // 改键后实时刷新提示文本
+            GameSettingsManager.Instance.InputBindingsChanged += OnInputBindingsChanged;
         }
 
         public override void _ExitTree()
@@ -99,6 +102,9 @@ namespace Kuros.Environments
                 _exitArea.BodyEntered -= OnExitAreaBodyEntered;
             if (_animPlayer != null)
                 _animPlayer.AnimationFinished -= OnAnimationFinished;
+
+            if (GameSettingsManager.Instance != null)
+                GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
         }
 
         // ── 每帧逻辑 ──────────────────────────────────────────────
@@ -133,7 +139,7 @@ namespace Kuros.Environments
 
         // ── 状态转换 ──────────────────────────────────────────────
 
-        /// <summary>玩家按 [E] 后先播放 close 动画，动画结束后再进入 Loading。</summary>
+        /// <summary>玩家按交互键（interact）后先播放 close 动画，动画结束后再进入 Loading。</summary>
         private void StartClosing()
         {
             if (string.IsNullOrEmpty(_nextStagePath))
@@ -258,13 +264,18 @@ namespace Kuros.Environments
             }
         }
 
+        private void OnInputBindingsChanged()
+        {
+            UpdateHintLabel();
+        }
+
         private void UpdateHintLabel()
         {
             if (_hintLabel == null) return;
             switch (_state)
             {
                 case ElevatorState.Idle:
-                    _hintLabel.Text    = "[E] 进入下一楼层";
+                    _hintLabel.Text    = GameSettingsManager.Instance?.FormatActionPrompt("[{KEY}] 进入下一楼层", "interact") ?? "[{KEY}] 进入下一楼层";
                     _hintLabel.Visible = _playerInRange;
                     break;
                 case ElevatorState.Closing:

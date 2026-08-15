@@ -111,7 +111,7 @@ namespace Kuros.UI
             }
         }
 
-        private void PopulateOptions()
+        private async void PopulateOptions()
         {
             foreach (var card in _cards)
                 card.QueueFree();
@@ -126,11 +126,37 @@ namespace Kuros.UI
             float cardHeight = Mathf.Min(cardWidth * (340f / 260f), CardContainer.Size.Y);
             float cardY = (CardContainer.Size.Y - cardHeight) / 2f;
 
+            // 阶段1：入树 + 定尺寸 + 同步 SubViewport + 字号缩放（此时不填文本）
             for (int i = 0; i < count; i++)
             {
                 var effect = _options[i];
                 var card = CardTemplate.Instantiate<BuildCard>();
                 card.CardIndex = i;
+                card.Confirmed += OnCardConfirmed;
+
+                float x = i * (cardWidth + gap);
+                CardContainer.AddChild(card);
+                card.Position = new Vector2(x, cardY);
+                card.Size = new Vector2(cardWidth, cardHeight);
+                card.SyncViewportSize();
+                card.ApplyCardScale();
+                card.ApplyRarityVisuals(effect.Rarity);
+                _cards.Add(card);
+            }
+
+            // 等待一帧：SubViewport 内部的控件需要一次布局（sort）才能把锚点解析成
+            // 最终尺寸。若在此之前设文本，DescLabel 会按过期尺寸测量换行——
+            // 导出版帧节奏快时就会出现"只显示第一行、行尾半字被裁"。
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+            // 阶段2：布局稳定后填文本，保证按最终宽度约束测量换行
+            for (int i = 0; i < count; i++)
+            {
+                var effect = _options[i];
+                var card = _cards[i];
+                if (!IsInstanceValid(card) || !card.IsInsideTree())
+                    continue;
+
                 card.NameLabel!.Text = effect.DisplayName;
                 int currentStacks = 0;
                 _stacksByEffectId?.TryGetValue(effect.EffectId, out currentStacks);
@@ -144,16 +170,6 @@ namespace Kuros.UI
                     card.Icon.Texture = effect.Icon;
                     card.Icon.Visible = effect.Icon != null;
                 }
-                card.Confirmed += OnCardConfirmed;
-
-                float x = i * (cardWidth + gap);
-                CardContainer.AddChild(card);
-                card.Position = new Vector2(x, cardY);
-                card.Size = new Vector2(cardWidth, cardHeight);
-                card.SyncViewportSize();
-                card.ApplyCardScale();
-                card.ApplyRarityVisuals(effect.Rarity);
-                _cards.Add(card);
             }
         }
 

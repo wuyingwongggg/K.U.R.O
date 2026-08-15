@@ -11,7 +11,7 @@ namespace Kuros.Environments
 {
     /// <summary>
     /// 敌人生成控制台交互器。
-    /// 挂载到场景中作为独立的敌人生成系统，支持玩家靠近时显示提示，按E打开生成窗口，
+    /// 挂载到场景中作为独立的敌人生成系统，支持玩家靠近时显示提示，按交互键（interact）打开生成窗口，
     /// 选择敌人并确认后直接生成敌人（不依赖EnemySpawnManager）。
     /// </summary>
     public partial class EnemySpawnConsole : Node2D
@@ -189,6 +189,9 @@ namespace Kuros.Environments
                 _playerActor = pa;
                 _playerActor.HealthChanged += OnPlayerHealthChanged;
             }
+
+            // 改键后实时刷新提示文本
+            GameSettingsManager.Instance.InputBindingsChanged += OnInputBindingsChanged;
         }
 
         public override void _ExitTree()
@@ -208,6 +211,9 @@ namespace Kuros.Environments
 
             if (_playerActor != null && GodotObject.IsInstanceValid(_playerActor))
                 _playerActor.HealthChanged -= OnPlayerHealthChanged;
+
+            if (GameSettingsManager.Instance != null)
+                GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
 
             // 销毁空气墙
             RemoveTestAreaBoundaryWalls();
@@ -242,7 +248,12 @@ namespace Kuros.Environments
             if (_hintLabel == null) return;
             _hintLabel.Visible = _playerInRange;
             if (_playerInRange)
-                _hintLabel.Text = "[E] 打开生成器";
+                _hintLabel.Text = GameSettingsManager.Instance?.FormatActionPrompt("[{KEY}] 打开生成器", "interact") ?? "[{KEY}] 打开生成器";
+        }
+
+        private void OnInputBindingsChanged()
+        {
+            UpdateHintLabel();
         }
 
         // ── SpawnArea 边界 & 玩家死亡处理 ─────────────────────────

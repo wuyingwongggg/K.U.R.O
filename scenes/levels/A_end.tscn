@@ -1,17 +1,17 @@
 [gd_scene load_steps=22 format=3 uid="uid://byv7ty32mj11t"]
 
-[ext_resource type="Texture2D" uid="uid://dt0nmdyntreh8" path="res://assets/environments/scene_1_home/房间3背景.png" id="1_rmv6t"]
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_t2ifw"]
-[ext_resource type="Texture2D" uid="uid://bxoeo1yft0a0h" path="res://assets/environments/scene_1_home/房间3地面.png" id="2_t2ifw"]
+[ext_resource type="Texture2D" uid="uid://q1uptehfrvda" path="res://assets/environments/scene_1_home/房间3背景.png" id="1_rmv6t"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_t2ifw"]
+[ext_resource type="Texture2D" uid="uid://bru72j0rqw78y" path="res://assets/environments/scene_1_home/房间3地面.png" id="2_t2ifw"]
 [ext_resource type="Resource" uid="uid://qsacvgs2q4fq" path="res://resources/cutscene/A_end_intro.tres" id="3_ggdpc"]
-[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_eacmu"]
+[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_eacmu"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_4di3j"]
-[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="5_xhmyt"]
+[ext_resource type="Script" uid="uid://blrupwolbou73" path="res://scripts/environments/ParallaxBackground2D.cs" id="5_xhmyt"]
 [ext_resource type="Texture2D" uid="uid://cofpy8nif8mac" path="res://assets/environments/scene_1_home/房间3背景2.png" id="6_3uxt7"]
 [ext_resource type="PackedScene" uid="uid://cgy13s0ewifos" path="res://scenes/environments/taxiSign.tscn" id="6_4di3j"]
 [ext_resource type="PackedScene" uid="uid://fym6u3tp6lve" path="res://scenes/objects/Moving_A_end_taxi.tscn" id="9_gw5dp"]
-[ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="10_245md"]
-[ext_resource type="Script" uid="uid://1rvj0kv60p00" path="res://scripts/environments/TaxiController.cs" id="10_taxi"]
+[ext_resource type="Script" uid="uid://6am057djn61q" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="10_245md"]
+[ext_resource type="Script" uid="uid://b2n7egrce5pim" path="res://scripts/environments/TaxiController.cs" id="10_taxi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_245md"]
 size = Vector2(10314, 3000)
@@ -104,8 +104,10 @@ flip_h = true
 [node name="floor2" type="Sprite2D" parent="Environments"]
 z_index = -2
 z_as_relative = false
-position = Vector2(-2003, -197.5)
+position = Vector2(-2003, -64)
 texture = ExtResource("2_t2ifw")
+region_enabled = true
+region_rect = Rect2(0, 269.0746, 2357.4448, 2427.9253)
 
 [node name="floor" type="Sprite2D" parent="Environments"]
 position = Vector2(-1656, -197.5)
@@ -166,5 +168,5 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 64
-text = "[E]"
+text = "[{KEY}]"
 horizontal_alignment = 1

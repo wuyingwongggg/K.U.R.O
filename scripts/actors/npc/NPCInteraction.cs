@@ -19,8 +19,8 @@ namespace Kuros.Actors.NPC
 		[Export] public bool ShowInteractionPrompt { get; set; } = true;	
 		
 		[ExportCategory("Visual")]
-		[Export] public NodePath? PromptLabelPath { get; set; }	
-		[Export] public string InteractionPromptText { get; set; } = "[E] 交互";
+		[Export] public NodePath? PromptLabelPath { get; set; }
+		[Export] public string InteractionPromptText { get; set; } = "[{KEY}] 交互"; // {KEY} 由当前 interact 绑定键替换
 		
 		// 提示框样式
 		[Export(PropertyHint.Range, "8,160,1")] public int PromptFontSize { get; set; } = 48;
@@ -163,7 +163,7 @@ namespace Kuros.Actors.NPC
 
 			_promptLabel = new Label();
 			_promptLabel.Name = "InteractionPrompt";
-			_promptLabel.Text = InteractionPromptText;
+			_promptLabel.Text = FormatPromptText();
 			_promptLabel.HorizontalAlignment = HorizontalAlignment.Center;
 			_promptLabel.VerticalAlignment = VerticalAlignment.Center;
 			_promptLabel.Visible = false;
@@ -190,6 +190,27 @@ namespace Kuros.Actors.NPC
 			AddChild(control);
 
 			control.Position = PromptOffset;
+
+			// 改键后实时刷新提示文本
+			GameSettingsManager.Instance.InputBindingsChanged += OnInputBindingsChanged;
+		}
+
+		/// <summary>用当前 interact 绑定键格式化提示文本（模板中的 {KEY} 占位符）。</summary>
+		private string FormatPromptText()
+		{
+			return GameSettingsManager.Instance?.FormatActionPrompt(InteractionPromptText, "interact") ?? InteractionPromptText;
+		}
+
+		private void OnInputBindingsChanged()
+		{
+			if (_promptLabel != null && GodotObject.IsInstanceValid(_promptLabel))
+				_promptLabel.Text = FormatPromptText();
+		}
+
+		public override void _ExitTree()
+		{
+			if (GameSettingsManager.Instance != null)
+				GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
 		}
 		
 		/// <summary>

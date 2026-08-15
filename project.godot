@@ -107,6 +107,10 @@ version_control/autoload_on_startup=true
 
 enabled=PackedStringArray("res://addons/csv-data-importer/plugin.cfg", "res://addons/dialogic/plugin.cfg")
 
+[gui]
+
+theme/default_font="res://assets/fonts/NotoSansSC-VF.ttf"
+
 [input]
 
 ui_cancel={

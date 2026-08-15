@@ -229,6 +229,34 @@ namespace Kuros.Managers
 			return 0;
 		}
 
+		/// <summary>鼠标按键中文名（-1 左键 / -2 右键 / -3 中键 / -4 X1 / -5 X2，其他回退数值）。</summary>
+		private static string MouseButtonDisplayName(MouseButton button)
+		{
+			return button switch
+			{
+				MouseButton.Left => "鼠标左键",
+				MouseButton.Right => "鼠标右键",
+				MouseButton.Middle => "鼠标中键",
+				_ => $"鼠标键{(int)button}"
+			};
+		}
+
+		/// <summary>获取动作当前绑定键的显示名（键盘返回键名如 "E"；鼠标返回中文名；无绑定返回 "?"）。</summary>
+		public string GetActionKeyDisplayName(string action)
+		{
+			int keycode = GetActionKeycode(action);
+			if (keycode > 0) return OS.GetKeycodeString((Key)keycode);
+			if (keycode < 0) return MouseButtonDisplayName((MouseButton)(-keycode));
+			return "?";
+		}
+
+		/// <summary>把提示模板中的 {KEY} 占位符替换为动作当前绑定键（如 "[{KEY}] 交互" → "[F] 交互"）。
+		/// 模板不含占位符时原样返回（可用于"加载中..."等无按键提示）。</summary>
+		public string FormatActionPrompt(string template, string action)
+		{
+			return template.Replace("{KEY}", GetActionKeyDisplayName(action));
+		}
+
 		/// <summary>设置动作按键绑定：改内存 → InputMap 即时应用 → 存 cfg → 广播 InputBindingsChanged。
 		/// keycode = physical_keycode int（0 表示重置回默认）。</summary>
 		public void SetActionBinding(string action, int keycode)

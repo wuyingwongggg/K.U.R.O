@@ -1,5 +1,6 @@
 ﻿using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Managers;
 using Kuros.Systems.Cutscene;
 
 namespace Kuros.Environments
@@ -19,8 +20,8 @@ namespace Kuros.Environments
         [Export] public string IdleAnimName  { get; set; } = "taxi_idle";
 
         [ExportCategory("Hints")]
-        [Export] public string CallHintText    { get; set; } = "[E] 呼叫";
-        [Export] public string BoardHintText   { get; set; } = "[E] 前往";
+        [Export] public string CallHintText    { get; set; } = "[{KEY}] 呼叫";   // {KEY} 由当前 interact 绑定键替换
+        [Export] public string BoardHintText   { get; set; } = "[{KEY}] 前往";
         [Export] public string LoadingHintText { get; set; } = "加载中...";
 
         [ExportCategory("Detection")]
@@ -59,6 +60,9 @@ namespace Kuros.Environments
                 _animPlayer.AnimationFinished += OnAnimationFinished;
 
             _hintLabel?.Hide();
+
+            // 改键后实时刷新提示文本
+            GameSettingsManager.Instance.InputBindingsChanged += OnInputBindingsChanged;
         }
 
         public override void _ExitTree()
@@ -68,6 +72,9 @@ namespace Kuros.Environments
 
             if (_animPlayer != null)
                 _animPlayer.AnimationFinished -= OnAnimationFinished;
+
+            if (GameSettingsManager.Instance != null)
+                GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
         }
 
         public override void _Process(double delta)
@@ -222,10 +229,24 @@ namespace Kuros.Environments
             }
         }
 
+        /// <summary>当前提示模板（未替换 {KEY}），改键后据此重新格式化。</summary>
+        private string _currentHintTemplate = "";
+
         private void SetHintText(string text)
         {
+            _currentHintTemplate = text;
+            ApplyHintText();
+        }
+
+        private void ApplyHintText()
+        {
             if (_hintLabel != null)
-                _hintLabel.Text = text;
+                _hintLabel.Text = GameSettingsManager.Instance?.FormatActionPrompt(_currentHintTemplate, "interact") ?? _currentHintTemplate;
+        }
+
+        private void OnInputBindingsChanged()
+        {
+            ApplyHintText();
         }
 
         private void OnAnimationFinished(StringName animName)
