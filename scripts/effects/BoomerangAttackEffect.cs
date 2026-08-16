@@ -219,8 +219,10 @@ namespace Kuros.Fx
 
         private void DealDamageToActor(GameActor actor)
         {
+            // 用 ThrowImpact 而非 DirectAttack：回旋镖是投掷武器的延迟命中，若标记为直接攻击，
+            // 换装后命中会误触当前武器的 on-hit 效果（与 ECoreAttackEffect 同类跨武器串效果漏洞）。
             bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+                DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
             if (dealt)
                 actor.Velocity = Vector2.Zero;
         }

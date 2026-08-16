@@ -183,6 +183,8 @@ shape = SubResource("RectangleShape2D_eh1sc")
 
 [node name="MainCharacter" parent="World" instance=ExtResource("1_tv6fd")]
 position = Vector2(-1086.9999, -70.99999)
+Speed = 300.0
+AttackDamage = 5.0
 
 [node name="Camera2D" type="Camera2D" parent="World" node_paths=PackedStringArray("Target")]
 scale = Vector2(0.33, 0.33)

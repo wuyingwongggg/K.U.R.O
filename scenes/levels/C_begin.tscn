@@ -1,8 +1,8 @@
-[gd_scene load_steps=32 format=3 uid="uid://cg2o6k0etyc25"]
+[gd_scene load_steps=31 format=3 uid="uid://cg2o6k0etyc25"]
 
 [ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_4duw5"]
-[ext_resource type="Script" uid="uid://s13emoxe55p3" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
-[ext_resource type="Script" uid="uid://crsxnj6dphc7a" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_7mqiy"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
+[ext_resource type="Script" uid="uid://dihr45ld5purc" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_7mqiy"]
 [ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_ainwx"]
 [ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_t2fey"]
 [ext_resource type="Resource" uid="uid://curpr4n4v2tuh" path="res://resources/cutscene/C_begin_intro.tres" id="3_7mqiy"]
@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://jy25fbx75r7w" path="res://assets/environments/scene_3_hotel/墙壁C.png" id="11_1mlw7"]
 [ext_resource type="Texture2D" uid="uid://bh8t4jl8ruovc" path="res://assets/environments/scene_3_hotel/地面B.png" id="11_4duw5"]
 [ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="13_1620r"]
-[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="14_0wqg8"]
 [ext_resource type="PackedScene" uid="uid://dnq70gu3rymcb" path="res://scenes/items/Furniture_C_chairB_fwd.tscn" id="15_4gcw4"]
 [ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="16_ainwx"]
 [ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="17_4duw5"]
@@ -20,7 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="19_4gcw4"]
 [ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="20_ainwx"]
 [ext_resource type="PackedScene" uid="uid://df51wgv346jhn" path="res://scenes/environments/elevatorGate_C_flip.tscn" id="21_4duw5"]
-[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="22_y44ha"]
+[ext_resource type="PackedScene" uid="uid://c777iljtwbejv" path="res://scenes/environments/fountainA.tscn" id="21_y44ha"]
 [ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="24_qm83g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -94,6 +93,7 @@ shape = SubResource("RectangleShape2D_omx51")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="BattleArena" type="Area2D" parent="."]
+visible = false
 z_index = 10
 script = ExtResource("1_lxqj5")
 ArenaSize = Vector2(4800, 3000)
@@ -182,7 +182,6 @@ texture = ExtResource("11_1mlw7")
 position = Vector2(-2483, 155)
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
@@ -241,9 +240,6 @@ position = Vector2(1188, -589)
 [node name="FurnitureTableSquareA4" parent="." instance=ExtResource("17_4duw5")]
 position = Vector2(1240, 1249)
 
-[node name="FurnitureTableRoundC" parent="." instance=ExtResource("14_0wqg8")]
-position = Vector2(17, 131)
-
 [node name="FurnitureFoodCartA" parent="." instance=ExtResource("16_ainwx")]
 position = Vector2(-643, -244)
 
@@ -270,5 +266,5 @@ position = Vector2(29, 870)
 
 [node name="AnimationCharacter" parent="." instance=ExtResource("24_qm83g")]
 
-[node name="HealItemA" parent="." instance=ExtResource("22_y44ha")]
-position = Vector2(18, 184)
+[node name="FountainA" parent="." instance=ExtResource("21_y44ha")]
+position = Vector2(-22, 182)

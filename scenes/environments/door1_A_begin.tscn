@@ -1,8 +1,8 @@
 [gd_scene load_steps=10 format=3 uid="uid://dlhn30h21ei8f"]
 
-[ext_resource type="Script" uid="uid://cyeq85rtved2j" path="res://scripts/environments/DoorController.cs" id="1_in2r7"]
-[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="1_rhpl8"]
-[ext_resource type="Texture2D" uid="uid://cqxyqtyqvj58d" path="res://assets/environments/scene_1_home/房间1 门.png" id="2_rtehq"]
+[ext_resource type="Script" uid="uid://chmg0f0ttsqy5" path="res://scripts/environments/DoorController.cs" id="1_in2r7"]
+[ext_resource type="Texture2D" uid="uid://cecnum8sfj2jh" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="1_rhpl8"]
+[ext_resource type="Texture2D" uid="uid://c4ajtis1tnkqh" path="res://assets/environments/scene_1_home/房间1 门.png" id="2_rtehq"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wvbf1"]
 size = Vector2(200, 800)
@@ -114,7 +114,8 @@ texture = ExtResource("1_rhpl8")
 [node name="door" type="Sprite2D" parent="."]
 z_index = 2
 z_as_relative = false
-position = Vector2(0, -620)
+position = Vector2(0, -677)
+scale = Vector2(1, 1.4)
 texture = ExtResource("2_rtehq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

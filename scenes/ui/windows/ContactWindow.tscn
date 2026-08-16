@@ -1,0 +1,83 @@
+[gd_scene load_steps=7 format=3 uid="uid://d2cbdjbkh1j12"]
+
+[ext_resource type="Script" uid="uid://bprl5ms15fn34" path="res://scripts/ui/ContactWindow.cs" id="1_contact"]
+[ext_resource type="Script" uid="uid://cvvefx72j7xsy" path="res://scripts/ui/ContactEntry.cs" id="2_jj6iw"]
+[ext_resource type="Texture2D" uid="uid://dccrl4lpl0t2h" path="res://icon.svg" id="3_dv8hy"]
+
+[sub_resource type="Resource" id="Resource_xxv0g"]
+script = ExtResource("2_jj6iw")
+Title = "QQ"
+Kind = 0
+QrTexture = ExtResource("3_dv8hy")
+metadata/_custom_type_script = "uid://cvvefx72j7xsy"
+
+[sub_resource type="Resource" id="Resource_lmhsw"]
+script = ExtResource("2_jj6iw")
+Title = "Discord"
+Kind = 1
+Url = "https://www.baidu.com"
+metadata/_custom_type_script = "uid://cvvefx72j7xsy"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
+bg_color = Color(0.08, 0.08, 0.1, 0.96)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="ContactWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_contact")
+Entries = Array[ExtResource("2_jj6iw")]([SubResource("Resource_xxv0g"), SubResource("Resource_lmhsw")])
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "联系我们"
+horizontal_alignment = 1
+
+[node name="EntryList" type="VBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CloseButton" type="Button" parent="Center/Panel/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 16
+text = "关闭"

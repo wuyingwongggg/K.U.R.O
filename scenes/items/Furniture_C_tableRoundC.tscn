@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://b8twfkaisp0mt"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_bfy1o"]
+[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_bfy1o"]
 [ext_resource type="Resource" uid="uid://ujei4j2ea008" path="res://resources/items/Furniture_C_TableRoundC.tres" id="2_bfy1o"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_022c0"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_ryo6w"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_3lwoa"]
-[ext_resource type="Texture2D" uid="uid://ccp5mq235kq03" path="res://assets/furnitures/hotel_scene3/TableRoundC.png" id="6_57wx4"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_3lwoa"]
+[ext_resource type="Texture2D" uid="uid://dafb4yscw320y" path="res://assets/furnitures/hotel_scene3/TableRoundC.png" id="6_57wx4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_022c0")

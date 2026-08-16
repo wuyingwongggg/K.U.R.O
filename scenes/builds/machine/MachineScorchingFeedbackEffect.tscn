@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://dnrgi45oa3s3k"]
 
-[ext_resource type="Script" uid="uid://bl2488nvejse7" path="res://scripts/builds/machine/MachineScorchingFeedbackEffect.cs" id="1"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="2_entry"]
+[ext_resource type="Script" uid="uid://cg5nqr1admodi" path="res://scripts/builds/machine/MachineScorchingFeedbackEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="2_entry"]
 [ext_resource type="PackedScene" uid="uid://y1isgrju8g0h" path="res://resources/effects/DotBurnEffect.tscn" id="3_burn"]
 
 [sub_resource type="Resource" id="BurnEntry_0"]

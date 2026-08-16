@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dyy583wducquk"]
 
-[ext_resource type="Script" uid="uid://dat7e7hiooshe" path="res://scripts/ui/WeaponBatteryBar.cs" id="1_bar"]
+[ext_resource type="Script" uid="uid://6jvbbh86nvax" path="res://scripts/ui/WeaponBatteryBar.cs" id="1_bar"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.05, 0.06, 0.09, 0.75)
@@ -15,7 +15,6 @@ corner_radius_bottom_right = 1
 corner_radius_bottom_left = 1
 
 [node name="WeaponBatteryBar" type="CanvasLayer"]
-layer = 10
 script = ExtResource("1_bar")
 PlayerAnchorOffset = Vector2(100, -130)
 

@@ -113,22 +113,25 @@ region_rect = Rect2(0, 269.0746, 2357.4448, 2427.9253)
 position = Vector2(-1656, -197.5)
 texture = ExtResource("2_t2ifw")
 
+[node name="wall3" type="Sprite2D" parent="Environments"]
+position = Vector2(-2844, -1093)
+texture = ExtResource("4_eacmu")
+
 [node name="wall2" type="Sprite2D" parent="Environments"]
-position = Vector2(-2845, -1114.5)
+position = Vector2(-2845, -730)
 texture = ExtResource("4_eacmu")
 
 [node name="door2_A1" parent="Environments" instance=ExtResource("5_4di3j")]
-position = Vector2(-2845, 487.5)
+position = Vector2(-2845, 902)
 
 [node name="AirWall" type="StaticBody2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2850, -1200)
+position = Vector2(-2850, -810)
 shape = SubResource("RectangleShape2D_4di3j")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2850, 896)
+position = Vector2(-2850, 1042)
 shape = SubResource("RectangleShape2D_hlafp")
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="AirWall"]
