@@ -31,7 +31,7 @@ namespace Kuros.Managers
 		private const string HoldThresholdKey = "HoldThreshold";
 
 		/// <summary>AI 提供商默认值（"openai_compat" = OpenAI 兼容协议，玩家场景主流是云 API；
-		/// 开发用本地 Ollama 时在游戏内设置中切换为 "ollama" 并填本地地址）。</summary>
+		/// "anthropic" = Anthropic 原生协议（Claude）；开发用本地 Ollama 时切换为 "ollama" 并填本地地址）。</summary>
 		public const string DefaultAiProvider = "openai_compat";
 		/// <summary>端点/模型默认为空 = 未配置状态（玩家需自行填写自己的 API 配置；不回退开发默认值）。</summary>
 		public const string DefaultAiEndpoint = "";
@@ -89,6 +89,10 @@ namespace Kuros.Managers
 				QueueFree();
 				return;
 			}
+
+			// 低延迟 GC 模式：游戏运行时用更频繁的小回收替代偶发的大停顿，
+			// 消除周期性 50~150ms 的 Gen1/Gen2 回收帧尖峰（代价是略高的整体 GC CPU 开销）。
+			System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.SustainedLowLatency;
 
 			Instance = this;
 			EnsureConfigDirectoryExists();
@@ -159,7 +163,7 @@ namespace Kuros.Managers
 		}
 
 		/// <summary>保存 AI 助手 API 配置（改内存 → 存 cfg → 广播 AiSettingsChanged 即时应用）。
-		/// provider："ollama" / "openai_compat"；端点/模型允许空值（未配置状态，玩家自行填写）。</summary>
+		/// provider："ollama" / "openai_compat" / "anthropic"；端点/模型允许空值（未配置状态，玩家自行填写）。</summary>
 		public void SetAiSettings(string provider, string endpoint, string apiKey, string model)
 		{
 			_aiProvider = string.IsNullOrWhiteSpace(provider) ? DefaultAiProvider : provider;

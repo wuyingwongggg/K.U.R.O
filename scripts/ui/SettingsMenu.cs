@@ -27,7 +27,10 @@ namespace Kuros.UI
 
         // API 设置
         [Export] public OptionButton AIProviderOption { get; private set; } = null!;
+        /// <summary>端点输入框（与右侧常用端点下拉并排成一行，可直接输入或选预设）。</summary>
         [Export] public LineEdit AIEndpointInput { get; private set; } = null!;
+        /// <summary>常用端点快捷下拉（选中后自动填端点+切平台）。</summary>
+        [Export] public OptionButton AIEndpointPresetOption { get; private set; } = null!;
         [Export] public LineEdit AIApiKeyInput { get; private set; } = null!;
         [Export] public LineEdit AIModelInput { get; private set; } = null!;
         [Export] public CheckButton AIEnableToggle { get; private set; } = null!;
@@ -165,7 +168,7 @@ namespace Kuros.UI
             if (AIProviderOption == null)
                 AIProviderOption = GetNodeOrNull<OptionButton>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIProviderOption");
             if (AIEndpointInput == null)
-                AIEndpointInput = GetNodeOrNull<LineEdit>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIEndpointInput");
+                AIEndpointInput = GetNodeOrNull<LineEdit>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIEndpointRow/AIEndpointInput");
             if (AIApiKeyInput == null)
                 AIApiKeyInput = GetNodeOrNull<LineEdit>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIApiKeyInput");
             if (AIModelInput == null)
@@ -176,14 +179,32 @@ namespace Kuros.UI
                 TestButton = GetNodeOrNull<Button>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/TestButton");
             if (TestResultLabel == null)
                 TestResultLabel = GetNodeOrNull<Label>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/TestResultLabel");
+            if (AIEndpointPresetOption == null)
+                AIEndpointPresetOption = GetNodeOrNull<OptionButton>("MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIEndpointRow/AIEndpointPresetOption");
 
             if (AIProviderOption != null)
             {
                 AIProviderOption.Clear();
                 AIProviderOption.AddItem("Ollama 原生", 0);
                 AIProviderOption.AddItem("OpenAI 兼容", 1);
+                AIProviderOption.AddItem("Anthropic 原生", 2);
             }
             ConnectOptionButtonSignal(AIProviderOption, nameof(OnAiProviderSelected));
+
+            // 常用端点快捷下拉：第 0 项是提示占位（禁用），中间对应 AiEndpointPresets 数组，
+            // 末尾“自定义”项仅作状态显示（当前端点文本不匹配任何预设时选中）
+            if (AIEndpointPresetOption != null)
+            {
+                AIEndpointPresetOption.Clear();
+                AIEndpointPresetOption.AddItem("选择常用端点…", 0);
+                AIEndpointPresetOption.SetItemDisabled(0, true);
+                for (int i = 0; i < AiEndpointPresets.Length; i++)
+                {
+                    AIEndpointPresetOption.AddItem(AiEndpointPresets[i].Label, i + 1);
+                }
+                AIEndpointPresetOption.AddItem("自定义", AiEndpointPresets.Length + 1);
+            }
+            ConnectOptionButtonSignal(AIEndpointPresetOption, nameof(OnEndpointPresetSelected));
             ConnectLineEditSignal(AIEndpointInput, nameof(OnAiFieldChanged));
             ConnectLineEditSignal(AIApiKeyInput, nameof(OnAiFieldChanged));
             ConnectLineEditSignal(AIModelInput, nameof(OnAiFieldChanged));
@@ -336,11 +357,19 @@ namespace Kuros.UI
 
             _suppressSave = true;
             if (AIProviderOption != null)
-                AIProviderOption.Selected = settings.AiProvider == "openai_compat" ? 1 : 0;
+            {
+                AIProviderOption.Selected = settings.AiProvider switch
+                {
+                    "openai_compat" => 1,
+                    "anthropic" => 2,
+                    _ => 0
+                };
+            }
             if (AIEndpointInput != null) AIEndpointInput.Text = settings.AiEndpoint;
             if (AIApiKeyInput != null) AIApiKeyInput.Text = settings.AiApiKey;
             if (AIModelInput != null) AIModelInput.Text = settings.AiModel;
             if (AIEnableToggle != null) AIEnableToggle.ButtonPressed = settings.AiEnabled;
+            SyncEndpointPresetDisplay();
             _suppressSave = false;
         }
 
@@ -354,6 +383,8 @@ namespace Kuros.UI
         {
             if (_suppressSave) return;
             CommitApiSettings();
+            // 手动编辑端点后同步下拉显示：命中预设显示预设名，否则显示“自定义”
+            SyncEndpointPresetDisplay();
         }
 
         private void OnAiEnableToggled(bool enabled)
@@ -367,14 +398,84 @@ namespace Kuros.UI
             var settings = GameSettingsManager.Instance;
             if (settings == null) return;
 
-            string provider = (AIProviderOption != null && AIProviderOption.Selected == 1)
-                ? "openai_compat"
-                : "ollama";
+            string provider = "ollama";
+            if (AIProviderOption != null)
+            {
+                provider = AIProviderOption.Selected switch
+                {
+                    1 => "openai_compat",
+                    2 => "anthropic",
+                    _ => "ollama"
+                };
+            }
             settings.SetAiSettings(
                 provider,
                 AIEndpointInput?.Text ?? string.Empty,
                 AIApiKeyInput?.Text ?? string.Empty,
                 AIModelInput?.Text ?? string.Empty);
+        }
+
+        /// <summary>常用端点预设表：(显示名, 平台选项索引 0=ollama/1=openai_compat/2=anthropic, 完整请求 URL)。</summary>
+        private static readonly (string Label, int ProviderIndex, string Url)[] AiEndpointPresets =
+        {
+            ("DeepSeek", 1, "https://api.deepseek.com/chat/completions"),
+            ("ChatGPT", 1, "https://api.openai.com/v1/chat/completions"),
+            ("Claude", 2, "https://api.anthropic.com/v1/messages"),
+            ("Gemini", 1, "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"),
+            ("Grok", 1, "https://api.x.ai/v1/chat/completions"),
+            ("Kimi", 1, "https://api.moonshot.cn/v1/chat/completions"),
+            ("通义千问", 1, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"),
+            ("智谱 GLM", 1, "https://open.bigmodel.cn/api/paas/v4/chat/completions"),
+            ("Ollama 本地（兼容）", 1, "http://localhost:11434/v1/chat/completions"),
+            ("Ollama 本地（原生）", 0, "http://localhost:11434/api/generate"),
+        };
+
+        /// <summary>选择常用端点预设：自动填端点 + 切换对应平台 + 提交配置。手动输入不受影响。
+        /// “自定义”项与占位项仅作状态显示，不覆盖输入框内容。</summary>
+        private void OnEndpointPresetSelected(long index)
+        {
+            if (_suppressSave || AIProviderOption == null || AIEndpointInput == null) return;
+
+            int presetIndex = (int)index - 1;   // 第 0 项是占位提示
+            if (presetIndex < 0 || presetIndex >= AiEndpointPresets.Length) return;
+
+            var (_, providerIndex, url) = AiEndpointPresets[presetIndex];
+
+            _suppressSave = true;
+            AIProviderOption.Selected = providerIndex;
+            AIEndpointInput.Text = url;
+            _suppressSave = false;
+
+            CommitApiSettings();
+        }
+
+        /// <summary>根据当前端点文本同步下拉显示：命中预设则选中对应项，否则落到“自定义”。</summary>
+        private void SyncEndpointPresetDisplay()
+        {
+            if (AIEndpointPresetOption == null || AIEndpointInput == null) return;
+
+            string current = AIEndpointInput.Text.Trim();
+            for (int i = 0; i < AiEndpointPresets.Length; i++)
+            {
+                if (string.Equals(AiEndpointPresets[i].Url, current, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    if (AIEndpointPresetOption.Selected != i + 1)
+                    {
+                        _suppressSave = true;
+                        AIEndpointPresetOption.Selected = i + 1;
+                        _suppressSave = false;
+                    }
+                    return;
+                }
+            }
+
+            int customIndex = AiEndpointPresets.Length + 1;
+            if (AIEndpointPresetOption.Selected != customIndex)
+            {
+                _suppressSave = true;
+                AIEndpointPresetOption.Selected = customIndex;
+                _suppressSave = false;
+            }
         }
 
         private void OnTestPressed()
@@ -394,12 +495,39 @@ namespace Kuros.UI
         private async Task TestConnectionAsync(GameSettingsManager settings)
         {
             string resultText = string.Empty;
+            bool useOpenAiCompat = settings.AiProvider == "openai_compat";
+            bool useAnthropic = settings.AiProvider == "anthropic";
+
+            // 端点校验：Ollama 留空回退本地默认端点；Anthropic 留空回退官方端点；
+            // OpenAI 兼容模式必须填完整路径（平台众多无法猜测）
+            string endpoint = settings.AiEndpoint;
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                if (useAnthropic)
+                {
+                    endpoint = "https://api.anthropic.com/v1/messages";
+                }
+                else if (!useOpenAiCompat)
+                {
+                    endpoint = "http://localhost:11434/api/generate";
+                }
+                else
+                {
+                    resultText = Tr("连接失败：OpenAI 兼容模式需要填写完整服务地址（如 https://api.deepseek.com/chat/completions）");
+                    _testing = false;
+                    if (TestButton != null && IsInstanceValid(TestButton)) TestButton.Disabled = false;
+                    if (TestResultLabel != null && IsInstanceValid(TestResultLabel)) TestResultLabel.Text = resultText;
+                    return;
+                }
+            }
+
             try
             {
                 var client = new OllamaGenerateClient
                 {
-                    UseOpenAICompat = settings.AiProvider == "openai_compat",
-                    Endpoint = settings.AiEndpoint,
+                    UseOpenAICompat = useOpenAiCompat,
+                    UseAnthropicProtocol = useAnthropic,
+                    Endpoint = endpoint,
                     ApiKey = settings.AiApiKey,
                     DefaultModel = settings.AiModel,
                     TimeoutSeconds = 20,

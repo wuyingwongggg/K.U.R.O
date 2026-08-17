@@ -34,7 +34,6 @@ namespace Kuros.Companions
 
         [ExportCategory("Support Execution")]
         /// <summary>默认支持的武器技能动作名（技能处理器使用）。</summary>
-        [Export] public string DefaultSupportSkillAction { get; set; } = "weapon_skill_block";
         /// <summary>支持技能执行冷却（秒）。</summary>
         [Export(PropertyHint.Range, "0,20,0.1")] public float SupportSkillCooldownSeconds { get; set; } = 3.0f;
         /// <summary>执行日志开关。</summary>

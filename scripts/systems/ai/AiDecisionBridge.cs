@@ -32,7 +32,10 @@ namespace Kuros.Systems.AI
             "每次都用不同的说法和句式，不要重复之前用过的表达，避免千篇一律。\n" +
             "不要解释，不要说教，不要用书面语，要有剧情代入感，不要用玩家来称呼玩家。";
         [Export] public string Model { get; set; } = string.Empty;
-        [Export] public bool Stream { get; set; } = true;
+        /// <summary>是否使用流式（SSE）响应。注意：本引擎构建中流式接收的 await 链会占死主线程
+        /// （实测流式窗口内 0 帧/2 秒，游戏整体冻结），故默认关闭。流式仅影响调试面板的逐字显示，
+        /// 不影响游戏逻辑（P2 气泡在决策解析完成后才显示）。重新启用前需先把流式读取线程化。</summary>
+        [Export] public bool Stream { get; set; } = false;
         [Export(PropertyHint.Range, "0,60,0.1")] public float MinRequestIntervalSeconds { get; set; } = 0.5f;
 
         [ExportCategory("Prompt Template")]

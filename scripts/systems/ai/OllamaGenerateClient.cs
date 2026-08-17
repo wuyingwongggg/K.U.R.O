@@ -34,6 +34,17 @@ namespace Kuros.Systems.AI
         /// <summary>true = 按 OpenAI 兼容协议组请求/解析响应（messages 数组、SSE 流式、choices[0].message.content）；
         /// false = 原生 Ollama 协议。切换外部平台（DeepSeek/OpenAI/Qwen/中转站）时开启并改 Endpoint/ApiKey。</summary>
         [Export] public bool UseOpenAICompat { get; set; } = false;
+
+        [ExportCategory("Anthropic")]
+        /// <summary>true = 按 Anthropic 原生协议组请求/解析响应（x-api-key + anthropic-version 头、
+        /// messages+max_tokens 请求体、content[].text 响应）。Claude 官方 API 使用此模式，
+        /// 端点填 https://api.anthropic.com/v1/messages。</summary>
+        [Export] public bool UseAnthropicProtocol { get; set; } = false;
+
+        [ExportCategory("Debug")]
+        /// <summary>是否保留每个流式 chunk 的原始字典（调试用）。默认关——每块保留会产生
+        /// Variant 装箱与内存累积，是思考期间 GC 卡顿的来源之一。</summary>
+        [Export] public bool CollectRawChunks { get; set; } = false;
         /// <summary>Bearer 鉴权密钥（OpenAI 兼容模式）。留空不带 Authorization 头（本地中转/无鉴权场景）。</summary>
         [Export] public string ApiKey { get; set; } = string.Empty;
         /// <summary>默认是否流式输出。</summary>
@@ -85,6 +96,7 @@ namespace Kuros.Systems.AI
             }
 
             UseOpenAICompat = settings.AiProvider == "openai_compat";
+            UseAnthropicProtocol = settings.AiProvider == "anthropic";
             ApiKey = settings.AiApiKey;
             if (!string.IsNullOrWhiteSpace(settings.AiEndpoint))
             {
@@ -111,7 +123,35 @@ namespace Kuros.Systems.AI
             bool requestStream = stream ?? DefaultStream;
 
             Godot.Collections.Dictionary<string, Variant> payload;
-            if (UseOpenAICompat)
+            if (UseAnthropicProtocol)
+            {
+                // Anthropic 原生协议：messages + max_tokens（必填），system 顶层字段
+                var messages = new Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>>();
+                messages.Add(new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["role"] = "user",
+                    ["content"] = prompt
+                });
+
+                payload = new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["model"] = requestModel,
+                    ["max_tokens"] = Mathf.Max(16, MaxPredictTokens),
+                    ["messages"] = messages
+                };
+
+                if (!string.IsNullOrWhiteSpace(system))
+                {
+                    payload["system"] = system;
+                }
+
+                // Anthropic 温度范围 0-1
+                if (Temperature > 0f)
+                {
+                    payload["temperature"] = Mathf.Clamp(Temperature, 0f, 1f);
+                }
+            }
+            else if (UseOpenAICompat)
             {
                 // OpenAI 兼容协议：messages 数组（system 可选 + user），采样参数顶层
                 var messages = new Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>>();
@@ -317,6 +357,16 @@ namespace Kuros.Systems.AI
                         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ApiKey);
                 }
 
+                // Anthropic 原生：x-api-key 鉴权 + anthropic-version 版本头（官方 API 必填）
+                if (UseAnthropicProtocol)
+                {
+                    if (!string.IsNullOrWhiteSpace(ApiKey))
+                    {
+                        request.Headers.TryAddWithoutValidation("x-api-key", ApiKey);
+                    }
+                    request.Headers.TryAddWithoutValidation("anthropic-version", "2023-06-01");
+                }
+
                 // 超时控制（读到响应头即开始，流式逐行消费）
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(Mathf.Max(1, TimeoutSeconds)));
 
@@ -328,18 +378,34 @@ namespace Kuros.Systems.AI
                 if (!response.IsSuccessStatusCode)
                 {
                     string errBody = await response.Content.ReadAsStringAsync();
-                    string err = $"Ollama request failed ({(int)response.StatusCode}): {errBody}";
+                    // 平台感知的错误前缀，避免误导成其它平台的问题
+                    string prefix = UseAnthropicProtocol
+                        ? "Anthropic request failed"
+                        : (UseOpenAICompat ? "OpenAI-compatible request failed" : "Ollama request failed");
+                    // 404 附加排查提示（最常见原因是端点只填了基础域名、缺协议路径）
+                    string hint = (int)response.StatusCode == 404
+                        ? (UseAnthropicProtocol
+                            ? "（Anthropic 端点应为 https://api.anthropic.com/v1/messages，检查路径或 API Key）"
+                            : (UseOpenAICompat
+                                ? "（端点可能缺少完整路径，OpenAI 兼容模式应填如 https://api.deepseek.com/chat/completions）"
+                                : "（Ollama 未启动、端点路径不对或模型名不存在）"))
+                        : string.Empty;
+                    string err = $"{prefix} ({(int)response.StatusCode}): {errBody}{hint}";
                     EmitSignal(SignalName.RequestFailed, err);
                     return OllamaGenerateResult.FromError(err);
                 }
 
                 if (streaming)
                 {
+                    if (UseAnthropicProtocol)
+                        return await ParseAnthropicStreamingResponseAsync(response, cts.Token);
                     return UseOpenAICompat
                         ? await ParseOpenAiStreamingResponseAsync(response, cts.Token)
                         : await ParseStreamingResponseAsync(response, cts.Token);
                 }
 
+                if (UseAnthropicProtocol)
+                    return await ParseAnthropicSingleJsonResponseAsync(response, cts.Token);
                 return UseOpenAICompat
                     ? await ParseOpenAiSingleJsonResponseAsync(response, cts.Token)
                     : await ParseSingleJsonResponseAsync(response, cts.Token);
@@ -419,12 +485,23 @@ namespace Kuros.Systems.AI
         }
 
         /// <summary>解析 OpenAI 兼容流式响应（SSE）：逐行 "data: {...}" 累积 delta.content，
-        /// "data: [DONE]" 终止；delta.reasoning_content 累积为思考文本。</summary>
+        /// "data: [DONE]" 终止；delta.reasoning_content 累积为思考文本。
+        /// 块信号按帧批处理：同一帧内到达的多个块合并为一次广播。</summary>
         private async Task<OllamaGenerateResult> ParseOpenAiStreamingResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             var result = new OllamaGenerateResult { Success = true };
             var sb = new StringBuilder(1024);
             var thinkingSb = new StringBuilder(1024);
+            // 按帧批处理：同一帧内到达的多个块合并为一次信号广播（网络突发时避免每块一次信号+装箱）
+            var pendingSb = new StringBuilder(256);
+            ulong lastEmitFrame = 0;
+
+            void FlushPending()
+            {
+                if (pendingSb.Length == 0) return;
+                EmitSignal(SignalName.StreamChunkReceived, pendingSb.ToString());
+                pendingSb.Clear();
+            }
 
             await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -456,7 +533,8 @@ namespace Kuros.Systems.AI
                 }
 
                 var chunkObj = parsed.AsGodotDictionary();
-                result.RawChunks.Add(chunkObj);
+                if (CollectRawChunks)
+                    result.RawChunks.Add(chunkObj);
 
                 if (string.IsNullOrEmpty(result.Model))
                 {
@@ -476,7 +554,11 @@ namespace Kuros.Systems.AI
                             if (!string.IsNullOrEmpty(chunkText))
                             {
                                 sb.Append(chunkText);
-                                EmitSignal(SignalName.StreamChunkReceived, chunkText);
+                                // 块进入批处理缓冲，帧切换时一次性广播
+                                ulong frame = Engine.GetProcessFrames();
+                                if (frame != lastEmitFrame) FlushPending();
+                                lastEmitFrame = frame;
+                                pendingSb.Append(chunkText);
                             }
 
                             // 思考字段名因平台而异：DeepSeek 系 reasoning_content；Ollama 兼容端点 reasoning
@@ -494,6 +576,139 @@ namespace Kuros.Systems.AI
                 }
             }
 
+            FlushPending();
+            result.ResponseText = sb.ToString();
+            result.ThinkingText = thinkingSb.ToString();
+            result.Done = true;
+            ApplyThinkingFallbackIfNeeded(result);
+            EmitSignal(SignalName.StreamCompleted, result.ResponseText);
+            return result;
+        }
+
+        /// <summary>解析 Anthropic 原生非流式响应：content[] 中 type="text" 块拼接为回复文本，
+        /// type="thinking" 块累积为思考文本；error 体（{"type":"error","error":{...}}）转失败。</summary>
+        private async Task<OllamaGenerateResult> ParseAnthropicSingleJsonResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            string body = await response.Content.ReadAsStringAsync(cancellationToken);
+            Variant parsed = Json.ParseString(body);
+            if (parsed.VariantType != Variant.Type.Dictionary)
+            {
+                string err = "Anthropic non-stream response is not a JSON object.";
+                EmitSignal(SignalName.RequestFailed, err);
+                return OllamaGenerateResult.FromError(err);
+            }
+
+            var dict = parsed.AsGodotDictionary();
+
+            if (dict.TryGetValue("error", out Variant errV) && errV.VariantType == Variant.Type.Dictionary)
+            {
+                string err = $"Anthropic request failed: {GetString(errV.AsGodotDictionary(), "message")}";
+                EmitSignal(SignalName.RequestFailed, err);
+                return OllamaGenerateResult.FromError(err);
+            }
+
+            string text = string.Empty;
+            string thinking = string.Empty;
+            if (dict.TryGetValue("content", out Variant contentV) && contentV.VariantType == Variant.Type.Array)
+            {
+                foreach (Variant item in contentV.AsGodotArray())
+                {
+                    if (item.VariantType != Variant.Type.Dictionary) continue;
+                    var block = item.AsGodotDictionary();
+                    string type = GetString(block, "type");
+                    if (type == "text") text += GetString(block, "text");
+                    else if (type == "thinking") thinking += GetString(block, "thinking");
+                }
+            }
+
+            var result = new OllamaGenerateResult
+            {
+                Success = true,
+                Model = GetString(dict, "model"),
+                ResponseText = text,
+                ThinkingText = thinking,
+                Done = true,
+                RawFinalObject = dict
+            };
+
+            ApplyThinkingFallbackIfNeeded(result);
+
+            EmitSignal(SignalName.StreamCompleted, result.ResponseText);
+            return result;
+        }
+
+        /// <summary>解析 Anthropic 原生流式响应（SSE）：content_block_delta 的 text_delta 累积回复文本，
+        /// thinking_delta 累积思考文本；message_start 提取模型名。
+        /// 块信号按帧批处理：同一帧内到达的多个块合并为一次广播。</summary>
+        private async Task<OllamaGenerateResult> ParseAnthropicStreamingResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            var result = new OllamaGenerateResult { Success = true };
+            var sb = new StringBuilder(1024);
+            var thinkingSb = new StringBuilder(1024);
+            // 按帧批处理：同一帧内到达的多个块合并为一次信号广播（网络突发时避免每块一次信号+装箱）
+            var pendingSb = new StringBuilder(256);
+            ulong lastEmitFrame = 0;
+
+            void FlushPending()
+            {
+                if (pendingSb.Length == 0) return;
+                EmitSignal(SignalName.StreamChunkReceived, pendingSb.ToString());
+                pendingSb.Clear();
+            }
+
+            await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+
+            while (!reader.EndOfStream)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string? line = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                string s = line.Trim();
+                if (!s.StartsWith("data:", System.StringComparison.Ordinal)) continue;
+
+                string json = s["data:".Length..].Trim();
+                Variant parsed = Json.ParseString(json);
+                if (parsed.VariantType != Variant.Type.Dictionary) continue;
+
+                var chunkObj = parsed.AsGodotDictionary();
+                if (CollectRawChunks)
+                    result.RawChunks.Add(chunkObj);
+                string type = GetString(chunkObj, "type");
+
+                if (type == "content_block_delta" && chunkObj.TryGetValue("delta", out Variant deltaV) && deltaV.VariantType == Variant.Type.Dictionary)
+                {
+                    var delta = deltaV.AsGodotDictionary();
+                    string deltaType = GetString(delta, "type");
+                    if (deltaType == "text_delta")
+                    {
+                        string chunkText = GetString(delta, "text");
+                        if (!string.IsNullOrEmpty(chunkText))
+                        {
+                            sb.Append(chunkText);
+                            // 块进入批处理缓冲，帧切换时一次性广播
+                            ulong frame = Engine.GetProcessFrames();
+                            if (frame != lastEmitFrame) FlushPending();
+                            lastEmitFrame = frame;
+                            pendingSb.Append(chunkText);
+                        }
+                    }
+                    else if (deltaType == "thinking_delta")
+                    {
+                        thinkingSb.Append(GetString(delta, "thinking"));
+                    }
+                }
+                else if (type == "message_start" && string.IsNullOrEmpty(result.Model))
+                {
+                    if (chunkObj.TryGetValue("message", out Variant msgV) && msgV.VariantType == Variant.Type.Dictionary)
+                    {
+                        result.Model = GetString(msgV.AsGodotDictionary(), "model");
+                    }
+                }
+            }
+
+            FlushPending();
             result.ResponseText = sb.ToString();
             result.ThinkingText = thinkingSb.ToString();
             result.Done = true;
@@ -542,12 +757,23 @@ namespace Kuros.Systems.AI
             return result;
         }
 
-        /// <summary>解析流式响应：Ollama 流式输出为 NDJSON（每行一个 JSON 对象），逐行累积 response/thinking 文本。</summary>
+        /// <summary>解析流式响应：Ollama 流式输出为 NDJSON（每行一个 JSON 对象），逐行累积 response/thinking 文本。
+        /// 块信号按帧批处理：同一帧内到达的多个块合并为一次广播。</summary>
         private async Task<OllamaGenerateResult> ParseStreamingResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             var result = new OllamaGenerateResult { Success = true };
             var sb = new StringBuilder(1024);
             var thinkingSb = new StringBuilder(1024);
+            // 按帧批处理：同一帧内到达的多个块合并为一次信号广播（网络突发时避免每块一次信号+装箱）
+            var pendingSb = new StringBuilder(256);
+            ulong lastEmitFrame = 0;
+
+            void FlushPending()
+            {
+                if (pendingSb.Length == 0) return;
+                EmitSignal(SignalName.StreamChunkReceived, pendingSb.ToString());
+                pendingSb.Clear();
+            }
 
             await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -568,14 +794,18 @@ namespace Kuros.Systems.AI
                 }
 
                 var chunkObj = parsed.AsGodotDictionary();
-                result.RawChunks.Add(chunkObj);
+                if (CollectRawChunks)
+                    result.RawChunks.Add(chunkObj);
 
-                // 文本增量：追加并广播 chunk 信号（供 UI 实时显示）
+                // 文本增量：进批处理缓冲，帧切换时一次性广播（供 UI 实时显示）
                 string chunkText = GetString(chunkObj, "response");
                 if (!string.IsNullOrEmpty(chunkText))
                 {
                     sb.Append(chunkText);
-                    EmitSignal(SignalName.StreamChunkReceived, chunkText);
+                    ulong frame = Engine.GetProcessFrames();
+                    if (frame != lastEmitFrame) FlushPending();
+                    lastEmitFrame = frame;
+                    pendingSb.Append(chunkText);
                 }
 
                 // 思考增量（仅累积，不广播）
@@ -607,6 +837,7 @@ namespace Kuros.Systems.AI
                 }
             }
 
+            FlushPending();
             result.ResponseText = sb.ToString();
             result.ThinkingText = thinkingSb.ToString();
             ApplyThinkingFallbackIfNeeded(result);

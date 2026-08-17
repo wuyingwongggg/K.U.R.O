@@ -564,21 +564,10 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			}
 		}
 
-		if (@event.IsActionPressed("weapon_skill_block"))
-		{
-			// if (_aiDecisionExecutor?.AutoPilotEnabled == true)
-			// {
-			// 	GetViewport().SetInputAsHandled();
-			// 	return;
-			// }
+		// weapon_skill_block 已废弃（废案）：此处原为对该动作的输入检查，
+		// 对不存在的动作调用 IsActionPressed 会让引擎每个输入事件打一条 ERROR，
+		// 控制台 I/O 拖帧（实测 90 秒 484 次报错，与周期性帧尖峰强相关）。
 
-			if (WeaponSkillController?.TryTriggerActionSkill("weapon_skill_block") == true)
-			{
-				GetViewport().SetInputAsHandled();
-				return;
-			}
-		}
-		
 		base._UnhandledInput(@event);
 	}
 
