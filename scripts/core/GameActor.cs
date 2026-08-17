@@ -105,6 +105,8 @@ namespace Kuros.Core
 
 		public bool IsDeathSequenceActive => _deathStarted && !_deathFinalized;
 		public bool IsDead => _deathFinalized;
+		/// <summary>死亡流程已开始（Dying 或 Dead）：伤害/治疗/特效作用应在此时立即停止，而非等死亡动画结束。</summary>
+		public bool IsDeadOrDying => _deathStarted;
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
 		/// <summary>
 		/// 当前角色持有的免疫标志集合，由 EnemyAttackTemplate 的 GrantedImmunities 字段在攻击期间写入/还原。

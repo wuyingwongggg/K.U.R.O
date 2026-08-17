@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ci2kfp5gmklqh"]
+[gd_scene load_steps=12 format=3 uid="uid://ci2kfp5gmklqh"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctvdj"]
 [ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_qpui1"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_qpui1"]
 [ext_resource type="PackedScene" uid="uid://efbd75vs2jik" path="res://scenes/levels/D_begin.tscn" id="5_dx62n"]
 [ext_resource type="PackedScene" uid="uid://5pavro7ckavp" path="res://scenes/levels/D_end.tscn" id="6_dx62n"]
+[ext_resource type="PackedScene" uid="uid://b564u7lastysy" path="res://scenes/levels/D1.tscn" id="7_ctvdj"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="9_2ioy7"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="10_k6j0r"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="10_tyjfc"]
@@ -34,6 +35,9 @@ BattleSceneManagerPath = NodePath("..")
 script = ExtResource("3_k6j0r")
 BeginPool = Array[PackedScene]([ExtResource("5_dx62n")])
 EndPool = Array[PackedScene]([ExtResource("6_dx62n")])
+EasyMiddlePool = Array[PackedScene]([ExtResource("7_ctvdj")])
+EasyRoomMin = 1
+EasyRoomMax = 1
 CameraLimitTop = -1400
 CameraLimitBottom = 1400
 

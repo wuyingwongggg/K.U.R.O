@@ -106,7 +106,7 @@ namespace Kuros.Effects
             public override void OnRemoved()
             {
                 // 恢复原始速度
-                if (Actor != null && !Actor.IsDead)
+                if (Actor != null && !Actor.IsDeadOrDying)
                 {
                     Actor.Speed = _originalSpeed;
                 }

@@ -112,7 +112,7 @@ namespace Kuros.Fx
 
             foreach (var node in tree.GetNodesInGroup("enemies"))
             {
-                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
+                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDeadOrDying)
                     continue;
                 if (_damagedEnemies.Contains(enemy))
                     continue;

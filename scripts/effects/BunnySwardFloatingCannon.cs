@@ -217,7 +217,7 @@ namespace Kuros.Effects
 
             foreach (var node in tree.GetNodesInGroup("enemies"))
             {
-                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
+                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDeadOrDying)
                     continue;
 
                 float distSq = myPos.DistanceSquaredTo(enemy.GlobalPosition);

@@ -148,7 +148,7 @@ namespace Kuros.Effects
 
             _actorTimers[actor] = 0f;
 
-            if (!actor.IsDead)
+            if (!actor.IsDeadOrDying)
                 actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Actor,
                     DamageSource.AreaEffect);
 
@@ -171,7 +171,7 @@ namespace Kuros.Effects
             foreach (var kvp in _actorTimers)
             {
                 var actor = kvp.Key;
-                if (!IsInstanceValid(actor) || actor.IsDead)
+                if (!IsInstanceValid(actor) || actor.IsDeadOrDying)
                 {
                     toRemove.Add(actor);
                     continue;
@@ -225,7 +225,7 @@ namespace Kuros.Effects
             {
                 if (GlobalOriginalSpeeds.TryGetValue(actor, out float originalSpeed))
                 {
-                    if (IsInstanceValid(actor) && !actor.IsDead)
+                    if (IsInstanceValid(actor) && !actor.IsDeadOrDying)
                         actor.Speed = originalSpeed;
                     GlobalOriginalSpeeds.Remove(actor);
                 }
@@ -245,7 +245,7 @@ namespace Kuros.Effects
             float totalMultiplier = multipliers.Min();
             float finalSpeed = originalSpeed * totalMultiplier;
 
-            if (IsInstanceValid(actor) && !actor.IsDead)
+            if (IsInstanceValid(actor) && !actor.IsDeadOrDying)
                 actor.Speed = finalSpeed;
         }
 

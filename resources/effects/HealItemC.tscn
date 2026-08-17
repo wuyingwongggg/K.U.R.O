@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3 uid="uid://db1hcdaqy03qu"]
+
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="1_bx5ko"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="2_bx5ko"]
+[ext_resource type="Script" uid="uid://d4dclpux8kajq" path="res://scripts/effects/HealOnContact.cs" id="3_358bj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_la1in"]
+shader = ExtResource("1_bx5ko")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_btvbp"]
+size = Vector2(200, 125)
+
+[node name="HealItemC" type="Node2D"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_la1in")
+scale = Vector2(0.33, 0.33)
+texture = ExtResource("2_bx5ko")
+
+[node name="HealArea" type="Area2D" parent="."]
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HealArea"]
+position = Vector2(0, 40)
+shape = SubResource("RectangleShape2D_btvbp")
+
+[node name="HealOnContact" type="Node" parent="HealArea"]
+script = ExtResource("3_358bj")
+HealAmount = 15

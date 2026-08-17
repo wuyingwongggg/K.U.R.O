@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_vxrhq"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_f3tmk"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_upggi"]
-[ext_resource type="PackedScene" uid="uid://br2ookaynqrjk" path="res://resources/effects/HealItemA.tscn" id="6_kc1kn"]
-[ext_resource type="Texture2D" uid="uid://dafb4yscw320y" path="res://assets/furnitures/hotel_scene3/TableRoundC.png" id="6_wcspc"]
+[ext_resource type="PackedScene" uid="uid://dsugmkmk06yo0" path="res://resources/effects/HealItemB.tscn" id="6_kc1kn"]
+[ext_resource type="Texture2D" uid="uid://de3t5lmrkvv0c" path="res://assets/furnitures/hotel_scene3/TableRoundC_Cake.png" id="7_kc1kn"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_s77vw"]
 
 [sub_resource type="Resource" id="Resource_wcspc"]
@@ -44,7 +44,7 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("2_kc1kn")
 Trigger = 4
 EffectScene = ExtResource("6_kc1kn")
-Notes = "治疗"
+Notes = "治疗B"
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [resource]
@@ -52,7 +52,7 @@ script = ExtResource("7_s77vw")
 ItemId = "Furniture_C_TableRoundC"
 DisplayName = "圆形餐桌"
 Description = "一次性投掷道具：圆形餐桌"
-Icon = ExtResource("6_wcspc")
+Icon = ExtResource("7_kc1kn")
 Category = "Furniture"
 Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1

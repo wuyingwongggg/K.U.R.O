@@ -1,0 +1,107 @@
+[gd_scene load_steps=7 format=3 uid="uid://bh08qrn2pfjbg"]
+
+[ext_resource type="Texture2D" uid="uid://dygd2n7t2oilt" path="res://assets/ui/hp&exp_bar/HP框底色.png" id="1_frame_bg"]
+[ext_resource type="Texture2D" uid="uid://c1c2gfwgvedyh" path="res://assets/ui/hp&exp_bar/HP底色.png" id="1_lk0f3"]
+[ext_resource type="Texture2D" uid="uid://ci5rkvxb1rosw" path="res://assets/ui/hp&exp_bar/HP深红.png" id="2_deepred"]
+[ext_resource type="Texture2D" uid="uid://d1i1q5clrs0fg" path="res://assets/ui/hp&exp_bar/HP青色.png" id="3_cyan"]
+[ext_resource type="Texture2D" uid="uid://lnnyw36jkbtp" path="res://assets/ui/hp&exp_bar/HP红色.png" id="4_red"]
+[ext_resource type="Texture2D" uid="uid://vmhxliiru256" path="res://assets/ui/hp&exp_bar/HP框.png" id="5_frame"]
+
+[node name="BossBarRow" type="HBoxContainer"]
+theme_override_constants/separation = 8
+
+[node name="NameSlot" type="Control" parent="."]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+
+[node name="BossNameLabel" type="Label" parent="NameSlot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BossIcon" type="TextureRect" parent="NameSlot"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BarHost" type="Control" parent="."]
+custom_minimum_size = Vector2(320, 30)
+layout_mode = 2
+
+[node name="BorderBG" type="TextureRect" parent="BarHost"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -27.0
+offset_top = -18.0
+offset_right = 27.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_frame_bg")
+stretch_mode = 5
+
+[node name="HurtBar" type="TextureProgressBar" parent="BarHost"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_under = ExtResource("1_lk0f3")
+texture_progress = ExtResource("2_deepred")
+
+[node name="RecoveryBar" type="TextureProgressBar" parent="BarHost"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_progress = ExtResource("3_cyan")
+
+[node name="FillBar" type="TextureProgressBar" parent="BarHost"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_progress = ExtResource("4_red")
+
+[node name="Border" type="TextureRect" parent="BarHost"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_frame")
+stretch_mode = 5
+
+[node name="BossValueLabel" type="Label" parent="."]
+visible = false
+custom_minimum_size = Vector2(100, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+vertical_alignment = 1

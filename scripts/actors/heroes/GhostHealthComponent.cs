@@ -19,14 +19,14 @@ namespace Kuros.Actors.Heroes
         [ExportCategory("Ghost (受伤虚血)")]
         /// <summary>受伤后虚血停留时长（秒），之后开始缓慢下降。</summary>
         [Export(PropertyHint.Range, "0,5,0.05")] public float GhostHoldDuration { get; set; } = 0.6f;
-        /// <summary>虚血下降速度（血量/秒）。</summary>
-        [Export(PropertyHint.Range, "0,1000,1")] public float GhostDescendSpeed { get; set; } = 60f;
+        /// <summary>虚血下降速度（MaxHealth 比例/秒，等比随血量缩放）：0.6 = 每秒下降 60% 最大血量。</summary>
+        [Export(PropertyHint.Range, "0.01,2,0.01")] public float GhostDescendRatio { get; set; } = 0.6f;
 
         [ExportCategory("Heal (治疗恢复)")]
         /// <summary>治疗时红条/虚血条停留时长（秒），之后缓慢上升。</summary>
         [Export(PropertyHint.Range, "0,5,0.05")] public float HealHoldDuration { get; set; } = 0.25f;
-        /// <summary>治疗时红条/虚血条上升速度（血量/秒）。</summary>
-        [Export(PropertyHint.Range, "0,1000,1")] public float HealRiseSpeed { get; set; } = 120f;
+        /// <summary>治疗时红条/虚血条上升速度（MaxHealth 比例/秒，等比随血量缩放）：1.2 = 每秒上升 120% 最大血量。</summary>
+        [Export(PropertyHint.Range, "0.01,2,0.01")] public float HealRiseRatio { get; set; } = 1.2f;
 
         /// <summary>显示值/虚血状态变化时触发（预留，Build 卡牌可监听）。</summary>
         public event Action? GhostStateChanged;
@@ -54,11 +54,29 @@ namespace Kuros.Actors.Heroes
             _actor = GetParent() as GameActor;
             if (_actor == null) return;
 
-            GhostValue = _actor.CurrentHealth;
-            HurtDisplay = GhostValue;
-            FillValue = GhostValue;
-            _previousHealth = _actor.CurrentHealth;
             _actor.HealthChanged += OnHealthChanged;
+            // 初始显示值需等父级 GameActor._Ready 把 CurrentHealth 设为 MaxHealth 后再读取：
+            // 子节点 _Ready 先于父节点执行，此时 CurrentHealth 仍是 0，直接读取会导致
+            // 生成时虚血从 0 动画升到满值。延迟到本帧所有 _Ready 完成后初始化。
+            CallDeferred(nameof(InitializeDisplayValues));
+        }
+
+        private void InitializeDisplayValues()
+        {
+            if (_actor == null || !IsInsideTree()) return;
+
+            float h = Mathf.Max(0f, _actor.CurrentHealth);
+            GhostValue = h;
+            HurtDisplay = h;
+            FillValue = h;
+            _previousHealth = _actor.CurrentHealth;
+            _ghostHoldTimer = 0f;
+            _ghostDescending = false;
+            _hurtHoldTimer = 0f;
+            _hurtRising = false;
+            _fillHoldTimer = 0f;
+            _fillRising = false;
+            _hurtLockedToGhost = true;
         }
 
         public override void _ExitTree()
@@ -120,6 +138,7 @@ namespace Kuros.Actors.Heroes
         {
             if (_actor == null) return;
             float h = Mathf.Max(0f, _actor.CurrentHealth);
+            float maxH = Mathf.Max(1f, _actor.MaxHealth);
             float dt = (float)delta;
 
             // 虚血下降（受伤）：停留结束后缓慢下降到当前血量
@@ -133,7 +152,7 @@ namespace Kuros.Actors.Heroes
             }
             if (_ghostDescending)
             {
-                GhostValue = Mathf.Max(h, GhostValue - GhostDescendSpeed * dt);
+                GhostValue = Mathf.Max(h, GhostValue - GhostDescendRatio * maxH * dt);
                 if (GhostValue <= h + 0.01f)
                 {
                     GhostValue = h;
@@ -158,7 +177,7 @@ namespace Kuros.Actors.Heroes
                 }
                 if (_hurtRising)
                 {
-                    HurtDisplay = Mathf.Min(h, HurtDisplay + HealRiseSpeed * dt);
+                    HurtDisplay = Mathf.Min(h, HurtDisplay + HealRiseRatio * maxH * dt);
                     if (HurtDisplay >= h - 0.01f)
                     {
                         HurtDisplay = h;
@@ -178,7 +197,7 @@ namespace Kuros.Actors.Heroes
             }
             if (_fillRising)
             {
-                FillValue = Mathf.Min(h, FillValue + HealRiseSpeed * dt);
+                FillValue = Mathf.Min(h, FillValue + HealRiseRatio * maxH * dt);
                 if (FillValue >= h - 0.01f)
                 {
                     FillValue = h;

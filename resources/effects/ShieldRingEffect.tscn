@@ -7,11 +7,11 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
 shader = ExtResource("1_shader")
 shader_parameter/radius = 0.7999999821184
-shader_parameter/thickness = 0.02999999932944
+shader_parameter/thickness = 0.03999999910592
 shader_parameter/color = Color(0.35, 0.75, 1, 1)
 shader_parameter/brightness = 1.499999966472
 shader_parameter/angular_speed = 2.5
-shader_parameter/radial_speed = 2.9999998211839998
+shader_parameter/radial_speed = 0.49999987706399995
 shader_parameter/alpha = 0.999999977648
 shader_parameter/noise = ExtResource("2_noise")
 

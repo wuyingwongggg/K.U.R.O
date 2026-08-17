@@ -1,15 +1,15 @@
 [gd_scene load_steps=23 format=3 uid="uid://r71es6oubh5f"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_jjdfc"]
-[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="2_kw4la"]
-[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_4wxk6"]
-[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_e23ad"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_jjdfc"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_kw4la"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_4wxk6"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_e23ad"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="5_gq25f"]
 [ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="6_akf5w"]
 [ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="7_52hy4"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="8_yvjhh"]
-[ext_resource type="Texture2D" uid="uid://bmlbrogdyoobg" path="res://assets/environments/scene_2_hotel/地板.png" id="9_f5tsh"]
-[ext_resource type="Texture2D" uid="uid://84ualture7v7" path="res://assets/environments/scene_2_hotel/地毯.png" id="10_s8kuf"]
+[ext_resource type="Texture2D" uid="uid://behye8vdgemoq" path="res://assets/environments/scene_2_hotel/地板.png" id="9_f5tsh"]
+[ext_resource type="Texture2D" uid="uid://dw2alagwosewh" path="res://assets/environments/scene_2_hotel/地毯.png" id="10_s8kuf"]
 [ext_resource type="Texture2D" uid="uid://k45cthgn2dgq" path="res://assets/environments/scene_2_hotel/墙面.png" id="11_euo15"]
 [ext_resource type="Texture2D" uid="uid://cu2c3j0gpbqhb" path="res://assets/environments/scene_2_hotel/无缝窗户模块.png" id="12_wmx0i"]
 [ext_resource type="PackedScene" uid="uid://ddi1sshkssyq" path="res://scenes/items/Furniture_B_cautionTape_side.tscn" id="15_kl7k4"]
@@ -23,7 +23,7 @@ size = Vector2(5590, 3050)
 size = Vector2(5500, 3050)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tma6a"]
-size = Vector2(5000, 3050)
+size = Vector2(5500, 3050)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_c4tua"]
 size = Vector2(400, 2500)
@@ -35,8 +35,8 @@ size = Vector2(6000, 700)
 size = Vector2(6000, 700)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ilowa"]
-vertices = PackedVector2Array(-1570, 1344, -341, 1370, -2773.7969, 1370, -2422, 1344, -222, -467, -222, -142, -648.5, -142, -1132, -299.5, -1132, -741, -416, -546, -648.5, 799, -810, 580, -810, 140, 2696.25, -770, 2694.2031, 1370, 1565, 589, 2452, -525, -1589, 140, -1767, -299.5, -2771.7578, -770, -2422, 1035, -341, 827.5, -1570, 1035, -92, -546, -92, -770, 1598, -770, 1598, -494, 242, -467, 2086, -494, 2086, -525, 2452, -770, 1565, 149, 445, -409, 644.5, -129, -63, 1370, -63, 1147, 168, 1147, 168, 1333, 492, 1333, 786, 589, 492, 1071, 644.5, 812, 242, 1071, 242, 812, 786, 149, 242, -129, 242, -145, 445, -145, 242, -409, -222, 799, -222, 827.5, -1589, 580, -1767, -741, -416, -770)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8, 9), PackedInt32Array(6, 10, 11, 12), PackedInt32Array(13, 14, 15, 16), PackedInt32Array(7, 6, 12, 17, 18), PackedInt32Array(3, 2, 19, 20), PackedInt32Array(21, 1, 0, 22, 10), PackedInt32Array(23, 24, 25, 26, 27), PackedInt32Array(28, 29, 16), PackedInt32Array(16, 30, 13), PackedInt32Array(16, 15, 31, 28), PackedInt32Array(32, 26, 28, 31, 33), PackedInt32Array(34, 35, 36, 37), PackedInt32Array(14, 34, 37, 38), PackedInt32Array(39, 15, 14, 38, 40, 41), PackedInt32Array(40, 42, 43, 41), PackedInt32Array(39, 41, 33, 44), PackedInt32Array(33, 45, 46, 47), PackedInt32Array(32, 48, 27, 26), PackedInt32Array(10, 49, 50, 21), PackedInt32Array(51, 11, 10, 22, 20), PackedInt32Array(17, 51, 20, 19, 18), PackedInt32Array(52, 18, 19), PackedInt32Array(52, 19, 53, 8), PackedInt32Array(8, 53, 9), PackedInt32Array(4, 9, 23, 27), PackedInt32Array(33, 47, 32), PackedInt32Array(33, 31, 44)])
+vertices = PackedVector2Array(1659, 1370, 918, 1370, 918, 1169, 1659, 1169, 2694.2031, 1370, 2373, 1370, 2373, 1098, 2694.5234, 1036, 1939, 1036, 2013, 1098, 1939, 1370, 2013, 1370, 918, 833, 1617, 270, 1626, 270, 1626, 897, 918, 909, 1832, 897, 1832, 899, 1659, 899, 1659, 909, 760, 833, 760, 432, 915, 432, 915, -168, 1617, -168, 1897, -191, 2695.7031, -191, 2694.7734, 776, 1906, 137, 1906, 776, 1897, 137, -235, 747, -896, 747, -896, 372, -235, 372, -503, -517, -184, -517, -184, -416, -905, -416, -905, -770, -503, -770, 889, -770, 2696.25, -770, 2695.9531, -451, 1897, -490, 1897, -451, 1617, -490, 889, -428, 1617, -428, -1722, 397, -1722, 926, -1784, 810, -1784, 470, -2210, 397, -2144, 470, -2210, 1051, -2144, 810, -1701, -770, -1701, -487, -2502, -487, -2771.7578, -770, -2773.7969, 1370, -2502, -227, -2516, 137, -1701, -227, -1701, -156, -1421, -156, -1421, -770, -1185, -770, -1185, -151, -905, -151, -905, -156, -184, -156, -184, -145, 96, -145, 96, -770, 609, -770, 609, -189, 635, -189, 635, 101, -182, 101, -1031, 112, -182, 112, -1031, 182, -1176, 182, -1442, 166, -1606, 137, -1176, 942, -1040, 942, -1040, 1007, -1060, 1303, -235, 1007, -235, 1024, 45, 1024, 45, 361, 480, 361, 480, 1009, 638, 1009, 638, 1370, -150, 1370, -150, 1303, -1060, 1370, -1407, 1370, -1407, 815, -1442, 815, -1606, 166, -2516, 397, -2490, 397, -2490, 1051, -1687, 926, -1687, 1370)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7), PackedInt32Array(8, 7, 6, 9), PackedInt32Array(10, 8, 9, 11), PackedInt32Array(12, 13, 14, 15, 16), PackedInt32Array(15, 17, 18, 19), PackedInt32Array(19, 20, 16, 15), PackedInt32Array(12, 21, 22, 23), PackedInt32Array(13, 12, 23, 24, 25), PackedInt32Array(26, 27, 28, 29), PackedInt32Array(28, 30, 29), PackedInt32Array(26, 29, 31), PackedInt32Array(32, 33, 34, 35), PackedInt32Array(36, 37, 38, 39), PackedInt32Array(36, 39, 40, 41), PackedInt32Array(42, 43, 44, 45), PackedInt32Array(44, 46, 45), PackedInt32Array(42, 45, 47), PackedInt32Array(48, 42, 47, 49), PackedInt32Array(50, 51, 52, 53), PackedInt32Array(54, 50, 53, 55), PackedInt32Array(56, 54, 55, 57), PackedInt32Array(58, 59, 60, 61), PackedInt32Array(62, 61, 60, 63, 64), PackedInt32Array(63, 65, 66, 64), PackedInt32Array(67, 68, 69, 70), PackedInt32Array(71, 72, 73, 74), PackedInt32Array(75, 76, 77, 78), PackedInt32Array(78, 79, 80, 81, 75), PackedInt32Array(74, 75, 81, 82), PackedInt32Array(81, 83, 82), PackedInt32Array(67, 70, 82, 84, 85, 86, 87, 66), PackedInt32Array(88, 89, 90, 91), PackedInt32Array(90, 92, 93, 91), PackedInt32Array(94, 95, 96, 97), PackedInt32Array(94, 97, 98, 99, 100, 101), PackedInt32Array(93, 94, 101, 91), PackedInt32Array(91, 102, 103, 104, 88), PackedInt32Array(104, 105, 86, 85), PackedInt32Array(86, 106, 87), PackedInt32Array(107, 108, 109, 62), PackedInt32Array(51, 110, 111, 62), PackedInt32Array(52, 51, 62, 56), PackedInt32Array(71, 74, 82, 70), PackedInt32Array(56, 57, 52), PackedInt32Array(109, 56, 62), PackedInt32Array(85, 88, 104), PackedInt32Array(66, 87, 64), PackedInt32Array(62, 64, 107)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2851, -1555, 2777, -1551, 2774, 1570, -2854, 1572)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -62,15 +62,15 @@ ZoneName = "Room_Zone_B4"
 shape = SubResource("RectangleShape2D_mgqd3")
 debug_color = Color(0, 1, 0, 0.41960785)
 
-[node name="BattleArena" type="Area2D" parent="."]
+[node name="BattleArena" type="Area2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 visible = false
 z_index = 10
 script = ExtResource("2_kw4la")
-ArenaSize = Vector2(5000, 3050)
+ArenaSize = Vector2(5500, 3050)
 BoundaryCollisionLayer = 6
 BoundaryCollisionMask = 6
-BoundaryThickness = 50.0
 EnemyDetectionMask = 2
+TriggerArea = NodePath("../WaveSpawnManager/TriggerArea")
 ShowDebugOverlay = false
 DebugLineWidth = 8.0
 
@@ -87,7 +87,7 @@ BattleArenaPath = NodePath("../BattleArena")
 
 [node name="TriggerArea" type="Area2D" parent="WaveSpawnManager"]
 top_level = true
-position = Vector2(-1316, 350)
+position = Vector2(-2500, 350)
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WaveSpawnManager/TriggerArea"]

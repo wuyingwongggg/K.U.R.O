@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=5 format=3 uid="uid://dc7u7akvpcjtn"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=7 format=3 uid="uid://dc7u7akvpcjtn"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_w8ttm"]
 [ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_bt0ev"]
 [ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hduh6"]
+[ext_resource type="PackedScene" uid="uid://cx24huqp7qade" path="res://resources/effects/ShieldUmbrellaEffect.tscn" id="3_umbrella"]
 
 [sub_resource type="Resource" id="Resource_a5flt"]
 script = ExtResource("1_w8ttm")
@@ -14,14 +15,22 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
+[sub_resource type="Resource" id="Resource_umbrella"]
+script = ExtResource("1_w8ttm")
+Trigger = 1
+EffectScene = ExtResource("3_umbrella")
+Notes = "雨伞护盾（跟随玩家前方，朝向镜像反转）"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
 [resource]
 script = ExtResource("2_hduh6")
 SkillId = "WeaponSkill_Stab_Umbrella"
 DisplayName = "雨伞攻击"
+SkillType = 1
 AnimationName = "Weapon_Stab_Umbrella"
 ShowHitboxDebug = false
-Description = "攻击到敌人时击退该敌人0.3m"
-Effects = Array[ExtResource("1_w8ttm")]([SubResource("Resource_a5flt")])
+Description = "攻击时生成跟随玩家的伞状护盾并击退敌人0.3m"
+Effects = Array[ExtResource("1_w8ttm")]([SubResource("Resource_a5flt"), SubResource("Resource_umbrella")])
 WarmupDuration = 0.17
 ActiveDuration = 0.23
 RecoveryDuration = 0.1

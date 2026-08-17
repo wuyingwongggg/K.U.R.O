@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c88kwpwoxtoev"]
+[gd_scene load_steps=21 format=3 uid="uid://c88kwpwoxtoev"]
 
 [ext_resource type="Script" uid="uid://3vrm8fkuw0da" path="res://scripts/ui/BattleHUD.cs" id="1_battle_hud"]
 [ext_resource type="Texture2D" uid="uid://b6l52tfec8bsb" path="res://assets/ui/item_bar/解锁框.png" id="2_6fofv"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://dmmps17mtfoi7" path="res://assets/ui/hp&exp_bar/EXP框底色.png" id="7_thm3t"]
 [ext_resource type="Texture2D" uid="uid://d2bkxepnw5v0s" path="res://assets/ui/hp&exp_bar/EXP绿色.png" id="8_wh53j"]
 [ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/BuildCoreHUD.tscn" id="9_core_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/BossHUD.tscn" id="10_boss_hud"]
 [ext_resource type="Script" uid="uid://d2bak4x8m7c3" path="res://scripts/ui/DashIconControl.cs" id="10_dash_icon"]
 [ext_resource type="Texture2D" uid="uid://ci5rkvxb1rosw" path="res://assets/ui/hp&exp_bar/HP深红.png" id="13_ilgv0"]
 [ext_resource type="Texture2D" uid="uid://dxuph0ta265n1" path="res://assets/ui/设置.png" id="13_thm3t"]
@@ -36,6 +37,7 @@ LockedFrameTexture = ExtResource("15_locked")
 StatusMessageAnchorNormalized = Vector2(0.5, 0.5)
 
 [node name="CoreHUD" parent="." instance=ExtResource("9_core_hud")]
+[node name="BossHUD" parent="." instance=ExtResource("10_boss_hud")]
 layout_mode = 1
 
 [node name="MinimapPanel" type="Panel" parent="."]

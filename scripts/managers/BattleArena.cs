@@ -10,8 +10,10 @@ namespace Kuros.Managers
     /// <summary>
     /// 独立的战斗区域管理器：
     /// 实时检测指定范围内是否有敌人。
-    /// 有敌人时自动创建空气墙边界并锁定相机；
-    /// 无敌人时自动移除空气墙并解除相机锁定。
+    /// 默认模式：有敌人时自动创建空气墙边界，无敌人时自动移除。
+    /// 手动触发模式（ManualTriggerMode）：激活只由触发器驱动——在 TriggerArea 导出槽指定场景中的一个
+    /// Area2D，玩家进入即触发一次（激活时机锚定玩家位置，杜绝"墙生成时玩家在场外"）；
+    /// 拆墙条件 = 持续满 TriggerDurationSeconds 且场上无敌人。
     /// </summary>
     [GlobalClass]
     public partial class BattleArena : Area2D
@@ -29,8 +31,8 @@ namespace Kuros.Managers
         public uint BoundaryCollisionMask { get; set; } = 0; // Layer 0 + Layer 2
 
         /// <summary>空气墙的厚度。</summary>
-        [Export(PropertyHint.Range, "1,50,1")]
-        public float BoundaryThickness { get; set; } = 2f;
+        [Export(PropertyHint.Range, "1,200,1")]
+        public float BoundaryThickness { get; set; } = 100f;
 
         /// <summary>检测敌人的碰撞掩码。</summary>
         [Export(PropertyHint.Layers2DPhysics)]
@@ -39,6 +41,18 @@ namespace Kuros.Managers
         /// <summary>检查间隔（秒），多久检查一次敌人。</summary>
         [Export(PropertyHint.Range, "0.1,2,0.1")]
         public float CheckInterval { get; set; } = 0.3f;
+
+        /// <summary>手动触发模式：激活只由触发器驱动，敌人检测不再自动激活。</summary>
+        [Export]
+        public bool ManualTriggerMode { get; set; } = true;
+
+        /// <summary>触发器区域（玩家进入时触发一次，全局仅一次）。配合 ManualTriggerMode 使用。</summary>
+        [Export]
+        public Area2D? TriggerArea { get; set; }
+
+        /// <summary>触发后空气墙最短持续时长（秒）：到期后若场上无敌人则拆墙，有敌人则保留至清场。</summary>
+        [Export(PropertyHint.Range, "0,300,1")]
+        public float TriggerDurationSeconds { get; set; } = 3f;
 
         [ExportCategory("Debug")]
         [Export]
@@ -63,14 +77,14 @@ namespace Kuros.Managers
         public delegate void BattleEndedEventHandler();
 
         private BattleArenaBoundary? _boundaryWalls;
-        private CameraZoneManager? _cameraZoneManager;
         private float _checkTimer = 0f;
         private bool _isBattleActive = false;
         private List<GameActor> _trackedEnemies = new();
         private readonly List<GameActor> _detectedScratch = new(); // 复用缓冲区，避免每0.3s分配新列表
-        private string? _originalCameraZoneName;
+        private bool _triggerUsed = false;      // TriggerBattleOnce 仅一次标志（全局）
+        private float _minRemaining = 0f;       // 触发模式最短持续时长剩余（到期且无敌人才拆墙）
         /// <summary>
-        /// 外部持锁标志。当为 true 时，即使检测到无敌人也不会撤销空气墙/相机锁定。
+        /// 外部持锁标志。当为 true 时，即使检测到无敌人也不会撤销空气墙。
         /// 由 WaveSpawnManager 在整个波次期间持锁，全部波次结束后释放。
         /// </summary>
         private bool _forceLocked = false;
@@ -85,13 +99,18 @@ namespace Kuros.Managers
             _forceLocked = locked;
             GameLogger.Debug(nameof(BattleArena), $"SetForceLock({locked})");
 
-            // 解锁时若当前无敌人则立即停用
-            if (!locked && _isBattleActive && _trackedEnemies.Count == 0)
+            // 解锁时若当前无敌人且已持续满最短时长则立即停用
+            if (!locked && _isBattleActive && _trackedEnemies.Count == 0 && _minRemaining <= 0f)
                 DeactivateBattle();
         }
 
         public override void _Ready()
         {
+            if (TriggerArea != null)
+            {
+                TriggerArea.BodyEntered += OnTriggerBodyEntered;
+            }
+
             // 配置 Area2D 的碰撞层
             CollisionLayer = 0;
             CollisionMask = EnemyDetectionMask;
@@ -132,6 +151,11 @@ namespace Kuros.Managers
                 CheckEnemyStatus();
             }
 
+            if (_minRemaining > 0f)
+            {
+                _minRemaining -= (float)delta;
+            }
+
             if (ShouldDrawDebugOverlay())
             {
                 QueueRedraw();
@@ -154,7 +178,7 @@ namespace Kuros.Managers
         private void CheckEnemyStatus()
         {
             // 更新现有敌人列表
-            _trackedEnemies.RemoveAll(enemy => !IsInstanceValid(enemy) || enemy.IsDead);
+            _trackedEnemies.RemoveAll(enemy => !IsInstanceValid(enemy) || enemy.IsDeadOrDying);
 
             // 通过物理查询找到范围内的所有敌人（复用暂存列表，避免每次 new List）
             var overlappingBodies = GetOverlappingBodies();
@@ -189,45 +213,45 @@ namespace Kuros.Managers
 
             bool hasEnemies = _trackedEnemies.Count > 0;
 
-            // 状态转移：无敌人 -> 有敌人
-            if (hasEnemies && !_isBattleActive)
+            // 状态转移：无敌人 -> 有敌人（手动触发模式下激活只由 TriggerBattleOnce 驱动）
+            if (hasEnemies && !_isBattleActive && !ManualTriggerMode)
             {
                 ActivateBattle();
             }
-            // 状态转移：有敌人 -> 无敌人（锁定期间禁止停用）
-            else if (!hasEnemies && _isBattleActive && !_forceLocked)
+            // 状态转移：有敌人 -> 无敌人（锁定期间禁止停用；触发模式需先持续满最短时长）
+            else if (!hasEnemies && _isBattleActive && !_forceLocked && _minRemaining <= 0f)
             {
                 DeactivateBattle();
             }
         }
 
         /// <summary>
-        /// 激活战斗：创建空气墙并锁定相机。
+        /// 手动触发战斗（全局仅一次）：立即创建空气墙并持续最短 durationSeconds。
+        /// 激活时机锚定玩家位置（玩家进入 TriggerArea 时调用），
+        /// 玩家不可能处于墙外；拆墙条件 = 持续满时长且场上无敌人（有敌人则一直保留）。
+        /// </summary>
+        public void TriggerBattleOnce(float durationSeconds)
+        {
+            if (_triggerUsed) return;
+            _triggerUsed = true;
+            _minRemaining = Mathf.Max(0f, durationSeconds);
+            ActivateBattle();
+        }
+
+        private void OnTriggerBodyEntered(Node2D body)
+        {
+            if (!body.IsInGroup("player")) return;
+            TriggerBattleOnce(TriggerDurationSeconds);
+        }
+
+        /// <summary>
+        /// 激活战斗：创建空气墙。
         /// </summary>
         private void ActivateBattle()
         {
             _isBattleActive = true;
 
             GameLogger.Info(nameof(BattleArena), $"战斗激活：检测到 {_trackedEnemies.Count} 个敌人，创建空气墙");
-
-            // 找到相机管理器
-            var cameraZoneManager = GetTree().GetFirstNodeInGroup("camera_zone_manager") as CameraZoneManager;
-
-            if (cameraZoneManager != null)
-            {
-                _cameraZoneManager = cameraZoneManager;
-                _originalCameraZoneName = cameraZoneManager.CurrentZoneName;
-
-                // 创建临时相机区域
-                var arenaRect = new Rect2(GlobalPosition - ArenaSize / 2f, ArenaSize);
-                cameraZoneManager.CreateAndSwitchTemporaryCameraZone(arenaRect, $"arena_{GetInstanceId()}");
-
-                GameLogger.Info(nameof(BattleArena), "相机已切换到战斗区域");
-            }
-            else
-            {
-                GameLogger.Warn(nameof(BattleArena), "未找到 CameraZoneManager，相机不会被锁定");
-            }
 
             // 创建空气墙
             CreateBoundaryWalls();
@@ -236,8 +260,7 @@ namespace Kuros.Managers
         }
 
         /// <summary>
-        /// 停用战斗：移除空气墙并解除相机锁定。
-        /// 优先恢复到玩家当前所在的 CameraZoneArea，其次才是战斗前的 Zone。
+        /// 停用战斗：移除空气墙。
         /// </summary>
         private void DeactivateBattle()
         {
@@ -248,74 +271,8 @@ namespace Kuros.Managers
             // 移除空气墙
             RemoveBoundaryWalls();
 
-            // 恢复相机
-            if (_cameraZoneManager != null)
-            {
-                // 优先检查玩家是否处于某个 CameraZoneArea 内
-                var targetZoneName = FindPlayerCurrentCameraZone();
-                if (targetZoneName == null)
-                {
-                    targetZoneName = _originalCameraZoneName;
-                }
-
-                if (!string.IsNullOrEmpty(targetZoneName))
-                {
-                    _cameraZoneManager.SwitchToZone(targetZoneName);
-                    GameLogger.Info(nameof(BattleArena), $"相机已恢复到区域：{targetZoneName}");
-                }
-                else
-                {
-                    _cameraZoneManager.RemoveTemporaryCameraZone($"arena_{GetInstanceId()}");
-                    GameLogger.Info(nameof(BattleArena), "相机区域已移除");
-                }
-
-                _cameraZoneManager = null;
-            }
-
             _trackedEnemies.Clear();
             EmitSignal(SignalName.BattleEnded);
-        }
-
-        /// <summary>
-        /// 查找玩家当前所在的 CameraZoneArea 对应的 Zone 名称。
-        /// 基于玩家位置在 CameraZoneArea 碰撞形状范围内的判断（不依赖物理查询）。
-        /// 若玩家处于多个 CameraZoneArea 的范围内，返回最后找到的那个。
-        /// </summary>
-        private string? FindPlayerCurrentCameraZone()
-        {
-            var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
-            if (player == null) return null;
-
-            var playerPos = player.GlobalPosition;
-            string? currentZone = null;
-
-            // 遍历场景树中所有 CameraZoneArea，检查玩家位置是否在其碰撞形状范围内
-            var allCameraZones = GetTree().GetNodesInGroup("camera_zone");
-
-            foreach (var zone in allCameraZones)
-            {
-                if (zone is not CameraZoneArea cameraZone || !IsInstanceValid(cameraZone))
-                    continue;
-
-                // 获取 CameraZoneArea 的碰撞形状
-                var collisionShape = cameraZone.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-                if (collisionShape?.Shape is not RectangleShape2D rectShape)
-                    continue;
-
-                // 计算世界范围
-                var worldCenter = cameraZone.GlobalPosition + collisionShape.Position;
-                var halfSize = rectShape.Size / 2f;
-                var aabbRect = new Rect2(worldCenter - halfSize, rectShape.Size);
-
-                // 检查玩家位置是否在范围内
-                if (aabbRect.HasPoint(playerPos))
-                {
-                    currentZone = cameraZone.ZoneName;
-                    GameLogger.Debug(nameof(BattleArena), $"检测到玩家位置在 CameraZone 内：{currentZone} 位置:{playerPos}");
-                }
-            }
-
-            return currentZone;
         }
 
         /// <summary>
@@ -401,6 +358,10 @@ namespace Kuros.Managers
 
         public override void _ExitTree()
         {
+            if (TriggerArea != null)
+            {
+                TriggerArea.BodyEntered -= OnTriggerBodyEntered;
+            }
             RemoveBoundaryWalls();
             DeactivateBattle();
             _trackedEnemies.Clear();

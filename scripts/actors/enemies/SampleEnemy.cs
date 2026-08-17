@@ -11,6 +11,14 @@ public partial class SampleEnemy : GameActor
 	[ExportCategory("Behavior")]
 	[Export] public EnemyBehaviorConfig? BehaviorConfig { get; set; }
 
+	[ExportCategory("Boss HUD")]
+	/// <summary>是否为 Boss（end 关卡高血精英）：BossHUD 为其显示屏幕血条。</summary>
+	[Export] public bool IsBoss { get; set; } = false;
+	/// <summary>Boss 血条显示名（如"网管"）；为空则不显示名字；非 Boss 忽略。</summary>
+	[Export] public string DisplayName { get; set; } = string.Empty;
+	/// <summary>Boss 血条图标（png）；为空则不显示图标。</summary>
+	[Export] public Texture2D? BossIcon { get; set; }
+
 	[ExportCategory("Debug")]
 	[Export] public bool EnableStateDebugOverlay = false;
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);

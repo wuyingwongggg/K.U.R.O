@@ -126,7 +126,7 @@ namespace Kuros.Actors.Npc
 		{
 			// 监测敌人死亡，立即结束对话并销毁自身
 			// text_bubble.gd 中已有 is_inside_tree() 守卫，end_timeline 可安全同步调用
-			if (_dialogueActive && _parentActor != null && _parentActor.IsDead)
+			if (_dialogueActive && _parentActor != null && _parentActor.IsDeadOrDying)
 			{
 				ForceEndDialogueImmediate();
 				QueueFree();

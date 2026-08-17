@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3 uid="uid://8ce54l6083nt"]
+[gd_scene load_steps=46 format=3 uid="uid://8ce54l6083nt"]
 
 [ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
@@ -6,6 +6,7 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_st2e3"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_effect_controller"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_evlou"]
+[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="3_jjtbv"]
 [ext_resource type="Script" uid="uid://d4mh83kyh88kd" path="res://scripts/core/stats/CharacterStatProfile.cs" id="3_qgdql"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="4_state_machine"]
 [ext_resource type="Resource" uid="uid://d13rra8f1j6ep" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_0r650"]
@@ -31,6 +32,7 @@
 [ext_resource type="Script" uid="uid://dvu6xk56lp65v" path="res://scripts/actors/enemies/animation/EnemyC1WaiterBSpineAnimationController.cs" id="19_uohhx"]
 [ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="23_eyt4q"]
 [ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="24_afterimage"]
+[ext_resource type="Script" uid="uid://e84825ehiw7v" path="res://scripts/actors/heroes/GhostHealthComponent.cs" id="99_ghost"]
 
 [sub_resource type="Resource" id="Resource_r5hc0"]
 script = ExtResource("2_m8hjw")
@@ -91,21 +93,21 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_enemy_script")
 BehaviorConfig = SubResource("Resource_r5hc0")
+IsBoss = true
+BossIcon = ExtResource("3_jjtbv")
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 80
-Speed = 600
-AttackDamage = 30
 MaxHealth = 1000
+AiDescription = "仿生兔女郎，精英敌人，似乎是失控的表演型号，使用应援棒和表演用激光浮游炮攻击观众"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 StatProfile = SubResource("Resource_f4qnp")
 LootTable = ExtResource("5_0r650")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "仿生兔女郎，精英敌人，似乎是失控的表演型号，使用应援棒和表演用激光浮游炮攻击观众"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_eqcia")
@@ -366,3 +368,9 @@ avoidance_enabled = true
 radius = 100.0
 max_speed = 350.0
 debug_path_custom_line_width = 2.0
+
+[node name="GhostHealthComponent" type="Node" parent="."]
+script = ExtResource("99_ghost")
+GhostHoldDuration = 0.3
+GhostDescendRatio = 1.2
+HealHoldDuration = 0.3
