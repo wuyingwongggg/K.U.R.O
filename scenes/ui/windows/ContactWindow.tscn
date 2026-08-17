@@ -1,21 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://d2cbdjbkh1j12"]
+[gd_scene load_steps=6 format=3 uid="uid://d2cbdjbkh1j12"]
 
-[ext_resource type="Script" uid="uid://bprl5ms15fn34" path="res://scripts/ui/ContactWindow.cs" id="1_contact"]
+[ext_resource type="Script" uid="uid://x0nh4piasxww" path="res://scripts/ui/ContactWindow.cs" id="1_contact"]
 [ext_resource type="Script" uid="uid://cvvefx72j7xsy" path="res://scripts/ui/ContactEntry.cs" id="2_jj6iw"]
-[ext_resource type="Texture2D" uid="uid://dccrl4lpl0t2h" path="res://icon.svg" id="3_dv8hy"]
+[ext_resource type="Texture2D" uid="uid://c0nedd0un24gn" path="res://assets/ui/communication/QQqrcode.png" id="3_lmhsw"]
 
 [sub_resource type="Resource" id="Resource_xxv0g"]
 script = ExtResource("2_jj6iw")
 Title = "QQ"
 Kind = 0
-QrTexture = ExtResource("3_dv8hy")
-metadata/_custom_type_script = "uid://cvvefx72j7xsy"
-
-[sub_resource type="Resource" id="Resource_lmhsw"]
-script = ExtResource("2_jj6iw")
-Title = "Discord"
-Kind = 1
-Url = "https://www.baidu.com"
+QrTexture = ExtResource("3_lmhsw")
 metadata/_custom_type_script = "uid://cvvefx72j7xsy"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
@@ -37,7 +30,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_contact")
-Entries = Array[ExtResource("2_jj6iw")]([SubResource("Resource_xxv0g"), SubResource("Resource_lmhsw")])
+Entries = Array[ExtResource("2_jj6iw")]([SubResource("Resource_xxv0g")])
 
 [node name="Dimmer" type="ColorRect" parent="."]
 layout_mode = 1

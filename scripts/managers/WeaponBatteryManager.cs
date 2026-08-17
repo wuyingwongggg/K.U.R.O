@@ -142,6 +142,12 @@ namespace Kuros.Managers
             return state.MaxCharge;
         }
 
+        /// <summary>清空全部武器电量状态（玩家死亡重来/新局开始时调用——武器已随玩家重置，电量不应保留）。</summary>
+        public void ResetAll()
+        {
+            _batteries.Clear();
+        }
+
         public override void _Process(double delta)
         {
             if (_batteries.Count == 0) return;

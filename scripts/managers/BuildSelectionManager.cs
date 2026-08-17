@@ -124,6 +124,24 @@ namespace Kuros.Managers
             _boundPlayer = null;
         }
 
+        /// <summary>
+        /// 重置本局 Build 进度（死亡重试/返回标题时调用）：清空构筑选择、核心、触发计数与分数，
+        /// 让玩家从零开始新一轮（玩家重载后为初始属性，不再保留旧构筑）。
+        /// </summary>
+        public void ResetForNewRun()
+        {
+            UnbindPlayer();
+            _triggerCount = 0;
+            _coreSelected = false;
+            _selectedCoreId = null;
+            _playerCoreClass = null;
+            _isSelectionActive = false;
+            _lastKnownScore = 0;
+            _pendingScore = 0;
+            _pickedEffectIds.Clear();
+            _boundPlayer = null;
+        }
+
         private void OnPlayerStatsUpdated(int health, int maxHealth, int score)
         {
             if (score > _lastKnownScore)

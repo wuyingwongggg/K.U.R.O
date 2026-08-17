@@ -78,14 +78,14 @@ DebugOverlayFontSize = 128
 DebugOverlayColor = Color(0, 0.76862746, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
-Speed = 500
-AttackDamage = 10
+Speed = 500.0
+AttackDamage = 10.0
 MaxHealth = 150
+AiDescription = "玩家，受博士委托前来调查失控酒店AI的搭档、伙伴"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "玩家，受博士委托前来调查失控酒店AI的搭档、伙伴"
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0y2r2")
 scale = Vector2(12, 5)
