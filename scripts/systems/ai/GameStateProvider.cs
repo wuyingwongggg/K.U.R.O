@@ -6,6 +6,7 @@ using Kuros.Actors.Heroes;
 using Kuros.Items;
 using Kuros.Items.Attributes;
 using Kuros.Items.Weapons;
+using Kuros.Systems.Memory;
 
 namespace Kuros.Systems.AI
 {
@@ -56,6 +57,7 @@ namespace Kuros.Systems.AI
             var (levelName, levelDescription) = ResolveLevelInfo();
             var (backpackItemCount, backpackOccupiedSlots, backpackSlots) = ResolveBackpack(player);
             var quickBarState = ResolveQuickBarState(player);
+            var memory = GameMemoryService.Instance;
 
             return new GameState
             {
@@ -82,7 +84,9 @@ namespace Kuros.Systems.AI
                 SelectedQuickBarItemId = quickBarState.selectedItemId,
                 SelectedQuickBarItemName = quickBarState.selectedItemName,
                 QuickBarSlots = quickBarState.slots,
-                Companions = companions
+                Companions = companions,
+                MemoryEvents = memory?.LatestSessionTexts(8) ?? new List<string>(),
+                PersistentMemorySummary = memory?.PersistentSummaryText() ?? string.Empty
             };
         }
 

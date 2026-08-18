@@ -22,6 +22,11 @@ namespace Kuros.Core
 		/// 参数：victim（受击方）, attacker（攻击方，可为 null）, damage（实际伤害）
 		/// </summary>
 		public static event Action<GameActor, GameActor?, int>? AnyDamageTaken;
+		/// <summary>
+		/// 任意 GameActor 死亡流程彻底结束后触发的全局静态事件（FinalizeDeath 已执行）。
+		/// 参数为死亡者自身；触发时 actor 尚未释放（QueueFree 为延迟调用），订阅者可安全读取类型/描述。
+		/// </summary>
+		public static event Action<GameActor>? DeathFinalized;
 
 		[ExportCategory("Stats")]
 		[Export] public float Speed = 300.0f;
@@ -529,6 +534,7 @@ namespace Kuros.Core
 
 			_deathFinalized = true;
 			OnDeathFinalized();
+			DeathFinalized?.Invoke(this);
 		}
 
 		protected virtual void OnDeathFinalized()

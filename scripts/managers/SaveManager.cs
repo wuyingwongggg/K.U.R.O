@@ -346,7 +346,7 @@ namespace Kuros.Managers
             return SaveGame(CurrentGameData.SlotIndex, CurrentGameData);
         }
 
-        /// <summary>新游戏：在空槽位写入初始永久进度数据。</summary>
+        /// <summary>新游戏：在空槽位写入初始永久进度数据，并设为当前存档（死亡/电梯自动存档依赖它）。</summary>
         public void NewGame(int slotIndex)
         {
             var data = new GameSaveData
@@ -360,6 +360,7 @@ namespace Kuros.Managers
                 MaxStageReached = 1,
             };
             SaveGame(slotIndex, data);
+            SetCurrentGameData(data);
         }
 
         /// <summary>删除指定槽位的存档。</summary>
@@ -559,6 +560,10 @@ namespace Kuros.Managers
         public Godot.Collections.Array<string> StoryFlags    { get => GetArray("StoryFlags"); set => SetArray("StoryFlags", value); }
         public Godot.Collections.Array<string> CompletedStoryIds { get => GetArray("CompletedStoryIds"); set => SetArray("CompletedStoryIds", value); }
 
+        // 记忆（图鉴/P2 共享数据源）：key = 敌人类型名 / 物品 ItemId，value = 累计次数
+        public Godot.Collections.Dictionary<string, int> EnemyDefeatedCounts { get => GetIntDict("EnemyDefeatedCounts"); set => SetIntDict("EnemyDefeatedCounts", value); }
+        public Godot.Collections.Dictionary<string, int> WeaponAcquiredCounts { get => GetIntDict("WeaponAcquiredCounts"); set => SetIntDict("WeaponAcquiredCounts", value); }
+
         // 序列化
         public Godot.Collections.Dictionary<string, Variant> ToDictionary()
         {
@@ -603,6 +608,22 @@ namespace Kuros.Managers
             return new Godot.Collections.Array<string>();
         }
         private void SetArray(string key, Godot.Collections.Array<string> value) { Variant v = value; _data[key] = v; }
+        private Godot.Collections.Dictionary<string, int> GetIntDict(string key)
+        {
+            if (_data.TryGetValue(key, out var v) && v.VariantType == Variant.Type.Dictionary)
+            {
+                var result = new Godot.Collections.Dictionary<string, int>();
+                foreach (var kvp in v.AsGodotDictionary())
+                {
+                    // JSON 反序列化会把整数解析为 Float 变体（Godot JSON.parse 行为），两者都接受
+                    if (kvp.Value.VariantType == Variant.Type.Int || kvp.Value.VariantType == Variant.Type.Float)
+                        result[kvp.Key.AsString()] = kvp.Value.AsInt32();
+                }
+                return result;
+            }
+            return new Godot.Collections.Dictionary<string, int>();
+        }
+        private void SetIntDict(string key, Godot.Collections.Dictionary<string, int> value) { Variant v = value; _data[key] = v; }
     }
 
     /// <summary>

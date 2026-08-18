@@ -32,7 +32,7 @@ Trigger = 1
 EffectScene = ExtResource("5_battery")
 Notes = "激光笔电量"
 PropertyOverrides = Dictionary[String, Variant]({
-"ConsumePerAttack": 20,
+"ConsumePerAttack": 15,
 "EffectId": "battery_laser",
 "RecoveryDelaySeconds": 3,
 "SkillId": "WeaponSkill_LaserPointer"

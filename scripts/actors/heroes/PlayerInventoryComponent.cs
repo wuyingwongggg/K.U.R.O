@@ -114,6 +114,8 @@ namespace Kuros.Actors.Heroes
         }
 
         // 事件
+        /// <summary>AddItemSmart 首次获得某物品时触发（拾取路径统一入口，图鉴/记忆数据源）。</summary>
+        public event Action<ItemDefinition>? ItemFirstAcquired;
         public event Action<ItemDefinition>? ItemPicked;
         public event Action<string>? ItemRemoved;
         public event Action<ItemDefinition>? WeaponEquipped;
@@ -339,8 +341,9 @@ namespace Kuros.Actors.Heroes
             // 如果成功添加了物品且是第一次获得，标记为已获得
             if (totalAdded > 0 && isFirstTime)
             {
+                ItemFirstAcquired?.Invoke(item);
                 MarkItemAsObtained(item);
-                
+
                 // 如果是第一次获得且需要显示弹窗，触发弹窗显示
                 if (showPopupIfFirstTime)
                 {

@@ -164,6 +164,11 @@ namespace Kuros.Systems.AI
 
         public int CompanionCount => Companions.Count;
 
+        /// <summary>本局最近会话记忆（最近 N 条，短时效事实：击杀/受击/拾取/波次，供 AI 文本引用）。</summary>
+        public List<string> MemoryEvents { get; init; } = new();
+        /// <summary>L0 持久记忆摘要（单行：通关次数/击败总数/获取武器总数/剧情标志数）。</summary>
+        public string PersistentMemorySummary { get; init; } = string.Empty;
+
         public Godot.Collections.Dictionary<string, Variant> ToAiInputDictionary()
         {
             var companions = new Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>>();
@@ -193,6 +198,12 @@ namespace Kuros.Systems.AI
             foreach (var enemy in Enemies)
             {
                 enemies.Add(enemy.ToDictionary());
+            }
+
+            var memoryEvents = new Godot.Collections.Array<string>();
+            foreach (var entry in MemoryEvents)
+            {
+                memoryEvents.Add(entry);
             }
 
             return new Godot.Collections.Dictionary<string, Variant>
@@ -238,6 +249,11 @@ namespace Kuros.Systems.AI
                     ["selected_quickbar_item_id"] = SelectedQuickBarItemId,
                     ["selected_quickbar_item_name"] = SelectedQuickBarItemName,
                     ["quickbar_slots"] = quickBarSlots
+                },
+                ["memory"] = new Godot.Collections.Dictionary<string, Variant>
+                {
+                    ["persistent_summary"] = PersistentMemorySummary,
+                    ["session_events"] = memoryEvents
                 }
             };
         }
@@ -277,6 +293,8 @@ namespace Kuros.Systems.AI
                 $"inventory.selected_weapon_skill={QuickBarSlots.Where(s => s.IsSelected && s.IsOccupied).Select(s => string.IsNullOrEmpty(s.SkillName) ? "none" : $"{s.SkillName}: {s.SkillDescription}").FirstOrDefault() ?? "none"}",
                 $"inventory.selected_weapon_throw_cd={QuickBarSlots.Where(s => s.IsSelected && s.IsOccupied).Select(s => s.ThrowCooldownRemaining).FirstOrDefault():0.0}s",
                 $"inventory.selected_weapon_battery={QuickBarSlots.Where(s => s.IsSelected && s.IsOccupied).Select(s => s.BatteryMax < 0 ? "none" : $"{s.BatteryCharge:0}/{s.BatteryMax:0}").FirstOrDefault() ?? "none"}",
+                $"memory.persistent_summary={PersistentMemorySummary}",
+                $"memory.session_events={string.Join("; ", MemoryEvents)}",
                 "output_format=json"
             });
         }

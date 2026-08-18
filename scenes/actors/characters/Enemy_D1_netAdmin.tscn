@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://gdrtj0ygftu2" path="res://scripts/actors/enemies/EnemyD1NetAdmin.cs" id="1_1rlfu"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_keki5"]
 [ext_resource type="Resource" uid="uid://d13rra8f1j6ep" path="res://resources/loot/Enemy_EliteDrops.tres" id="3_geb57"]
-[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="3_mblfy"]
+[ext_resource type="Texture2D" uid="uid://binvuyk5j65a2" path="res://assets/ui/hp&exp_bar/boss图标.png" id="3_mblfy"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_s0414"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_rmqvr"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c7lg6iwearvh1" path="res://animations/spine/Enemy_D1_netAdmin.tres" id="5_56c2g"]

@@ -1,24 +1,28 @@
-[gd_scene load_steps=7 format=3 uid="uid://bh08qrn2pfjbg"]
+[gd_scene load_steps=6 format=3 uid="uid://bh08qrn2pfjbg"]
 
-[ext_resource type="Texture2D" uid="uid://dygd2n7t2oilt" path="res://assets/ui/hp&exp_bar/HP框底色.png" id="1_frame_bg"]
-[ext_resource type="Texture2D" uid="uid://c1c2gfwgvedyh" path="res://assets/ui/hp&exp_bar/HP底色.png" id="1_lk0f3"]
-[ext_resource type="Texture2D" uid="uid://d1i1q5clrs0fg" path="res://assets/ui/hp&exp_bar/HP青色.png" id="3_cyan"]
-[ext_resource type="Texture2D" uid="uid://b0dvj74kufrt4" path="res://assets/ui/hp&exp_bar/HP白色.png" id="3_v4a1a"]
-[ext_resource type="Texture2D" uid="uid://lnnyw36jkbtp" path="res://assets/ui/hp&exp_bar/HP红色.png" id="4_red"]
-[ext_resource type="Texture2D" uid="uid://vmhxliiru256" path="res://assets/ui/hp&exp_bar/HP框.png" id="5_frame"]
+[ext_resource type="Texture2D" uid="uid://w4rqryopt1x6" path="res://assets/ui/hp&exp_bar/boss血槽.png" id="1_lk0f3"]
+[ext_resource type="Texture2D" uid="uid://c7xmnaidvlc6n" path="res://assets/ui/hp&exp_bar/boss白血.png" id="2_v4a1a"]
+[ext_resource type="Texture2D" uid="uid://dtfx8suh25cp2" path="res://assets/ui/hp&exp_bar/boss青血.png" id="3_lk0f3"]
+[ext_resource type="Texture2D" uid="uid://bf10obuxr7bt0" path="res://assets/ui/hp&exp_bar/boss红血.png" id="4_v4a1a"]
+[ext_resource type="Texture2D" uid="uid://omrlguu4mklj" path="res://assets/ui/hp&exp_bar/boss血条框.png" id="5_8nj0w"]
 
 [node name="BossBarRow" type="HBoxContainer"]
+offset_right = 1028.0
+offset_bottom = 128.0
 theme_override_constants/separation = 8
 
 [node name="NameSlot" type="Control" parent="."]
-custom_minimum_size = Vector2(120, 32)
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
 [node name="BossNameLabel" type="Label" parent="NameSlot"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_top = -0.23400001
+anchor_right = 0.8
+anchor_bottom = 0.39100003
+offset_top = -0.04799843
+offset_bottom = -0.04800415
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
@@ -27,73 +31,81 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="BossIcon" type="TextureRect" parent="NameSlot"]
-visible = false
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = -0.156
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.312
+offset_top = -0.031999588
+offset_bottom = 0.063999176
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
+metadata/_edit_use_anchors_ = true
 
 [node name="BarHost" type="Control" parent="."]
-custom_minimum_size = Vector2(320, 30)
+custom_minimum_size = Vector2(900, 60)
 layout_mode = 2
-
-[node name="BorderBG" type="TextureRect" parent="BarHost"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -27.0
-offset_top = -18.0
-offset_right = 27.0
-offset_bottom = 18.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("1_frame_bg")
-stretch_mode = 5
 
 [node name="HurtBar" type="TextureProgressBar" parent="BarHost"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.016666668
+anchor_right = 0.87233335
+anchor_bottom = 0.156
+offset_right = -0.10003662
+offset_bottom = 0.031999588
 grow_horizontal = 2
 grow_vertical = 2
 texture_under = ExtResource("1_lk0f3")
-texture_progress = ExtResource("3_v4a1a")
+texture_progress = ExtResource("2_v4a1a")
+metadata/_edit_use_anchors_ = true
 
 [node name="RecoveryBar" type="TextureProgressBar" parent="BarHost"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.016666668
+anchor_right = 0.87233335
+anchor_bottom = 0.156
+offset_right = -0.10003662
+offset_bottom = 0.031999588
 grow_horizontal = 2
 grow_vertical = 2
-texture_progress = ExtResource("3_cyan")
+texture_progress = ExtResource("3_lk0f3")
+metadata/_edit_use_anchors_ = true
 
 [node name="FillBar" type="TextureProgressBar" parent="BarHost"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.016666668
+anchor_right = 0.87233335
+anchor_bottom = 0.156
+offset_right = -0.10003662
+offset_bottom = 0.031999588
 grow_horizontal = 2
 grow_vertical = 2
-texture_progress = ExtResource("4_red")
+value = 100.0
+texture_progress = ExtResource("4_v4a1a")
+metadata/_edit_use_anchors_ = true
 
 [node name="Border" type="TextureRect" parent="BarHost"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.018888889
+anchor_right = 0.87011117
+anchor_bottom = 0.156
+offset_right = -0.10003662
+offset_bottom = 0.031999588
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("5_frame")
+texture = ExtResource("5_8nj0w")
 stretch_mode = 5
+metadata/_edit_use_anchors_ = true
 
 [node name="BossValueLabel" type="Label" parent="."]
 visible = false
