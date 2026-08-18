@@ -29,6 +29,8 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "100,1000,50")] public float CarryRangeMin { get; set; } = 400f;
         [Export] public bool UseLiveAiDecisionSource { get; set; } = true;
         [Export] public bool RequestAiDecisionFromBridge { get; set; } = true;
+        /// <summary>预取缓存：空闲时提前生成陪伴台词（零延迟弹出），瞬时信息不走此通道。</summary>
+        [Export] public bool EnableAiPrefetch { get; set; } = true;
         /// <summary>AI 决策请求间隔（秒）：每 N 秒向 AiDecisionBridge 请求一次决策，避免频繁请求。</summary>
         [Export(PropertyHint.Range, "0.2,10,0.1")] public float AiRequestIntervalSeconds { get; set; } = 1.0f;
         [Export] public bool ConsumeOnlyFreshAiDecision { get; set; } = true;
@@ -74,6 +76,13 @@ namespace Kuros.Companions
         private const int PersonalitySignatureHistoryMax = 5; // 台词去重窗口：与最近 5 条签名不同才说
         private readonly Dictionary<string, ulong> _ruleCooldownUntilMs = new();
         private bool _playerDyingDialogueEmitted; // 死亡台词只说一次（场景重载自然重置）
+        private int _lastAliveEnemyCount = -1; // 清场边沿检测：上次存活敌人数（-1 = 首帧不触发）
+        private ulong _lastClearAtMs; // 最近一次清场时间戳（AI 回忆衔接窗口用）
+        /// <summary>清场后此窗口内的预取请求强制走"记忆回顾"话题并注入清场上下文。</summary>
+        private const ulong ClearContextWindowMs = 10_000;
+        private const string ClearContextGuide =
+            "你们刚刚清光了这一带的敌人，战斗刚结束。用同伴口吻回忆或点评刚才的战斗。" +
+            "示例句式：\"刚才那几下漂亮！不过走廊尽头好像还有动静……\"";
 
         public ulong LastEvaluateAtMs { get; private set; }
         public string LastTriggeredRuleKey { get; private set; } = string.Empty;
@@ -152,6 +161,9 @@ namespace Kuros.Companions
                 return;
             }
 
+            // 预取：缓存未满时空闲发起一次（节流/静默在 bridge 内部，不阻塞、不影响实时链路）
+            PrefetchAiDecisionsIfNeeded();
+
             // Personality chatter runs on its own low-frequency gate and should not depend on rule branch returns.
             TryEmitPersonalityChatter(state);
 
@@ -160,6 +172,9 @@ namespace Kuros.Companions
             {
                 return;
             }
+
+            // 清场即时播报：存活敌人从 >0 变 0 的边沿（最后一个敌人进入死亡流程瞬间）
+            DetectEnemyClear(state);
 
             if (state.PlayerMaxHp <= 0)
             {
@@ -350,6 +365,45 @@ namespace Kuros.Companions
             return true;
         }
 
+        /// <summary>跟随模式倾向话题（记忆回顾/鼓励/吐槽）——TopicPool 0-based 索引。</summary>
+        private static readonly int[] FollowPrefetchTopics = { 5, 6, 2 };
+        /// <summary>自由游走倾向话题（环境氛围/武器评价/敌人外貌）——TopicPool 0-based 索引。</summary>
+        private static readonly int[] FreeRoamPrefetchTopics = { 4, 3, 0 };
+
+        /// <summary>预取缓存：缓存未满且无请求占用时发起一次（节流与静默失败在 bridge 内部）。
+        /// 按 P2 移动模式限缩话题池——跟随偏回忆/鼓励，自由游走偏环境/评价。</summary>
+        private void PrefetchAiDecisionsIfNeeded()
+        {
+            if (!EnableAiDecisionBridge || !EnableAiPrefetch || _aiDecisionBridge == null)
+            {
+                return;
+            }
+
+            if (_aiDecisionBridge.RequestInFlight
+                || _aiDecisionBridge.PrefetchCount >= _aiDecisionBridge.PrefetchTargetCount)
+            {
+                return;
+            }
+
+            ulong now = Time.GetTicksMsec();
+            if (_lastClearAtMs != 0 && now - _lastClearAtMs < ClearContextWindowMs)
+            {
+                // 清场后窗口内：强制"记忆回顾"话题 + 清场场景上下文（AI 补充清场感想）
+                _ = _aiDecisionBridge.RequestPrefetchAsync(new[] { 5 }, ClearContextGuide);
+                return;
+            }
+
+            bool followMode = IsCompanionFollowing();
+            _ = _aiDecisionBridge.RequestPrefetchAsync(followMode ? FollowPrefetchTopics : FreeRoamPrefetchTopics);
+        }
+
+        /// <summary>P2 当前是否处于跟随模式（companions 组内 P2CompanionController）。</summary>
+        private bool IsCompanionFollowing()
+        {
+            var controller = GetTree().GetFirstNodeInGroup("companions") as P2CompanionController;
+            return controller != null && IsInstanceValid(controller) && controller.IsFollowingMode;
+        }
+
         private void RequestLiveAiDecisionIfNeeded()
         {
             if (!RequestAiDecisionFromBridge || _aiDecisionBridge == null)
@@ -436,7 +490,7 @@ namespace Kuros.Companions
 
         private void TryEmitPersonalityChatter(GameState state)
         {
-            if (!EnableAiPersonalityChatter || _supportExecutor == null || _aiDecisionBridge?.LastStructuredDecision?.IsValid != true)
+            if (!EnableAiPersonalityChatter || _supportExecutor == null || _aiDecisionBridge == null)
             {
                 return;
             }
@@ -458,7 +512,14 @@ namespace Kuros.Companions
                 return;
             }
 
-            var decision = _aiDecisionBridge.LastStructuredDecision;
+            // 预取缓存优先（零延迟台词）；缓存空则回退实时决策
+            var decision = _aiDecisionBridge.TryDequeuePrefetch()
+                ?? (_aiDecisionBridge.LastStructuredDecision.IsValid ? _aiDecisionBridge.LastStructuredDecision : null);
+            if (decision == null)
+            {
+                return;
+            }
+
             string sourceSignature = BuildAiDecisionSignature(decision);
             // 去重：与最近 N 条台词签名都不同才说（消除相同状态下的雷同）
             if (_personalitySignatureHistory.Contains(sourceSignature))
@@ -591,6 +652,32 @@ namespace Kuros.Companions
                 _dialogue = GetNodeOrNull<P2DialogueController>(DialogueControllerPath)
                     ?? GetNodeOrNull<P2DialogueController>(NormalizeRelativePath(DialogueControllerPath));
             }
+        }
+
+        /// <summary>清场即时播报：AliveEnemyCount 从 >0 边沿到 0 时触发一次（dtl enemies_cleared_N 随机变体）。
+        /// GameStateProvider 已按 IsDeadOrDying 过滤——最后一个敌人进入 Dying 即视为清场（比死亡动画结束更早）。</summary>
+        private void DetectEnemyClear(GameState state)
+        {
+            int count = state.AliveEnemyCount;
+            bool clearedNow = _lastAliveEnemyCount > 0 && count == 0;
+            _lastAliveEnemyCount = count;
+            if (!clearedNow)
+            {
+                return;
+            }
+
+            // 记录清场时间戳：窗口内预取强制"记忆回顾"话题，让 LLM 补一段清场感想
+            _lastClearAtMs = Time.GetTicksMsec();
+
+            TryEmitDecision(
+                ruleKey: "enemies_cleared",
+                decision: SupportDecision.Hint(
+                    message: "enemies_cleared",
+                    sourceRule: "enemies_cleared",
+                    reason: "last enemy defeated, arena cleared",
+                    urgency: "low",
+                    durationSeconds: 1.8f),
+                perRuleCooldownSeconds: 6f);
         }
 
         /// <summary>玩家是否处于死亡流程（Dying/Dead 状态或血量为 0）。</summary>

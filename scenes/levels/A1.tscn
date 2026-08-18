@@ -1,21 +1,26 @@
-[gd_scene load_steps=20 format=3 uid="uid://cl1ki1csawpip"]
+[gd_scene load_steps=24 format=3 uid="uid://cl1ki1csawpip"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
-[ext_resource type="Texture2D" uid="uid://crnd0nvw77ix2" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://bwy3ynxccmpby" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
-[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
+[ext_resource type="Script" uid="uid://cifwu23mu55li" path="res://scripts/managers/LightRevealController.cs" id="1_lightreveal"]
+[ext_resource type="Texture2D" uid="uid://20khta50kpjb" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
+[ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
+[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_utjd6"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="6_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://dcewcyug72e3w" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
+[ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_utjd6"]
-[ext_resource type="Texture2D" uid="uid://cecnum8sfj2jh" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
-[ext_resource type="Texture2D" uid="uid://cjttmrhar2ued" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
+[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
+[ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
+[ext_resource type="Texture2D" uid="uid://cq8g22puau18l" path="res://assets/ui/card/card_glow.png" id="13_4wkas"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_r1xlm"]
 size = Vector2(5860, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_12yej"]
-size = Vector2(5607, 3000)
+size = Vector2(5600, 3000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4wkas"]
+size = Vector2(5600, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eajhg"]
 size = Vector2(5800, 800)
@@ -41,6 +46,8 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32
 outlines = Array[PackedVector2Array]([PackedVector2Array(-7411, -1594, -1471, -1556, -1460, 1597, -7409, 1606)])
 source_geometry_mode = 2
 agent_radius = 80.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_40pjx"]
 
 [node name="A1" type="Node2D"]
 y_sort_enabled = true
@@ -72,6 +79,15 @@ z_index = 10
 position = Vector2(18.5, -340)
 shape = SubResource("RectangleShape2D_12yej")
 debug_color = Color(0, 1, 0, 0.41960785)
+
+[node name="LightTrigger" type="Area2D" parent="."]
+visible = false
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LightTrigger"]
+position = Vector2(18.5, -340)
+shape = SubResource("RectangleShape2D_4wkas")
+debug_color = Color(0.9607843, 0, 0, 0.41960785)
 
 [node name="Environments" type="Node2D" parent="."]
 
@@ -154,3 +170,48 @@ navigation_polygon = SubResource("NavigationPolygon_eajhg")
 position = Vector2(-1985, 0)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
+
+[node name="DarkCovers" type="Node2D" parent="."]
+z_index = 3
+script = ExtResource("1_lightreveal")
+DarkLayerPath = NodePath("Sprite2D")
+SpotGroups = Array[Array]([[NodePath("Spot1"), NodePath("Spot5")], [NodePath("Spot2"), NodePath("Spot6")], [NodePath("Spot3"), NodePath("Spot7")], [NodePath("Spot4"), NodePath("Spot8")]])
+TriggerAreaPath = NodePath("../LightTrigger")
+SpotRadius = 400.0
+Softness = 100.0
+FadeDurationSeconds = 0.30000000000000004
+
+[node name="Sprite2D" type="Sprite2D" parent="DarkCovers"]
+modulate = Color(1, 1, 1, 0.60784316)
+scale = Vector2(3.6, 3.6)
+texture = ExtResource("13_4wkas")
+
+[node name="Spot1" type="Sprite2D" parent="DarkCovers"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_40pjx")
+position = Vector2(-1666, -850)
+
+[node name="Spot2" type="Sprite2D" parent="DarkCovers"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(-546, -850)
+
+[node name="Spot3" type="Sprite2D" parent="DarkCovers"]
+position = Vector2(574, -850)
+
+[node name="Spot4" type="Sprite2D" parent="DarkCovers"]
+position = Vector2(1694, -850)
+
+[node name="Spot5" type="Sprite2D" parent="DarkCovers"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_40pjx")
+position = Vector2(-1666, 400)
+
+[node name="Spot6" type="Sprite2D" parent="DarkCovers"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(-546, 400)
+
+[node name="Spot7" type="Sprite2D" parent="DarkCovers"]
+position = Vector2(574, 400)
+
+[node name="Spot8" type="Sprite2D" parent="DarkCovers"]
+position = Vector2(1694, 400)

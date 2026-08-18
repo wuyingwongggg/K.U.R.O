@@ -18,8 +18,16 @@ label quiet_scene_pickup_2
 P2: d(=^･ω･^=)b
 [end_timeline]
 
-label quiet_scene_pickup_3
+label enemies_cleared_1
 P2: 打得不错喵~
+[end_timeline]
+
+label enemies_cleared_2
+P2: 还有谁喵~
+[end_timeline]
+
+label enemies_cleared_3
+P2: 呼——总算安静了喵~
 [end_timeline]
 
 label fallback_enemy_close
@@ -99,7 +107,7 @@ P2: 别倒下啊喵(´;ω;`)
 [end_timeline]
 
 label player_dying_2
-P2: 怎么回事喵( ´ﾟДﾟ`)
+P2: 怎么回事喵TT
 [end_timeline]
 
 label direct
