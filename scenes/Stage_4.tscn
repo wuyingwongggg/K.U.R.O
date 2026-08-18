@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://ci2kfp5gmklqh"]
+[gd_scene load_steps=14 format=3 uid="uid://ci2kfp5gmklqh"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctvdj"]
 [ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_qpui1"]
@@ -7,7 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://efbd75vs2jik" path="res://scenes/levels/D_begin.tscn" id="5_dx62n"]
 [ext_resource type="PackedScene" uid="uid://5pavro7ckavp" path="res://scenes/levels/D_end.tscn" id="6_dx62n"]
 [ext_resource type="PackedScene" uid="uid://b564u7lastysy" path="res://scenes/levels/D1.tscn" id="7_ctvdj"]
+[ext_resource type="PackedScene" uid="uid://bu5uoq5q120wk" path="res://scenes/levels/D2.tscn" id="8_k6j0r"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="9_2ioy7"]
+[ext_resource type="PackedScene" uid="uid://cwxo7kb7t3hpn" path="res://scenes/levels/D3.tscn" id="9_edjm6"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="10_k6j0r"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="10_tyjfc"]
 [ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="11_kkoag"]
@@ -38,6 +40,12 @@ EndPool = Array[PackedScene]([ExtResource("6_dx62n")])
 EasyMiddlePool = Array[PackedScene]([ExtResource("7_ctvdj")])
 EasyRoomMin = 1
 EasyRoomMax = 1
+NormalMiddlePool = Array[PackedScene]([ExtResource("8_k6j0r")])
+NormalRoomMin = 1
+NormalRoomMax = 1
+HardMiddlePool = Array[PackedScene]([ExtResource("9_edjm6")])
+HardRoomMin = 1
+HardRoomMax = 1
 CameraLimitTop = -1400
 CameraLimitBottom = 1400
 

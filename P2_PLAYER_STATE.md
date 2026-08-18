@@ -356,3 +356,138 @@ LLM 基础设施（原挂在玩家 MainCharacter 上，玩家代码引用已全�
 | `ai_chatter` label | dtl（`AiChatter` 枚举 + case 同步删；个性台词走 `PushHintDirect` 动态文本） |
 
 dtl 现存 label 全部有真实调用链：`ready_N`/`quiet_scene_pickup_N`/`fallback_generic_N`/`fetch_weapon_N`/`follow_started_N`/`free_roam_started_N`/`shield_applied_N`/`healed_N`/`shield_expired_N`（自动变体）+ `fallback_enemy_close` + `combat`（调试热键）+ `suggest_retreat`/`ai_received`（LLM 路径）+ `direct`（动态文本）。
+
+## 11. P2 文本触发点清单（代码盘点，2026-08-18）
+
+> 说明：§10.4 是 dtl **label 清单**（文本层面）；本节是**触发点映射**（何时、什么条件触发、走哪个通道）。`quiet_scene_pickup` 在 §10.4 列为"有真实调用链"，但代码盘点发现 **`QuietScenePickup` 枚举无任何调用方**（见 11.3），属死代码。
+
+### 11.0 文本来源总分类
+
+| 类别 | 含义 | 覆盖触发点 | 延迟 |
+|---|---|---|---|
+| **内置文本** | dtl 固定台词（`p2_hint.dtl` 的 label，含 `_N` 随机变体），**不经过 LLM** | #1~#11 | 瞬时 / ≤10s 轮询节奏 |
+| **AI 实时文本** | LLM 生成的动态文本，`PushHintDirect` 直接显示，**不在 dtl 中** | #14 | = Ollama 生成时间（10~15s） |
+| **混合** | LLM 的 `message` 字段优先，**为空时回退内置 dtl key** | #12 `suggest_retreat`、#13 `ai_received`（及 `suggest_pickup`） | = LLM 生成时间（message 为空时回退内置，瞬时） |
+
+### 11.1 逻辑事件通道（Speak 枚举 → dtl 固定文本，事件驱动、瞬时触发）
+
+| # | 触发点 | 触发时机/条件 | 代码位置 | 文本 | 通道 | 来源 |
+|---|---|---|---|---|---|---|
+| 1 | `Ready` | P2 就位（场景加载 `_Ready`，一次） | [P2CompanionController.cs:196](scripts/companions/P2CompanionController.cs#L196) | `ready_N` | PushHint | **内置** |
+| 2 | `Combat` | 调试热键按下（EnableDebugHintHotkey + DebugHintKey） | [P2CompanionController.cs:277](scripts/companions/P2CompanionController.cs#L277) | `combat` | PushHint | **内置** |
+| 3 | `FollowStarted` | 越界跟随：与玩家距离 > MoveRangeMax 切 Follow 模式 | [P2CompanionController.cs:159](scripts/companions/P2CompanionController.cs#L159) | `follow_started_N` | PushHint | **内置** |
+| 4 | `FreeRoamStarted` | 跟随超时（FollowMaxDuration）切回自由模式 | [P2CompanionController.cs:159](scripts/companions/P2CompanionController.cs#L159) | `free_roam_started_N` | PushHint | **内置** |
+| 5 | `WeaponFetchStart` | `fetch_weapon` 决策应用成功（出发拾取武器） | [P2SupportExecutor.cs:347](scripts/companions/P2SupportExecutor.cs#L347) | `fetch_weapon_N` | PushHint | **内置** |
+| 6 | `ShieldApplied` | `ApplyShield` 成功施加护盾 | [P2SupportExecutor.cs:549](scripts/companions/P2SupportExecutor.cs#L549) | `shield_applied_N` | PushHint | **内置** |
+| 7 | `Healed` | `ApplyHeal` 成功治疗 | [P2SupportExecutor.cs:591](scripts/companions/P2SupportExecutor.cs#L591) | `healed_N` | PushHint | **内置** |
+| 8 | `ShieldExpired` | 护盾到期计时器触发 | [P2SupportExecutor.cs:659](scripts/companions/P2SupportExecutor.cs#L659) | `shield_expired` | PushHint | **内置** |
+| 9 | `PlayerDying` | 玩家进入 Dying/Dead（规则路径，整个死亡窗口只说一次） | [P2SupportBrain.cs:618](scripts/companions/P2SupportBrain.cs#L618) | `player_dying_N` | **PushHintUrgent 抢占** | **内置** |
+
+### 11.2 决策通道（规则/LLM → SupportDecision → Executor）
+
+| # | 触发点 | 触发时机/条件 | 代码位置 | 文本 | 通道 | 来源 |
+|---|---|---|---|---|---|---|
+| 10 | `fallback_enemy_close` | 护盾决策被拒兜底（`enemy_too_close` 且玩家当前无盾） | [P2SupportBrain.cs:529](scripts/companions/P2SupportBrain.cs#L529) → show_hint | `fallback_enemy_close` | PushHint | **内置** |
+| 11 | `fallback_generic` | 任意决策被拒的通用兜底 | [P2SupportBrain.cs:532](scripts/companions/P2SupportBrain.cs#L532) → show_hint | `fallback_generic` | PushHint | **内置** |
+| 12 | `suggest_retreat` | LLM 意图 `retreat` 映射 | [P2SupportDecisionBridge.cs:130](scripts/companions/P2SupportDecisionBridge.cs#L130) | LLM `message`，为空回退 `suggest_retreat` | show_hint | **混合** |
+| 13 | `ai_received` / `suggest_pickup` | LLM 意图 `show_hint`/`suggest_pickup` 映射 | [P2SupportDecisionBridge.cs:123](scripts/companions/P2SupportDecisionBridge.cs#L123) / [:140](scripts/companions/P2SupportDecisionBridge.cs#L140) | LLM `message`，为空回退 `ai_received`/`suggest_pickup_N` | show_hint | **混合** |
+| 14 | LLM 个性台词 | `show_hint_raw`：LLM reason 动态文本；触发 = 决策轮询（AiRequestIntervalSeconds=10s）+ 个性闲聊独立节流（14s 间隔 + 28% 概率 + 签名去重窗口 5 条） | [P2SupportExecutor.cs:282](scripts/companions/P2SupportExecutor.cs#L282) + [P2SupportBrain.cs:437](scripts/companions/P2SupportBrain.cs#L437) | LLM 动态（reason 截断） | show_hint_raw | **AI 实时** |
+
+### 11.3 死代码/未接线
+
+| 项 | 现状 |
+|---|---|
+| `QuietScenePickup` | 枚举 + Speak case 存在（[P2DialogueController.cs:88](scripts/companions/P2DialogueController.cs#L88)），**无任何调用方**；dtl 里 `quiet_scene_pickup_N` 变体也不会被触发 |
+| `PushHintRandom` | 方法定义了（[P2DialogueController.cs:126](scripts/companions/P2DialogueController.cs#L126)），无调用方 |
+| `FallbackEnemyClose`/`FallbackGeneric` 的 Speak 枚举 case | 存在但实际不走——兜底经 `BuildFallbackHint` 返回 key 字符串 → `SupportDecision.Hint` → show_hint message 路径，与 Speak 枚举无关 |
+
+### 11.4 触发频率与延迟特征（与实时性问题的关系）
+
+| 通道 | 触发方式 | 触发到显示的延迟 |
+|---|---|---|
+| 内置文本（1-11） | 事件驱动/规则判定，**不经过 LLM** | ≈ 气泡排队（队列上限 MaxHintQueueSize=6，超限丢弃）；9 号抢占式 0 延迟；10-11 号 ≤ AiRequestIntervalSeconds（10s）节奏 |
+| AI 实时（14） | 轮询 + 独立节流 | **= Ollama 生成时间（qwen3.5 实测 10~15s）**——远大于敌人瞬态事件窗口（2~3s），文本到达时状态已过期（对应 9.5 的已知问题） |
+| 混合（12-13） | LLM 轮询；message 为空回退内置 | 有 message = LLM 生成时间；回退 = 瞬时 |
+
+**结论**：当前没有任何触发点覆盖"敌人瞬态行为"（冲刺/攻击态）；**AI 实时通道（14/12-13）的固有延迟（10~15s）决定了它不可能承担瞬态事件的实时描述**，而内置通道（1-11，零延迟、不依赖 LLM）正是快速兜底的现成载体——只需为瞬态事件新增"内置 dtl 槽位台词 + 事件检测触发"（对应之前三层方案的第 1 层），即补上"敌人 A 冲过来 2~3 秒"场景的缺口。
+
+## 12. AI 文本生成重新设计（2026-08-18，设计稿）
+
+> 需求四项：① 称呼精准（搭档/伙伴，绝不"玩家/主人/博士"）② 时效性（生成延迟尽量压到 10s 内；且文本本身要有长时效）③ 代入感与多样性（同伴视角、拒绝"敌人在XX位置快用XX武器"同质化、多角度：外貌/攻击方式/吐槽/武器评价）④ 上下文联系（记忆：通关次数/拾取武器/击败敌人/到达地点）。
+
+### 12.1 现状核查
+
+| 需求 | 现状 | 差距 |
+|---|---|---|
+| 称呼精准 | persona 只写了"不要用玩家来称呼玩家"（[AiDecisionBridge.cs:28-33](scripts/systems/ai/AiDecisionBridge.cs#L28-L33)），**无正向定义**；persona 里唯一人类角色是"博士" | 模型倾向用 persona 里出现过的人称——必须显式定义称呼 + 正反例 |
+| 生成延迟 | qwen3.5 本地 10~15s（§10.2 实测）；MaxPredictTokens=128 | 可压缩（见 12.2）；但根治靠"文本长时效 + 预取缓存"（见 12.3） |
+| 多样性 | `DefaultInstruction` 是决策指令（god view："Use XX weapon to attack"）；`AiPromptTemplate.DefaultPolicy` 只约束"别报数字"；**无话题轮换机制** | 每次都在"给指令"→ 必然同质化；AiDescription 在状态里但未被引导使用 |
+| 记忆 | **无**。GameState 每次全新快照；Ollama 响应 `Context` 字段（[OllamaGenerateClient.cs:960-961](scripts/systems/ai/OllamaGenerateClient.cs#L960-L961)）存在但桥接层未回传；signature 去重仅内存 5 条 | 击杀/拾取/到达统计不存在；`SaveManager.ClearCount`（通关次数，[SaveManager.cs:553](scripts/managers/SaveManager.cs#L553)）**已持久化可用** |
+
+### 12.2 延迟压缩（10s 内）
+
+1. **换小模型**：qwen3.5(5.6GB) → qwen3:4b / qwen2.5:3b（立竿见影，GPU 显存占用同步下降，顺带解决 §10.2 的卡顿）
+2. **精简输入**：事件/话题触发时用**精简快照**（仅敌人列表 + 玩家 HP + 话题相关字段），完整 JSON（背包/快捷栏可达数万字符）只在需要时发送
+3. **输出约束**：reason 一句话（≤60 字），MaxPredictTokens 保持 128 以内
+4. **预取缓存**（关键）：因为 12.3 的文本是长时效的，可以在状态空闲时**提前异步生成并缓存 2-3 条**，需要显示时零延迟弹出——延迟问题从"生成时延"变成"缓存命中率"
+
+### 12.3 文本长时效设计（根治"对不上"）
+
+**原则：AI 文本只描述"长时效事实"，禁止描述"短时效状态"。**
+
+| 允许（数分钟有效） | 禁止（几秒就过期） |
+|---|---|
+| 敌人类型/外貌/`AiDescription`/攻击方式 | 敌人当前距离/位置数值 |
+| 武器特点/伤害/技能效果 | 玩家当前血量百分比 |
+| 关卡氛围/场景特征 | 敌人是否正在冲刺/攻击（瞬态，交内置通道） |
+| 记忆回顾（通关/拾取/击败） | 玩家当前状态（Hit/Attack 等） |
+
+prompt 增加硬约束："你描述的必须是数分钟内不变的事实；禁止提及距离、位置、血量等瞬时数值，敌人冲刺/攻击等瞬间动作由别人负责播报。"
+
+**结论**：瞬态信息 → 内置通道（§11 的三层方案第 1 层）；长时效信息 → LLM 通道（配合预取缓存，10~15s 延迟变得无关紧要）。
+
+### 12.4 多样性：话题轮换机制
+
+代码侧定义话题池，每次请求**随机/轮转选 1 个**注入 prompt，从结构上杜绝同质化：
+
+| # | 话题 | 示例引导（prompt 注入） |
+|---|---|---|
+| 1 | 敌人外貌 | "描述这个敌人的样子（参考它的描述），用同伴的口吻" |
+| 2 | 攻击方式提醒 | "提醒搭档小心它的攻击方式（参考描述）" |
+| 3 | 同伴吐槽 | "以同伴身份吐槽这个敌人的行为" |
+| 4 | 武器评价 | "评价搭档当前武器（参考技能/描述/电量）" |
+| 5 | 环境氛围 | "评价当前关卡的环境/氛围" |
+| 6 | 记忆回顾 | "提到一次过去的经历（通关/拾取/击败）" |
+| 7 | 鼓励 | "战斗间隙鼓励搭档" |
+
+机制：
+- 轮换 + 近 N 次不重复（复用 signature 去重思路，话题级去重）
+- 每个话题给 1~2 个**示例句式**（同 AiPromptTemplate.DefaultExample 模式），引导模型贴近 P2 口吻而非指令口吻
+- `DefaultInstruction` 从"决策指令"改为"同伴闲谈指令"（决策意图另有 `AiDecisionExecutor` 路径，P2 的 LLM 文本定位是**陪伴表达**而非发号施令）
+
+### 12.5 视角：同伴而非上帝
+
+persona 增补（正向定义，替代"不要用玩家称呼玩家"的弱约束）：
+
+```
+你是玩家的同伴/搭档，站在玩家身边说话，永远用"搭档/伙伴"称呼玩家。
+绝不使用：玩家、主人、博士、指挥官、先生/小姐 等称呼。
+你不是旁观者也不是指挥官，不发布指令，只说同伴之间的话。
+```
+
+### 12.6 记忆体系（分层）
+
+| 层 | 内容 | 来源 | 注入方式 |
+|---|---|---|---|
+| **L0 持久记忆** | 通关次数（ClearCount）、当前关卡 | `SaveManager.ClearCount`（已存在）+ LevelName | GameState 新增字段，自动进 JSON |
+| **L1 会话记忆** | 本局事件流：击杀过的敌人类型、切换过的武器、受击来源 | 新建环形缓冲（固定大小如 8 条），Brain 每次决策时写入 | prompt 新增 `[SessionMemory]` 段 |
+| **L2 多轮上下文**（可选） | Ollama `Context` 回传（对话记忆） | `OllamaGenerateResult.Context`（字段已存在） | `GenerateAsync` 支持传 context；注意 token 成本与上下文漂移 |
+
+**拾取武器/击败敌人统计**：暂不新增持久统计（ClearCount 已够 L0 起步）；如需要，击杀计数可挂在现有 `SampleEnemy.OnDeathFinalized`（已有 ScoreValue 加分逻辑，顺带累加）。
+
+### 12.7 落地顺序建议
+
+1. **Persona 称呼 + 视角改版**（12.5，改一段文本，零代码风险）→ 立即改善精准度
+2. **DefaultInstruction/话题轮换**（12.4，AiDecisionBridge 加话题导出 + 随机/轮转选择）→ 治同质化
+3. **GameState 加 L0/L1 记忆字段 + prompt 段**（12.6）→ 有上下文
+4. **换小模型 + 预取缓存**（12.2/12.3）→ 延迟与时效（预取缓存涉及显示队列改造，工作量大，可后置）

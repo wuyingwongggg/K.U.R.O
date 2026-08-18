@@ -12,12 +12,12 @@
 [ext_resource type="Texture2D" uid="uid://dmmps17mtfoi7" path="res://assets/ui/hp&exp_bar/EXP框底色.png" id="7_thm3t"]
 [ext_resource type="Texture2D" uid="uid://d2bkxepnw5v0s" path="res://assets/ui/hp&exp_bar/EXP绿色.png" id="8_wh53j"]
 [ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/BuildCoreHUD.tscn" id="9_core_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/BossHUD.tscn" id="10_boss_hud"]
+[ext_resource type="PackedScene" uid="uid://dua8br48m6s27" path="res://scenes/ui/hud/BossHUD.tscn" id="10_boss_hud"]
 [ext_resource type="Script" uid="uid://d2bak4x8m7c3" path="res://scripts/ui/DashIconControl.cs" id="10_dash_icon"]
-[ext_resource type="Texture2D" uid="uid://ci5rkvxb1rosw" path="res://assets/ui/hp&exp_bar/HP深红.png" id="13_ilgv0"]
 [ext_resource type="Texture2D" uid="uid://dxuph0ta265n1" path="res://assets/ui/设置.png" id="13_thm3t"]
 [ext_resource type="Texture2D" uid="uid://d1i1q5clrs0fg" path="res://assets/ui/hp&exp_bar/HP青色.png" id="14_7e40p"]
 [ext_resource type="Texture2D" uid="uid://bc2n1t5tcnxeg" path="res://assets/ui/item_bar/选中框.png" id="14_selected"]
+[ext_resource type="Texture2D" uid="uid://b0dvj74kufrt4" path="res://assets/ui/hp&exp_bar/HP白色.png" id="14_wri2h"]
 [ext_resource type="Texture2D" uid="uid://cxw8rt1fp420t" path="res://assets/ui/item_bar/锁图.png" id="15_locked"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_transparent"]
@@ -37,6 +37,8 @@ LockedFrameTexture = ExtResource("15_locked")
 StatusMessageAnchorNormalized = Vector2(0.5, 0.5)
 
 [node name="CoreHUD" parent="." instance=ExtResource("9_core_hud")]
+layout_mode = 1
+
 [node name="BossHUD" parent="." instance=ExtResource("10_boss_hud")]
 layout_mode = 1
 
@@ -223,7 +225,7 @@ anchor_bottom = 0.673
 offset_bottom = 0.01599884
 value = 100.0
 texture_under = ExtResource("4_eqcu2")
-texture_progress = ExtResource("13_ilgv0")
+texture_progress = ExtResource("14_wri2h")
 
 [node name="RecoveryBar" type="TextureProgressBar" parent="HealthBar"]
 layout_mode = 1

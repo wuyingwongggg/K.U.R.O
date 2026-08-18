@@ -2,6 +2,7 @@ file,ItemId,DisplayName,Description,Category,Tags,MaxStackSize,IsThrowable,IsThr
 Furniture_A_BedA,Furniture_A_BedA,红色单人床,一次性投掷道具：红色单人床,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,
 Furniture_A_ChairOfficeA,Furniture_A_ChairOfficeA,办公座椅A,一次性投掷道具：办公座椅A,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
 Furniture_A_ChairOfficeB,Furniture_A_ChairOfficeB,办公座椅B,一次性投掷道具：办公座椅B,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
+Furniture_A_ChairOfficeB_fwd,Furniture_A_ChairOfficeB_fwd,办公座椅B,一次性投掷道具：办公座椅B,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
 Furniture_A_CubeA,Furniture_A_CubeA,立方体,一次性投掷道具：立方体A,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
 Furniture_A_LampFloorA,Furniture_A_LampFloorA,落地灯A,一次性投掷道具：落地灯A,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
 Furniture_A_SofaB,Furniture_A_SofaB,黄色沙发,一次性投掷道具：黄色沙发,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.3,100.0,300.0,250.0,2.0,100.0,

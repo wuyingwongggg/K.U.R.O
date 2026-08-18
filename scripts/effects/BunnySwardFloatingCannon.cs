@@ -25,6 +25,16 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "100,2000,10")]
         public float DetectionRange { get; set; } = 2000f;
 
+        [ExportGroup("Follow")]
+        /// <summary>相对玩家的跟随偏移（X 按朝向取符号，Y 固定）——生成位置即跟随位置，无独立 front 点。</summary>
+        [Export] public Vector2 SpawnOffset { get; set; } = new Vector2(300f, -100f);
+        /// <summary>跟随平滑度（指数收敛速率，同 P2/雨伞护盾）：越大越快贴向目标点。</summary>
+        [Export(PropertyHint.Range, "0.1,30,0.1")] public float FollowSmoothing { get; set; } = 8.5f;
+        /// <summary>上下浮动幅度（像素，同 P2 FloatAmplitude）：0 关闭浮动。</summary>
+        [Export(PropertyHint.Range, "0,60,1")] public float HoverAmplitude { get; set; } = 10f;
+        /// <summary>上下浮动频率（次/秒，同 P2 FloatFrequency）。</summary>
+        [Export(PropertyHint.Range, "0,5,0.1")] public float HoverFrequency { get; set; } = 1f;
+
         /// <summary>入场扫描线动画时长（秒）：施加时 scanline 从 0 → 1 扫过并隐藏。</summary>
         [Export(PropertyHint.Range, "0.1,2,0.05")]
         public float SpawnAnimDuration { get; set; } = 0.4f;
@@ -39,6 +49,7 @@ namespace Kuros.Effects
         private ShaderMaterial? _spriteMat;      // 内部 Sprite2D 的材质（同上，两个图层同步动画）
         private bool _despawning;                // 退场中标记：防止退场动画被重复触发/重复销毁
         private float _lifeElapsed;              // 效果已存活时长（秒），用于提前触发退场（结束前 DespawnAnimDuration 秒）
+        private float _hoverClock;               // 浮动相位时钟
 
         /// <summary>施加时：定位到角色旁、初始化引用、播放入场扫描线动画。</summary>
         protected override void OnApply()
@@ -51,9 +62,9 @@ namespace Kuros.Effects
 
             if (Actor != null)
             {
-                // 从角色身上脱离：重挂到角色的父级（成为独立的场景物体），初始位置在角色当前位置
+                // 从角色身上脱离：重挂到角色的父级（成为独立的场景物体），初始位置在跟随点（玩家 + SpawnOffset）
                 Reparent(Actor.GetParent());
-                Set("global_position", Actor.GlobalPosition);
+                Set("global_position", ComputeFollowPosition());
             }
 
             // 缓存两个图层的材质（轮廓 + 主体），用于 scanline 着色器动画
@@ -105,12 +116,15 @@ namespace Kuros.Effects
             }
         }
 
-        /// <summary>每帧：旋转瞄准最近敌人 + 计时开火；剩余时长不足退场动画时提前进入退场。</summary>
+        /// <summary>每帧：平滑跟随玩家（玩家 + SpawnOffset，同雨伞护盾）+ 旋转瞄准最近敌人 + 计时开火；
+        /// 剩余时长不足退场动画时提前进入退场。</summary>
         protected override void OnTick(double delta)
         {
             if (_despawning) return; // 退场中不再处理
 
             _lifeElapsed += (float)delta;
+
+            FollowPlayer((float)delta);
 
             // 结束前提前 DespawnAnimDuration 秒播退场动画（让激光炮有离场演出再消失）
             var remaining = Duration - _lifeElapsed;
@@ -266,6 +280,25 @@ namespace Kuros.Effects
         private Vector2 GetGlobalPos()
         {
             return Get("global_position").AsVector2();
+        }
+
+        /// <summary>指数平滑跟随玩家（同 P2：blend = 1 - exp(-smoothing * dt)），目标 = 玩家 + SpawnOffset（X 按朝向取符号）+ 正弦浮动。</summary>
+        private void FollowPlayer(float delta)
+        {
+            if (Actor == null || !IsInstanceValid(Actor)) return;
+
+            _hoverClock += delta;
+            var target = ComputeFollowPosition();
+            float blend = 1f - Mathf.Exp(-Mathf.Max(0.1f, FollowSmoothing) * delta);
+            Set("global_position", GetGlobalPos().Lerp(target, blend));
+        }
+
+        /// <summary>跟随目标点：玩家前方（SpawnOffset.X 按朝向取符号）+ 上下浮动（同 P2/雨伞护盾）。</summary>
+        private Vector2 ComputeFollowPosition()
+        {
+            float sideSign = Actor!.FacingRight ? 1f : -1f;
+            float hover = Mathf.Sin(_hoverClock * Mathf.Tau * HoverFrequency) * HoverAmplitude;
+            return Actor.GlobalPosition + new Vector2(SpawnOffset.X * sideSign, SpawnOffset.Y + hover);
         }
     }
 }

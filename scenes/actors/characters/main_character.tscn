@@ -284,7 +284,8 @@ HitEffectLocalOffset = Vector2(0, -350)
 RequiredItemId = "Weapon_Slash_baguette"
 
 [node name="SlashBunnySword" type="Node" parent="StateMachine/Attack"]
-script = ExtResource("9_13pt2")
+script = ExtResource("19_battery")
+BatterySkillId = "WeaponSkill_Slash_BunnySword"
 AttackId = "bunny_sword_melee_attack"
 DisplayName = "Bunny Sword  Melee Attack"
 Description = "仿生兔女郎的光剑专属攻击模板示例"

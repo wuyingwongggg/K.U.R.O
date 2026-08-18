@@ -120,6 +120,7 @@ HoverFrequency = 1.0
 CooldownSeconds = 5.0
 EffectId = "f3a1c9d2-7b4e-4c8a-9e5f-1d6b2a8c3e07"
 DisplayName = "雨伞护盾"
+PersistOnWeaponSwitch = true
 Description = "攻击时生成，跟随玩家前方移动并随朝向镜像反转，当玩家在正面受到伤害时代替玩家承受伤害，受到一次攻击后消失，消失后进入N秒的CD"
 Duration = 0.0
 

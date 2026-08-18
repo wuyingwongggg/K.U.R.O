@@ -273,14 +273,17 @@ namespace Kuros.Actors.Heroes
         {
             foreach (var effect in _passiveEffects)
             {
+                if (effect != null && effect.PersistOnWeaponSwitch) continue;
                 _actor?.EffectController?.RemoveEffect(effect);
             }
 
             _passiveEffects.Clear();
 
-            // 主动技能效果同样随武器卸载（之前未跟踪导致跨武器残留，如武器A的击退串到武器B）
+            // 主动技能效果同样随武器卸载（之前未跟踪导致跨武器残留，如武器A的击退串到武器B）；
+            // PersistOnWeaponSwitch 的效果（召唤物/护盾类）保留到自身生命周期结束
             foreach (var effect in _activeSkillEffects)
             {
+                if (effect != null && effect.PersistOnWeaponSwitch) continue;
                 _actor?.EffectController?.RemoveEffect(effect);
             }
 
