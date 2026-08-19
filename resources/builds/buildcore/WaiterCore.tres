@@ -7,7 +7,7 @@
 script = ExtResource("1")
 CoreId = "WaiterCore"
 DisplayName = "宴会协议核心"
-Description = "药剂：每过N秒后获取一针药剂，按下核心技能键消耗一针药剂恢复血量。"
+Description = "药剂：每过N秒后获取一针药剂，按下核心技能键消耗一针药剂恢复血量（待开发中）。"
 BuildClass = "Waiter"
 AllowedEffectClasses = Array[String](["Waiter"])
 CoreEffectScene = ExtResource("2")

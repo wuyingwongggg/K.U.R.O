@@ -66,6 +66,14 @@ namespace Kuros.Companions
 
         public override void _Process(double delta)
         {
+            // 玩家死亡：取消搬运流程（放下持有物恢复约束，回 Idle；守尸由 Controller 接管移动）
+            if (_step != CarrierStep.Idle && _player != null
+                && (_player.IsDeathSequenceActive || _player.IsDead))
+            {
+                Cancel();
+                return;
+            }
+
             switch (_step)
             {
                 case CarrierStep.GoingToWeapon:

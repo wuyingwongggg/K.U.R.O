@@ -311,13 +311,8 @@ namespace Kuros.Systems.AI
 
         private Godot.Collections.Dictionary<string, Variant> ExecuteUseSkill(AiDecision decision)
         {
-            if (_player?.WeaponSkillController?.TryTriggerActionSkill("weapon_skill_block") == true)
-            {
-                GameLogger.Info(nameof(AiDecisionExecutor), "AI decision executed: use_skill -> weapon_skill_block");
-                return BuildAppliedResult(decision, "weapon_skill", "weapon_skill_block");
-            }
-
-            return BuildNoopResult(decision, "downgraded", "requested skill is unavailable now, downgraded to hold");
+            // weapon_skill_block 已废弃（废案）：use_skill 意图降级为 hold
+            return BuildNoopResult(decision, "downgraded", "use_skill intent is deprecated (weapon_skill_block abandoned), downgraded to hold");
         }
 
         private Godot.Collections.Dictionary<string, Variant> ExecuteSwitchWeapon(AiDecision decision)

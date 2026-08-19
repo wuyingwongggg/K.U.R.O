@@ -52,8 +52,8 @@ size = Vector2(700, 700)
 size = Vector2(300, 200)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(1693, -96, 1693, -438, 2405.7422, -438, 2405.0469, 1616, 1737, 1213, -1752, -122, -1425, -122, -1425, 7, -1735, 1120, -1189, 7, -1189, 206, -1255, 1120, -341, -202, -569, -202, -569, -438, -26, -438, -26, -324, 298, -324, 298, -438, 419, -438, 419, -123, 839, -123, 839, -30, 449.5, 209, 1200, -30, 1200, -191.5, 1213, -191.5, 1213, -96, 1737, 1616, 1452, 1213, 1452, 1010, 1091, 1010, 449.5, 905, 968, 1143, 488, 1143, 1091, 1203.5, 968, 1203.5, 488, 1606, 823.5, 1606, 823.5, 1616, 307, 1616, 307, 1401, 143, 1401, 143, 905, -659.5, 905, -135, 905, -135, 1536, -511, 1100, -17, 1536, -17, 1616, -821.5, 1616, -511, 1563, -821.5, 1563, -773, 1100, -773, 995, -1134, 995, -1134, 1216.5, -1255, 1216.5, -1735, 1583, -1410.5, 1583, -1410.5, 1616, -2402, 1616, -2402, -438, -1752, -438, -659.5, 209, -341, 206)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(5, 6, 7, 8), PackedInt32Array(8, 7, 9, 10, 11), PackedInt32Array(12, 13, 14, 15, 16), PackedInt32Array(17, 18, 19, 20), PackedInt32Array(20, 21, 22, 23), PackedInt32Array(24, 25, 26, 27), PackedInt32Array(3, 28, 4), PackedInt32Array(0, 4, 29, 30), PackedInt32Array(24, 27, 0, 30, 31), PackedInt32Array(32, 23, 22, 24, 31, 33, 34), PackedInt32Array(31, 35, 36, 33), PackedInt32Array(37, 38, 39, 40), PackedInt32Array(37, 40, 41, 34), PackedInt32Array(34, 41, 42, 43, 32), PackedInt32Array(44, 45, 46, 47), PackedInt32Array(46, 48, 49, 50, 51), PackedInt32Array(50, 52, 51), PackedInt32Array(46, 51, 47), PackedInt32Array(44, 47, 53, 54), PackedInt32Array(55, 56, 57, 11, 10), PackedInt32Array(58, 59, 60, 61), PackedInt32Array(8, 58, 61, 62, 5), PackedInt32Array(62, 63, 5), PackedInt32Array(44, 54, 55, 10, 64), PackedInt32Array(64, 10, 65, 23), PackedInt32Array(23, 65, 12, 16, 17, 20)])
+vertices = PackedVector2Array(2298, 842, 2405.3125, 842, 2405.2578, 971, 2298, 971, -1760, -127, -1426, -127, -1426, 7, -1718, 1118, -1145, 7, -1145, 212, -1258, 1118, -385, -188, -554, -188, -554, -438, -43, -438, -43, -316, 317, -316, 317, -438, 436, -438, 436, -128, 505, 1141, 838, -128, 838, -30, 828, 1140, 1198, -30, 1198, -208, 1220, -208, 1220, -101, 1680, -101, 1680, -438, 2298, -438, 2298, 1616, 1724, 1616, 1724, 1211, 1450, 1211, 1450, 964, 1090, 964, 1090, 1140, 828, 1141, 505, 1601, 828, 1601, 828, 1616, 326, 1616, 326, 1331, -34, 1616, -826, 1616, -826, 1582, -508, 1582, -34, 1331, -508, 1122, -385, 212, -775, 1122, -775, 949, -1135, 949, -1135, 1153, -1258, 1153, -1718, 1578, -1406, 1578, -1406, 1616, -2709.8672, 1616, -2694.5469, -438, -1760, -438, -1014, -188, -1066, -188, -1066, -192, -1014, -192)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7), PackedInt32Array(7, 6, 8, 9, 10), PackedInt32Array(11, 12, 13, 14, 15), PackedInt32Array(16, 17, 18, 19), PackedInt32Array(20, 19, 21, 22, 23), PackedInt32Array(24, 25, 26, 27), PackedInt32Array(28, 29, 30, 0), PackedInt32Array(3, 31, 32, 33), PackedInt32Array(33, 34, 35, 28, 0, 3), PackedInt32Array(36, 37, 23, 22), PackedInt32Array(23, 38, 20), PackedInt32Array(39, 40, 41, 42), PackedInt32Array(39, 42, 43, 20), PackedInt32Array(44, 45, 46, 47), PackedInt32Array(48, 44, 47, 49, 50), PackedInt32Array(49, 51, 52, 50), PackedInt32Array(53, 54, 55, 10, 9), PackedInt32Array(56, 57, 58, 59), PackedInt32Array(7, 56, 59, 60, 4), PackedInt32Array(60, 61, 4), PackedInt32Array(53, 9, 50, 52), PackedInt32Array(24, 27, 28, 35, 36), PackedInt32Array(20, 43, 48, 50, 11, 15, 16, 19), PackedInt32Array(36, 22, 24), PackedInt32Array(62, 63, 64, 65)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2769, -1183, 2486, -1224, 2485, 1762, -2791, 1767)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -116,7 +116,7 @@ position = Vector2(-1280, 350)
 shape = SubResource("RectangleShape2D_omx51")
 debug_color = Color(1, 0, 1, 0.41960785)
 
-[node name="BattleArena" type="Area2D" parent="."]
+[node name="BattleArena" type="Area2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 visible = false
 z_index = 10
 position = Vector2(190, 0)
@@ -124,8 +124,8 @@ script = ExtResource("4_iqss4")
 ArenaSize = Vector2(5300, 3000)
 BoundaryCollisionLayer = 6
 BoundaryCollisionMask = 6
-BoundaryThickness = 50.0
 EnemyDetectionMask = 2
+TriggerArea = NodePath("../WaveSpawnManager/TriggerArea")
 ShowDebugOverlayInGame = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BattleArena"]
@@ -223,7 +223,6 @@ shape = SubResource("RectangleShape2D_wfnu5")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 

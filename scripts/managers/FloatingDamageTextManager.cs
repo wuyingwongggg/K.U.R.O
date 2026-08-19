@@ -57,6 +57,39 @@ namespace Kuros.Managers
 			DamageEventBus.UnsubscribeWithSource(OnDamageResolvedWithSource);
 		}
 
+		/// <summary>清除全部飘字节点与缓存（玩家死亡场景重载前调用——飘字挂在 Root 级，
+		/// 场景重载不会销毁它们，旧伤害/治疗数字会残留屏幕）。</summary>
+		public void ClearAll()
+		{
+			_recentDamageTexts.Clear();
+			if (!IsInsideTree()) return;
+
+			var pending = new List<Node>();
+			CollectFloatingTexts(GetTree().Root, pending);
+			foreach (var node in pending)
+			{
+				if (GodotObject.IsInstanceValid(node))
+				{
+					node.QueueFree();
+				}
+			}
+		}
+
+		private static void CollectFloatingTexts(Node node, List<Node> result)
+		{
+			foreach (Node child in node.GetChildren())
+			{
+				if (child is FloatingDamageText)
+				{
+					result.Add(child);
+				}
+				else
+				{
+					CollectFloatingTexts(child, result);
+				}
+			}
+		}
+
 		/// <summary>
 		/// 处理伤害事件 - 在受伤时生成或合并飘字
 		/// 支持伤害合并和方向推动效果

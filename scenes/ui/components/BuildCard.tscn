@@ -1,12 +1,12 @@
 [gd_scene load_steps=10 format=3 uid="uid://c8ft7n6uj1fja"]
 
-[ext_resource type="Script" uid="uid://dm6j0sg78twg8" path="res://scripts/ui/BuildCard.cs" id="1_script"]
-[ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://5800lr7nn0st" path="res://assets/ui/card/蓝卡.png" id="2_xkq11"]
-[ext_resource type="Texture2D" uid="uid://vjqxn41e0iee" path="res://assets/ui/card/紫卡.png" id="3_ea2q4"]
-[ext_resource type="Texture2D" uid="uid://yaubnv6qemo8" path="res://assets/ui/card/金卡.png" id="4_o7hem"]
-[ext_resource type="Texture2D" uid="uid://r0m2rdrcnwux" path="res://assets/ui/card/红卡.png" id="5_owxyx"]
-[ext_resource type="Shader" uid="uid://byf7k5dvo8dih" path="res://shaders/materials/card_glow.gdshader" id="7_glow_shader"]
+[ext_resource type="Script" uid="uid://bywpa2ie6e68b" path="res://scripts/ui/BuildCard.cs" id="1_script"]
+[ext_resource type="Shader" uid="uid://dhxr3knmtcbxu" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://bjtrudhstigq5" path="res://assets/ui/card/蓝卡.png" id="2_xkq11"]
+[ext_resource type="Texture2D" uid="uid://c86la2ltr5igv" path="res://assets/ui/card/紫卡.png" id="3_ea2q4"]
+[ext_resource type="Texture2D" uid="uid://cgdwpae02eg1a" path="res://assets/ui/card/金卡.png" id="4_o7hem"]
+[ext_resource type="Texture2D" uid="uid://cthba3uhs2m0r" path="res://assets/ui/card/红卡.png" id="5_owxyx"]
+[ext_resource type="Shader" uid="uid://b3tcx72oqdlm2" path="res://shaders/materials/card_glow.gdshader" id="7_glow_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ea2q4"]
 shader = ExtResource("7_glow_shader")
@@ -175,7 +175,6 @@ offset_right = -2.0
 offset_bottom = -2.0
 theme_override_colors/default_color = Color(0.8862616, 0.88626146, 0.8862615, 1)
 bbcode_enabled = true
-fit_content = true
 scroll_active = false
 autowrap_mode = 2
 metadata/_edit_use_anchors_ = true

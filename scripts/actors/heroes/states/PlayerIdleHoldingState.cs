@@ -63,7 +63,7 @@ namespace Kuros.Actors.Heroes.States
 			}
 			
 			// 检查投掷按键
-			if (Input.IsActionJustPressed("throw"))
+			if (Player.IsActionJustPressedArbitrated("throw"))
 			{
 				CaptureThrowFrame();
 				ChangeState("Throw");

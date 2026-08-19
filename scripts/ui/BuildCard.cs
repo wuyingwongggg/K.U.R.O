@@ -116,9 +116,19 @@ namespace Kuros.UI
             _subViewport.Size = new Vector2I(Mathf.RoundToInt(Size.X), Mathf.RoundToInt(Size.Y));
         }
 
+
         public override void _Ready()
         {
+            // 预热中文字体：导出版里字体按需异步加载，文本测量可能发生在字形就绪前，
+            // 导致换行按错误宽度计算（编辑器进程早已缓存字体，无此问题）。
+            GD.Load<FontFile>("res://assets/fonts/NotoSansSC-VF.ttf");
+
             ResolveExports();
+
+            // 导出版（spine 模板）的文本服务器对无空格中文断词异常：整段文字被当作
+            // 一个不可分割的"词"排成一行。中文描述改用按字符任意断行，视觉上与逐词断行一致。
+            if (DescLabel != null)
+                DescLabel.AutowrapMode = TextServer.AutowrapMode.Arbitrary;
 
             // Steal shader from CardBg, clear from all children (rendered raw into viewport)
             _shaderMat = CardBg?.Material as ShaderMaterial;
@@ -134,8 +144,19 @@ namespace Kuros.UI
                 Name = "CardViewport",
                 TransparentBg = true,
                 Size = new Vector2I(Mathf.RoundToInt(Size.X), Mathf.RoundToInt(Size.Y)),
+                // 导出版里系统字体回退的中文字形是异步光栅化的：
+                // 默认 UpdateWhenVisible 模式下视口纹理可能在字形就绪前渲染一次就不再更新，
+                // 导致文字缺失被"冻结"。改为 Always 每帧重渲染，字形就绪后文字即完整。
+                RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
             };
             AddChild(_subViewport);
+
+            // 卡片尺寸变化时同步视口尺寸与字号（导出版最大化窗口/DPI 差异会改变最终尺寸）
+            Resized += () =>
+            {
+                SyncViewportSize();
+                ApplyCardScale();
+            };
 
             if (CardInner != null)
             {

@@ -60,7 +60,7 @@ namespace Kuros.Effects
             if (source != DamageSource.DirectAttack) return;
             if (Actor == null || attacker != Actor) return;
             if (damage <= 0) return;
-            if (target.IsDead) return;
+            if (target.IsDeadOrDying) return;
 
             if (GD.Randf() * 100f > SpawnChance) return;
             if (CrumbScene == null) return;

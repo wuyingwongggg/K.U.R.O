@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CutsceneSequence" load_steps=14 format=3 uid="uid://qsacvgs2q4fq"]
 
-[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_brdtp"]
+[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_hfoi8"]
 [ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="2_bob04"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_hb1hi"]
 [ext_resource type="Script" uid="uid://b4pd4ynf4k04p" path="res://scripts/systems/cutscene/steps/CameraMoveStep.cs" id="3_hfoi8"]
@@ -43,5 +43,5 @@ metadata/_custom_type_script = "uid://bomrc4guqwn7l"
 [resource]
 script = ExtResource("2_bob04")
 SequenceId = "A_end_intro"
-Steps = Array[ExtResource("1_brdtp")]([SubResource("Resource_rfho0"), SubResource("Resource_nyepk"), SubResource("Resource_hfoi8"), SubResource("Resource_008jv"), SubResource("Resource_e8fuv")])
+Steps = Array[ExtResource("1_hfoi8")]([SubResource("Resource_rfho0"), SubResource("Resource_nyepk"), SubResource("Resource_hfoi8"), SubResource("Resource_008jv"), SubResource("Resource_e8fuv")])
 TakeOverCamera = true

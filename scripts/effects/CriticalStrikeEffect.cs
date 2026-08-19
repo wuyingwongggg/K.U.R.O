@@ -81,8 +81,9 @@ namespace Kuros.Effects
             int bonusDamage = Mathf.RoundToInt(WeaponAttackValue * CritBonusMultiplier);
             if (bonusDamage <= 0) return;
 
-            // 使用 CritBonus 来源，FloatingDamageTextManager 会将飘字升级为红色暴击显示
-            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus);
+            // 使用 CritBonus 来源，FloatingDamageTextManager 会将飘字升级为红色暴击显示；
+            // bypassMergeWindow：与基础伤害同帧即时结算，飘字合并机制会把两者合并为一个总伤害数字
+            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus, bypassMergeWindow: true);
 
             GD.Print($"[CriticalStrikeEffect] 暴击！概率 {CritChance}%，武器攻击 {WeaponAttackValue}×{CritBonusMultiplier} 追加伤害 {bonusDamage}");
         }

@@ -103,7 +103,8 @@ namespace Kuros.Effects
 
             if (bonusDamage <= 0) return;
 
-            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus);
+            // bypassMergeWindow：与基础伤害同帧即时结算，飘字合并机制会合并为一个总伤害数字
+            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus, bypassMergeWindow: true);
 
             GD.Print($"[CriticalStrikeCountEffect] 计数暴击触发！每{HitCount}次命中，追加伤害 {bonusDamage}");
         }

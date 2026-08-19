@@ -177,10 +177,10 @@ namespace Kuros.Controllers
             {
                 if (!GodotObject.IsInstanceValid(enemy)) continue;
 
-                // 优先使用 GameActor.IsDead
+                // 优先使用 GameActor.IsDeadOrDying
                 if (enemy is GameActor actor)
                 {
-                    if (!actor.IsDead) return true;
+                    if (!actor.IsDeadOrDying) return true;
                     continue;
                 }
 

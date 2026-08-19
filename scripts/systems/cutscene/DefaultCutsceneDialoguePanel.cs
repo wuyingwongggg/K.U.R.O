@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Godot;
+using Kuros.Actors.Heroes;
 
 namespace Kuros.Systems.Cutscene
 {
@@ -54,7 +55,7 @@ namespace Kuros.Systems.Cutscene
                     await ctx.NextFrame();
 
                     // 第一次确认 → 立即显示全部
-                    if (Input.IsActionJustPressed(ConfirmActionName))
+                    if (SamplePlayer.IsActionJustPressedGlobal(ConfirmActionName))
                         break;
 
                     float elapsed = (Time.GetTicksMsec() - startMs) / 1000f;
@@ -72,7 +73,7 @@ namespace Kuros.Systems.Cutscene
             while (!ctx.IsSkipping)
             {
                 await ctx.NextFrame();
-                if (Input.IsActionJustPressed(ConfirmActionName)) break;
+                if (SamplePlayer.IsActionJustPressedGlobal(ConfirmActionName)) break;
             }
         }
     }

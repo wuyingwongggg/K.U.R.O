@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 using Kuros.Core;
 
 namespace Kuros.Core.Interactions
@@ -34,7 +35,7 @@ namespace Kuros.Core.Interactions
                 return;
             }
 
-            if (Input.IsActionJustPressed(ActionName))
+            if (SamplePlayer.IsActionJustPressedGlobal(ActionName))
             {
                 TryInteract(_focusedActor);
             }

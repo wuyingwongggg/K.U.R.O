@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CutsceneSequence" load_steps=9 format=3 uid="uid://d4jfs520gfwmm"]
 
-[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_e2mft"]
+[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_qpymk"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_qpymk"]
 [ext_resource type="Script" uid="uid://b4pd4ynf4k04p" path="res://scripts/systems/cutscene/steps/CameraMoveStep.cs" id="3_aq8pd"]
 [ext_resource type="Script" uid="uid://cnkygkr74mjs4" path="res://scripts/systems/cutscene/steps/DialogicStep.cs" id="4_qpymk"]
@@ -30,9 +30,10 @@ script = ExtResource("4_qpymk")
 TimelinePath = "uid://cxwovgu7iu4js"
 CharacterPath = "uid://45lviakfu623"
 WaitForCompletion = false
+TimeoutSeconds = 3.0
 metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 
 [resource]
 script = ExtResource("4_sn7nf")
 SequenceId = "B_end_intro"
-Steps = Array[ExtResource("1_e2mft")]([SubResource("Resource_hubsw"), SubResource("Resource_n254o"), SubResource("Resource_aq8pd")])
+Steps = Array[ExtResource("1_qpymk")]([SubResource("Resource_hubsw"), SubResource("Resource_n254o"), SubResource("Resource_aq8pd")])

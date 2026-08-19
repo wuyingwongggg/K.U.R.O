@@ -1,0 +1,100 @@
+[gd_scene load_steps=14 format=3 uid="uid://doyml3pvfjc6l"]
+
+[ext_resource type="Script" uid="uid://2yoet8c4nieq" path="res://scripts/fx/RotatingCubeEmitter.cs" id="1_script"]
+[ext_resource type="Shader" uid="uid://dpj7cb1n0f80r" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="2_glow"]
+[ext_resource type="Shader" uid="uid://bld8m4k2q7x1w" path="res://shaders/materials/canvas_cube_build.gdshader" id="3_build"]
+[ext_resource type="Shader" uid="uid://c6esdptyi4vs3" path="res://shaders/materials/canvas_cube_faces.gdshader" id="4_faces"]
+[ext_resource type="Texture2D" uid="uid://bhpdfcmroc241" path="res://nothing.png" id="5_tex"]
+[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="6_boom"]
+[ext_resource type="PackedScene" uid="uid://cb3h4btqn06lv" path="res://resources/effects/CubeData_small.tscn" id="7_small"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="8_entry"]
+
+[sub_resource type="Resource" id="Resource_emit_small"]
+script = ExtResource("8_entry")
+Scene = ExtResource("7_small")
+PropertyOverrides = Dictionary[String, Variant]({
+"BuildDuration": 0.05,
+"Damage": 10.0,
+"DespawnDuration": 0.15,
+"Duration": 1.0,
+"Speed": 500.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_faces"]
+shader = ExtResource("4_faces")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges_size = 24
+shader_parameter/time_scale = 3000.0
+shader_parameter/faces = PackedInt32Array(0, 1, 2, 3, 5, 4, 7, 6, 1, 5, 6, 2, 4, 0, 3, 7, 3, 2, 6, 7, 0, 4, 5, 1)
+shader_parameter/face_alpha = 0.9
+shader_parameter/face_color = Color(0.020930063, 0.06195438, 0.11836182, 1)
+shader_parameter/text_color = Color(1.9642751, 4.78161, 5.912981, 1)
+shader_parameter/head_color = Color(0.7, 1, 0.8, 1)
+shader_parameter/text_columns = 10.0
+shader_parameter/text_rows = 10.0
+shader_parameter/scroll_speed = 5.0
+shader_parameter/flicker_rate = 0.05
+shader_parameter/rain_density = 0.7
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cube"]
+shader = ExtResource("2_glow")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
+shader_parameter/edges_size = 24
+shader_parameter/sofness = 0.1
+shader_parameter/time_scale = 3000.0
+shader_parameter/briness_scale = 1.6
+shader_parameter/alpha = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_build"]
+shader = ExtResource("3_build")
+shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
+shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
+shader_parameter/edges_size = 24
+shader_parameter/sofness = 0.1
+shader_parameter/time_scale = 3000.0
+shader_parameter/briness_scale = 1.6
+shader_parameter/build_progress = 0.0
+shader_parameter/scanline_width = 0.025
+shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/edge_glow = 0.06
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5h3t6"]
+size = Vector2(100, 100)
+
+[node name="CubeDataEmitter" type="Node2D"]
+z_index = 3
+script = ExtResource("1_script")
+EmissionIntervalSeconds = 0.3
+EmissionEffects = Array[ExtResource("8_entry")]([SubResource("Resource_emit_small")])
+ShrinkLifetime = 3.0
+Speed = 1000.0
+MaxVerticalTiltDegrees = 90.0
+Duration = 3.0
+BuildDuration = 1.0
+DespawnDuration = 0.1
+DestroyEffect = ExtResource("6_boom")
+TargetableFactions = 1
+
+[node name="FaceFill" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_faces")
+scale = Vector2(25, 25)
+texture = ExtResource("5_tex")
+
+[node name="Wireframe" type="Sprite2D" parent="."]
+modulate = Color(0.3019608, 0.8, 1, 1)
+material = SubResource("ShaderMaterial_cube")
+scale = Vector2(25, 25)
+texture = ExtResource("5_tex")
+
+[node name="BuildMask" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_build")
+scale = Vector2(25, 25)
+texture = ExtResource("5_tex")
+
+[node name="AttackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("RectangleShape2D_5h3t6")

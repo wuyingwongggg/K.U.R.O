@@ -143,7 +143,7 @@ namespace Kuros.Effects
             foreach (var node in tree.GetNodesInGroup("enemies"))
             {
                 if (node is not GameActor enemy) continue;
-                if (!IsInstanceValid(enemy) || enemy.IsDead) continue;
+                if (!IsInstanceValid(enemy) || enemy.IsDeadOrDying) continue;
                 if (enemy.ActiveImmunities.HasFlag(ImmunityFlags.Stun)) continue;
 
                 // 防止 Refresh 重置 FreezeEffect 计时器导致眩晕延长

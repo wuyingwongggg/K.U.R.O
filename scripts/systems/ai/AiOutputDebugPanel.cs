@@ -9,13 +9,11 @@ namespace Kuros.Systems.AI
     public partial class AiOutputDebugPanel : CanvasLayer
     {
         [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../AiDecisionBridge");
-        [Export] public NodePath AiDecisionExecutorPath { get; set; } = new("../AiDecisionExecutor");
         [Export] public NodePath OutputLabelPath { get; set; } = new("Panel/VBox/OutputText");
         [Export] public NodePath ToggleButtonPath { get; set; } = new("Panel/VBox/ToggleButton");
         [Export] public NodePath ContentNodePath { get; set; } = new("Panel/VBox/OutputText");
 
         private AiDecisionBridge? _bridge;
-        private AiDecisionExecutor? _executor;
         private RichTextLabel? _outputLabel;
         private Button? _toggleButton;
         private Control? _contentNode;
@@ -24,18 +22,34 @@ namespace Kuros.Systems.AI
         private string _lastResponseText = string.Empty;
         private string _lastDecisionJsonText = string.Empty;
         private string _lastDecisionParseError = string.Empty;
-        private string _lastExecutionJsonText = string.Empty;
-        private string _lastExecutionErrorText = string.Empty;
         private string _lastErrorText = string.Empty;
-        private bool _autopilotEnabled;
         private bool _clearBeforeNextResult;
+        // 流式渲染节流：chunk 高频到达（每个 token 一次），不立即重建 RichText，
+        // 累计后按节流间隔渲染一次，避免主线程被 RichText 全量重绘拖死
+        private float _renderThrottleTimer;
+        private const float RenderThrottleInterval = 0.1f;
+        // Prompt 显示截断长度：完整 prompt（GameState JSON + 策略）可达数万字符，
+        // 全量拼进 RichText 是渲染大头，仅显示开头用于确认请求内容
+        private const int PromptPreviewMaxChars = 800;
+
+        public override void _Process(double delta)
+        {
+            if (_renderThrottleTimer <= 0f)
+            {
+                return;
+            }
+
+            _renderThrottleTimer -= (float)delta;
+            if (_renderThrottleTimer <= 0f)
+            {
+                RenderText();
+            }
+        }
 
         public override void _Ready()
         {
             _bridge = GetNodeOrNull<AiDecisionBridge>(AiDecisionBridgePath)
                 ?? GetNodeOrNull<AiDecisionBridge>(NormalizeRelativePath(AiDecisionBridgePath));
-            _executor = GetNodeOrNull<AiDecisionExecutor>(AiDecisionExecutorPath)
-                ?? GetNodeOrNull<AiDecisionExecutor>(NormalizeRelativePath(AiDecisionExecutorPath));
             _outputLabel = GetNodeOrNull<RichTextLabel>(OutputLabelPath);
             _toggleButton = GetNodeOrNull<Button>(ToggleButtonPath);
             _contentNode = GetNodeOrNull<Control>(ContentNodePath);
@@ -53,16 +67,6 @@ namespace Kuros.Systems.AI
                 _lastResponseText = _bridge.LastDecisionText;
                 _lastDecisionJsonText = _bridge.LastStructuredDecisionJson;
                 _lastDecisionParseError = _bridge.LastDecisionParseError;
-            }
-
-            if (_executor != null)
-            {
-                _executor.AutopilotChanged += OnAutopilotChanged;
-                _executor.ExecutionCompleted += OnExecutionCompleted;
-                _executor.ExecutionRejected += OnExecutionRejected;
-                _lastExecutionJsonText = _executor.LastExecutionJson;
-                _lastExecutionErrorText = _executor.LastExecutionError;
-                _autopilotEnabled = _executor.AutoPilotEnabled;
             }
 
             if (_toggleButton != null)
@@ -89,13 +93,6 @@ namespace Kuros.Systems.AI
                 _bridge.DecisionFailed -= OnDecisionFailed;
             }
 
-            if (_executor != null)
-            {
-                _executor.AutopilotChanged -= OnAutopilotChanged;
-                _executor.ExecutionCompleted -= OnExecutionCompleted;
-                _executor.ExecutionRejected -= OnExecutionRejected;
-            }
-
             if (_toggleButton != null)
             {
                 _toggleButton.Pressed -= OnTogglePressed;
@@ -110,8 +107,6 @@ namespace Kuros.Systems.AI
             _lastResponseText = string.Empty;
             _lastDecisionJsonText = string.Empty;
             _lastDecisionParseError = string.Empty;
-            _lastExecutionJsonText = string.Empty;
-            _lastExecutionErrorText = string.Empty;
             _lastErrorText = string.Empty;
             _clearBeforeNextResult = true;
             RenderText();
@@ -127,7 +122,8 @@ namespace Kuros.Systems.AI
             ClearWindowIfNeededForNewResult();
 
             _lastResponseText += chunk;
-            RenderText();
+            // 流式节流：累计 chunk，_Process 中按 RenderThrottleInterval 渲染一次
+            _renderThrottleTimer = RenderThrottleInterval;
         }
 
         private void OnDecisionCompleted(string text)
@@ -165,26 +161,6 @@ namespace Kuros.Systems.AI
             RenderText();
         }
 
-        private void OnExecutionCompleted(string executionJson)
-        {
-            _lastExecutionJsonText = executionJson ?? string.Empty;
-            _lastExecutionErrorText = string.Empty;
-            RenderText();
-        }
-
-        private void OnAutopilotChanged(bool enabled)
-        {
-            _autopilotEnabled = enabled;
-            RenderText();
-        }
-
-        private void OnExecutionRejected(string reason)
-        {
-            _lastExecutionJsonText = string.Empty;
-            _lastExecutionErrorText = reason ?? string.Empty;
-            RenderText();
-        }
-
         private void ClearWindowIfNeededForNewResult()
         {
             if (!_clearBeforeNextResult)
@@ -196,8 +172,6 @@ namespace Kuros.Systems.AI
             _lastDecisionJsonText = string.Empty;
             _lastDecisionParseError = string.Empty;
             _lastErrorText = string.Empty;
-            _lastExecutionJsonText = string.Empty;
-            _lastExecutionErrorText = string.Empty;
 
             if (_outputLabel != null)
             {
@@ -237,7 +211,9 @@ namespace Kuros.Systems.AI
 
             string promptText = string.IsNullOrWhiteSpace(_lastPromptText)
                 ? "(none)"
-                : _lastPromptText;
+                : _lastPromptText.Length <= PromptPreviewMaxChars
+                    ? _lastPromptText
+                    : $"{_lastPromptText[..PromptPreviewMaxChars]}... (truncated {_lastPromptText.Length - PromptPreviewMaxChars} chars)";
 
             string responseText = string.IsNullOrWhiteSpace(_lastResponseText)
                 ? "(waiting or empty)"
@@ -255,19 +231,23 @@ namespace Kuros.Systems.AI
                 ? "(none)"
                 : _lastDecisionParseError;
 
-            string executionJsonText = string.IsNullOrWhiteSpace(_lastExecutionJsonText)
-                ? "(none)"
-                : _lastExecutionJsonText;
+            string modelName = string.IsNullOrWhiteSpace(_bridge?.LastModelName)
+                ? (string.IsNullOrWhiteSpace(_bridge?.Model) ? "(no response yet)" : $"{_bridge!.Model} (not responded)")
+                : _bridge!.LastModelName;
 
-            string executionErrorText = string.IsNullOrWhiteSpace(_lastExecutionErrorText)
+            // Persona 走 Ollama 的 system 字段（不在 prompt 文本里），单独截断显示便于确认人设已生效
+            string personaText = string.IsNullOrWhiteSpace(_bridge?.PersonaSystemPrompt)
                 ? "(none)"
-                : _lastExecutionErrorText;
-
-            string autopilotText = _autopilotEnabled ? "ON" : "OFF";
+                : _bridge!.PersonaSystemPrompt.Length <= PromptPreviewMaxChars
+                    ? _bridge.PersonaSystemPrompt
+                    : $"{_bridge.PersonaSystemPrompt[..PromptPreviewMaxChars]}... (truncated)";
 
             _outputLabel.Text = string.Join("\n", new[]
             {
-                $"[Autopilot] {autopilotText}",
+                $"[Model] {modelName}",
+                string.Empty,
+                "[Persona]",
+                personaText,
                 string.Empty,
                 "[AI Prompt]",
                 promptText,
@@ -281,17 +261,8 @@ namespace Kuros.Systems.AI
                 "[Decision Parse Error]",
                 decisionParseText,
                 string.Empty,
-                "[Execution Result]",
-                executionJsonText,
-                string.Empty,
-                "[Execution Error]",
-                executionErrorText,
-                string.Empty,
                 "[AI Error]",
-                errorText,
-                string.Empty,
-                "Tip: Press | to request AI.",
-                "Tip: Press F6 to toggle AI autopilot."
+                errorText
             });
         }
 

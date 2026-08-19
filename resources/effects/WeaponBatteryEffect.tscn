@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://c1bk77cs1ipbb"]
+
+[ext_resource type="Script" uid="uid://d2r0yuvvod8jn" path="res://scripts/effects/WeaponBatteryEffect.cs" id="1_eff"]
+[ext_resource type="PackedScene" uid="uid://dyy583wducquk" path="res://scenes/ui/hud/WeaponBatteryBar.tscn" id="2_bar"]
+
+[node name="WeaponBatteryEffect" type="Node"]
+script = ExtResource("1_eff")
+BatteryBarScene = ExtResource("2_bar")
+EffectId = "weapon_battery_effect"
+Duration = 0.0

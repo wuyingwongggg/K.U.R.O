@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://ujei4j2ea008"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://ujei4j2ea008"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_wcspc"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_kc1kn"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_vxrhq"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_f3tmk"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_upggi"]
-[ext_resource type="Texture2D" uid="uid://ccp5mq235kq03" path="res://assets/furnitures/hotel_scene3/TableRoundC.png" id="6_wcspc"]
+[ext_resource type="PackedScene" uid="uid://dsugmkmk06yo0" path="res://resources/effects/HealItemB.tscn" id="6_kc1kn"]
+[ext_resource type="Texture2D" uid="uid://de3t5lmrkvv0c" path="res://assets/furnitures/hotel_scene3/TableRoundC_Cake.png" id="7_kc1kn"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_s77vw"]
 
 [sub_resource type="Resource" id="Resource_wcspc"]
@@ -39,17 +40,24 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
+[sub_resource type="Resource" id="Resource_vxrhq"]
+script = ExtResource("2_kc1kn")
+Trigger = 4
+EffectScene = ExtResource("6_kc1kn")
+Notes = "治疗B"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
 [resource]
 script = ExtResource("7_s77vw")
 ItemId = "Furniture_C_TableRoundC"
 DisplayName = "圆形餐桌"
 Description = "一次性投掷道具：圆形餐桌"
-Icon = ExtResource("6_wcspc")
+Icon = ExtResource("7_kc1kn")
 Category = "Furniture"
 Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_wcspc")]([SubResource("Resource_wcspc")])
-EffectEntries = Array[ExtResource("2_kc1kn")]([SubResource("Resource_48rr8"), SubResource("Resource_fwe2t"), SubResource("Resource_27clv")])
+EffectEntries = Array[ExtResource("2_kc1kn")]([SubResource("Resource_48rr8"), SubResource("Resource_fwe2t"), SubResource("Resource_27clv"), SubResource("Resource_vxrhq")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicDuration = 0.3

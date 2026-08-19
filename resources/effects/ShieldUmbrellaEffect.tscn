@@ -1,0 +1,181 @@
+[gd_scene load_steps=15 format=3 uid="uid://cx24huqp7qade"]
+
+[ext_resource type="Texture2D" uid="uid://bde1xoqktn4x" path="res://assets/effect/WallEffect/伞护盾上.png" id="1_h4bm0"]
+[ext_resource type="Texture2D" uid="uid://dk7tfjmcot78e" path="res://assets/effect/WallEffect/伞护盾下.png" id="2_fkxm0"]
+[ext_resource type="Script" uid="uid://27l6rkdcyfum" path="res://scripts/effects/ShieldUmbrellaEffect.cs" id="3_script"]
+[ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="4_core"]
+[ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="5_build"]
+[ext_resource type="Shader" uid="uid://6yurywigppwe" path="res://shaders/materials/meeting_barrier_glow.gdshader" id="6_glow"]
+[ext_resource type="Shader" uid="uid://dcg17rve3o6x0" path="res://shaders/materials/meeting_barrier_scan.gdshader" id="7_scan"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_core"]
+shader = ExtResource("4_core")
+shader_parameter/alpha = 0.8
+shader_parameter/damage_level = 0.0
+shader_parameter/core_color = Color(0.3019608, 0.6745098, 1, 1)
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_build"]
+shader = ExtResource("5_build")
+shader_parameter/build_progress = 1.0
+shader_parameter/scanline_width = 0.025
+shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/edge_glow = 0.06
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow"]
+shader = ExtResource("6_glow")
+shader_parameter/edge_width = 0.3
+shader_parameter/edge_power = 2.0
+shader_parameter/alpha = 1.0
+shader_parameter/glow_intensity = 1.0
+shader_parameter/breath_speed = 3.0
+shader_parameter/breath_amplitude = 0.2
+shader_parameter/glow_color = Color(0.4, 0.9, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_scan"]
+shader = ExtResource("7_scan")
+shader_parameter/scan_speed = 0.5
+shader_parameter/scan_line_width = 0.01
+shader_parameter/digital_noise_amount = 0.15
+shader_parameter/glitch_amount = 0.008
+shader_parameter/glitch_frequency = 3.0
+shader_parameter/sparkle_density = 0.08
+shader_parameter/alpha = 1.0
+shader_parameter/scan_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/damage_level = 0.0
+shader_parameter/damage_glitch_intensity = 0.04
+shader_parameter/damage_block_density = 0.2
+shader_parameter/damage_color = Color(0.9, 0.15, 0.6, 1)
+
+[sub_resource type="Animation" id="Animation_pqa4h"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("UmbrellaTop:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("UmbrellaButton:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_5684o"]
+resource_name = "open"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("UmbrellaTop:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-1.3962634015954636, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("UmbrellaButton:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.3962634, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7ewha"]
+_data = {
+&"RESET": SubResource("Animation_pqa4h"),
+&"open": SubResource("Animation_5684o")
+}
+
+[node name="ShieldUmbrellaEffect" type="Node2D"]
+z_index = 3
+z_as_relative = false
+y_sort_enabled = true
+script = ExtResource("3_script")
+FrontOffset = Vector2(200, -225)
+SpawnOffset = Vector2(500, -225)
+FollowSmoothing = 15.0
+HoverFrequency = 1.0
+CooldownSeconds = 5.0
+EffectId = "f3a1c9d2-7b4e-4c8a-9e5f-1d6b2a8c3e07"
+DisplayName = "雨伞护盾"
+PersistOnWeaponSwitch = true
+Description = "攻击时生成，跟随玩家前方移动并随朝向镜像反转，当玩家在正面受到伤害时代替玩家承受伤害，受到一次攻击后消失，消失后进入N秒的CD"
+Duration = 0.0
+
+[node name="UmbrellaTop" type="Node2D" parent="."]
+y_sort_enabled = true
+position = Vector2(-16, 74.99999)
+scale = Vector2(0.33, 0.33)
+
+[node name="Core" type="Sprite2D" parent="UmbrellaTop"]
+material = SubResource("ShaderMaterial_core")
+texture = ExtResource("1_h4bm0")
+offset = Vector2(-50, -300)
+
+[node name="BuildMask" type="Sprite2D" parent="UmbrellaTop"]
+material = SubResource("ShaderMaterial_build")
+texture = ExtResource("1_h4bm0")
+offset = Vector2(-50, -300)
+
+[node name="GlowWall" type="Sprite2D" parent="UmbrellaTop"]
+material = SubResource("ShaderMaterial_glow")
+texture = ExtResource("1_h4bm0")
+offset = Vector2(-50, -300)
+
+[node name="ScanFX" type="Sprite2D" parent="UmbrellaTop"]
+material = SubResource("ShaderMaterial_scan")
+texture = ExtResource("1_h4bm0")
+offset = Vector2(-50, -300)
+
+[node name="UmbrellaButton" type="Node2D" parent="."]
+y_sort_enabled = true
+position = Vector2(0, -28.999998)
+scale = Vector2(0.33, 0.33)
+
+[node name="Core" type="Sprite2D" parent="UmbrellaButton"]
+material = SubResource("ShaderMaterial_core")
+texture = ExtResource("2_fkxm0")
+offset = Vector2(-60, 300)
+
+[node name="BuildMask" type="Sprite2D" parent="UmbrellaButton"]
+material = SubResource("ShaderMaterial_build")
+texture = ExtResource("2_fkxm0")
+offset = Vector2(-60, 300)
+
+[node name="GlowWall" type="Sprite2D" parent="UmbrellaButton"]
+material = SubResource("ShaderMaterial_glow")
+texture = ExtResource("2_fkxm0")
+offset = Vector2(-60, 300)
+
+[node name="ScanFX" type="Sprite2D" parent="UmbrellaButton"]
+material = SubResource("ShaderMaterial_scan")
+texture = ExtResource("2_fkxm0")
+offset = Vector2(-60, 300)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_7ewha")
+}
+autoplay = "open"

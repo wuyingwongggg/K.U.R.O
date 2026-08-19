@@ -1,9 +1,23 @@
-[gd_scene load_steps=6 format=3 uid="uid://ciwdkf08qw7ao"]
+[gd_scene load_steps=9 format=3 uid="uid://ciwdkf08qw7ao"]
 
 [ext_resource type="Script" uid="uid://c3vacvqsu0h34" path="res://scripts/actors/enemies/attacks/EnemyMissileProjectile.cs" id="1_7xynb"]
 [ext_resource type="PackedScene" uid="uid://bl2nwvbijnwtd" path="res://scenes/actors/etc/LandingIndicatorA.tscn" id="2_fnf0o"]
 [ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="2_x876p"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="2_yu6oe"]
 [ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="3_yu6oe"]
+
+[sub_resource type="Resource" id="Resource_k783o"]
+script = ExtResource("2_yu6oe")
+Scene = ExtResource("2_x876p")
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_46r7a"]
+script = ExtResource("2_yu6oe")
+Scene = ExtResource("3_yu6oe")
+PropertyOverrides = Dictionary[String, Variant]({
+"Damage": 30
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_x876p"]
 load_path = "res://.godot/imported/missile.png-a38d12b5a742b64096d506cef60c61de.ctex"
@@ -16,7 +30,7 @@ script = ExtResource("1_7xynb")
 RiseHeight = 1200.0
 FallDuration = 0.5
 SpritePath = NodePath("Sprite2D")
-ImpactEffectScenes = [ExtResource("2_x876p"), ExtResource("3_yu6oe")]
+ImpactEffects = Array[ExtResource("2_yu6oe")]([SubResource("Resource_k783o"), SubResource("Resource_46r7a")])
 LandingIndicatorPrefab = ExtResource("2_fnf0o")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

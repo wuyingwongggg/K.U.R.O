@@ -31,7 +31,7 @@ namespace Kuros.Fx
 
         [ExportCategory("Trail")]
         /// <summary>拖尾保留的历史点数量；点越多拖尾越长。</summary>
-        [Export(PropertyHint.Range, "2,60,1")] public int   TrailPoints = 20;
+        [Export(PropertyHint.Range, "0,60,1")] public int   TrailPoints = 20;
         [Export] public Color BeamColor  = new Color(1f, 0.85f, 0.2f, 1f);
         [Export] public Color GlowColor  = new Color(1f, 0.23f, 0f, 0.52f);
         [Export(PropertyHint.Range, "1,50,1")]  public float BeamWidth  = 8f;

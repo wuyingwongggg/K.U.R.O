@@ -17,6 +17,14 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "50,6000,10")] public float Speed = 600f;
         /// <summary>朝玩家瞄准时的最大垂直偏移角度（度）。0 = 纯水平飞行。</summary>
         [Export(PropertyHint.Range, "0,360,0.5")] public float MaxVerticalTiltDegrees = 30f;
+        /// <summary>
+        /// 外部指定的固定飞行方向（如上下发射的子立方体）。非 null 时跳过瞄准，直接朝该方向直飞。
+        /// 需在 AddChild 之前设置：_Ready 中的 spawn 动画回调结束时读取。
+        /// </summary>
+        public Vector2? FixedDirection { get; set; }
+
+        /// <summary>当前飞行速度向量（未飞行时为 Zero）。子类可用其正交方向实现"垂直发射"。</summary>
+        public Vector2 Velocity => _velocity;
 
         [ExportCategory("Timing")]
         /// <summary>飞行阶段时长。到期后进入 despawn。</summary>
@@ -181,12 +189,18 @@ namespace Kuros.Fx
                 _spawning = false;
                 if (_buildSprite != null) _buildSprite.Visible = false;
 
+                // 外部指定固定方向时跳过瞄准（如上下发射的子立方体），直接朝该方向直飞
+                if (FixedDirection.HasValue)
+                {
+                    _velocity = FixedDirection.Value.Normalized() * Speed;
+                    return;
+                }
+
                 // 基准方向：面朝右 = 右飞，面朝左 = 左飞
                 float baseAngle = FacingRight ? 0f : Mathf.Pi;
 
                 // 按 TargetableFactions 选择瞄准目标（玩家/最近敌人/最近者），无目标则纯水平飞行
                 var target = ResolveAimTarget();
-                GD.Print($"[Cube Debug] AimTarget: {target?.Name ?? "null"} at {target?.GlobalPosition ?? Vector2.Zero}, self at {GlobalPosition}, flags={(int)TargetableFactions}");
                 if (target != null)
                 {
                     Vector2 toTarget = GetAimCenter(target) - GlobalPosition;
@@ -319,8 +333,6 @@ namespace Kuros.Fx
             // 高速飞行时二次查询可能与物理状态错开导致漏伤害
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
-            GD.Print($"[Cube Debug] BodyEntered: {body.Name} spawning={_spawning} dealt={dealt} " +
-                     $"faction={DamageDispatcher.ResolveDamageReceiver(body, TargetableFactions)?.Name}");
             if (!dealt)
             {
                 // 仅 AirWall（空气墙）拦截销毁，其他物理体（地面/障碍/投掷物）不拦截
@@ -357,17 +369,6 @@ namespace Kuros.Fx
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
-            if (!dealt && area.Owner is GameActor ga)
-            {
-                GD.Print($"[Cube Debug] AreaEntered REJECTED: owner={ga.Name} attacker={_attacker?.Name} " +
-                         $"dead={ga.IsDead} dying={ga.IsDeathSequenceActive} " +
-                         $"canBeAffected={ga.CanBeAffected(null)} immunities={(int)ga.ActiveImmunities} " +
-                         $"receiver={DamageDispatcher.ResolveDamageReceiver(target, TargetableFactions)?.Name}");
-            }
-            else if (!dealt)
-            {
-                GD.Print($"[Cube Debug] AreaEntered REJECTED: owner={area.Owner?.Name} nonActor");
-            }
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)

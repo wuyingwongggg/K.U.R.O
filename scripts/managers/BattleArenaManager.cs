@@ -112,7 +112,7 @@ namespace Kuros.Managers
         /// </summary>
         private void CheckEnemyStatus()
         {
-            _arenaEnemies.RemoveAll(enemy => !IsInstanceValid(enemy) || enemy.IsDead);
+            _arenaEnemies.RemoveAll(enemy => !IsInstanceValid(enemy) || enemy.IsDeadOrDying);
 
             // 只有在敌人生成完成且敌人全部被击杀时，才完成战斗
             if (_enemySpawningComplete && _arenaEnemies.Count == 0)

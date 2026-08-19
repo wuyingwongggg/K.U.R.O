@@ -30,7 +30,8 @@ namespace Kuros.Tools
         [Export] public string SkillAnimationName { get; set; } = "attack_thrust";
         [Export(PropertyHint.Range, "0,30,0.1")] public float SkillCooldownSeconds { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "0,5,0.1")] public float SkillDamageMultiplier { get; set; } = 1f;
-        [Export] public string SkillActivationAction { get; set; } = "weapon_skill_block";
+        // weapon_skill_block 已废弃（废案），默认不再写入技能配置
+        [Export] public string SkillActivationAction { get; set; } = string.Empty;
 
         [Export(PropertyHint.Dir)] public string ItemOutputDirectory { get; set; } = "res://resources/items";
         [Export(PropertyHint.Dir)] public string SkillOutputDirectory { get; set; } = "res://resources/items/skills";

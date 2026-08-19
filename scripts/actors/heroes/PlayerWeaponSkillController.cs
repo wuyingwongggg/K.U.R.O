@@ -22,6 +22,8 @@ namespace Kuros.Actors.Heroes
         private readonly Dictionary<string, double> _skillCooldowns = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _actionSkillMap = new(StringComparer.Ordinal);
         private readonly List<ActorEffect> _passiveEffects = new();
+        /// <summary>主动技能触发时挂载的效果。换武器（ClearSkills）时与被动效果一并清理，防止跨武器污染。</summary>
+        private readonly List<ActorEffect> _activeSkillEffects = new();
         private WeaponSkillDefinition? _defaultActiveSkill;
         private WeaponSkillDefinition? _fallbackUnarmedSkill;
         private ItemDefinition? _fallbackWeaponDefinition;
@@ -94,6 +96,12 @@ namespace Kuros.Actors.Heroes
         public WeaponSkillDefinition? GetPrimarySkillDefinition()
         {
             return _defaultActiveSkill;
+        }
+
+        /// <summary>当前已加载技能集是否包含指定技能（供电量等效果自检"技能是否仍属于当前武器"）。</summary>
+        public bool HasSkill(string skillId)
+        {
+            return !string.IsNullOrEmpty(skillId) && _skills.ContainsKey(skillId);
         }
 
         public bool TriggerDefaultSkill(GameActor? target = null)
@@ -265,10 +273,22 @@ namespace Kuros.Actors.Heroes
         {
             foreach (var effect in _passiveEffects)
             {
+                if (effect != null && effect.PersistOnWeaponSwitch) continue;
                 _actor?.EffectController?.RemoveEffect(effect);
             }
 
             _passiveEffects.Clear();
+
+            // 主动技能效果同样随武器卸载（之前未跟踪导致跨武器残留，如武器A的击退串到武器B）；
+            // PersistOnWeaponSwitch 的效果（召唤物/护盾类）保留到自身生命周期结束
+            foreach (var effect in _activeSkillEffects)
+            {
+                if (effect != null && effect.PersistOnWeaponSwitch) continue;
+                _actor?.EffectController?.RemoveEffect(effect);
+            }
+
+            _activeSkillEffects.Clear();
+
             _skills.Clear();
             _skillCooldowns.Clear();
             _actionSkillMap.Clear();
@@ -331,6 +351,10 @@ namespace Kuros.Actors.Heroes
                     if (skill.SkillType == WeaponSkillType.Passive)
                     {
                         _passiveEffects.Add(effect);
+                    }
+                    else
+                    {
+                        _activeSkillEffects.Add(effect);
                     }
                 }
             }

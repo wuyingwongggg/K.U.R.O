@@ -22,6 +22,11 @@ namespace Kuros.Core
 		/// 参数：victim（受击方）, attacker（攻击方，可为 null）, damage（实际伤害）
 		/// </summary>
 		public static event Action<GameActor, GameActor?, int>? AnyDamageTaken;
+		/// <summary>
+		/// 任意 GameActor 死亡流程彻底结束后触发的全局静态事件（FinalizeDeath 已执行）。
+		/// 参数为死亡者自身；触发时 actor 尚未释放（QueueFree 为延迟调用），订阅者可安全读取类型/描述。
+		/// </summary>
+		public static event Action<GameActor>? DeathFinalized;
 
 		[ExportCategory("Stats")]
 		[Export] public float Speed = 300.0f;
@@ -33,6 +38,9 @@ namespace Kuros.Core
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
 		[Export] public float AttackCooldown = 1f;
 		[Export] public int MaxHealth = 15;
+		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
+		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
+		[Export(PropertyHint.MultilineText)] public string AiDescription { get; set; } = string.Empty;
 		[Export] public bool FaceLeftByDefault = false;
 		/// <summary>
 		/// 初始朝向。true=朝右，false=朝左。在 _Ready 时应用，不影响行为逻辑。
@@ -102,6 +110,8 @@ namespace Kuros.Core
 
 		public bool IsDeathSequenceActive => _deathStarted && !_deathFinalized;
 		public bool IsDead => _deathFinalized;
+		/// <summary>死亡流程已开始（Dying 或 Dead）：伤害/治疗/特效作用应在此时立即停止，而非等死亡动画结束。</summary>
+		public bool IsDeadOrDying => _deathStarted;
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
 		/// <summary>
 		/// 当前角色持有的免疫标志集合，由 EnemyAttackTemplate 的 GrantedImmunities 字段在攻击期间写入/还原。
@@ -256,8 +266,9 @@ namespace Kuros.Core
 		{
 			if (AttackTimer > 0) AttackTimer -= (float)delta;
 
-			// 伤害合并窗口到期：统一结算累计伤害（每帧递减计时器，窗口结束只结算一次）
-			if (_hasPendingDamage)
+			// 伤害合并窗口到期：统一结算累计伤害（每帧递减计时器，窗口结束只结算一次；
+			// 首段即时结算也会启动窗口计时，故按计时器而非 _hasPendingDamage 判断）
+			if (_damageMergeTimer > 0f)
 			{
 				_damageMergeTimer -= (float)delta;
 				if (_damageMergeTimer <= 0f)
@@ -307,19 +318,25 @@ namespace Kuros.Core
 			return attackerArea.OverlapsBody(this);
 		}
 
-		public virtual void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack)
+		/// <summary>
+		/// 受到伤害。返回 true 表示伤害被接受（本次调用会导致扣血，无论立即结算还是进入合并窗口稍后结算）；
+		/// false 表示被免疫/拦截/无效（不会扣血）。调用方可用返回值判断击退等副作用是否应生效。
+		/// bypassMergeWindow = true 时跳过伤害合并窗口立即结算（用于暴击追加等与基础伤害同源、
+		/// 需要同帧结算以便飘字合并显示的伤害）。
+		/// </summary>
+		public virtual bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 		{
-			if (!CanBeAffected(null)) return;
-			if (IsDeathSequenceActive || IsDead) return;
+			if (!CanBeAffected(null)) return false;
+			if (IsDeathSequenceActive || IsDead) return false;
 
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ThrowableDamage)
 				&& (damageSource == Events.DamageSource.ThrowableDirectAttack || damageSource == Events.DamageSource.ThrowImpact))
-				return;
+				return false;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.NonThrowableDamage)
 				&& damageSource != Events.DamageSource.ThrowableDirectAttack
 				&& damageSource != Events.DamageSource.ThrowImpact)
-				return;
-			if (damage <= 0) return;
+				return false;
+			if (damage <= 0) return false;
 
 			if (IncomingDamageMultiplier != 1f)
 				damage = Mathf.Max(1, Mathf.RoundToInt(damage * IncomingDamageMultiplier));
@@ -333,14 +350,14 @@ namespace Kuros.Core
 					if (args.IsBlocked)
 					{
 						GameLogger.Info(nameof(GameActor), $"{Name} blocked incoming damage.");
-						return;
+						return false;
 					}
 				}
 
 				damage = args.Damage;
 				if (damage <= 0)
 				{
-					return;
+					return false;
 				}
 			}
 
@@ -348,14 +365,23 @@ namespace Kuros.Core
 			_lastDamageTakenAtMs = Time.GetTicksMsec();
 
 			// 伤害合并窗口：窗口内多段伤害累计，到期统一结算（扣血/通知/日志/闪白/Hit 状态/事件只执行一次）。
-			// 极短时间内大量多段伤害（如连击多段判定）不再逐段放大主线程开销。
-			if (DamageMergeWindow > 0f)
+			// 首段伤害立即结算（即时反馈，飘字/击退/受击动画零延迟），同时启动窗口，
+			// 窗口内到达的后续段合并到窗口到期统一结算（性能热点仍被压住）。
+			if (DamageMergeWindow > 0f && !bypassMergeWindow)
 			{
+				if (_damageMergeTimer <= 0f)
+				{
+					// 首段（窗口未激活）：立即结算并启动合并窗口
+					_damageMergeTimer = DamageMergeWindow;
+					ApplyPendingDamage(damage, attackOrigin, attacker, damageSource);
+					return true;
+				}
+
+				// 后续段：进入合并窗口，到期统一结算（避免多段伤害逐段放大副作用开销）
 				_pendingDamageTotal += damage;
 				_pendingAttacker ??= attacker;
 				_pendingOrigin ??= attackOrigin;
 				_pendingSource = damageSource;
-				_damageMergeTimer = DamageMergeWindow;
 				_hasPendingDamage = true;
 
 				// 累计已达致死量 → 立即结算，避免死亡反馈延迟
@@ -363,10 +389,11 @@ namespace Kuros.Core
 				{
 					FlushPendingDamage();
 				}
-				return;
+				return true;
 			}
 
 			ApplyPendingDamage(damage, attackOrigin, attacker, damageSource);
+			return true;
 		}
 
 		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。</summary>
@@ -461,6 +488,10 @@ namespace Kuros.Core
 		/// </summary>
 		public void RestoreHealth(int health, int maxHealth = -1)
 		{
+			// 死亡后治疗无效（与 TakeDamage 的死亡保护对称）：防止 Dying/Dead 期间
+			// P2 治疗等到达时把血量拉回 >0，出现"死了但血条回满"的错误表现
+			if (IsDeathSequenceActive || IsDead) return;
+
 			if (maxHealth > 0)
 			{
 				MaxHealth = maxHealth;
@@ -503,6 +534,7 @@ namespace Kuros.Core
 
 			_deathFinalized = true;
 			OnDeathFinalized();
+			DeathFinalized?.Invoke(this);
 		}
 
 		protected virtual void OnDeathFinalized()

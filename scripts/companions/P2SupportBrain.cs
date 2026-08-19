@@ -13,11 +13,12 @@ namespace Kuros.Companions
     public partial class P2SupportBrain : Node
     {
         [ExportCategory("References")]
-        [Export] public NodePath GameStateProviderPath { get; set; } = new("../MainCharacter/GameStateProvider");
+        [Export] public NodePath GameStateProviderPath { get; set; } = new("../GameStateProvider");
         [Export] public NodePath SupportExecutorPath { get; set; } = new("../AI_Executor");
         [Export] public NodePath SupportDecisionBridgePath { get; set; } = new("../AI_DecisionBridge");
-        [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../MainCharacter/AiDecisionBridge");
+        [Export] public NodePath AiDecisionBridgePath { get; set; } = new("../AiDecisionBridge");
         [Export] public NodePath WeaponCarrierPath { get; set; } = new("../AI_WeaponCarrier");
+        [Export] public NodePath DialogueControllerPath { get; set; } = new("../AI_Dialogue");
 
         [ExportCategory("AI Bridge")]
         [Export] public bool EnableAiDecisionBridge { get; set; } = false;
@@ -28,6 +29,8 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "100,1000,50")] public float CarryRangeMin { get; set; } = 400f;
         [Export] public bool UseLiveAiDecisionSource { get; set; } = true;
         [Export] public bool RequestAiDecisionFromBridge { get; set; } = true;
+        /// <summary>预取缓存：空闲时提前生成陪伴台词（零延迟弹出），瞬时信息不走此通道。</summary>
+        [Export] public bool EnableAiPrefetch { get; set; } = true;
         /// <summary>AI 决策请求间隔（秒）：每 N 秒向 AiDecisionBridge 请求一次决策，避免频繁请求。</summary>
         [Export(PropertyHint.Range, "0.2,10,0.1")] public float AiRequestIntervalSeconds { get; set; } = 1.0f;
         [Export] public bool ConsumeOnlyFreshAiDecision { get; set; } = true;
@@ -38,14 +41,13 @@ namespace Kuros.Companions
         [Export] public bool PersonalityChatterOnlyWhenSafe { get; set; } = false;
         [Export(PropertyHint.Range, "3,60,0.5")] public float PersonalityChatterMinIntervalSeconds { get; set; } = 14f;
         [Export(PropertyHint.Range, "0,1,0.01")] public float PersonalityChatterChance { get; set; } = 0.28f;
-        [Export(PropertyHint.Range, "8,80,1")] public int PersonalityChatterMaxChars { get; set; } = 26;
+        [Export(PropertyHint.Range, "8,80,1")] public int PersonalityChatterMaxChars { get; set; } = 40;
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float EvaluateIntervalSeconds { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "0.1,20,0.1")] public float GlobalHintCooldownSeconds { get; set; } = 2.2f;
 
         [ExportCategory("Rules")]
-        [Export(PropertyHint.Range, "0.05,1,0.01")] public float LowHpThresholdRatio { get; set; } = 0.35f;
         /// <summary>自动治疗阈值：玩家血量比例 ≤ 此值时 P2 主动释放治疗技能（不依赖攻击状态/J 面板切换）。</summary>
         [Export(PropertyHint.Range, "0.05,1,0.01")] public float HealThresholdRatio { get; set; } = 0.5f;
         [Export(PropertyHint.Range, "10,2000,1")] public float EnemyDangerDistance { get; set; } = 320f;
@@ -64,13 +66,23 @@ namespace Kuros.Companions
         private P2SupportDecisionBridge? _decisionBridge;
         private AiDecisionBridge? _aiDecisionBridge;
         private P2WeaponCarrier? _weaponCarrier;
+        private P2DialogueController? _dialogue;
         private float _tickAccum;
         private ulong _globalNextHintAtMs;
         private ulong _nextAiRequestAtMs;
         private ulong _nextPersonalityChatterAtMs;
         private string _lastConsumedAiDecisionSignature = string.Empty;
-        private string _lastPersonalitySourceSignature = string.Empty;
+        private readonly System.Collections.Generic.Queue<string> _personalitySignatureHistory = new();
+        private const int PersonalitySignatureHistoryMax = 5; // 台词去重窗口：与最近 5 条签名不同才说
         private readonly Dictionary<string, ulong> _ruleCooldownUntilMs = new();
+        private bool _playerDyingDialogueEmitted; // 死亡台词只说一次（场景重载自然重置）
+        private int _lastAliveEnemyCount = -1; // 清场边沿检测：上次存活敌人数（-1 = 首帧不触发）
+        private ulong _lastClearAtMs; // 最近一次清场时间戳（AI 回忆衔接窗口用）
+        /// <summary>清场后此窗口内的预取请求强制走"记忆回顾"话题并注入清场上下文。</summary>
+        private const ulong ClearContextWindowMs = 10_000;
+        private const string ClearContextGuide =
+            "你们刚刚清光了这一带的敌人，战斗刚结束。用同伴口吻回忆或点评刚才的战斗。" +
+            "示例句式：\"刚才那几下漂亮！不过走廊尽头好像还有动静……\"";
 
         public ulong LastEvaluateAtMs { get; private set; }
         public string LastTriggeredRuleKey { get; private set; } = string.Empty;
@@ -88,6 +100,36 @@ namespace Kuros.Companions
         public ulong TotalFallbackHints { get; private set; }
         public ulong TotalAiMappedApplied { get; private set; }
         public ulong TotalPersonalityChatters { get; private set; }
+
+        public override void _Ready()
+        {
+            // LLM 启用状态由玩家设置驱动（默认关 = P2 纯规则模式，不发 LLM 请求）；
+            // P2.tscn 的 EnableAiDecisionBridge 仅作为进树初值，_Ready 时被设置覆盖
+            ApplyAiEnabledFromSettings();
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings != null)
+            {
+                settings.AiSettingsChanged += ApplyAiEnabledFromSettings;
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings != null)
+            {
+                settings.AiSettingsChanged -= ApplyAiEnabledFromSettings;
+            }
+            base._ExitTree();
+        }
+
+        /// <summary>从 GameSettingsManager 同步 AI 启用开关。</summary>
+        private void ApplyAiEnabledFromSettings()
+        {
+            var settings = Kuros.Managers.GameSettingsManager.Instance;
+            if (settings == null) return;
+            EnableAiDecisionBridge = settings.AiEnabled;
+        }
 
         public override void _Process(double delta)
         {
@@ -111,6 +153,17 @@ namespace Kuros.Companions
         {
             LastEvaluateAtMs = Time.GetTicksMsec();
 
+            // 玩家死亡：最高优先级——抑制 LLM 桥、个性台词与全部支持规则，触发一次死亡台词
+            // （规则路径 dtl 文本，不依赖 LLM；有/无 LLM 均正常工作）
+            if (IsPlayerDying(state))
+            {
+                TryEmitPlayerDyingDialogue();
+                return;
+            }
+
+            // 预取：缓存未满时空闲发起一次（节流/静默在 bridge 内部，不阻塞、不影响实时链路）
+            PrefetchAiDecisionsIfNeeded();
+
             // Personality chatter runs on its own low-frequency gate and should not depend on rule branch returns.
             TryEmitPersonalityChatter(state);
 
@@ -119,6 +172,9 @@ namespace Kuros.Companions
             {
                 return;
             }
+
+            // 清场即时播报：存活敌人从 >0 变 0 的边沿（最后一个敌人进入死亡流程瞬间）
+            DetectEnemyClear(state);
 
             if (state.PlayerMaxHp <= 0)
             {
@@ -142,19 +198,6 @@ namespace Kuros.Companions
                         target: "heal",
                         urgency: "high"),
                     perRuleCooldownSeconds: HealRuleCooldownSeconds);
-            }
-
-            if (hpRatio <= LowHpThresholdRatio && state.PlayerUnderAttack)
-            {
-                TryEmitDecision(
-                    ruleKey: "low_hp_under_attack",
-                    decision: SupportDecision.UseSupportItem(
-                        sourceRule: "low_hp_under_attack",
-                        reason: "player hp below threshold while under attack",
-                        itemTag: ItemTagIds.Food,
-                        urgency: "high"),
-                    perRuleCooldownSeconds: HealRuleCooldownSeconds);
-                return;
             }
 
             // 方案 A：武器搬运进行中（WeaponCarrier.IsBusy）时护盾让位，避免移动权冲突
@@ -322,6 +365,45 @@ namespace Kuros.Companions
             return true;
         }
 
+        /// <summary>跟随模式倾向话题（记忆回顾/鼓励/吐槽）——TopicPool 0-based 索引。</summary>
+        private static readonly int[] FollowPrefetchTopics = { 5, 6, 2 };
+        /// <summary>自由游走倾向话题（环境氛围/武器评价/敌人外貌）——TopicPool 0-based 索引。</summary>
+        private static readonly int[] FreeRoamPrefetchTopics = { 4, 3, 0 };
+
+        /// <summary>预取缓存：缓存未满且无请求占用时发起一次（节流与静默失败在 bridge 内部）。
+        /// 按 P2 移动模式限缩话题池——跟随偏回忆/鼓励，自由游走偏环境/评价。</summary>
+        private void PrefetchAiDecisionsIfNeeded()
+        {
+            if (!EnableAiDecisionBridge || !EnableAiPrefetch || _aiDecisionBridge == null)
+            {
+                return;
+            }
+
+            if (_aiDecisionBridge.RequestInFlight
+                || _aiDecisionBridge.PrefetchCount >= _aiDecisionBridge.PrefetchTargetCount)
+            {
+                return;
+            }
+
+            ulong now = Time.GetTicksMsec();
+            if (_lastClearAtMs != 0 && now - _lastClearAtMs < ClearContextWindowMs)
+            {
+                // 清场后窗口内：强制"记忆回顾"话题 + 清场场景上下文（AI 补充清场感想）
+                _ = _aiDecisionBridge.RequestPrefetchAsync(new[] { 5 }, ClearContextGuide);
+                return;
+            }
+
+            bool followMode = IsCompanionFollowing();
+            _ = _aiDecisionBridge.RequestPrefetchAsync(followMode ? FollowPrefetchTopics : FreeRoamPrefetchTopics);
+        }
+
+        /// <summary>P2 当前是否处于跟随模式（companions 组内 P2CompanionController）。</summary>
+        private bool IsCompanionFollowing()
+        {
+            var controller = GetTree().GetFirstNodeInGroup("companions") as P2CompanionController;
+            return controller != null && IsInstanceValid(controller) && controller.IsFollowingMode;
+        }
+
         private void RequestLiveAiDecisionIfNeeded()
         {
             if (!RequestAiDecisionFromBridge || _aiDecisionBridge == null)
@@ -408,7 +490,7 @@ namespace Kuros.Companions
 
         private void TryEmitPersonalityChatter(GameState state)
         {
-            if (!EnableAiPersonalityChatter || _supportExecutor == null || _aiDecisionBridge?.LastStructuredDecision?.IsValid != true)
+            if (!EnableAiPersonalityChatter || _supportExecutor == null || _aiDecisionBridge == null)
             {
                 return;
             }
@@ -430,9 +512,17 @@ namespace Kuros.Companions
                 return;
             }
 
-            var decision = _aiDecisionBridge.LastStructuredDecision;
+            // 预取缓存优先（零延迟台词）；缓存空则回退实时决策
+            var decision = _aiDecisionBridge.TryDequeuePrefetch()
+                ?? (_aiDecisionBridge.LastStructuredDecision.IsValid ? _aiDecisionBridge.LastStructuredDecision : null);
+            if (decision == null)
+            {
+                return;
+            }
+
             string sourceSignature = BuildAiDecisionSignature(decision);
-            if (sourceSignature == _lastPersonalitySourceSignature)
+            // 去重：与最近 N 条台词签名都不同才说（消除相同状态下的雷同）
+            if (_personalitySignatureHistory.Contains(sourceSignature))
             {
                 _nextPersonalityChatterAtMs = now + SecondsToMs(PersonalityChatterMinIntervalSeconds * 0.75f);
                 return;
@@ -455,30 +545,28 @@ namespace Kuros.Companions
 
             if (_supportExecutor.TryExecute(hint))
             {
-                _lastPersonalitySourceSignature = sourceSignature;
+                // 记录签名到历史窗口（超出容量移除最旧）
+                _personalitySignatureHistory.Enqueue(sourceSignature);
+                while (_personalitySignatureHistory.Count > PersonalitySignatureHistoryMax)
+                {
+                    _personalitySignatureHistory.Dequeue();
+                }
                 TotalPersonalityChatters++;
             }
 
             _nextPersonalityChatterAtMs = now + SecondsToMs(PersonalityChatterMinIntervalSeconds);
         }
 
+        /// <summary>个性台词：直接使用 LLM 生成的 reason——语气已由 AiDecisionBridge 的
+        /// PersonaSystemPrompt（P2 人设 system 提示）引导，代码不再拼前缀。</summary>
         private string BuildPersonalityText(AiDecision decision)
         {
-            string reason = (decision.Reason ?? string.Empty).Trim();
-            string intent = (decision.Intent ?? string.Empty).Trim().ToLowerInvariant();
-
-            string prefix = intent switch
+            string text = (decision.Reason ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(text))
             {
-                "attack" => "我觉得可以主动压一下，",
-                "use_skill" => "这波节奏不错，",
-                "retreat" => "先别贪，我建议稳一手，",
-                "reposition" => "换个站位更舒服，",
-                "loot" => "安全的话顺手摸掉落，",
-                _ => "我这边判断是，"
-            };
+                return string.Empty;
+            }
 
-            string core = string.IsNullOrWhiteSpace(reason) ? "当前局势可以再快一点。" : reason;
-            string text = $"{prefix}{core}";
             if (text.Length > Mathf.Max(8, PersonalityChatterMaxChars))
             {
                 text = text[..Mathf.Max(8, PersonalityChatterMaxChars)] + "...";
@@ -491,11 +579,6 @@ namespace Kuros.Companions
         /// enemy_too_close（护盾决策）在玩家已有护盾时返回空——有盾即无需告知"暂不可用"。</summary>
         private string BuildFallbackHint(string ruleKey)
         {
-            if (ruleKey == "low_hp_under_attack")
-            {
-                return "fallback_low_hp";
-            }
-
             if (ruleKey == "enemy_too_close")
             {
                 // 玩家当前持有护盾：护盾决策被拒无需兜底提示（已有盾，不必提示"暂不可用"）
@@ -563,6 +646,63 @@ namespace Kuros.Companions
                 _aiDecisionBridge = GetNodeOrNull<AiDecisionBridge>(AiDecisionBridgePath)
                     ?? GetNodeOrNull<AiDecisionBridge>(NormalizeRelativePath(AiDecisionBridgePath));
             }
+
+            if (_dialogue == null || !IsInstanceValid(_dialogue) || !_dialogue.IsInsideTree())
+            {
+                _dialogue = GetNodeOrNull<P2DialogueController>(DialogueControllerPath)
+                    ?? GetNodeOrNull<P2DialogueController>(NormalizeRelativePath(DialogueControllerPath));
+            }
+        }
+
+        /// <summary>清场即时播报：AliveEnemyCount 从 >0 边沿到 0 时触发一次（dtl enemies_cleared_N 随机变体）。
+        /// GameStateProvider 已按 IsDeadOrDying 过滤——最后一个敌人进入 Dying 即视为清场（比死亡动画结束更早）。</summary>
+        private void DetectEnemyClear(GameState state)
+        {
+            int count = state.AliveEnemyCount;
+            bool clearedNow = _lastAliveEnemyCount > 0 && count == 0;
+            _lastAliveEnemyCount = count;
+            if (!clearedNow)
+            {
+                return;
+            }
+
+            // 记录清场时间戳：窗口内预取强制"记忆回顾"话题，让 LLM 补一段清场感想
+            _lastClearAtMs = Time.GetTicksMsec();
+
+            TryEmitDecision(
+                ruleKey: "enemies_cleared",
+                decision: SupportDecision.Hint(
+                    message: "enemies_cleared",
+                    sourceRule: "enemies_cleared",
+                    reason: "last enemy defeated, arena cleared",
+                    urgency: "low",
+                    durationSeconds: 1.8f),
+                perRuleCooldownSeconds: 6f);
+        }
+
+        /// <summary>玩家是否处于死亡流程（Dying/Dead 状态或血量为 0）。</summary>
+        private static bool IsPlayerDying(GameState state)
+        {
+            if (state.PlayerHp <= 0)
+            {
+                return true;
+            }
+
+            string stateName = state.PlayerStateName ?? string.Empty;
+            return stateName == "Dying" || stateName == "Dead";
+        }
+
+        /// <summary>死亡台词：规则路径 dtl 文本（player_dying_N 随机变体），整个死亡窗口只说一次。
+        /// 不依赖 LLM——有/无 LLM 接入均正常触发。</summary>
+        private void TryEmitPlayerDyingDialogue()
+        {
+            if (_playerDyingDialogueEmitted)
+            {
+                return;
+            }
+
+            _playerDyingDialogueEmitted = true;
+            _dialogue?.Speak(P2DialogueEvent.PlayerDying);
         }
 
         private static ulong SecondsToMs(float seconds)

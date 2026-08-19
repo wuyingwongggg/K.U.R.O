@@ -58,3 +58,10 @@ modulate = Color(18.892157, 0, 0, 1)
 self_modulate = Color(18.892157, 0, 0, 1)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("2_spot")
+
+[node name="Spotlight" type="Sprite2D" parent="Spotlight"]
+modulate = Color(18.892157, 0, 0, 1)
+self_modulate = Color(18.892157, 0, 0, 1)
+rotation = 0.7853982
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("2_spot")

@@ -11,6 +11,7 @@ namespace Kuros.UI
     public partial class GameOverScreen : Control
     {
         private const string TitleScreenPath = "res://scenes/ui/menus/TitleScreen.tscn";
+        private const string Stage1Path = "res://scenes/Stage_1.tscn";
 
         [ExportGroup("Title")]
         /// <summary>GameOver 标题贴图（可替换）。为空时隐藏 TextureRect，显示场景里的兜底 Label。</summary>
@@ -98,14 +99,22 @@ namespace Kuros.UI
 
         private void OnRetryPressed()
         {
-            // UIManager 常驻根节点，重载场景不会销毁它——先卸载死亡界面再重载
+            // UIManager 常驻根节点，切换场景不会销毁它——先卸载死亡界面再切换
             UIManager.Instance?.UnloadGameOverScreen();
-            GetTree().ReloadCurrentScene(); // 重试：重载当前战斗场景
+            // 清空本局构筑/分数/核心选择与武器电量，从 Stage 1 从头开始
+            BuildSelectionManager.Instance?.ResetForNewRun();
+            WeaponBatteryManager.Instance?.ResetAll();
+            FloatingDamageTextManager.Instance?.ClearAll(); // 清理 Root 级残留飘字
+            GetTree().ChangeSceneToFile(Stage1Path); // 重试：从第一关重新开始
         }
 
         private void OnMenuPressed()
         {
             UIManager.Instance?.UnloadGameOverScreen();
+            // 返回标题同样清空本局构筑与武器电量，避免旧数据带入新游戏
+            BuildSelectionManager.Instance?.ResetForNewRun();
+            WeaponBatteryManager.Instance?.ResetAll();
+            FloatingDamageTextManager.Instance?.ClearAll(); // 清理 Root 级残留飘字
             GetTree().ChangeSceneToFile(TitleScreenPath); // 返回初始界面（标题界面）
         }
     }

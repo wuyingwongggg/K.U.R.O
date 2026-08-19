@@ -18,7 +18,6 @@ RotationSpeed = 1080.0
 RotateNode = NodePath("Sprite2D")
 Duration = 10.0
 Damage = 20
-DamageInterval = 0.7999999999999999
 
 [node name="AfterimageController" type="Node" parent="."]
 script = ExtResource("2_jyt8n")

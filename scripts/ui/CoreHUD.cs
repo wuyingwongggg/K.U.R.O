@@ -16,6 +16,13 @@ namespace Kuros.UI
         [Export] public TextureProgressBar? HeatFillBar { get; set; }
         [Export] public Label? HeatValueLabel { get; set; }
 
+        [ExportGroup("Overflow Pulse")]
+        /// <summary>热量爆表时整条 bar 的脉动+抖动表现开关。</summary>
+        [Export] public bool OverflowPulseEnabled { get; set; } = true;
+        [Export] public Color OverflowPulseColorA { get; set; } = new(1f, 0.35f, 0.15f);   // 红
+        [Export] public Color OverflowPulseColorB { get; set; } = new(1f, 0.8f, 0.25f);    // 亮橙
+        [Export(PropertyHint.Range, "0,50,0.5")] public float OverflowJitterStrength { get; set; } = 2f;
+
         [ExportGroup("Follow Player")]
         /// <summary>核心面板跟随玩家显示（世界坐标 → 屏幕坐标），关闭则按场景锚点定位（默认左下角）。</summary>
         [Export] public bool FollowPlayer { get; set; } = true;
@@ -28,6 +35,9 @@ namespace Kuros.UI
         private MachineCoreEffect? _boundMachineCore;
         private float _baseFillScaleX = 1f;
         private bool _anchorsReset;
+        private Tween? _overflowPulseTween;
+        private bool _overflowActive;
+        private Vector2 _barBasePosition;
 
         public override void _Ready()
         {
@@ -60,24 +70,65 @@ namespace Kuros.UI
             if (_boundMachineCore == null || !IsInstanceValid(_boundMachineCore))
                 return;
             if (MachinePanel == null || !MachinePanel.Visible)
+            {
+                // 面板隐藏时熄灭脉动
+                if (_overflowActive) UpdateOverflowPulse(false);
                 return;
+            }
 
             float maxHeat = _boundMachineCore.MaxHeat;
             float heat = _boundMachineCore.Heat;
             HeatBar.MaxValue = maxHeat;
-            HeatBar.Value = heat;
+            HeatBar.Value = heat;   // TextureProgressBar 内部钳制：爆表时条停在满格
             HeatFillBar.MaxValue = maxHeat;
             HeatFillBar.Value = heat;
 
-            // 爆表：条 Scale.X 跟随溢出量实时放大（1 → 1 + overflow/MaxHeat，最大 1.5 倍）
-            float overflow = Mathf.Max(heat - maxHeat, 0f);
-            float factor = 1f + (maxHeat > 0f ? overflow / maxHeat : 0f);
-            var fillScale = HeatFillBar.Scale;
-            fillScale.X = _baseFillScaleX * factor;
-            HeatFillBar.Scale = fillScale;
+            // 【已停用】爆表：条 Scale.X 跟随溢出量实时放大（1 → 1 + overflow/MaxHeat，最大 1.5 倍）
+            // 暂时注释，后续改为燃烧特效表现（见 HeatBurnEffect 方案）
+            // float overflow = Mathf.Max(heat - maxHeat, 0f);
+            // float factor = 1f + (maxHeat > 0f ? overflow / maxHeat : 0f);
+            // var fillScale = HeatFillBar.Scale;
+            // fillScale.X = _baseFillScaleX * factor;
+            // HeatFillBar.Scale = fillScale;
 
             if (HeatValueLabel != null)
                 HeatValueLabel.Text = $"{(int)heat}/{(int)maxHeat}";
+
+            // 爆表表现：红↔亮橙脉动 + 随机抖动
+            if (OverflowPulseEnabled)
+            {
+                UpdateOverflowPulse(heat > maxHeat);
+                if (_overflowActive)
+                {
+                    float s = OverflowJitterStrength;
+                    HeatFillBar.Position = _barBasePosition
+                        + new Vector2((GD.Randf() - 0.5f) * s, (GD.Randf() - 0.5f) * s * 0.75f);
+                }
+            }
+        }
+
+        /// <summary>爆表状态变化：进入时启动循环脉动 Tween，退出时恢复原色与原位置。</summary>
+        private void UpdateOverflowPulse(bool overflow)
+        {
+            if (overflow == _overflowActive) return;
+
+            _overflowActive = overflow;
+            if (overflow)
+            {
+                _barBasePosition = HeatFillBar!.Position;
+                _overflowPulseTween?.Kill();
+                _overflowPulseTween = CreateTween();
+                _overflowPulseTween.SetLoops();
+                _overflowPulseTween.TweenProperty(HeatFillBar, "modulate", OverflowPulseColorA, 0.25f);
+                _overflowPulseTween.TweenProperty(HeatFillBar, "modulate", OverflowPulseColorB, 0.25f);
+            }
+            else
+            {
+                _overflowPulseTween?.Kill();
+                _overflowPulseTween = null;
+                HeatFillBar!.Modulate = Colors.White;
+                HeatFillBar.Position = _barBasePosition;
+            }
         }
 
         /// <summary>

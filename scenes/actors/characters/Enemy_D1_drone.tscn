@@ -79,13 +79,14 @@ DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 DeathEffect = ExtResource("3_2csbb")
-Speed = 400.0
-AttackDamage = 0.0
+Speed = 400
+AttackDamage = 0
 MaxHealth = 80
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")

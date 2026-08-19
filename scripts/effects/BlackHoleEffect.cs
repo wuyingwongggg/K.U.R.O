@@ -120,7 +120,7 @@ namespace Kuros.Effects
                 foreach (var kvp in _damageTimers)
                 {
                     var enemy = kvp.Key;
-                    if (!IsInstanceValid(enemy) || enemy!.IsDead)
+                    if (!IsInstanceValid(enemy) || enemy!.IsDeadOrDying)
                     {
                         toRemove.Add(enemy!);
                         continue;
@@ -184,7 +184,7 @@ namespace Kuros.Effects
                 if (_damageTimers.ContainsKey(enemy)) return;
                 _damageTimers[enemy] = 0f;
 
-                if (_elapsed >= PullOnlyDuration && !enemy.IsDead)
+                if (_elapsed >= PullOnlyDuration && !enemy.IsDeadOrDying)
                     enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
             }
             else if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
@@ -226,7 +226,7 @@ namespace Kuros.Effects
 
             foreach (var actor in actors)
             {
-                if (!IsInstanceValid(actor) || actor.IsDead) continue;
+                if (!IsInstanceValid(actor) || actor.IsDeadOrDying) continue;
                 if (actor.ActiveImmunities.HasFlag(Kuros.Core.ImmunityFlags.ForcedMovement)) continue;
 
                 Vector2 direction = (_blackHoleCenter - actor.GlobalPosition).Normalized();
@@ -271,7 +271,7 @@ namespace Kuros.Effects
                 foreach (Node node in tree.GetNodesInGroup("enemies"))
                 {
                     if (node is not GameActor actor) continue;
-                    if (!IsInstanceValid(actor) || actor == Actor || actor.IsDead) continue;
+                    if (!IsInstanceValid(actor) || actor == Actor || actor.IsDeadOrDying) continue;
                     if (_blackHoleCenter.DistanceTo(actor.GlobalPosition) > AdsorbRadius) continue;
                     if (seen.Add(actor.GetInstanceId())) actors.Add(actor);
                 }
@@ -300,7 +300,7 @@ namespace Kuros.Effects
                         Node? cur = n;
                         while (cur != null && actor == null) { actor = cur as GameActor; cur = cur.GetParent(); }
                     }
-                    if (actor == null || !IsInstanceValid(actor) || actor == Actor || actor.IsDead) continue;
+                    if (actor == null || !IsInstanceValid(actor) || actor == Actor || actor.IsDeadOrDying) continue;
                     if (seen.Add(actor.GetInstanceId())) actors.Add(actor);
                 }
             }

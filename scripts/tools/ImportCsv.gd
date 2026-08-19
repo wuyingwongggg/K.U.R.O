@@ -167,6 +167,7 @@ func import_characters_from_csv() -> void:
 		content = _set_tscn_root_prop(content, "AttackDamage", _col(row, hm, "AttackDamage"))
 		content = _set_tscn_root_prop(content, "AttackCooldown", _col(row, hm, "AttackCooldown"))
 		content = _set_tscn_root_prop(content, "MaxHealth", _col(row, hm, "MaxHealth"))
+		content = _set_tscn_root_prop(content, "AiDescription", _col(row, hm, "AiDescription"), true)
 		if _write_text(path, content): count += 1
 	_log.info("  → 更新 %d 个" % count)
 
@@ -266,10 +267,17 @@ func _write_text(path: String, content: String) -> bool:
 	_log.info("已更新：%s" % path.get_file())
 	return true
 
-## 在 .tscn 文本中设置根节点的属性值
-func _set_tscn_root_prop(content: String, prop: String, value: String) -> String:
+## 在 .tscn 文本中设置根节点的属性值。
+## quote = true 时按字符串格式写入（tscn 字符串必须带双引号，内部引号/反斜杠转义）——
+## 用于 AiDescription 等字符串属性；数值属性保持裸写。
+func _set_tscn_root_prop(content: String, prop: String, value: String, quote: bool = false) -> String:
 	if value == "":
 		return content
+
+	var final_value: String = value
+	if quote:
+		# 只转义双引号；反斜杠保留原样——tscn 的转义序列（如 \n）经 CSV 往返后语义不变
+		final_value = "\"" + value.replace("\"", "\\\"") + "\""
 
 	var lines: Array = content.split("\n")
 	var in_root: bool = false
@@ -293,7 +301,7 @@ func _set_tscn_root_prop(content: String, prop: String, value: String) -> String
 							indent += "\t"
 						else:
 							break
-					new_lines.append(indent + prop + " = " + value)
+					new_lines.append(indent + prop + " = " + final_value)
 					prop_found = true
 					continue
 		new_lines.append(lines[i])
@@ -305,7 +313,7 @@ func _set_tscn_root_prop(content: String, prop: String, value: String) -> String
 			var s: String = new_lines[i]
 			if s.begins_with("[") and s.ends_with("]"):
 				if in_root:
-					out.append(prop + " = " + value)
+					out.append(prop + " = " + final_value)
 				in_root = s.begins_with("[node ") and not "parent=" in s
 			out.append(new_lines[i])
 		return "\n".join(out)

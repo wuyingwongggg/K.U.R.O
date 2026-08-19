@@ -17,7 +17,7 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string DieAnimation = "death";
         [Export(PropertyHint.Range, "0,5,0.01")] public float AttackLoopStart = 0.5f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float AttackLoopEnd = 2.7f;
-		[Export(PropertyHint.Range, "0,5,0.01")] public float AttackPartStart = 2.71f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float AttackPartStart = 2.7f;
         [Export(PropertyHint.Range, "0,5,0.01")] public float AttackPartEnd = 3.2f;
 		private EnemyD1CorpDoneAAttackController? _attackController;
 		private StringComparison _comparison = StringComparison.OrdinalIgnoreCase;
@@ -113,9 +113,9 @@ namespace Kuros.Actors.Enemies.Animation
 				if (attackName.Equals(controller.PinballAttackName, _comparison))
 				{
 					if (controller.GetNodeOrNull<EnemyPinballAttack>(controller.PinballAttackName) is { } pinball && pinball.IsStopping)
-						PlayPartOnceIfNeeded("AttackPart", AttackAnimation, AttackPartStart, AttackPartEnd, SkillMixDuration);
+						PlayPartOnceIfNeeded("AttackPart", AttackAnimation, AttackPartStart, AttackPartEnd, AttackMixDuration);
 					else
-						PlayPartLoopIfNeeded("Skill", AttackAnimation, AttackLoopStart, AttackLoopEnd, SkillMixDuration);
+						PlayPartLoopIfNeeded("AttackRecovery", AttackAnimation, AttackLoopStart, AttackLoopEnd, AttackMixDuration);
 					return;
 				}
 

@@ -1,11 +1,11 @@
 [gd_scene load_steps=10 format=3 uid="uid://orctascxfe5c"]
 
-[ext_resource type="Script" uid="uid://cyeq85rtved2j" path="res://scripts/environments/DoorController.cs" id="1_uie5v"]
-[ext_resource type="Texture2D" uid="uid://tqppawh5l6ss" path="res://assets/environments/scene_1_home/房间2隔断墙1.png" id="2_uie5v"]
-[ext_resource type="Texture2D" uid="uid://b2rs3v6lmdg1u" path="res://assets/environments/scene_1_home/房间2门.png" id="3_lukf2"]
+[ext_resource type="Script" uid="uid://chmg0f0ttsqy5" path="res://scripts/environments/DoorController.cs" id="1_uie5v"]
+[ext_resource type="Texture2D" uid="uid://bnvouobc1wioo" path="res://assets/environments/scene_1_home/房间2隔断墙1.png" id="2_uie5v"]
+[ext_resource type="Texture2D" uid="uid://duys5k8o7omvo" path="res://assets/environments/scene_1_home/房间2门.png" id="3_lukf2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wvbf1"]
-size = Vector2(200, 800)
+size = Vector2(200, 983)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_in2r7"]
 size = Vector2(800, 1200)
@@ -118,7 +118,7 @@ position = Vector2(0, -850)
 texture = ExtResource("3_lukf2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -500)
+position = Vector2(0, -591.5)
 shape = SubResource("RectangleShape2D_wvbf1")
 
 [node name="Area2D" type="Area2D" parent="."]

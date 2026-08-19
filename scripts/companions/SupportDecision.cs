@@ -1,5 +1,4 @@
 using Godot;
-using Kuros.Items.Tags;
 
 namespace Kuros.Companions
 {
@@ -11,7 +10,6 @@ namespace Kuros.Companions
         public bool IsValid { get; init; }
         public string Intent { get; init; } = string.Empty;
         public string Target { get; init; } = "player";
-        public string ItemTag { get; init; } = string.Empty;
         public string Urgency { get; init; } = "medium";
         public float DurationSeconds { get; init; }
         public string Reason { get; init; } = string.Empty;
@@ -60,25 +58,6 @@ namespace Kuros.Companions
                 DurationSeconds = Mathf.Max(0f, durationSeconds),
                 Reason = reason ?? string.Empty,
                 Message = rawText ?? string.Empty,
-                SourceRule = sourceRule ?? string.Empty
-            };
-        }
-
-        public static SupportDecision UseSupportItem(
-            string sourceRule,
-            string reason,
-            string itemTag = ItemTagIds.Food,
-            string urgency = "high",
-            string target = "player")
-        {
-            return new SupportDecision
-            {
-                IsValid = true,
-                Intent = "use_support_item",
-                Target = string.IsNullOrWhiteSpace(target) ? "player" : target,
-                ItemTag = itemTag ?? string.Empty,
-                Urgency = string.IsNullOrWhiteSpace(urgency) ? "high" : urgency,
-                Reason = reason ?? string.Empty,
                 SourceRule = sourceRule ?? string.Empty
             };
         }
@@ -149,7 +128,6 @@ namespace Kuros.Companions
                 ["is_valid"] = IsValid,
                 ["intent"] = Intent,
                 ["target"] = Target,
-                ["item_tag"] = ItemTag,
                 ["urgency"] = Urgency,
                 ["duration"] = DurationSeconds,
                 ["reason"] = Reason,

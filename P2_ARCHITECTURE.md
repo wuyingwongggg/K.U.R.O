@@ -28,6 +28,11 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 ├── AI_Executor (P2SupportExecutor)              ← 执行层（意图白名单 → 动作）
 ├── AI_DecisionBridge (P2SupportDecisionBridge)  ← LLM 意图 → 本地意图映射 + 校验
 ├── AI_WeaponCarrier (P2WeaponCarrier)           ← 武器搬运（拾取/骨骼挂载/拖回/放置）
+├── GameStateProvider (GameStateProvider.cs)     ← 玩家/敌人/背包状态快照（LLM 事实层，原挂玩家，已迁移）
+├── OllamaClient (OllamaGenerateClient.cs)       ← LLM 通信层（Ollama /api/generate，原挂玩家，已迁移）
+├── AiDecisionBridge (AiDecisionBridge.cs)       ← LLM 请求编排（状态采集 + prompt 组装 + 响应解析，原挂玩家，已迁移）
+├── GameStateDebugPanel (CanvasLayer)            ← GameState 快照调试面板（原挂玩家，已迁移）
+├── AiOutputDebugPanel (CanvasLayer)             ← LLM 输出调试面板（原挂玩家，已迁移）
 ├── HitArea (Area2D)                             ← 受击判定区
 │   └── CollisionShape2D (RectangleShape2D)
 ├── StateMachine (StateMachine.cs)               ← 行为状态机（动画驱动）
@@ -62,7 +67,7 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 - 每 `EvaluateIntervalSeconds(0.5s)` 评估一次
 - **LLM 优先**（`EnableAiDecisionBridge`）：每 1s 请求本地 Ollama → 决策经映射+校验
 - **规则兜底**（按优先级）：
-  1. `low_hp_under_attack`（玩家 ≤35% HP 且被攻击 → 治疗）
+  1. `heal_low_hp`（玩家 ≤50% HP → 治疗技能；不 return，可落后续规则兜底）
   2. `enemy_too_close`（敌人 ≤320px → 护盾）
   3. `weapon_nearby`（CarryRange 内有武器 → 拾取）
   4. `quiet_scene_pickup`（无敌人 → 提示）
@@ -75,15 +80,14 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 
 | 意图 | 动作 |
 |---|---|
-| `trigger_support_skill` | 护盾技能（ApplyShield 24 点/6s）+ 播 action 动画 |
-| `use_support_item` | 食物治疗（ApplyHeal 18 点 × 装备倍率）+ 播 action 动画 |
+| `trigger_support_skill` | 护盾技能（ApplyShield）/ 治疗技能（ApplyHeal，按装备倍率）+ 播 action 动画 |
 | `show_hint` / `show_hint_raw` | Dialogic 气泡 |
 | `move_to` | 移动决策（`away_enemy` / `offset:x:y`） |
 | `fetch_weapon` | 武器拾取（交给 AI_WeaponCarrier） |
 | `hold` | 无动作 |
 
 - 治疗/护盾执行成功 → `TriggerAction()`（两阶段：切跟随接近玩家 → 距离 ≤ `FollowRangeMin` → 播 action 动画）
-- 技能/物品各自 CD（导出）
+- 治疗统一走技能路径（玩家背包食物路径已废弃）；技能 CD（导出）
 
 ### 3.4 AI_DecisionBridge（LLM 映射）
 
@@ -92,10 +96,10 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 | `retreat` / `reposition` | `move_to`（远离敌人） |
 | `loot` | `fetch_weapon` |
 | `use_skill` | `trigger_support_skill` |
-| `heal` / `use_item` / `use_support_item` | `use_support_item` |
+| `heal` / `use_item` / `use_support_item` | `trigger_support_skill`（target="heal" 治疗技能） |
 | `attack` / `switch_weapon` | `hold` |
 
-映射后过本地校验（满血禁治疗、无敌人禁技能）。
+映射后过本地校验（无敌人禁技能）。
 
 ### 3.5 AI_WeaponCarrier（武器搬运）
 

@@ -8,7 +8,7 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_otg7e"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="5"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_2sv5o"]
-[ext_resource type="Script" uid="uid://cddf4uyd7uwex" path="res://scripts/controllers/ShadowFollower.cs" id="5_ao33d"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_ao33d"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://b4v5ybpg1m84k" path="res://animations/spine/Enemy_B1_fat01.tres" id="6_2sv5o"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
@@ -21,7 +21,7 @@
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="15"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="16"]
 [ext_resource type="Script" uid="uid://b46a7dixq64qm" path="res://scripts/actors/enemies/animation/EnemyB1FatSpineAnimationController.cs" id="17"]
-[ext_resource type="Script" uid="uid://ctbvpnue2rlif" path="res://scripts/controllers/SpineController.gd" id="20_2sv5o"]
+[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="20_2sv5o"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("4_otg7e")
@@ -58,8 +58,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 15.0
+AttackDamage = 15
 MaxHealth = 200
+AiDescription = "蓝色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，行动迟缓，使用投机抓取客户"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_ao33d")
@@ -230,9 +231,8 @@ WarmupDuration = 1.0
 ActiveDuration = 0.11
 RecoveryDuration = 0.39
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-KnockbackDistance = 50.0
-KnockbackDuration = 0.1
-KnockbackSpeed = 1000.0
+KnockbackDistance = 200.0
+KnockbackDuration = 0.09999999999999999
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24

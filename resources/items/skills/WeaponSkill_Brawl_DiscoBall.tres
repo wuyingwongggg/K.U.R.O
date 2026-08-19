@@ -14,6 +14,7 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("3_k3bem")
 SkillId = "WeaponSkill_Brawl_DiscoBall"
 DisplayName = "迪斯科闪光球攻击"
+SkillType = 1
 AnimationName = "Weapon_Brawl_Iron"
 DamageMultiplier = 0.6
 ShowHitboxDebug = false

@@ -8,6 +8,10 @@ namespace Kuros.Actors.Enemies.Attacks
     {
         [Export] public PackedScene? Scene { get; set; }
 
+        /// <summary>唯一性组：实例化后特效节点加入此组（供攻击选择"场上是否已有该特效"检测）。
+        /// 空 = 不标记。特效销毁后组引用自动失效（检测时用 IsInstanceValid 过滤）。</summary>
+        [Export] public string UniqueGroup { get; set; } = string.Empty;
+
         public ActorEffect? InstantiateEffect()
         {
             if (Scene == null) return null;

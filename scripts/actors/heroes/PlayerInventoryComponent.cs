@@ -114,6 +114,8 @@ namespace Kuros.Actors.Heroes
         }
 
         // 事件
+        /// <summary>AddItemSmart 首次获得某物品时触发（拾取路径统一入口，图鉴/记忆数据源）。</summary>
+        public event Action<ItemDefinition>? ItemFirstAcquired;
         public event Action<ItemDefinition>? ItemPicked;
         public event Action<string>? ItemRemoved;
         public event Action<ItemDefinition>? WeaponEquipped;
@@ -339,8 +341,9 @@ namespace Kuros.Actors.Heroes
             // 如果成功添加了物品且是第一次获得，标记为已获得
             if (totalAdded > 0 && isFirstTime)
             {
+                ItemFirstAcquired?.Invoke(item);
                 MarkItemAsObtained(item);
-                
+
                 // 如果是第一次获得且需要显示弹窗，触发弹窗显示
                 if (showPopupIfFirstTime)
                 {
@@ -924,14 +927,15 @@ namespace Kuros.Actors.Heroes
 
         /// <summary>
         /// 当前已解锁的武器快捷栏槽位数 = MaxCarriedWeaponCount（单一数据源）。
-        /// Build 升级通过 UnlockWeaponSlot 增长该值；UI 锁图与 AddItemSmart 拾取范围共用。
+        /// 与 Build 等级解耦：仅由 Build 效果（解锁武器槽卡片）调用 UnlockWeaponSlot 增长；
+        /// UI 锁图与 AddItemSmart 拾取范围共用。
         /// </summary>
         public int GetUnlockedWeaponSlots()
         {
             return Mathf.Clamp(MaxCarriedWeaponCount, 1, Mathf.Max(1, MaxCarriedWeaponSlots));
         }
 
-        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 升级时调用）。</summary>
+        /// <summary>解锁一个武器槽位：MaxCarriedWeaponCount +1，封顶 MaxCarriedWeaponSlots（Build 解锁槽位效果调用）。</summary>
         public void UnlockWeaponSlot()
         {
             MaxCarriedWeaponCount = Mathf.Min(MaxCarriedWeaponCount + 1, Mathf.Max(1, MaxCarriedWeaponSlots));

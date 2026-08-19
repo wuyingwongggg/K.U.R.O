@@ -500,7 +500,7 @@ namespace Kuros.Actors.Heroes
 			// }
 		}
 
-	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)
+	public override bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 	{
 		if (damage > 0 && IsHitInvincible && !IsDeathSequenceActive && !IsDead)
 		{
@@ -508,15 +508,17 @@ namespace Kuros.Actors.Heroes
 			// 注意：不清零 Velocity，避免抹掉触发无敌的那次击退所赋予的速度。
 			_pendingHitKnockback = false;
 			GameLogger.Info(nameof(MainCharacter), $"{Name} is invincible and ignored incoming damage/knockback.");
-			return;
+			return false;
 		}
 
-		int previousHealth = CurrentHealth;
-		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
+		// 用基类返回值判断伤害是否被接受（合并窗口下扣血延迟到窗口到期结算，
+		// 不能用 CurrentHealth 前后比较——恒为相等会吞掉击退标记）
+		bool dealt = base.TakeDamage(damage, attackOrigin, attacker, damageSource, bypassMergeWindow);
 		// IgnoreHitStateOnDamage（如齿轮关节 buff）时连击退一起抑制：
 		// 敌人击退依赖 ConsumePendingHitKnockback，保留标记会导致不打断攻击却仍被击退
-		_pendingHitKnockback = CurrentHealth < previousHealth && !IgnoreHitStateOnDamage;
+		_pendingHitKnockback = dealt && !IgnoreHitStateOnDamage;
 		// 状态机会处理受伤状态切换，不需要额外逻辑
+		return dealt;
 	}
 
 	public bool ConsumePendingHitKnockback()

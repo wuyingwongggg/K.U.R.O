@@ -227,7 +227,7 @@ namespace Kuros.Builds.Machine
             var dead = new List<GameActor>();
             foreach (var (actor, timer) in _actorTimers)
             {
-                if (!GodotObject.IsInstanceValid(actor) || actor.IsDead)
+                if (!GodotObject.IsInstanceValid(actor) || actor.IsDeadOrDying)
                 {
                     dead.Add(actor);
                     continue;

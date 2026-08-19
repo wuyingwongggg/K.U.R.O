@@ -1,8 +1,11 @@
 using Godot;
+using System;
 using System.Collections.Generic;
+using Kuros.Actors.Heroes;
 using Kuros.Core;
 using Kuros.Core.Effects;
 using Kuros.Core.Events;
+using Kuros.Items;
 
 namespace Kuros.Effects
 {
@@ -41,6 +44,9 @@ namespace Kuros.Effects
         private Vector2 _coneDir;
         private bool _coneActive;
         private float _damageTickTimer;
+        private GameActor? _coneTarget;
+        private Node2D? _coneVisual;
+        private float _coneRemaining;
 
         public SoundWaveEffect()
         {
@@ -82,6 +88,31 @@ namespace Kuros.Effects
         {
             if (!_coneActive) return;
 
+            // 目标失效/死亡 → 锥形终止
+            if (_coneTarget == null || !IsInstanceValid(_coneTarget) || _coneTarget.IsDeadOrDying)
+            {
+                DeactivateCone();
+                return;
+            }
+
+            // 声波跟随被命中敌人移动（原点每帧刷新到敌人当前受击中心）
+            _coneOrigin = GetEnemyHitCenter(_coneTarget);
+            if (_coneVisual != null && IsInstanceValid(_coneVisual))
+            {
+                _coneVisual.GlobalPosition = _coneOrigin;
+            }
+
+            // 锥形持续时间结束 → 终止，之后的新命中可重新触发
+            if (Duration > 0f)
+            {
+                _coneRemaining -= (float)delta;
+                if (_coneRemaining <= 0f)
+                {
+                    DeactivateCone();
+                    return;
+                }
+            }
+
             _damageTickTimer += (float)delta;
             if (_damageTickTimer >= DamageInterval)
             {
@@ -95,7 +126,21 @@ namespace Kuros.Effects
             if (source != DamageSource.DirectAttack) return;
             if (Actor == null || attacker != Actor) return;
             if (damage <= 0) return;
-            if (target.IsDead) return;
+            if (target.IsDeadOrDying) return;
+
+            // 只有挂载本特效的武器命中才驱动锥形（其他武器的命中不触发、不刷新）
+            if (!IsHitFromEffectWeapon(attacker)) return;
+
+            if (_coneActive)
+            {
+                // 锥形激活期间：同一目标再次被该武器命中 → 刷新锥形持续时间（视觉重新生成，伤害周期计时不重置）
+                if (target == _coneTarget)
+                {
+                    _coneRemaining = Duration;
+                    RefreshConeVisual();
+                }
+                return;
+            }
 
             var origin = GetEnemyHitCenter(target);
             var coneDir = (origin - Actor.GlobalPosition).Normalized();
@@ -103,9 +148,11 @@ namespace Kuros.Effects
             _coneOrigin = origin;
             _coneDir = coneDir;
             _coneActive = true;
+            _coneTarget = target;
+            _coneRemaining = Duration;
             _damageTickTimer = 0f;
 
-            SpawnConeVisual(origin, coneDir);
+            _coneVisual = SpawnConeVisual(origin, coneDir);
             ApplyPeriodicDamage();
             ApplyConeSlow(origin, coneDir);
         }
@@ -121,7 +168,7 @@ namespace Kuros.Effects
             {
                 foreach (var node in tree.GetNodesInGroup("enemies"))
                 {
-                    if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
+                    if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDeadOrDying)
                         continue;
 
                     if (!IsEnemyInCone(enemy, _coneOrigin, _coneDir, halfAngleRad))
@@ -159,7 +206,7 @@ namespace Kuros.Effects
 
             foreach (var node in tree.GetNodesInGroup("enemies"))
             {
-                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDead)
+                if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDeadOrDying)
                     continue;
                 if (_slowedEnemies.ContainsKey(enemy))
                     continue;
@@ -180,12 +227,12 @@ namespace Kuros.Effects
             return Mathf.Abs(angle) <= halfAngleRad;
         }
 
-        private void SpawnConeVisual(Vector2 origin, Vector2 coneDir)
+        private Node2D? SpawnConeVisual(Vector2 origin, Vector2 coneDir)
         {
-            if (_coneTemplate == null) return;
+            if (_coneTemplate == null) return null;
 
             var clone = _coneTemplate.Duplicate() as Node2D;
-            if (clone == null) return;
+            if (clone == null) return null;
 
             clone.Visible = true;
             clone.GlobalPosition = origin;
@@ -238,6 +285,59 @@ namespace Kuros.Effects
                 clone.AddChild(timer);
                 timer.Start();
             }
+
+            return clone;
+        }
+
+        private void DeactivateCone()
+        {
+            _coneActive = false;
+            _coneTarget = null;
+            _coneVisual = null;
+        }
+
+        /// <summary>命中是否来自挂载本特效的武器：比对当前武器技能中特效条目的场景路径与本实例的场景路径。</summary>
+        private bool IsHitFromEffectWeapon(GameActor attacker)
+        {
+            // 直接挂载在角色身上的效果（非场景实例化）无法比对来源武器，保持旧行为
+            if (string.IsNullOrEmpty(SceneFilePath)) return true;
+
+            if (attacker is not SamplePlayer player) return false;
+
+            var weapon = player.InventoryComponent?.GetActiveCombatWeaponDefinition();
+            if (weapon != null
+                && !string.Equals(weapon.ItemId, "empty_item", StringComparison.OrdinalIgnoreCase)
+                && WeaponCarriesEffect(weapon))
+            {
+                return true;
+            }
+
+            return player.LeftHandItem != null
+                && !string.Equals(player.LeftHandItem.ItemId, "empty_item", StringComparison.OrdinalIgnoreCase)
+                && WeaponCarriesEffect(player.LeftHandItem);
+        }
+
+        private bool WeaponCarriesEffect(ItemDefinition weapon)
+        {
+            foreach (var skill in weapon.GetWeaponSkillDefinitions())
+            {
+                foreach (var entry in skill.Effects)
+                {
+                    if (entry?.EffectScene != null && entry.EffectScene.ResourcePath == SceneFilePath)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private void RefreshConeVisual()
+        {
+            if (_coneVisual != null && IsInstanceValid(_coneVisual))
+            {
+                _activeVisuals.Remove(_coneVisual);
+                _coneVisual.QueueFree();
+            }
+            _coneVisual = SpawnConeVisual(_coneOrigin, _coneDir);
         }
 
         private static Vector2 GetEnemyHitCenter(GameActor enemy)

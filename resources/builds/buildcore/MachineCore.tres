@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=3 format=3 uid="uid://orpyd8uc48vo"]
+[gd_resource type="Resource" script_class="BuildCoreDefinition" load_steps=4 format=3 uid="uid://orpyd8uc48vo"]
 
 [ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="1"]
 [ext_resource type="PackedScene" uid="uid://doo4rgx7btd4t" path="res://scenes/builds/MachineCore.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://binvuyk5j65a2" path="res://assets/ui/hp&exp_bar/boss图标.png" id="2_bqp2i"]
 
 [resource]
 script = ExtResource("1")
@@ -11,3 +12,4 @@ Description = "热量表：攻击和移动时累计热量，按下核心技能�
 BuildClass = "Machine"
 AllowedEffectClasses = Array[String](["Machine"])
 CoreEffectScene = ExtResource("2")
+Icon = ExtResource("2_bqp2i")

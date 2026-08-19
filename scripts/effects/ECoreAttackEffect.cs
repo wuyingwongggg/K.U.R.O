@@ -145,7 +145,7 @@ namespace Kuros.Fx
             var dead = new List<GameActor>();
             foreach (var (actor, timer) in _actorTimers)
             {
-                if (!GodotObject.IsInstanceValid(actor) || actor.IsDead)
+                if (!GodotObject.IsInstanceValid(actor) || actor.IsDeadOrDying)
                 {
                     dead.Add(actor);
                     continue;
@@ -176,8 +176,11 @@ namespace Kuros.Fx
             // 保证两次结算至少间隔 DamageInterval，堵住反复进出刷伤害的漏洞
             if (actor.GetSecondsSinceLastDamageTaken() < DamageInterval) return;
 
+            // 用 AreaEffect 而非 DirectAttack：电核跳伤害是持续区域伤害，若标记为直接攻击，
+            // 会触发玩家当前装备武器的全部 on-hit 效果（法棍/眩晕/击退等）——换装后电核残留的
+            // 每跳都会被误认成"当前武器的攻击"，导致跨武器串效果。
             DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+                DamageSource.AreaEffect, TargetableFactions, AllowSelfDamage, null);
         }
 
         // ── 碰撞回调 ──────────────────────────────────────────────

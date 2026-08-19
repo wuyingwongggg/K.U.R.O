@@ -50,11 +50,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -350.0
-offset_top = -300.0
+offset_top = -320.0
 offset_right = 350.0
-offset_bottom = 300.0
+offset_bottom = 320.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
@@ -65,80 +66,254 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="VolumeLabel" type="Label" parent="MenuPanel/VBoxContainer"]
+[node name="SettingsTabs" type="TabContainer" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "音量设置"
+size_flags_vertical = 3
+current_tab = 3
 
-[node name="MasterVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer"]
+[node name="VideoTab" type="Control" parent="MenuPanel/VBoxContainer/SettingsTabs"]
+visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "主音量:"
+metadata/_tab_index = 0
 
-[node name="MasterVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer"]
+[node name="Margin" type="MarginContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin"]
 layout_mode = 2
-value = 100.0
+theme_override_constants/separation = 10
 
-[node name="MusicVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "音乐音量:"
-
-[node name="MusicVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-value = 100.0
-
-[node name="SFXVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "音效音量:"
-
-[node name="SFXVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-value = 100.0
-
-[node name="HSeparator2" type="HSeparator" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-
-[node name="VideoLabel" type="Label" parent="MenuPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "视频设置"
-
-[node name="WindowModeLabel" type="Label" parent="MenuPanel/VBoxContainer"]
+[node name="WindowModeLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "窗口模式:"
 
-[node name="WindowModeOption" type="OptionButton" parent="MenuPanel/VBoxContainer"]
+[node name="WindowModeOption" type="OptionButton" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin/VBox"]
 layout_mode = 2
 
-[node name="HSeparator3" type="HSeparator" parent="MenuPanel/VBoxContainer"]
+[node name="CrtToggle" type="CheckButton" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin/VBox"]
 layout_mode = 2
+text = "CRT滤镜:"
 
-[node name="LanguageLabel" type="Label" parent="MenuPanel/VBoxContainer"]
+[node name="LanguageLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "语言:"
 
-[node name="LanguageOption" type="OptionButton" parent="MenuPanel/VBoxContainer"]
+[node name="LanguageOption" type="OptionButton" parent="MenuPanel/VBoxContainer/SettingsTabs/VideoTab/Margin/VBox"]
 layout_mode = 2
 
-[node name="HSeparator4" type="HSeparator" parent="MenuPanel/VBoxContainer"]
+[node name="AudioTab" type="Control" parent="MenuPanel/VBoxContainer/SettingsTabs"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Margin" type="MarginContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="VolumeLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "音量设置"
+
+[node name="MasterVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "主音量:"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+value = 100.0
+
+[node name="MusicVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "音乐音量:"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+value = 100.0
+
+[node name="SFXVolumeLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "音效音量:"
+
+[node name="SFXVolumeSlider" type="HSlider" parent="MenuPanel/VBoxContainer/SettingsTabs/AudioTab/Margin/VBox"]
+layout_mode = 2
+value = 100.0
+
+[node name="InputTab" type="Control" parent="MenuPanel/VBoxContainer/SettingsTabs"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Margin" type="MarginContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InputLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "输入设置"
+
+[node name="HintLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "点击\"改键\"后按下新按键（支持键盘与鼠标键）。按 ESC 取消。"
+autowrap_mode = 2
+
+[node name="HoldThresholdLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "长按判定时长:"
+
+[node name="HoldThresholdSlider" type="HSlider" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+min_value = 0.1
+max_value = 1.0
+step = 0.05
+value = 0.35
+
+[node name="HoldThresholdValueLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "0.35 秒"
+
+[node name="Scroll" type="ScrollContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RebindList" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox/Scroll"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ConfirmBindingsButton" type="Button" parent="MenuPanel/VBoxContainer/SettingsTabs/InputTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "确认改键"
+
+[node name="ApiTab" type="Control" parent="MenuPanel/VBoxContainer/SettingsTabs"]
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="Margin" type="MarginContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AIApiLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "AI 助手 API 设置"
+
+[node name="DescLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "配置 AI 助手（Yui）使用的语言模型服务。默认关闭——填写平台信息并测试连接成功后，再勾选\"启用 AI 助手\"。在线平台（DeepSeek/OpenAI/Gemini/Grok 等）选择 OpenAI 兼容并填写平台密钥；Claude 选择 Anthropic 原生；本地 Ollama 无需密钥。可从下方\"常用端点\"下拉框一键填入。"
+autowrap_mode = 2
+
+[node name="AIEnableToggle" type="CheckButton" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "启用 AI 助手"
+
+[node name="AIProviderLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "API 平台:"
+
+[node name="AIProviderOption" type="OptionButton" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
 layout_mode = 2
 
-[node name="CrtToggle" type="CheckButton" parent="MenuPanel/VBoxContainer"]
+[node name="AIEndpointLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
 layout_mode = 2
-text = "CRT滤镜:"
+theme_override_font_sizes/font_size = 16
+text = "服务地址:"
 
-[node name="HSeparator5" type="HSeparator" parent="MenuPanel/VBoxContainer"]
+[node name="AIEndpointRow" type="HBoxContainer" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AIEndpointPresetOption" type="OptionButton" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIEndpointRow"]
+custom_minimum_size = Vector2(168, 0)
+layout_mode = 2
+
+[node name="AIEndpointInput" type="LineEdit" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox/AIEndpointRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "输入完整 URL，或从左侧下拉选择常用端点"
+
+[node name="AIApiKeyLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "API 密钥:"
+
+[node name="AIApiKeyInput" type="LineEdit" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+placeholder_text = "本地 Ollama 留空即可"
+secret = true
+
+[node name="AIModelLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "模型名称:"
+
+[node name="AIModelInput" type="LineEdit" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+
+[node name="TestButton" type="Button" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "测试连接"
+
+[node name="TestResultLabel" type="Label" parent="MenuPanel/VBoxContainer/SettingsTabs/ApiTab/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 2
 
 [node name="BackButton" type="Button" parent="MenuPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "返回"
-
-[node name="RestartDialog" type="ConfirmationDialog" parent="MenuPanel"]
-title = "重新启动游戏"
-dialog_text = "修改分辨率需要重新启动游戏，是否立即重启？"

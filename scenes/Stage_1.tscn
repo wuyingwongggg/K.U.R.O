@@ -15,7 +15,8 @@
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_givaq")
 Player = NodePath("World/MainCharacter")
-LevelName = "关卡 0"
+LevelName = "住宅区D23_A091_1806"
+AiLevelDescription = "家，提供休整的地方，每次醒来后所待的地方"
 
 [node name="CameraZoneManager" type="Node" parent="." node_paths=PackedStringArray("TargetCamera", "Player")]
 script = ExtResource("2_tbvpk")

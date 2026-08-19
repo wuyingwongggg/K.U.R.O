@@ -11,6 +11,14 @@ public partial class SampleEnemy : GameActor
 	[ExportCategory("Behavior")]
 	[Export] public EnemyBehaviorConfig? BehaviorConfig { get; set; }
 
+	[ExportCategory("Boss HUD")]
+	/// <summary>是否为 Boss（end 关卡高血精英）：BossHUD 为其显示屏幕血条。</summary>
+	[Export] public bool IsBoss { get; set; } = false;
+	/// <summary>Boss 血条显示名（如"网管"）；为空则不显示名字；非 Boss 忽略。</summary>
+	[Export] public string DisplayName { get; set; } = string.Empty;
+	/// <summary>Boss 血条图标（png）；为空则不显示图标。</summary>
+	[Export] public Texture2D? BossIcon { get; set; }
+
 	[ExportCategory("Debug")]
 	[Export] public bool EnableStateDebugOverlay = false;
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);
@@ -210,6 +218,20 @@ public partial class SampleEnemy : GameActor
 		return IsPlayerInAttackRange();
 	}
 
+	/// <summary>该敌人当前是否正在执行指定攻击（攻击控制器当前子攻击匹配；无控制器返回 false）。</summary>
+	public bool IsAttackRunning(string attackName)
+	{
+		if (_cachedAttackController == null || !IsInstanceValid(_cachedAttackController))
+		{
+			var attackState = StateMachine?.GetNodeOrNull("Attack");
+			_cachedAttackController = attackState?.GetNodeOrNull<EnemyAttackController>("AttackController");
+		}
+
+		return _cachedAttackController != null
+			&& IsInstanceValid(_cachedAttackController)
+			&& _cachedAttackController.IsAttackRunning(attackName);
+	}
+
 	public void PerformAttack(TargetableFactions targetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem)
 	{
 		//AttackTimer = AttackCooldown;
@@ -220,14 +242,15 @@ public partial class SampleEnemy : GameActor
 
 	}
 
-	public override void TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack)
+	public override bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Kuros.Core.Events.DamageSource damageSource = Kuros.Core.Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 	{
-		base.TakeDamage(damage, attackOrigin, attacker, damageSource);
+		bool dealt = base.TakeDamage(damage, attackOrigin, attacker, damageSource, bypassMergeWindow);
 		// If we want to play hit animation manually since base FSM logic might not cover enemy without state machine
 		if (_animationPlayer != null)
 		{
 			 _animationPlayer.Play("animations/hit");
 		}
+		return dealt;
 	}
 
 	protected override void Die()

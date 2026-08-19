@@ -19,6 +19,11 @@ namespace Kuros.Core.Effects
         [Export(PropertyHint.Range, "0,600,0.1")] public float Duration = 5.0f;
         [Export(PropertyHint.Range, "0,10,1")] public int MaxStacks = 1;
 
+        [ExportGroup("Persistence")]
+        /// <summary>换武器时是否保留：效果实例不随武器卸载销毁，持续到自身生命周期结束。
+        /// 用于召唤物/护盾类跨武器存活的特效（如浮游炮、雨伞护盾）；防串清理默认生效。</summary>
+        [Export] public bool PersistOnWeaponSwitch = false;
+
         protected GameActor Actor { get; private set; } = null!;
         protected EffectController Controller { get; private set; } = null!;
 

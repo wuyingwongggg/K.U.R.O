@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootDropTable" load_steps=17 format=3 uid="uid://d13rra8f1j6ep"]
+[gd_resource type="Resource" script_class="LootDropTable" load_steps=19 format=3 uid="uid://d13rra8f1j6ep"]
 
 [ext_resource type="Resource" uid="uid://dsmyr3iwkk7n5" path="res://resources/items/Weapon_Brawl_MechGlove.tres" id="1_nfpv4"]
 [ext_resource type="Script" uid="uid://nd1f744icb05" path="res://scripts/systems/loot/LootDropEntry.cs" id="2_ctdqa"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="3_ay2wm"]
 [ext_resource type="Resource" uid="uid://deh2q01buwkpa" path="res://resources/items/Weapon_Slash_ViolinBow.tres" id="4_5ui7y"]
 [ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="4_7grpk"]
+[ext_resource type="Resource" uid="uid://bcl2h4rh8esrx" path="res://resources/items/Weapon_Stab_LaserPointer.tres" id="4_xbqcb"]
 [ext_resource type="Resource" uid="uid://cc5nnn2mscj2d" path="res://resources/items/Weapon_Slash_BunnySword.tres" id="5_xbqcb"]
 [ext_resource type="Resource" uid="uid://dip678pe3wgkx" path="res://resources/items/Weapon_Throw_Boomerang.tres" id="6_t4o13"]
 [ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="7_466fd"]
@@ -18,6 +19,11 @@ metadata/_custom_type_script = "uid://nd1f744icb05"
 [sub_resource type="Resource" id="Resource_sblno"]
 script = ExtResource("2_ctdqa")
 Item = ExtResource("3_ay2wm")
+metadata/_custom_type_script = "uid://nd1f744icb05"
+
+[sub_resource type="Resource" id="Resource_t4o13"]
+script = ExtResource("2_ctdqa")
+Item = ExtResource("4_xbqcb")
 metadata/_custom_type_script = "uid://nd1f744icb05"
 
 [sub_resource type="Resource" id="Resource_io2cn"]
@@ -47,8 +53,7 @@ metadata/_custom_type_script = "uid://nd1f744icb05"
 
 [resource]
 script = ExtResource("4_7grpk")
-GlobalDropChance = 0.5
 MaxDrops = 1
 ScatterRadius = 48.0
 DefaultImpulse = 400.0
-Entries = [SubResource("Resource_sx6ta"), SubResource("Resource_sblno"), SubResource("Resource_io2cn"), SubResource("Resource_cu0am"), SubResource("Resource_2hf78"), SubResource("Resource_pqwot"), SubResource("Resource_quygb")]
+Entries = [SubResource("Resource_sx6ta"), SubResource("Resource_sblno"), SubResource("Resource_t4o13"), SubResource("Resource_io2cn"), SubResource("Resource_cu0am"), SubResource("Resource_2hf78"), SubResource("Resource_pqwot"), SubResource("Resource_quygb")]

@@ -1,7 +1,39 @@
-[gd_scene load_steps=3 format=3 uid="uid://e7mxr5xyyopy"]
+[gd_scene load_steps=12 format=3 uid="uid://e7mxr5xyyopy"]
 
 [ext_resource type="Script" uid="uid://cncpk1v5nf41r" path="res://scripts/ui/GameOverScreen.cs" id="1_gameover"]
-[ext_resource type="Texture2D" uid="uid://deb3e8fiay8lt" path="res://assets/ui/失败画面gameover.png" id="2_ivj3t"]
+[ext_resource type="Texture2D" uid="uid://deb3e8fiay8lt" path="res://assets/ui/menu/失败画面gameover.png" id="2_ivj3t"]
+[ext_resource type="Texture2D" uid="uid://bj7ft0wwwcejr" path="res://assets/ui/menu/retry.png" id="3_ji2ly"]
+[ext_resource type="Texture2D" uid="uid://8cglfjbviqpl" path="res://assets/ui/menu/retry_light.png" id="4_ywx55"]
+[ext_resource type="Texture2D" uid="uid://brsptv63he56f" path="res://assets/ui/menu/retry_dark.png" id="5_bjr14"]
+[ext_resource type="Texture2D" uid="uid://t8yo87wb7q47" path="res://assets/ui/menu/stop.png" id="6_fvo5p"]
+[ext_resource type="Texture2D" uid="uid://ckb4vwvqjwg2k" path="res://assets/ui/menu/stop_light.png" id="7_fw14q"]
+[ext_resource type="Texture2D" uid="uid://co4dby2yaup0y" path="res://assets/ui/menu/stop_dark.png" id="8_ygoyj"]
+[ext_resource type="Shader" uid="uid://22dhdtos4g7s" path="res://shaders/ui/crt_effect.gdshader" id="9_bjr14"]
+[ext_resource type="Texture2D" uid="uid://ch1v5jbes2xo8" path="res://assets/ui/menu/界面黑底.png" id="9_ywx55"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fvo5p"]
+shader = ExtResource("9_bjr14")
+shader_parameter/overlay = false
+shader_parameter/scanlines_opacity = 0.0
+shader_parameter/scanlines_width = 0.0
+shader_parameter/grille_opacity = 0.0
+shader_parameter/resolution = Vector2(640, 480)
+shader_parameter/pixelate = false
+shader_parameter/roll = false
+shader_parameter/roll_speed = 0.0
+shader_parameter/roll_size = 0.0
+shader_parameter/roll_variation = 0.10000000149012
+shader_parameter/distort_intensity = 0.05
+shader_parameter/noise_opacity = 0.4
+shader_parameter/noise_speed = 5.0
+shader_parameter/static_noise_intensity = 0.06
+shader_parameter/aberration = 0.03
+shader_parameter/brightness = 1.4
+shader_parameter/discolor = false
+shader_parameter/warp_amount = 0.0
+shader_parameter/clip_warp = false
+shader_parameter/vignette_intensity = 1.0
+shader_parameter/vignette_opacity = 1.0
 
 [node name="GameOverScreen" type="Control"]
 layout_mode = 3
@@ -14,24 +46,36 @@ mouse_filter = 2
 script = ExtResource("1_gameover")
 TitleTexture = ExtResource("2_ivj3t")
 TitlePath = NodePath("TitleRect")
+RetryNormal = ExtResource("3_ji2ly")
+RetryHover = ExtResource("4_ywx55")
+RetryPressed = ExtResource("5_bjr14")
 RetryButtonPath = NodePath("ButtonRow/RetryButton")
+MenuNormal = ExtResource("6_fvo5p")
+MenuHover = ExtResource("7_fw14q")
+MenuPressed = ExtResource("8_ygoyj")
 MenuButtonPath = NodePath("ButtonRow/MenuButton")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="BG" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_fvo5p")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
-color = Color(0, 0, 0, 0.65)
+texture = ExtResource("9_ywx55")
 
 [node name="TitleRect" type="TextureRect" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -200.0
+offset_right = 500.0
+offset_bottom = 200.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -69,12 +113,18 @@ theme_override_constants/separation = 24
 alignment = 1
 
 [node name="RetryButton" type="TextureButton" parent="ButtonRow"]
-custom_minimum_size = Vector2(220, 64)
+custom_minimum_size = Vector2(200, 200)
+layout_direction = 2
 layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="MenuButton" type="TextureButton" parent="ButtonRow"]
-custom_minimum_size = Vector2(220, 64)
+custom_minimum_size = Vector2(200, 200)
+layout_direction = 2
 layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0

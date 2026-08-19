@@ -125,8 +125,9 @@ namespace Kuros.Effects
                 return;
             }
 
-            // 使用 CritBonus 来源，FloatingDamageTextManager 会将对应飘字升级为红色暴击显示
-            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus);
+            // 使用 CritBonus 来源，FloatingDamageTextManager 会将对应飘字升级为红色暴击显示；
+            // bypassMergeWindow：与基础伤害同帧即时结算，飘字合并机制会合并为一个总伤害数字
+            target.TakeDamage(bonusDamage, Actor.GlobalPosition, Actor, DamageSource.CritBonus, bypassMergeWindow: true);
 
             GD.Print($"[MechGloveEffect] 暴击触发！{TotalHitSteps} 段全中，追加伤害 {bonusDamage}，本段总伤害 {damage + bonusDamage}");
         }

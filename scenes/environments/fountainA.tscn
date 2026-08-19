@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://c777iljtwbejv"]
+
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="1_uae1x"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="2_nrohr"]
+[ext_resource type="Texture2D" uid="uid://bhsqucup02mds" path="res://assets/furnitures/hotel_scene3/FountainA.png" id="3_uae1x"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4do5r"]
+shader = ExtResource("1_uae1x")
+shader_parameter/softness = 0.5
+shader_parameter/alpha = 0.4
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2v3ts"]
+radius = 300.0
+height = 1100.0
+
+[node name="FountainA" type="RigidBody2D"]
+z_index = 2
+y_sort_enabled = true
+collision_mask = 7
+gravity_scale = 0.0
+can_sleep = false
+freeze = true
+freeze_mode = 1
+
+[node name="Shadow" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_4do5r")
+scale = Vector2(20, 10)
+texture = ExtResource("2_nrohr")
+offset = Vector2(0, 10)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_uae1x")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, 60)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_2v3ts")
