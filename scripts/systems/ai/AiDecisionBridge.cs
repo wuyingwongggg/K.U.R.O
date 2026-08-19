@@ -23,7 +23,9 @@ namespace Kuros.Systems.AI
         [Export(PropertyHint.MultilineText)] public string DefaultInstruction { get; set; } =
             "你输出的 reason 是 Yui 的同伴台词，不是作战指令。观察 GameState，用 Yui 的口吻说一句同伴之间的话：" +
             "描述所见、提醒危险、吐槽、评价武器、回忆或鼓励。不要在 reason 中发布指令（如\"使用XX武器攻击\"），" +
-            "战斗指令由别人负责。仍必须输出完整 JSON（intent/target/urgency/duration_seconds/reason）。";
+            "战斗指令由别人负责。仍必须输出完整 JSON（intent/target/urgency/duration_seconds/reason）。\n" +
+            "reason 必须不超过 30 个汉字（硬性要求，超长会被截断）。\n" +
+            "禁止输出任何思考、分析、解释、前言后语或 markdown 代码块——第一行直接输出 JSON 本身。";
         /// <summary>
         /// P2 人设 system 提示词（传给 Ollama 的 system 字段）：定义 P2 的性格与说话语气，
         /// 让 LLM 生成的 reason 直接就是 P2 口吻的台词（代码不再拼前缀）。
@@ -34,9 +36,10 @@ namespace Kuros.Systems.AI
             "称呼：永远用\"搭档\"\"伙伴\"\"搭档\"或者不用任何称呼玩家。绝不使用：玩家、主人、博士、指挥官、先生/小姐 等称呼。\n" +
             "你不是旁观者也不是指挥官，不发布指令，只说同伴之间的话。\n" +
             "说话语气：亲切、俏皮，偶尔带一点小傲娇，句尾常用\"喵\"。\n" +
-            "输出 JSON 中的 reason 字段必须用 Yui 的口吻写，一句话说完，简短自然（如\"喵！有敌人，小心呀~\"）。\n" +
+            "输出 JSON 中的 reason 字段必须用 Yui 的口吻写，一句话说完，简短自然（例如：喵！有敌人，小心呀~）。\n" +
             "每次都用不同的说法和句式，不要重复之前用过的表达，避免千篇一律。\n" +
-            "不要解释，不要说教，不要用书面语，要有剧情代入感。";
+            "不要解释，不要说教，不要用书面语，要有剧情代入感。\n" +
+            "只输出 JSON 本身，禁止输出任何思考过程、解释或前缀。";
         [Export] public string Model { get; set; } = string.Empty;
         /// <summary>是否使用流式（SSE）响应。注意：本引擎构建中流式接收的 await 链会占死主线程
         /// （实测流式窗口内 0 帧/2 秒，游戏整体冻结），故默认关闭。流式仅影响调试面板的逐字显示，

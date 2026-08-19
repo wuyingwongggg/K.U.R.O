@@ -170,6 +170,7 @@ navigation_polygon = SubResource("NavigationPolygon_eajhg")
 position = Vector2(-1985, 0)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
+EnemyScenes = Array[PackedScene]([])
 
 [node name="DarkCovers" type="Node2D" parent="."]
 z_index = 3
@@ -177,8 +178,8 @@ script = ExtResource("1_lightreveal")
 DarkLayerPath = NodePath("Sprite2D")
 SpotGroups = Array[Array]([[NodePath("Spot1"), NodePath("Spot5")], [NodePath("Spot2"), NodePath("Spot6")], [NodePath("Spot3"), NodePath("Spot7")], [NodePath("Spot4"), NodePath("Spot8")]])
 TriggerAreaPath = NodePath("../LightTrigger")
-SpotRadius = 400.0
-Softness = 100.0
+SpotRadius = 950.0
+Softness = 500.0
 FadeDurationSeconds = 0.30000000000000004
 
 [node name="Sprite2D" type="Sprite2D" parent="DarkCovers"]

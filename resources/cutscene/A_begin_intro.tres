@@ -21,6 +21,7 @@ script = ExtResource("4_egs0q")
 TimelinePath = "uid://byqakushe1a1y"
 CharacterPath = "uid://45lviakfu623"
 WaitForCompletion = false
+TimeoutSeconds = 2.0
 metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 
 [resource]

@@ -30,6 +30,7 @@ script = ExtResource("4_qpymk")
 TimelinePath = "uid://cxwovgu7iu4js"
 CharacterPath = "uid://45lviakfu623"
 WaitForCompletion = false
+TimeoutSeconds = 3.0
 metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 
 [resource]

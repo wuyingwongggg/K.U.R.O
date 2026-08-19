@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://cwxo7kb7t3hpn"]
+[gd_scene load_steps=27 format=3 uid="uid://cwxo7kb7t3hpn"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_s5qka"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_tvuic"]
@@ -15,11 +15,9 @@
 [ext_resource type="Texture2D" uid="uid://beh5ya8u5t3lx" path="res://assets/environments/scene_4_hotel/floor1.png" id="13_vhkln"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="14_lldk6"]
 [ext_resource type="PackedScene" uid="uid://de5p3deu3oubn" path="res://scenes/items/Furniture_D_waterMachineA.tscn" id="15_fkfi8"]
-[ext_resource type="PackedScene" uid="uid://cl78d0kyk70gm" path="res://scenes/items/Furniture_D_tableOfficeB_rwd.tscn" id="16_03csi"]
 [ext_resource type="PackedScene" uid="uid://dwurrf77iaxo2" path="res://scenes/items/Furniture_D_whiteBoardA.tscn" id="17_6sddf"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="18_3yfr3"]
 [ext_resource type="PackedScene" uid="uid://dixwca6u7ayek" path="res://scenes/items/Furniture_D_printerMachineA.tscn" id="19_6eail"]
-[ext_resource type="PackedScene" uid="uid://bfi78m3r4u4ay" path="res://scenes/items/Furniture_D_tableOfficeB_fwd.tscn" id="20_8vfac"]
 [ext_resource type="PackedScene" uid="uid://diism2n4xtftt" path="res://scenes/items/Furniture_A_chairOfficeB_fwd.tscn" id="21_4mce4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -195,18 +193,6 @@ position = Vector2(-1771, 1246)
 [node name="FurnitureWaterMachineA" parent="." instance=ExtResource("15_fkfi8")]
 position = Vector2(2068, -563)
 
-[node name="FurnitureTableOfficeB_rwd" parent="." instance=ExtResource("16_03csi")]
-position = Vector2(338, -370)
-
-[node name="FurnitureTableOfficeB_rwd2" parent="." instance=ExtResource("16_03csi")]
-position = Vector2(338, 60)
-
-[node name="FurnitureTableOfficeB_rwd7" parent="." instance=ExtResource("16_03csi")]
-position = Vector2(338, 920)
-
-[node name="FurnitureTableOfficeB_rwd8" parent="." instance=ExtResource("16_03csi")]
-position = Vector2(338, 1350)
-
 [node name="FurnitureWhiteBoard" parent="." instance=ExtResource("17_6sddf")]
 position = Vector2(-1663, -617)
 
@@ -216,29 +202,11 @@ position = Vector2(-749, -565)
 [node name="FurniturePrinterMachineA" parent="." instance=ExtResource("19_6eail")]
 position = Vector2(-1274, 1180)
 
-[node name="FurnitureTableOfficeB_fwd" parent="." instance=ExtResource("20_8vfac")]
-position = Vector2(-124, -369)
-
-[node name="FurnitureTableOfficeB_fwd2" parent="." instance=ExtResource("20_8vfac")]
-position = Vector2(-124, 62)
-
-[node name="FurnitureTableOfficeB_fwd3" parent="." instance=ExtResource("20_8vfac")]
-position = Vector2(-121, 920)
-
-[node name="FurnitureTableOfficeB_fwd4" parent="." instance=ExtResource("20_8vfac")]
-position = Vector2(-121, 1350)
-
 [node name="FurnitureChairOfficeB3" parent="." instance=ExtResource("18_3yfr3")]
 position = Vector2(-570, -45)
 
-[node name="FurnitureChairOfficeB_fwd" parent="." instance=ExtResource("21_4mce4")]
-position = Vector2(783, 11)
-
 [node name="FurnitureChairOfficeB_fwd2" parent="." instance=ExtResource("21_4mce4")]
 position = Vector2(-700, 800)
-
-[node name="FurnitureChairOfficeB_fwd3" parent="." instance=ExtResource("21_4mce4")]
-position = Vector2(846, 1070)
 
 [node name="FurniturePrinterMachineA2" parent="." instance=ExtResource("19_6eail")]
 position = Vector2(1462, -442)

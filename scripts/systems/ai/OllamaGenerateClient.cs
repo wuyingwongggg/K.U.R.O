@@ -51,8 +51,9 @@ namespace Kuros.Systems.AI
         [Export] public bool DefaultStream { get; set; } = false;
         /// <summary>请求超时（秒）。</summary>
         [Export(PropertyHint.Range, "1,600,1")] public int TimeoutSeconds { get; set; } = 120;
-        /// <summary>最大生成 token 数。</summary>
-        [Export(PropertyHint.Range, "16,4096,1")] public int MaxPredictTokens { get; set; } = 128;
+        /// <summary>最大生成 token 数。默认 512：Qwen 系模型思考可能未完全关闭（think=false 部分版本忽略），
+        /// 128 会被思考内容吃光导致 JSON 截断、parse 失败（"does not contain a JSON object"）。</summary>
+        [Export(PropertyHint.Range, "16,4096,1")] public int MaxPredictTokens { get; set; } = 512;
         /// <summary>采样温度（越低越确定性）。决策 JSON 结构化、模型指令跟随能力强，
         /// 0.7 下 intent/target 仍稳定而 reason（P2 台词）更多样化，降低台词雷同。</summary>
         [Export(PropertyHint.Range, "0,2,0.01")] public float Temperature { get; set; } = 0.7f;

@@ -29,7 +29,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath? SpritePath { get; set; }
 
         [ExportCategory("Impact")]
-        [Export] public PackedScene[] ImpactEffectScenes { get; set; } = Array.Empty<PackedScene>();
+        /// <summary>命中时的冲击效果条目（与 EnemyAttackTemplate.Effects 同机制：AttackEffectEntry = 场景 + 属性重载）。</summary>
+        [Export] public Godot.Collections.Array<AttackEffectEntry> ImpactEffects { get; set; } = new();
         [Export] public PackedScene? LandingIndicatorPrefab { get; set; }
 
         private Vector2 _startPos;
@@ -119,23 +120,32 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             SetPhysicsProcess(false);
 
-            foreach (var scene in ImpactEffectScenes)
+            foreach (var entry in ImpactEffects)
             {
-                if (scene == null) continue;
-                var fx = scene.Instantiate<Node>();
-                GetParent()?.AddChild(fx);
-                if (fx is Node2D fx2d)
-                    fx2d.GlobalPosition = GlobalPosition;
-                else
+                if (entry == null || entry.Scene == null) continue;
+                try
                 {
-                    foreach (var child in fx.GetChildren())
+                    // 与 EnemyAttackTemplate.SpawnSingleEffect 同套路：实例化 → AttackEffectEntry.ApplyOverrides 重载属性
+                    var fx = entry.Scene!.Instantiate();
+                    entry.ApplyOverrides(fx);
+                    GetParent()?.AddChild(fx);
+                    if (fx is Node2D fx2d)
+                        fx2d.GlobalPosition = GlobalPosition;
+                    else
                     {
-                        if (child is Node2D child2D)
+                        foreach (var child in fx.GetChildren())
                         {
-                            child2D.GlobalPosition = GlobalPosition;
-                            break;
+                            if (child is Node2D child2D)
+                            {
+                                child2D.GlobalPosition = GlobalPosition;
+                                break;
+                            }
                         }
                     }
+                }
+                catch (System.Exception ex)
+                {
+                    GD.PushWarning($"[EnemyMissileProjectile] 冲击效果实例化失败: {ex.Message}");
                 }
             }
 

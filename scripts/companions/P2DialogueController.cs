@@ -44,7 +44,7 @@ namespace Kuros.Companions
 
         private GodotObject? _dialogic;            // /root/Dialogic 单例引用
         private Callable _timelineEndedCallable;
-        private readonly Queue<string> _hintQueue = new();
+        private readonly List<string> _hintQueue = new();
         private bool _dialogicBusy;                // 气泡正在播放
         private bool _waitingForHintEnd;           // 等待当前气泡结束
         private int _hintGeneration;               // 气泡代际：抢占/取消时递增，失效旧气泡的自动结束计时器
@@ -200,7 +200,7 @@ namespace Kuros.Companions
             if (_dialogicBusy)
             {
                 if (_hintQueue.Count < Mathf.Max(1, MaxHintQueueSize))
-                    _hintQueue.Enqueue(hintKey);
+                    _hintQueue.Add(hintKey);
                 return;
             }
 
@@ -209,7 +209,8 @@ namespace Kuros.Companions
 
         /// <summary>显示运行时动态生成的文本（如 AI 个性台词），文本不在 DTL 中预定义。
         /// 通过 Dialogic 变量 "p2_hint_text" 注入后播放 p2_hint.dtl 的 label:direct。
-        /// 需在 Dialogic 编辑器 Variables 中预先定义 "p2_hint_text" 变量（默认值留空即可）。</summary>
+        /// 需在 Dialogic 编辑器 Variables 中预先定义 "p2_hint_text" 变量（默认值留空即可）。
+        /// AI 文本优先：正在播放时插到队列队首（先显示），队列满时丢弃队尾的普通内置文本腾位。</summary>
         public void PushHintDirect(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText))
@@ -219,9 +220,29 @@ namespace Kuros.Companions
             if (_dialogic == null || !IsInstanceValid(_dialogic))
                 return;
 
+            // 过场播放期间禁止触发 hint
+            var cutsceneManager = GetTree().GetFirstNodeInGroup("cutscene_manager");
+            if (cutsceneManager is Kuros.Systems.Cutscene.CutsceneManager cm && cm.IsPlaying)
+                return;
+
+            // 如果 Dialogic 正在播放非本 hint 的 Timeline（例如剧情对话），则放弃
+            var currentTimeline = _dialogic.Get("current_timeline");
+            if (currentTimeline.VariantType != Variant.Type.Nil && !_waitingForHintEnd)
+                return;
+
             // 在启动 timeline 前注入变量，label:direct 中的 {p2_hint_text} 会读取该值
             _dialogic.Get("VAR").AsGodotObject()?.Call("set_variable", "p2_hint_text", rawText);
-            PushHint("direct");
+
+            // 气泡播放中：AI 文本插队首（优先显示）；队列满丢弃队尾普通内置文本腾位
+            if (_dialogicBusy)
+            {
+                if (_hintQueue.Count >= Mathf.Max(1, MaxHintQueueSize))
+                    _hintQueue.RemoveAt(_hintQueue.Count - 1);
+                _hintQueue.Insert(0, "direct");
+                return;
+            }
+
+            StartDialogicHint("direct");
         }
 
         /// <summary>取消当前气泡并清空队列（P2 被隐藏/过场时由 Controller 调用）。</summary>
@@ -319,7 +340,11 @@ namespace Kuros.Companions
             _dialogicBusy = false;
 
             if (_hintQueue.Count > 0)
-                StartDialogicHint(_hintQueue.Dequeue());
+            {
+                string next = _hintQueue[0];
+                _hintQueue.RemoveAt(0);
+                StartDialogicHint(next);
+            }
         }
     }
 }

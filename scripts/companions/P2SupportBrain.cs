@@ -41,7 +41,7 @@ namespace Kuros.Companions
         [Export] public bool PersonalityChatterOnlyWhenSafe { get; set; } = false;
         [Export(PropertyHint.Range, "3,60,0.5")] public float PersonalityChatterMinIntervalSeconds { get; set; } = 14f;
         [Export(PropertyHint.Range, "0,1,0.01")] public float PersonalityChatterChance { get; set; } = 0.28f;
-        [Export(PropertyHint.Range, "8,80,1")] public int PersonalityChatterMaxChars { get; set; } = 26;
+        [Export(PropertyHint.Range, "8,80,1")] public int PersonalityChatterMaxChars { get; set; } = 40;
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float EvaluateIntervalSeconds { get; set; } = 0.5f;

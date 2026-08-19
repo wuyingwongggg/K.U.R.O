@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=7 format=3 uid="uid://bhqmvtwinno80"]
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=9 format=3 uid="uid://bhqmvtwinno80"]
 
 [ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_fqhds"]
 [ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="2_8cx4o"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_oiu8b"]
 [ext_resource type="Script" uid="uid://b4pd4ynf4k04p" path="res://scripts/systems/cutscene/steps/CameraMoveStep.cs" id="3_iy7qi"]
+[ext_resource type="Script" uid="uid://cnkygkr74mjs4" path="res://scripts/systems/cutscene/steps/DialogicStep.cs" id="4_iy7qi"]
 
 [sub_resource type="Resource" id="Resource_hubsw"]
 script = ExtResource("2_oiu8b")
@@ -24,7 +25,15 @@ FollowDuration = 2.5
 StayAtTargetAfterFollow = false
 metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
 
+[sub_resource type="Resource" id="Resource_1kk5k"]
+script = ExtResource("4_iy7qi")
+TimelinePath = "uid://7lckoenfpv5w"
+CharacterPath = "uid://45lviakfu623"
+WaitForCompletion = false
+TimeoutSeconds = 3.0
+metadata/_custom_type_script = "uid://cnkygkr74mjs4"
+
 [resource]
 script = ExtResource("2_8cx4o")
 SequenceId = "D_end_intro"
-Steps = Array[ExtResource("1_fqhds")]([SubResource("Resource_hubsw"), SubResource("Resource_n254o")])
+Steps = Array[ExtResource("1_fqhds")]([SubResource("Resource_hubsw"), SubResource("Resource_n254o"), SubResource("Resource_1kk5k")])

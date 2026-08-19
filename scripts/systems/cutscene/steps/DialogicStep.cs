@@ -44,6 +44,12 @@ namespace Kuros.Systems.Cutscene
         /// </summary>
         [Export] public bool WaitForCompletion { get; set; } = true;
 
+        /// <summary>
+        /// 定时结束（秒）：0 = 不超时。大于 0 时，Timeline 启动后超过此时长（无论玩家是否看完文本）
+        /// 强制调用 end_timeline() 结束对话，继续后续过场步骤。用于防止过长对话卡住流程。
+        /// </summary>
+        [Export(PropertyHint.Range, "0,120,0.5")] public float TimeoutSeconds { get; set; } = 0f;
+
         public override async Task Execute(CutsceneContext ctx)
         {
             if (string.IsNullOrEmpty(TimelinePath))
@@ -98,16 +104,41 @@ namespace Kuros.Systems.Cutscene
             // 非阻塞模式：启动后立即返回，对话在后台继续
             if (!WaitForCompletion)
             {
+                // 非阻塞 + 定时结束：后台定时器到时强制 end_timeline（timelineEnded 已结束则跳过）
+                if (TimeoutSeconds > 0f)
+                {
+                    GD.Print($"[DialogicStep] 非阻塞 + 定时结束（{TimeoutSeconds} 秒）: {TimelinePath}");
+                    ctx.Manager.GetTree().CreateTimer(TimeoutSeconds).Timeout += () =>
+                    {
+                        if (timelineEnded) return;
+                        if (dialogic.HasMethod("end_timeline"))
+                        {
+                            dialogic.Call("end_timeline");
+                            GD.Print($"[DialogicStep] 非阻塞超时（{TimeoutSeconds} 秒），已调用 end_timeline");
+                        }
+                    };
+                }
                 GD.Print($"[DialogicStep] 非阻塞模式，Timeline 已启动: {TimelinePath}");
                 return;
             }
 
-            // 阻塞模式：等待 timeline_ended 或 skip
+            // 阻塞模式：等待 timeline_ended / skip / 超时
+            ulong startMs = Time.GetTicksMsec();
+            float timeoutMs = TimeoutSeconds > 0f ? TimeoutSeconds * 1000f : 0f;
+            bool timedOut = false;
             while (!timelineEnded && !ctx.IsSkipping)
+            {
+                if (timeoutMs > 0f && Time.GetTicksMsec() - startMs >= timeoutMs)
+                {
+                    timedOut = true;
+                    GD.Print($"[DialogicStep] 超时（{TimeoutSeconds} 秒），强制结束 Timeline: {TimelinePath}");
+                    break;
+                }
                 await ctx.NextFrame();
+            }
 
-            // 若被 skip，强制结束 Timeline
-            if (ctx.IsSkipping && !timelineEnded)
+            // 若被 skip 或超时，强制结束 Timeline
+            if ((ctx.IsSkipping || timedOut) && !timelineEnded)
             {
                 // 断开信号防止重复触发
                 if (dialogic.IsConnected("timeline_ended", onEnded))
@@ -116,7 +147,7 @@ namespace Kuros.Systems.Cutscene
                 if (dialogic.HasMethod("end_timeline"))
                 {
                     dialogic.Call("end_timeline");
-                    GD.Print("[DialogicStep] 被 skip，已调用 end_timeline");
+                    GD.Print($"[DialogicStep] 强制结束（skip={(ctx.IsSkipping ? "y" : "n")} timeout={(timedOut ? "y" : "n")}），已调用 end_timeline");
                 }
             }
 

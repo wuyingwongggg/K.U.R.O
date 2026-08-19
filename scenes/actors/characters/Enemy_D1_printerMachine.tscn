@@ -1,32 +1,32 @@
 [gd_scene load_steps=37 format=3 uid="uid://cpcvmvf2n5ahe"]
 
-[ext_resource type="Script" uid="uid://bfrb0xpgul18i" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
-[ext_resource type="Script" uid="uid://d2sy6q8lksykw" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
+[ext_resource type="Script" uid="uid://c27ux0mic6wyu" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
+[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_effect"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_v1b7h"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shader"]
-[ext_resource type="Script" uid="uid://cddf4uyd7uwex" path="res://scripts/controllers/ShadowFollower.cs" id="5_sm6sb"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_sm6sb"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_texture"]
-[ext_resource type="SpineSkeletonDataResource" uid="uid://crsmt4wcnw7oo" path="res://animations/spine/Enemy_D1_PrinterMachine.tres" id="6_spine"]
-[ext_resource type="Script" uid="uid://ctbvpnue2rlif" path="res://scripts/controllers/SpineController.gd" id="7_spine_ctrl"]
+[ext_resource type="SpineSkeletonDataResource" uid="uid://crsmt4wcnw7oo" path="res://animations/spine/Enemy_D1_printerMachine.tres" id="6_spine"]
+[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="7_spine_ctrl"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="8_fsm"]
-[ext_resource type="Script" uid="uid://ch3u7tfeu0u3l" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="9_idle"]
-[ext_resource type="Script" uid="uid://c6vkojv6k0700" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_walk"]
+[ext_resource type="Script" uid="uid://dy6nxg6ncc1dl" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="9_idle"]
+[ext_resource type="Script" uid="uid://ca6my22csxkmt" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_walk"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="11_k1kh3"]
-[ext_resource type="Script" uid="uid://c6die16w2y0r3" path="res://scripts/actors/enemies/attacks/EnemyD1PrinterMachineAttackController.cs" id="12_attack_ctrl"]
+[ext_resource type="Script" uid="uid://6waciqsaulrs" path="res://scripts/actors/enemies/attacks/EnemyD1PrinterMachineAttackController.cs" id="12_attack_ctrl"]
 [ext_resource type="PackedScene" uid="uid://ciwdkf08qw7ao" path="res://resources/effects/EnemyPrinterMachineMissile01AttackEffect.tscn" id="13_6yk7q"]
-[ext_resource type="Script" uid="uid://4tapmxqqwado" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="13_throw"]
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_sm6sb"]
+[ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="13_throw"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_sm6sb"]
 [ext_resource type="PackedScene" uid="uid://b0s34oo0gj8op" path="res://shaders/enemy_paperBullet.tscn" id="15_6yk7q"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="15_melee"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="16_hit"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="17_frozen"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="18_cooldown"]
-[ext_resource type="Script" uid="uid://bprxf1sr1x5q4" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="19_keepdist"]
+[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="19_keepdist"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="20_dying"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="21_dead"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="22_freeze"]
-[ext_resource type="Script" uid="uid://cany2u01suwmi" path="res://scripts/actors/enemies/animation/EnemyD1PrinterMachineSpineAnimationController.cs" id="23_anim_ctrl"]
+[ext_resource type="Script" uid="uid://dr5ujqi8ucjjo" path="res://scripts/actors/enemies/animation/EnemyD1PrinterMachineSpineAnimationController.cs" id="23_anim_ctrl"]
 
 [sub_resource type="Resource" id="Resource_behavior"]
 script = ExtResource("2_config")
@@ -55,7 +55,7 @@ radius = 1024.0
 size = Vector2(800, 800)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_collision"]
-radius = 300.0
+radius = 150.0
 
 [sub_resource type="Resource" id="Resource_k1kh3"]
 script = ExtResource("14_sm6sb")
@@ -82,13 +82,14 @@ DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 Speed = 400
 AttackDamage = 0
+AttackCooldown = 3.0
 MaxHealth = 100
+AiDescription = "安保无人机，普通敌人，似乎错误的把我们识别为非法入侵对象，伪装成打印机的样子，当客户接近时暴露伪装从打印机转变成无人机模式，使用高射炮和高速飞行的A4纸攻击客户"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_v1b7h")
 DamageFlashColor = Color(18.892, 18.892, 18.892, 1)
 
-AiDescription = "安保无人机，普通敌人，似乎错误的把我们识别为非法入侵对象，伪装成打印机的样子，当客户接近时暴露伪装从打印机转变成无人机模式，使用高射炮和高速飞行的A4纸攻击客户"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
@@ -201,7 +202,6 @@ position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_hit")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 shape = SubResource("CircleShape2D_collision")
 
 [node name="Node2D" type="Node2D" parent="."]

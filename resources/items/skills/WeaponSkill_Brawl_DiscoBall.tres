@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_gwghm"]
 [ext_resource type="PackedScene" uid="uid://dyh38a1m2n8oj" path="res://resources/effects/DiscoFlashStunEffect.tscn" id="2_dis_stun"]
-[ext_resource type="Script" uid="uid://cvprs5lr1h4sp" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_k3bem"]
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_k3bem"]
 
 [sub_resource type="Resource" id="Resource_dis_stun"]
 script = ExtResource("1_gwghm")
