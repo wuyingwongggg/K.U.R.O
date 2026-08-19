@@ -11,12 +11,12 @@
 [ext_resource type="Texture2D" uid="uid://cgw7csa67dgn4" path="res://assets/environments/scene_4_hotel/floor2.png" id="8_qabdi"]
 [ext_resource type="Texture2D" uid="uid://bmoau1a7flcvs" path="res://assets/environments/scene_4_hotel/wall5.png" id="9_bbiyg"]
 [ext_resource type="PackedScene" uid="uid://cn3woqsyy4see" path="res://scenes/environments/elevatorGate_D.tscn" id="10_jogmq"]
-[ext_resource type="PackedScene" uid="uid://dixwca6u7ayek" path="res://scenes/items/Furniture_D_printerMachineA.tscn" id="12_txipu"]
 [ext_resource type="PackedScene" uid="uid://bah3sya2wxtwv" path="res://scenes/items/Furniture_D_tableOfficeB.tscn" id="13_wglre"]
 [ext_resource type="PackedScene" uid="uid://o7ewxdu8bt76" path="res://scenes/items/Furniture_D_tableOfficeB_bwd.tscn" id="14_ms071"]
 [ext_resource type="PackedScene" uid="uid://de5p3deu3oubn" path="res://scenes/items/Furniture_D_waterMachineA.tscn" id="15_qabdi"]
 [ext_resource type="PackedScene" uid="uid://c6hw6lffbuhlb" path="res://scenes/items/Furniture_D_chairOfficeC.tscn" id="16_bbiyg"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="17_jogmq"]
+[ext_resource type="PackedScene" uid="uid://diism2n4xtftt" path="res://scenes/items/Furniture_A_chairOfficeB_fwd.tscn" id="17_qabdi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(5500, 2800)
@@ -52,8 +52,8 @@ size = Vector2(700, 700)
 size = Vector2(300, 200)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2298, 1016, 2405.25, 1016, 2405.2031, 1146, 2298, 1146, -2240, 901, -2066, 5, -1398, 5, -1398, 291, -1730, 901, -938, 291, -938, 59, -383, 59, -383, 326, -818, 1246, 77, 326, 77, 59, 283, 59, 283, 62, 1089, 62, 1089, 63, 834, 939, 92, 1246, 1999, 63, 1999, -325, 2298, -325, 2298, 1513, 1957, 1513, 1957, 1285, 1662, 1285, 1662, 1248, 1344, 1248, 1344, 939, 834, 1248, 752, 1248, 752, 1252, 92, 1252, -818, 1253, -1470, 1253, -1470, 1247, -1730, 1247, -2240, 1247, -2380, 1247, -2594, -325, -2380, 1513, -2594, 1513, -2066, -325)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8), PackedInt32Array(9, 10, 11, 12, 13), PackedInt32Array(14, 15, 16, 17), PackedInt32Array(14, 17, 18, 19, 20, 21), PackedInt32Array(22, 23, 24, 0), PackedInt32Array(3, 25, 26, 27), PackedInt32Array(27, 28, 29), PackedInt32Array(29, 30, 31), PackedInt32Array(20, 32, 33, 21), PackedInt32Array(33, 34, 35, 21), PackedInt32Array(9, 13, 36, 37, 38, 7), PackedInt32Array(38, 39, 8, 7), PackedInt32Array(4, 40, 41, 42), PackedInt32Array(41, 43, 44, 42), PackedInt32Array(4, 42, 45, 5), PackedInt32Array(19, 22, 0, 3, 27, 29, 31), PackedInt32Array(19, 31, 20), PackedInt32Array(14, 21, 13, 12)])
+vertices = PackedVector2Array(2298, 1016, 2405.25, 1016, 2405.2031, 1146, 2298, 1146, -2240, 901, -2117, 63, -1393, 63, -1393, 298, -1730, 901, -933, 298, -933, 59, -386, 59, -386, 295, -621, 941, -818, 1246, 74, 295, 74, 59, 283, 59, 283, 62, 568, 62, 568, 329, -111, 941, 1078, 329, 1078, 62, 1089, 62, 1089, 63, 1999, 63, 1999, -349, 2298, -349, 2298, 1513, 1957, 1513, 1957, 1285, 1662, 1285, 1662, 1248, 1344, 1248, 1344, 939, 834, 939, 834, 1248, 752, 1248, 92, 1246, 752, 1252, 92, 1252, -111, 1246, -621, 1246, -818, 1253, -1470, 1253, -1470, 1247, -1730, 1247, -2240, 1247, -2380, 1247, -2594, -349, -2380, 1513, -2594, 1513, -2117, -349)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8), PackedInt32Array(9, 10, 11, 12, 13, 14), PackedInt32Array(15, 16, 17, 18), PackedInt32Array(15, 18, 19, 20, 21), PackedInt32Array(22, 23, 24, 25), PackedInt32Array(26, 27, 28, 0), PackedInt32Array(3, 29, 30, 31), PackedInt32Array(31, 32, 33), PackedInt32Array(33, 34, 35), PackedInt32Array(36, 37, 38, 39, 21, 20), PackedInt32Array(38, 40, 41, 39), PackedInt32Array(39, 42, 21), PackedInt32Array(13, 43, 14), PackedInt32Array(14, 44, 45, 46, 7, 9), PackedInt32Array(46, 47, 8, 7), PackedInt32Array(4, 48, 49, 50), PackedInt32Array(49, 51, 52, 50), PackedInt32Array(4, 50, 53, 5), PackedInt32Array(22, 25, 26, 0, 3, 31, 33, 35), PackedInt32Array(22, 35, 36, 20), PackedInt32Array(12, 15, 21, 13)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2674, -1241, 2486, -1224, 2485, 1762, -2674, 1754)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -236,9 +236,6 @@ visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 
-[node name="FurniturePrinterMachineA" parent="." instance=ExtResource("12_txipu")]
-position = Vector2(-1534, -426)
-
 [node name="FurnitureTableOfficeB" parent="." instance=ExtResource("13_wglre")]
 position = Vector2(-731, -557)
 
@@ -270,13 +267,22 @@ position = Vector2(1329, 1192)
 position = Vector2(1889, 1229)
 
 [node name="FurnitureChairOfficeC" parent="." instance=ExtResource("16_bbiyg")]
-position = Vector2(-1046, -135)
+position = Vector2(-1041, -128)
 
 [node name="FurnitureChairOfficeC2" parent="." instance=ExtResource("16_bbiyg")]
-position = Vector2(-31, -100)
+position = Vector2(-34, -131)
 
 [node name="FurnitureChairOfficeB" parent="." instance=ExtResource("17_jogmq")]
 position = Vector2(-1863, 870)
 
 [node name="FurnitureChairOfficeB2" parent="." instance=ExtResource("17_jogmq")]
 position = Vector2(1211, 908)
+
+[node name="FurnitureTableOfficeB5" parent="." instance=ExtResource("13_wglre")]
+position = Vector2(-1540, -553)
+
+[node name="FurnitureChairOfficeB_fwd" parent="." instance=ExtResource("17_qabdi")]
+position = Vector2(945, -112)
+
+[node name="FurnitureChairOfficeB_fwd2" parent="." instance=ExtResource("17_qabdi")]
+position = Vector2(-244, 910)

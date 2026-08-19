@@ -23,6 +23,9 @@ namespace Kuros.Fx
         /// </summary>
         public Vector2? FixedDirection { get; set; }
 
+        /// <summary>当前飞行速度向量（未飞行时为 Zero）。子类可用其正交方向实现"垂直发射"。</summary>
+        public Vector2 Velocity => _velocity;
+
         [ExportCategory("Timing")]
         /// <summary>飞行阶段时长。到期后进入 despawn。</summary>
         [Export(PropertyHint.Range, "0.01,30,0.01")] public float Duration = 8.0f;

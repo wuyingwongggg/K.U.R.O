@@ -11,7 +11,7 @@
 [sub_resource type="Resource" id="Resource_beepy"]
 script = ExtResource("1_beepy")
 AttributeId = "attack_power"
-Value = 20.0
+Value = 60.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_v7bbq"]

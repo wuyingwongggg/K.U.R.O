@@ -1,0 +1,253 @@
+[gd_scene load_steps=21 format=3 uid="uid://bwslmpxjkjcu5"]
+
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_ss8t0"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_30h37"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_ob5nh"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_x5kc1"]
+[ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="6_6ewcc"]
+[ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="7_ujict"]
+[ext_resource type="Texture2D" uid="uid://bd5p3dbno4dai" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_qw5cp"]
+[ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="9_857wi"]
+[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_u4tg5"]
+[ext_resource type="Texture2D" uid="uid://brk1t88wdisc" path="res://assets/environments/scene_3_hotel/窗户玻璃反射.png" id="11_mg48k"]
+[ext_resource type="Texture2D" uid="uid://beh5ya8u5t3lx" path="res://assets/environments/scene_4_hotel/floor1.png" id="12_xqmjc"]
+[ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="13_13pey"]
+[ext_resource type="PackedScene" uid="uid://dixwca6u7ayek" path="res://scenes/items/Furniture_D_printerMachineA.tscn" id="18_rfle6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
+size = Vector2(5050, 2800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5prnb"]
+size = Vector2(5280, 2800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mxkb7"]
+size = Vector2(5000, 2800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7mqiy"]
+size = Vector2(400, 2500)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ainwx"]
+size = Vector2(6000, 750)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4duw5"]
+size = Vector2(6000, 700)
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
+vertices = PackedVector2Array(2395, 604, 2427.2266, -545, 2416.4922, 1290, 2387, 1164, 2395, 294, 2372, 12, 2372, -298, 1300, -396, 1300, 14, 1296, -15, 1296, -325, 1319, 759, 1319, 1169, 1318, 1162, 1318, 852, 2387, 854, 1319, 193, 1319, 603, 1304, 579, 1304, 269, -2538.211, 1290, 2139, 1169, 2139, 294, 2139, 193, 2120, 12, 2120, 14, 1045, 170, 2035, 604, 2139, 759, 1045, 269, 225, 170, 225, 261, -20, 261, -20, 158, 214, -10, -840, 158, -840, 246, -1078, 246, -1078, 147, -856, -13, -1078, 557, -1078, 556, -840, 556, -840, 568, -848, 746, -1067, 743, -120, 568, -120, 571, 225, 571, 225, 580, -28, 746, 1049, 747, 1045, 580, 1045, 579, 2035, 603, 2139, 854, 1049, 852, 229, 747, 229, 851, -28, 851, -848, 834, -1067, 834, -1067, 1153, -1067, 1144, -848, 1144, -848, 1156, -113, 1156, -113, 1161, 247, 1161, 247, 1157, 958, 1157, 958, 1162, 2139, 1164, -1887, 1153, -1887, 743, -2554.0781, -545, -1898, 557, 2120, -298, 2120, -396, 1034, -420, 1034, -325, 214, -420, 214, -327, -36, -327, -36, -423, -856, -423, -856, -340, -1088, -340, -1088, -429, -1088, -19, -1088, -30, -856, -30, -36, -13, -36, -17, 214, -17, 1034, -10, 1034, -15, -1898, 147, -1908, -19, -1908, -429)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(1, 0, 4), PackedInt32Array(1, 4, 5, 6), PackedInt32Array(7, 8, 9, 10), PackedInt32Array(11, 12, 13, 14), PackedInt32Array(0, 3, 15), PackedInt32Array(16, 17, 18, 19), PackedInt32Array(3, 2, 20, 21), PackedInt32Array(5, 4, 22, 23), PackedInt32Array(24, 5, 23, 25), PackedInt32Array(8, 25, 23, 16, 26), PackedInt32Array(27, 0, 15, 28), PackedInt32Array(19, 29, 26, 16), PackedInt32Array(30, 31, 32, 33, 34), PackedInt32Array(35, 36, 37, 38, 39), PackedInt32Array(40, 41, 42, 43, 44, 45), PackedInt32Array(43, 46, 47, 44), PackedInt32Array(47, 48, 49, 50, 44), PackedInt32Array(51, 52, 53, 18, 17, 11, 14), PackedInt32Array(17, 54, 27, 11), PackedInt32Array(15, 55, 28), PackedInt32Array(27, 28, 11), PackedInt32Array(14, 56, 51), PackedInt32Array(49, 52, 51, 57, 50), PackedInt32Array(57, 58, 59, 50), PackedInt32Array(44, 60, 61, 45), PackedInt32Array(62, 63, 64, 65), PackedInt32Array(65, 66, 67, 20), PackedInt32Array(68, 69, 70, 71), PackedInt32Array(21, 72, 3), PackedInt32Array(12, 21, 20), PackedInt32Array(13, 12, 20, 71), PackedInt32Array(68, 71, 20, 67), PackedInt32Array(62, 65, 20, 73), PackedInt32Array(74, 73, 20, 75, 76), PackedInt32Array(6, 77, 78, 1), PackedInt32Array(75, 1, 78, 79), PackedInt32Array(10, 80, 79, 7), PackedInt32Array(81, 82, 83, 84), PackedInt32Array(85, 86, 87, 88), PackedInt32Array(89, 90, 91, 39, 38), PackedInt32Array(92, 93, 94, 34, 33), PackedInt32Array(95, 96, 9, 8, 26), PackedInt32Array(40, 45, 74, 76), PackedInt32Array(97, 76, 75, 98), PackedInt32Array(95, 26, 30, 34), PackedInt32Array(92, 33, 35, 39), PackedInt32Array(89, 38, 97, 98), PackedInt32Array(99, 98, 75), PackedInt32Array(88, 99, 75), PackedInt32Array(78, 7, 79), PackedInt32Array(75, 79, 81, 84), PackedInt32Array(88, 75, 84, 85)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2641, -1344, 2512, -1360, 2495, 1543, -2616, 1546)])
+source_geometry_mode = 2
+agent_radius = 80.0
+
+[node name="D9" type="Node2D"]
+y_sort_enabled = true
+
+[node name="PlayerSpawnPoint" type="Node2D" parent="."]
+position = Vector2(-2000, 850)
+
+[node name="AreaSize" type="Area2D" parent="."]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AreaSize"]
+z_index = 10
+shape = SubResource("RectangleShape2D_1mlw7")
+debug_color = Color(0.6428762, 0.52304673, 0.06685588, 0.41960785)
+
+[node name="CameraZone" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("1_ss8t0")
+ZoneName = "Room_Zone_D9"
+CameraLimitTop = -1400
+CameraLimitBottom = 1400
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
+z_index = 10
+position = Vector2(-115, 0)
+shape = SubResource("RectangleShape2D_5prnb")
+debug_color = Color(0, 1, 0, 0.41960785)
+
+[node name="BattleArena" type="Area2D" parent="." node_paths=PackedStringArray("TriggerArea")]
+visible = false
+z_index = 10
+script = ExtResource("2_30h37")
+ArenaSize = Vector2(5000, 2800)
+BoundaryCollisionLayer = 6
+BoundaryCollisionMask = 6
+EnemyDetectionMask = 2
+TriggerArea = NodePath("../WaveSpawnManager/TriggerArea")
+ShowDebugOverlayInGame = true
+DebugLineWidth = 8.0
+DebugPointRadius = 16.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BattleArena"]
+shape = SubResource("RectangleShape2D_mxkb7")
+
+[node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
+script = ExtResource("3_ob5nh")
+WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2")])
+WaveClearDelay = 0.0
+PollInterval = 0.30000000000000004
+TriggerArea = NodePath("TriggerArea")
+BattleArenaPath = NodePath("../BattleArena")
+
+[node name="TriggerArea" type="Area2D" parent="WaveSpawnManager"]
+top_level = true
+position = Vector2(-2000, 350)
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WaveSpawnManager/TriggerArea"]
+shape = SubResource("RectangleShape2D_7mqiy")
+debug_color = Color(1, 0, 0, 0.19607843)
+
+[node name="EnemySpawneManager" type="Node2D" parent="."]
+visible = false
+top_level = true
+z_index = 10
+position = Vector2(0, 356)
+script = ExtResource("4_x5kc1")
+EnemyScenes = Array[PackedScene]([ExtResource("6_6ewcc")])
+MultiEnemySelectionMode = 1
+SpawnCount = 2
+SpawnInterval = 0.0
+SpawnParentPath = NodePath("..")
+SimultaneousSpawn = true
+EnableTrigger = false
+SpawnAreaExtents = Vector2(2400, 900)
+EnemySpawnOffset = Vector2(0, 100)
+ObstacleCheckMask = 7
+EnemyAppearDelay = 1.0
+AutoLowerFrontEffectAfterEnemySpawn = true
+DebugLineWidth = 8.0
+
+[node name="EnemySpawneManager2" type="Node2D" parent="."]
+visible = false
+top_level = true
+z_index = 10
+position = Vector2(0, 356)
+script = ExtResource("4_x5kc1")
+EnemyScenes = Array[PackedScene]([ExtResource("7_ujict")])
+MultiEnemySelectionMode = 1
+SpawnCount = 2
+SpawnInterval = 0.0
+SpawnParentPath = NodePath("..")
+SimultaneousSpawn = true
+EnableTrigger = false
+SpawnAreaExtents = Vector2(2400, 800)
+EnemySpawnOffset = Vector2(0, 100)
+ObstacleCheckMask = 7
+EnemyAppearDelay = 1.0
+AutoLowerFrontEffectAfterEnemySpawn = true
+DebugLineWidth = 8.0
+
+[node name="Wall" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(0, -800)
+texture = ExtResource("8_qw5cp")
+offset = Vector2(0, -200)
+
+[node name="Environments" type="Node2D" parent="."]
+position = Vector2(0, 340)
+
+[node name="BG" type="Sprite2D" parent="Environments"]
+position = Vector2(0, -1200)
+texture = ExtResource("9_857wi")
+script = ExtResource("10_u4tg5")
+AreaPath = NodePath("../../AreaSize")
+
+[node name="Window" type="Sprite2D" parent="Environments"]
+position = Vector2(60, -1300)
+texture = ExtResource("11_mg48k")
+
+[node name="Floor" type="Sprite2D" parent="Environments"]
+position = Vector2(0, 30)
+texture = ExtResource("12_xqmjc")
+
+[node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+z_index = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(0, -1000)
+shape = SubResource("RectangleShape2D_ainwx")
+debug_color = Color(0, 0, 0, 0.21568628)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(0, 1720)
+shape = SubResource("RectangleShape2D_4duw5")
+debug_color = Color(0, 0, 0, 0.21568628)
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+navigation_polygon = SubResource("NavigationPolygon_ka7vx")
+
+[node name="FurniturePrinterMachineA" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-1498, -254)
+
+[node name="FurniturePrinterMachineA2" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-1488, 322)
+
+[node name="FurniturePrinterMachineA3" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-1477, 918)
+
+[node name="FurniturePrinterMachineA4" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-446, -248)
+
+[node name="FurniturePrinterMachineA5" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-430, 333)
+
+[node name="FurniturePrinterMachineA6" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(-438, 921)
+
+[node name="FurniturePrinterMachineA7" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(624, -245)
+
+[node name="FurniturePrinterMachineA8" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(635, 345)
+
+[node name="FurniturePrinterMachineA9" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(639, 922)
+
+[node name="FurniturePrinterMachineA10" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(1710, -221)
+
+[node name="FurniturePrinterMachineA11" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(1729, 368)
+
+[node name="FurniturePrinterMachineA12" parent="." instance=ExtResource("18_rfle6")]
+position = Vector2(1729, 934)
+
+[node name="FurnitureGarbageCanA" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(-984, -185)
+
+[node name="FurnitureGarbageCanA2" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(-975, 401)
+
+[node name="FurnitureGarbageCanA3" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(-971, 989)
+
+[node name="FurnitureGarbageCanA4" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(52, -172)
+
+[node name="FurnitureGarbageCanA5" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(60, 416)
+
+[node name="FurnitureGarbageCanA6" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(67, 1006)
+
+[node name="FurnitureGarbageCanA7" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(1138, 1007)
+
+[node name="FurnitureGarbageCanA8" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(1124, 424)
+
+[node name="FurnitureGarbageCanA9" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(1116, -170)
+
+[node name="FurnitureGarbageCanA10" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(2192, -143)
+
+[node name="FurnitureGarbageCanA11" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(2215, 449)
+
+[node name="FurnitureGarbageCanA12" parent="." instance=ExtResource("13_13pey")]
+position = Vector2(2207, 1009)

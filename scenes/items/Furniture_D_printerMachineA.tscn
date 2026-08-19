@@ -32,7 +32,7 @@ size = Vector2(670, 260)
 size = Vector2(660, 250)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_u3qi6"]
-size = Vector2(2000, 4000)
+size = Vector2(600, 4000)
 
 [node name="FurniturePrinterMachineA" type="Node2D"]
 z_index = 2
@@ -101,6 +101,7 @@ TriggerArea = NodePath("../TiggerArea")
 SpawnChance = 50.0
 
 [node name="TiggerArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 

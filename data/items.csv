@@ -33,7 +33,7 @@ Furniture_C_TableRoundC,Furniture_C_TableRoundC,圆形餐桌,一次性投掷道�
 Furniture_C_TableSquareA,Furniture_C_TableSquareA,方形餐桌,一次性投掷道具：方形餐桌,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,
 Furniture_D_ChairOfficeC,Furniture_D_ChairOfficeC,办公座椅C,一次性投掷道具：办公座椅C,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
 Furniture_D_Drone,Furniture_D_Drone,破损无人机,一次性投掷道具：破损无人机,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.4,100.0,700.0,250.0,2.0,20.0,
-Furniture_D_PrinterMachineA,Furniture_D_PrinterMachineA,打印机A,一次性投掷道具：打印机A,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,20.0,
+Furniture_D_PrinterMachineA,Furniture_D_PrinterMachineA,打印机A,一次性投掷道具：打印机A,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,
 Furniture_D_TableOfficeB,Furniture_D_TableOfficeB,办公桌B,一次性投掷道具：办公桌B,Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,
 Furniture_D_TableOfficeB_bwd,Furniture_D_TableOfficeB_bwd,办公桌B(背面),一次性投掷道具：办公桌B(背面),Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,
 Furniture_D_TableOfficeB_fwd,Furniture_D_TableOfficeB_fwd,办公桌B(侧面),一次性投掷道具：办公桌B(侧面),Furniture,tag_throw|furniture,1,true,false,false,0|-250,0.35,100.0,500,250.0,2.0,60.0,

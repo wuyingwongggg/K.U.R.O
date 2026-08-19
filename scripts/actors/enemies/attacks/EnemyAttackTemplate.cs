@@ -76,6 +76,10 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [ExportCategory("Effect")]
         [Export] public Godot.Collections.Array<AttackEffectEntry> Effects { get; set; } = new();
+
+        /// <summary>阻塞特效组：场上（全局，含其他同类敌人）存在该组的存活特效实例时，本攻击不可被选中。
+        /// 通常填 Effects 中特效条目的 UniqueGroup（同组名）。空 = 不按特效阻塞。</summary>
+        [Export] public string BlockedByFxGroup { get; set; } = string.Empty;
         [Export] public Vector2 EffectOffset = Vector2.Zero;
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
         /// <summary>
@@ -690,12 +694,25 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (scene == null) return;
 
+            // 生成时检测（防同类特效叠加）：场上（全局，含其他同类敌人）已存在该组存活特效 → 跳过本次生成。
+            // 攻击本身不受影响（动作/伤害照常）；检查与生成同帧连续完成，天然消除复数敌人同时生成的竞态。
+            if (entry != null && !string.IsNullOrEmpty(entry.UniqueGroup) && IsFxGroupActive(entry.UniqueGroup))
+            {
+                GD.Print($"[{AttackName}] 场上已存在特效组 {entry.UniqueGroup}，跳过生成");
+                return;
+            }
+
             try
             {
                 var effect = scene.Instantiate();
 
                 if (entry != null)
+                {
                     entry.ApplyOverrides(effect);
+                    // 唯一性组标记：供"场上是否已有该特效"检测（全局，跨敌人共享）
+                    if (!string.IsNullOrEmpty(entry.UniqueGroup))
+                        effect.AddToGroup(entry.UniqueGroup);
+                }
 
                 Vector2 adjustedOffset = EffectOffset;
                 if (!Enemy!.FacingRight && EffectOffset.X != 0)
@@ -755,6 +772,20 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 GD.PushWarning($"[{AttackName}] 无法生成特效: {ex.Message}");
             }
+        }
+
+        /// <summary>场上（全局，含其他同类敌人）是否存在指定组的存活特效实例。</summary>
+        private bool IsFxGroupActive(string group)
+        {
+            foreach (Node node in GetTree().GetNodesInGroup(group))
+            {
+                if (GodotObject.IsInstanceValid(node))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }

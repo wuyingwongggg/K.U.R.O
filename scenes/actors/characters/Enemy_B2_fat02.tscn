@@ -1,6 +1,6 @@
 [gd_scene load_steps=34 format=3 uid="uid://wrebd662va23"]
 
-[ext_resource type="Script" uid="uid://bmrdoiyhd61t4" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
+[ext_resource type="Script" uid="uid://dklt5k3rq7qjb" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_6yc1u"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_xrpf5"]
@@ -10,10 +10,10 @@
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="8_aqxxu"]
 [ext_resource type="Script" uid="uid://bs353w318s113" path="res://scripts/actors/enemies/attacks/EnemyB2Fat02AttackController.cs" id="9_ooggc"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="9_rbnx7"]
-[ext_resource type="Script" uid="uid://cepoyxs1g1lxg" path="res://scripts/actors/enemies/attacks/EnemySmashAttack.cs" id="10_6yc1u"]
+[ext_resource type="Script" uid="uid://cmnxe0hpulqnx" path="res://scripts/actors/enemies/attacks/EnemySmashAttack.cs" id="10_6yc1u"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="12_daw10"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="13_ey01n"]
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="13_s42mu"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="13_s42mu"]
 [ext_resource type="PackedScene" uid="uid://3o6u0oms7vm6" path="res://shaders/smash_effect.tscn" id="14_6yc1u"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="14_rru7p"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="15_3ftbl"]
@@ -22,8 +22,8 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="17_oq0qc"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_qelwu"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://dekq4qj6eyk0j" path="res://animations/spine/Enemy_B2_fat02.tres" id="19_gvrrx"]
-[ext_resource type="Script" uid="uid://vrprwog5yn1j" path="res://scripts/controllers/SpineController.gd" id="20_ooggc"]
-[ext_resource type="Script" uid="uid://co7mixqmbcow3" path="res://scripts/actors/enemies/animation/EnemyB2Fat02SpineAnimationController.cs" id="20_xrpf5"]
+[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="20_ooggc"]
+[ext_resource type="Script" uid="uid://dpw2jqa8mdgvb" path="res://scripts/actors/enemies/animation/EnemyB2Fat02SpineAnimationController.cs" id="20_xrpf5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("4_xrpf5")
@@ -76,12 +76,12 @@ DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 AttackDamage = 15
 MaxHealth = 180
+AiDescription = "红色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，使用大范围阵地攻击眩晕客户"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_s42mu")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "红色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，使用大范围阵地攻击眩晕客户"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -226,9 +226,6 @@ ActiveDuration = 0.45
 RecoveryDuration = 0.95
 DamageMultiplier = 1.5
 AttackAreaPath = NodePath("../../../../Sprite2D/SmashArea")
-KnockbackDistance = 500.0
-KnockbackDuration = 0.1
-KnockbackSpeed = 2500.0
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 26
@@ -245,9 +242,8 @@ WarmupDuration = 1.0
 ActiveDuration = 0.11
 RecoveryDuration = 0.39
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-KnockbackDistance = 50.0
-KnockbackDuration = 0.1
-KnockbackSpeed = 1000.0
+KnockbackDistance = 200.0
+KnockbackDuration = 0.09
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24

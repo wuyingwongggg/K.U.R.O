@@ -234,9 +234,7 @@ namespace Kuros.Actors.Enemies.Attacks
             float totalWeight = 0f;
             foreach (var entry in _entries)
             {
-                if (entry.Template == null || !GodotObject.IsInstanceValid(entry.Template)) continue;
-                if (entry.Template.IsOnCooldown) continue;
-                if (!entry.Template.IsPlayerInDetectionRange()) continue;
+                if (!IsAttackEligible(entry)) continue;
                 totalWeight += entry.Weight;
             }
             if (totalWeight <= 0f) return null;
@@ -246,9 +244,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
             foreach (var entry in _entries)
             {
-                if (entry.Template == null || !GodotObject.IsInstanceValid(entry.Template)) continue;
-                if (entry.Template.IsOnCooldown) continue;
-                if (!entry.Template.IsPlayerInDetectionRange()) continue;
+                if (!IsAttackEligible(entry)) continue;
                 cumulative += entry.Weight;
                 if (roll <= cumulative)
                 {
@@ -257,6 +253,80 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
             return null;
+        }
+
+        /// <summary>攻击可选中性：模板有效 + 非冷却 + 玩家在范围 + 无其他敌人执行同攻击 + 场上无同攻击特效。</summary>
+        private bool IsAttackEligible(Entry entry)
+        {
+            if (entry.Template == null || !GodotObject.IsInstanceValid(entry.Template)) return false;
+            if (entry.Template.IsOnCooldown) return false;
+            if (!entry.Template.IsPlayerInDetectionRange()) return false;
+
+            // 条件1：有其他敌人正在执行本攻击 → 排除（防动作重叠）
+            if (IsOtherEnemyAttacking(entry.Template.AttackName)) return false;
+
+            // 条件2：场上（全局）存在本攻击的存活特效 → 排除（防特效叠加）
+            return !IsFxBlockedByOwnEffects(entry.Template);
+        }
+
+        /// <summary>特效阻塞判定（对所有攻击自动生效）：显式 BlockedByFxGroup 优先；
+        /// 未配置时自动收集 Effects 中所有带 UniqueGroup 的条目组——任何一组有存活实例即阻塞。</summary>
+        private bool IsFxBlockedByOwnEffects(EnemyAttackTemplate template)
+        {
+            if (!string.IsNullOrEmpty(template.BlockedByFxGroup) && IsFxGroupActive(template.BlockedByFxGroup))
+            {
+                return true;
+            }
+
+            foreach (var entry in template.Effects)
+            {
+                if (entry == null || string.IsNullOrEmpty(entry.UniqueGroup)) continue;
+                if (IsFxGroupActive(entry.UniqueGroup))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>场上是否存在"其他"敌人（排除自己）正在执行指定攻击。</summary>
+        private bool IsOtherEnemyAttacking(string attackName)
+        {
+            foreach (Node node in GetTree().GetNodesInGroup("enemies"))
+            {
+                if (node == Enemy) continue;
+                if (node is SampleEnemy other && other.IsAttackRunning(attackName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>场上（全局）是否存在指定组的存活特效实例。</summary>
+        private bool IsFxGroupActive(string group)
+        {
+            if (string.IsNullOrEmpty(group)) return false;
+
+            foreach (Node node in GetTree().GetNodesInGroup(group))
+            {
+                if (GodotObject.IsInstanceValid(node))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>该敌人当前是否正在执行指定攻击（基类查询：当前子攻击名匹配）。</summary>
+        public bool IsAttackRunning(string attackName)
+        {
+            return _currentAttack != null
+                && GodotObject.IsInstanceValid(_currentAttack)
+                && _currentAttack.AttackName == attackName;
         }
 
         private void QueueNextAttack(string reason = "Auto")

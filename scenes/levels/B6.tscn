@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://dlu6axpuxuc43"]
+[gd_scene load_steps=34 format=3 uid="uid://dlu6axpuxuc43"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_subbn"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_5xhk5"]
@@ -39,6 +39,21 @@ size = Vector2(6000, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_33y2m"]
 size = Vector2(6000, 700)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_subbn"]
+size = Vector2(2533, 250)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5xhk5"]
+size = Vector2(666, 250)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tttgr"]
+size = Vector2(1448, 250)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xo7mb"]
+size = Vector2(2110, 250)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ms1x6"]
+size = Vector2(1429, 250)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_4aqtp"]
 vertices = PackedVector2Array(2375, 1097, 2694.2031, 1370, 594, 1370, 1146, 1275, 2696.25, -770, 2375, 683, 2149, -456, 2149, -770, 2366, -417, 1434, 683, 1434, -3, 2366, -3, 91, -417, 1569, -456, 91, -3, 479, -3, 479, 173, 130, 680, -14, 683, 774, 173, 774, 840, 594, 680, 781, 840, 781, 1097, 786, 1097, 786, 1275, 1146, 1097, 130, 1235, 57, 1235, 57, 1102, -1151, 1102, -1151, 1097, -14, 1097, -33, 683, -33, -158, -41, -158, -41, -417, -220, -417, -220, -770, 1569, -770, -1615, 1193, -1887, 1193, -1918, 1097, -1627, 1097, -1580, -770, -1580, -417, -2735, -417, -2771.7578, -770, -2773.7969, 1370, -2735, -3, -2749, 683, -2182, -3, -2182, 670, -1627, 683, -1902, 670, -1902, 310, -1342, 310, -693, 683, -1342, -3, -693, -3, -1615, 1097, -1918, 683, -2749, 1097, -1887, 1370)
@@ -190,7 +205,6 @@ position = Vector2(1280, -1530)
 texture = ExtResource("11_cg5rx")
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
@@ -202,6 +216,26 @@ debug_color = Color(0, 0, 0, 0.19607843)
 position = Vector2(0, 1800)
 shape = SubResource("RectangleShape2D_33y2m")
 debug_color = Color(0, 0, 0, 0.19607843)
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(-1388.5, -214)
+shape = SubResource("RectangleShape2D_subbn")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(-2330, 892)
+shape = SubResource("RectangleShape2D_5xhk5")
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(-822, 889)
+shape = SubResource("RectangleShape2D_tttgr")
+
+[node name="CollisionShape2D6" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(1227, -210)
+shape = SubResource("RectangleShape2D_xo7mb")
+
+[node name="CollisionShape2D7" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(1575.5, 889)
+shape = SubResource("RectangleShape2D_ms1x6")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 visible = false
@@ -319,7 +353,7 @@ position = Vector2(654, 3)
 position = Vector2(94, 1405)
 
 [node name="FurniturePlantA3" parent="." instance=ExtResource("13_hy3g6")]
-position = Vector2(961, 1105)
+position = Vector2(963, 1111)
 
 [node name="FurniturePlantA4" parent="." instance=ExtResource("13_hy3g6")]
 position = Vector2(-1712, 1363)

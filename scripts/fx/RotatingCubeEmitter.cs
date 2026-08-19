@@ -29,10 +29,12 @@ namespace Kuros.Fx
 
         private float _elapsed;
         private float _emissionTimer;
+        private int _baseDamage;
 
         public override void _Ready()
         {
             base._Ready();
+            _baseDamage = Damage;
             _emissionTimer = EmissionIntervalSeconds;
         }
 
@@ -54,6 +56,7 @@ namespace Kuros.Fx
             {
                 float t = Mathf.Min(1f, (_elapsed - BuildDuration) / ShrinkLifetime);
                 Scale = new Vector2(BaseScale, BaseScale) * (1f - t);
+                ApplyShrinkDamageDecay(t);
                 if (t >= 1f)
                 {
                     QueueFree();
@@ -72,18 +75,33 @@ namespace Kuros.Fx
             }
         }
 
+        /// <summary>伤害随缩小进度线性衰减：ShrinkLifetime 期间从初始伤害降至 0。
+        /// 命中时 RotatingCube 读取当前 Damage 值，故衰减实时生效。</summary>
+        private void ApplyShrinkDamageDecay(float shrinkProgress)
+        {
+            Damage = Mathf.RoundToInt(_baseDamage * (1f - shrinkProgress));
+        }
+
         /// <summary>
-        /// 每个条目在上、下两个方向各生成一发抛射物。
+        /// 每个条目在飞行方向的垂直方向两侧各生成一发抛射物：
+        /// 朝上/下飞行 → 朝左/右发射；朝左/右飞行 → 朝上/下发射（始终与飞行方向垂直）。
         /// </summary>
         private void EmitUpDown()
         {
             if (EmissionEffects.Count == 0 || GetParent() == null) return;
 
+            Vector2 moveDir = Velocity.Normalized();
+            if (moveDir == Vector2.Zero)
+            {
+                moveDir = Vector2.Right; // 飞行未开始时兜底
+            }
+
+            Vector2 perpendicular = moveDir.Orthogonal();
             foreach (var entry in EmissionEffects)
             {
                 if (entry == null || entry.Scene == null) continue;
-                SpawnEmittedProjectile(entry, Vector2.Up);
-                SpawnEmittedProjectile(entry, Vector2.Down);
+                SpawnEmittedProjectile(entry, perpendicular);
+                SpawnEmittedProjectile(entry, -perpendicular);
             }
         }
 

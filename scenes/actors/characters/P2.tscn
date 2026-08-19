@@ -194,6 +194,7 @@ scroll_following = true
 
 [node name="AiOutputDebugPanel" type="CanvasLayer" parent="."]
 layer = 10
+visible = false
 script = ExtResource("21_ai_output_debug_panel")
 
 [node name="Panel" type="PanelContainer" parent="AiOutputDebugPanel"]

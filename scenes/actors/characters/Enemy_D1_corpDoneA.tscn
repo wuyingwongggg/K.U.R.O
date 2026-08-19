@@ -53,11 +53,15 @@ radius = 180.0
 [sub_resource type="Resource" id="Resource_ba0ub"]
 script = ExtResource("14_xtsxx")
 Scene = ExtResource("13_4k14f")
+PropertyOverrides = Dictionary[String, Variant]({
+"Speed": 1500.0
+})
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_xtsxx"]
 script = ExtResource("14_xtsxx")
 Scene = ExtResource("15_4k14f")
+UniqueGroup = "corpdone_lockdown_fx"
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_D1_corpDoneA" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
@@ -72,7 +76,6 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 10
 MaxHealth = 150
 AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，坐在办公椅上攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 StateMachine = NodePath("StateMachine")
@@ -229,6 +232,8 @@ AttackName = "PinballAttack"
 WarmupDuration = 0.5
 ActiveDuration = 2.2
 RecoveryDuration = 0.5
+CooldownDurationMultiplier = 10.0
+TargetableFactions = 7
 KnockbackDistance = 80.0
 KnockbackDuration = 0.15
 KnockbackSpeed = 1500.0
@@ -242,6 +247,7 @@ AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.75
 ActiveDuration = 1.25
 RecoveryDuration = 1.0
+CooldownDurationMultiplier = 3.0
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
@@ -263,6 +269,7 @@ CooldownDurationMultiplier = 20.0
 DamageMultiplier = 0.0
 GrantedImmunities = 24
 Effects = Array[ExtResource("14_xtsxx")]([SubResource("Resource_xtsxx")])
+BlockedByFxGroup = "corpdone_lockdown_fx"
 metadata/attack_weight = 30.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

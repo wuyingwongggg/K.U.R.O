@@ -218,6 +218,20 @@ public partial class SampleEnemy : GameActor
 		return IsPlayerInAttackRange();
 	}
 
+	/// <summary>该敌人当前是否正在执行指定攻击（攻击控制器当前子攻击匹配；无控制器返回 false）。</summary>
+	public bool IsAttackRunning(string attackName)
+	{
+		if (_cachedAttackController == null || !IsInstanceValid(_cachedAttackController))
+		{
+			var attackState = StateMachine?.GetNodeOrNull("Attack");
+			_cachedAttackController = attackState?.GetNodeOrNull<EnemyAttackController>("AttackController");
+		}
+
+		return _cachedAttackController != null
+			&& IsInstanceValid(_cachedAttackController)
+			&& _cachedAttackController.IsAttackRunning(attackName);
+	}
+
 	public void PerformAttack(TargetableFactions targetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem)
 	{
 		//AttackTimer = AttackCooldown;
