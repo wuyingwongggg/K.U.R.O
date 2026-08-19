@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://d1giwhfb8ctq5"]
 
-[ext_resource type="Script" uid="uid://buxvij74qrn12" path="res://scripts/scenes/TitleScreen.cs" id="1"]
+[ext_resource type="Script" uid="uid://nvvma0swgv5x" path="res://scripts/scenes/TitleScreen.cs" id="1"]
 [ext_resource type="Texture2D" uid="uid://boei7alwnkvlw" path="res://assets/art/背景.png" id="2_afy3f"]
 [ext_resource type="Texture2D" uid="uid://bldundyoac04y" path="res://assets/art/标题.png" id="3_5hkou"]
 
@@ -11,6 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1")
 TitleNode = NodePath("TitleContainer/Title")
 
@@ -21,6 +22,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("2_afy3f")
 
 [node name="TitleContainer" type="CenterContainer" parent="."]
