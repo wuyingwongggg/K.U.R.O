@@ -69,7 +69,7 @@ namespace Kuros.Builds.BuildCore
         private readonly Dictionary<HeatStat, float> _baseValues = new();
         private readonly Dictionary<HeatStat, Dictionary<string, float>> _modifiers = new();
 
-        private float _baseSpeed;
+        private float _overflowSpeedBonusPrev;
         private float _baseAttackSpeed = 1f;
         private float _baseIncomingDamage = 1f;
         private bool _overflowApplied;
@@ -231,8 +231,8 @@ namespace Kuros.Builds.BuildCore
 
         /// <summary>
         /// 每溢出 1 点热量：移动速度、攻击速度、受到的伤害 +OverflowBuffPercentPerHeat%。
-        /// 只在超频期间接管这三个属性：进入时采样当前基础值（可能已被其他效果合法修改），
-        /// 退出超频的那一帧还原一次，避免每帧覆盖其他效果。
+        /// 移动速度增益走 SpeedBonusPercent 加法字段（增量写入，与其他速度效果加法叠加）；
+        /// 攻击速度/受到的伤害保持接管式乘法：进入时采样当前基础值、退出还原一次。
         /// </summary>
         private void ApplyOverflowBuff()
         {
@@ -241,10 +241,11 @@ namespace Kuros.Builds.BuildCore
 
             if (!AllowHeatOverflow || overflow <= 0f)
             {
-                // 只在"刚退出超频"的那一帧还原一次，其余帧不再写这三个属性
+                // 只在"刚退出超频"的那一帧还原一次，其余帧不再写这些属性
                 if (_overflowApplied)
                 {
-                    Actor.Speed = _baseSpeed;
+                    Actor.SpeedBonusPercent -= _overflowSpeedBonusPrev;
+                    _overflowSpeedBonusPrev = 0f;
                     Actor.AttackSpeedMultiplier = _baseAttackSpeed;
                     Actor.IncomingDamageMultiplier = _baseIncomingDamage;
                     _overflowApplied = false;
@@ -258,12 +259,15 @@ namespace Kuros.Builds.BuildCore
             if (!_overflowApplied)
             {
                 // 进入超频时重新采样当前基础值（含其他效果的合法修改）
-                _baseSpeed = Actor.Speed;
+                _overflowSpeedBonusPrev = 0f;
                 _baseAttackSpeed = Actor.AttackSpeedMultiplier;
                 _baseIncomingDamage = Actor.IncomingDamageMultiplier;
                 _overflowApplied = true;
             }
-            Actor.Speed = _baseSpeed * speedMult;
+            // 速度：增量写入加法字段（与动能增幅等效果累加，互不覆盖）
+            float speedBonus = (speedMult - 1f) * 100f;
+            Actor.SpeedBonusPercent += (speedBonus - _overflowSpeedBonusPrev);
+            _overflowSpeedBonusPrev = speedBonus;
             Actor.AttackSpeedMultiplier = _baseAttackSpeed * attackSpeedMult;
             Actor.IncomingDamageMultiplier = _baseIncomingDamage * damageTakenMult;
         }
@@ -360,8 +364,8 @@ namespace Kuros.Builds.BuildCore
                 Actor.AttackDamage = _originalAttackDamage;
             if (Actor != null && _overflowApplied)
             {
-                // 仅在超频接管期间被移除时还原，非超频状态不碰这三个属性
-                Actor.Speed = _baseSpeed;
+                // 仅在超频接管期间被移除时还原，非超频状态不碰这些属性
+                Actor.SpeedBonusPercent -= _overflowSpeedBonusPrev;
                 Actor.AttackSpeedMultiplier = _baseAttackSpeed;
                 Actor.IncomingDamageMultiplier = _baseIncomingDamage;
             }

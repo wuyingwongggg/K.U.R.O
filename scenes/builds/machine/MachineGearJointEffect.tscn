@@ -5,4 +5,4 @@
 [node name="MachineGearJointEffect" type="Node"]
 script = ExtResource("1")
 EffectId = "3f7a2b9c-4d1e-4f6a-8b3c-9e2d5a7f1c4b"
-Description = "热量释放强化：buff 期间受到攻击也不会被击退或打断攻击动作"
+Description = "热量释放强化：buff 期间进入霸体状态"

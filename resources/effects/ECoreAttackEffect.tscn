@@ -18,13 +18,12 @@ RotationSpeed = 1080.0
 RotateNode = NodePath("Sprite2D")
 Duration = 10.0
 Damage = 20
+DamageInterval = 0.30000000000000004
 
 [node name="AfterimageController" type="Node" parent="."]
 script = ExtResource("2_jyt8n")
 sprite_path = NodePath("../Sprite2D")
 is_spine = false
-interval = 0.01
-lifetime = 0.1
 
 [node name="LightningBeam" parent="." instance=ExtResource("2_4m7pg")]
 

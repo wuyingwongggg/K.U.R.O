@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=57 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -39,7 +39,6 @@
 [ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="19_dxexl"]
 [ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
-[ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="23_ve5oi"]
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
 [ext_resource type="PackedScene" uid="uid://daek68pd4nvyr" path="res://scenes/weapons/Weapon_Stab_laserPointer.tscn" id="35_4yi35"]
 [ext_resource type="PackedScene" uid="uid://dbp28lqhfd5dq" path="res://scenes/weapons/Weapon_Throw_boomerang.tscn" id="35_bnjvr"]
@@ -204,8 +203,6 @@ PlayerDamagedHitStopDuration = 0.18
 PlayerAttackHitHitStopDuration = 0.1
 PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
-
-[node name="P2" parent="World" instance=ExtResource("23_ve5oi")]
 
 [node name="WeaponBrawlDiscoBall" parent="World" instance=ExtResource("17_pja2j")]
 position = Vector2(-2120, -1540.9999)

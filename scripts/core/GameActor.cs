@@ -113,6 +113,14 @@ namespace Kuros.Core
 		/// <summary>死亡流程已开始（Dying 或 Dead）：伤害/治疗/特效作用应在此时立即停止，而非等死亡动画结束。</summary>
 		public bool IsDeadOrDying => _deathStarted;
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
+		/// <summary>额外速度加成百分比（加法叠加，供超频/动能增幅等共享——各效果增量写入，移动状态统一消费）。</summary>
+		public float SpeedBonusPercent { get; set; } = 0f;
+		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>
+		public Func<bool>? IsDashBackWindowActive { get; set; }
+		/// <summary>小伤害不打断：受到的伤害 ≤ MaxHealth × SmallDamageHitThresholdRatio 时不进入 Hit 状态（神经稳压）。</summary>
+		public bool SuppressSmallDamageHit { get; set; } = false;
+		/// <summary>小伤害判定阈值（最大生命比例，0.1 = 10%）。</summary>
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float SmallDamageHitThresholdRatio { get; set; } = 0.1f;
 		/// <summary>
 		/// 当前角色持有的免疫标志集合，由 EnemyAttackTemplate 的 GrantedImmunities 字段在攻击期间写入/还原。
 		/// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举中追加值，无需修改此类。
@@ -435,7 +443,9 @@ namespace Kuros.Core
 			else
 			{
 				// Force state change to Hit unless this actor is in super-armor phase.
-				if (!IgnoreHitStateOnDamage && StateMachine != null)
+				bool smallHitSuppressed = SuppressSmallDamageHit
+					&& damage <= Mathf.RoundToInt(MaxHealth * SmallDamageHitThresholdRatio);
+				if (!IgnoreHitStateOnDamage && !smallHitSuppressed && StateMachine != null)
 				{
 					if (StateMachine.CurrentState?.Name == "Hit")
 					{

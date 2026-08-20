@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://8s6kdcqs5ai1"]
+
+[ext_resource type="Script" uid="uid://cfnkc7gsogmqr" path="res://scripts/builds/normal/NormalRunRampEffect.cs" id="1"]
+
+[node name="NormalRunRampEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "d5a7b9c1-4e6f-4a8b-9c3d-1f2e4a6b8c05"
+Description = "奔跑状态持续越久移动速度速度越快"

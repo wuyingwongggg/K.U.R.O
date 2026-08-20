@@ -6,10 +6,11 @@ using Kuros.Core.Effects;
 namespace Kuros.Builds.Machine
 {
     /// <summary>
-    /// 齿轮关节：释放核心技能后的 buff 期间，玩家受到攻击也不会被击退或打断攻击动作。
-    /// 实现：buff 期间设置 IgnoreHitStateOnDamage（阻止进入 Hit 状态 = 攻击不被打断，
-    /// 且 MainCharacter 同步抑制 _pendingHitKnockback 击退标记）+ ForcedMovement 免疫
-    /// （拦截 KnockbackOnAttackEffect 等直接驱动击退的效果）。
+    /// 齿轮关节（霸体）：释放核心技能后的 buff 期间，玩家处于霸体状态——
+    /// 不会被击退、进入眩晕、受伤硬直。
+    /// 实现：buff 期间设置 ForcedMovement（免疫击退）+ Stun（免疫眩晕）免疫位，
+    /// 以及 IgnoreHitStateOnDamage（阻止进入 Hit 状态 = 攻击不被打断，
+    /// 且 MainCharacter 同步抑制 _pendingHitKnockback 击退标记）。
     /// 暂存玩家原值，buff 结束/效果移除时还原（参考 EnemyAttackTemplate 的免疫暂存模式）。
     /// </summary>
     [GlobalClass]
@@ -44,7 +45,7 @@ namespace Kuros.Builds.Machine
             if (Actor == null || _applied) return;
             _storedImmunities = Actor.ActiveImmunities;
             _storedIgnoreHitState = Actor.IgnoreHitStateOnDamage;
-            Actor.ActiveImmunities |= ImmunityFlags.ForcedMovement;
+            Actor.ActiveImmunities |= ImmunityFlags.ForcedMovement | ImmunityFlags.Stun;
             Actor.IgnoreHitStateOnDamage = true;
             _applied = true;
         }

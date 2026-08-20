@@ -9,7 +9,7 @@ size = Vector2(342, 198)
 [node name="SpikeAttackEffect" type="Node"]
 script = ExtResource("1_dmpqe")
 DamagePerTick = 10
-SpeedSlowPercent = 50.0
+SpeedSlowPercent = 75.0
 FadeOutDuration = 0.5
 EffectId = "f0f1b62e-cf75-4e12-b3ce-5758c772584f"
 DisplayName = "伤害减速"

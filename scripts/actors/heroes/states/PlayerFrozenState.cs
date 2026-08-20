@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Core;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -8,6 +9,21 @@ namespace Kuros.Actors.Heroes.States
     /// </summary>
     public partial class PlayerFrozenState : PlayerState
     {
+        /// <summary>
+        /// 进入守卫：免疫眩晕（ImmunityFlags.Stun）时拒绝进入冻结状态——
+        /// 统一拦截所有直接 ChangeState("Frozen") 的攻击
+        /// （EnemySmashAttack / EnemyChargeGrabAttack 等不走 FreezeEffect 的路径）。
+        /// </summary>
+        public override bool CanEnterFrom(string? currentStateName)
+        {
+            if (Actor is GameActor actor && actor.ActiveImmunities.HasFlag(ImmunityFlags.Stun))
+            {
+                return false;
+            }
+
+            return base.CanEnterFrom(currentStateName);
+        }
+
         public float FrozenDuration = 2.0f;
         public float FrozenAnimationSpeed = 1.0f;
         [Export] public string SpineFrozenAnimationName = "stun";

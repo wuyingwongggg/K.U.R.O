@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d5normal001a1"]
+
+[ext_resource type="Script" path="res://scripts/builds/normal/NormalMaxHealthBoostEffect.cs" id="1"]
+
+[node name="NormalMaxHealthBoostEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "7e9a1c3d-5b2f-4a8e-9c1d-3f6b8a2e5d47"
+Description = "血量上限提升"

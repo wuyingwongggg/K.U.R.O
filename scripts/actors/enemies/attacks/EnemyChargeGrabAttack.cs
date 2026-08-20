@@ -449,6 +449,14 @@ namespace Kuros.Actors.Enemies.Attacks
 				return false;
             }
 
+			// 玩家霸体（免疫眩晕）：抓取无效——不冻结、不进入挣脱流程（EscapeHUD 不显示），
+			// 伤害由 hit 帧事件照常结算
+			if (player.ActiveImmunities.HasFlag(ImmunityFlags.Stun))
+			{
+				_playerInsideDetection = false;
+				return false;
+			}
+
 			_grabbedPlayer = player;
             ApplyFrozenState(player);
 			_playerInsideDetection = false;

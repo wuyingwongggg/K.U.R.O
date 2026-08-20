@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Effects;
 using Kuros.Core.Events;
 
 namespace Kuros.Fx
@@ -37,6 +38,14 @@ namespace Kuros.Fx
         [Export] public bool AllowSelfDamage { get; set; } = false;
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float DamageInterval = 0.5f;
+
+        [ExportCategory("Slow On Hit")]
+        /// <summary>命中减速开关（同 SlowOnHitEffect 效果：命中时降低目标移动速度）。</summary>
+        [Export] public bool EnableSlowOnHit { get; set; } = false;
+        /// <summary>减速百分比（0~100），50 = 速度降低 50%。</summary>
+        [Export(PropertyHint.Range, "1,100,1")] public float SlowPercent { get; set; } = 50f;
+        /// <summary>减速持续时间（秒）。</summary>
+        [Export(PropertyHint.Range, "0.1,30,0.1")] public float SlowDuration { get; set; } = 2f;
 
         [ExportCategory("Afterimage")]
         [Export] public bool EnableAfterimage = true;
@@ -224,7 +233,52 @@ namespace Kuros.Fx
             bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
                 DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
             if (dealt)
+            {
                 actor.Velocity = Vector2.Zero;
+                if (EnableSlowOnHit && actor.EffectController != null)
+                {
+                    actor.ApplyEffect(new BoomerangSlowDebuff
+                    {
+                        SlowPercent = SlowPercent,
+                        Duration = SlowDuration
+                    });
+                }
+            }
+        }
+
+        // ─── 内部减速 Debuff：命中时降低目标速度，到期/移除时恢复（同 SlowOnHitEffect 逻辑）───
+
+        private sealed partial class BoomerangSlowDebuff : ActorEffect
+        {
+            public float SlowPercent { get; set; }
+
+            private float _originalSpeed;
+
+            public BoomerangSlowDebuff()
+            {
+                EffectId = "boomerang_speed_slow_debuff";
+                DisplayName = "减速";
+                Description = "移动速度降低。";
+                IsBuff = false;
+                MaxStacks = 1;
+            }
+
+            protected override void OnApply()
+            {
+                base.OnApply();
+                _originalSpeed = Actor.Speed;
+                float multiplier = 1f - Mathf.Clamp(SlowPercent / 100f, 0f, 1f);
+                Actor.Speed = _originalSpeed * multiplier;
+            }
+
+            public override void OnRemoved()
+            {
+                if (Actor != null && !Actor.IsDeadOrDying)
+                {
+                    Actor.Speed = _originalSpeed;
+                }
+                base.OnRemoved();
+            }
         }
 
         // ── 碰撞回调 ──────────────────────────────────────────────

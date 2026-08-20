@@ -44,13 +44,10 @@ namespace Kuros.Actors.Heroes
 
 	[ExportCategory("Combat/Invincible Frames")]
 	[Export] public bool EnableHitInvincibility { get; set; } = true;
-	[Export(PropertyHint.Range, "0,5,0.01,or_greater")]
-	public float HitInvincibilityDuration { get; set; } = 1.0f;
+	[Export(PropertyHint.Range, "0,5,0.01,or_greater")] public float HitInvincibilityDuration { get; set; } = 1.0f;
 	[Export] public bool EnableInvincibleFlash { get; set; } = true;
-	[Export(PropertyHint.Range, "0,1,0.01")]
-	public float InvincibleFlashMinAlpha { get; set; } = 0.35f;
-	[Export(PropertyHint.Range, "0,60,0.1,or_greater")]
-	public float InvincibleFlashSpeed { get; set; } = 18.0f;
+	[Export(PropertyHint.Range, "0,1,0.01")] public float InvincibleFlashMinAlpha { get; set; } = 0.35f;
+	[Export(PropertyHint.Range, "0,60,0.1,or_greater")] public float InvincibleFlashSpeed { get; set; } = 18.0f;
 
 	// Spine 相关（使用 Node 引用，通过 Call 调用 GDScript 方法）
 	private Node? _spineController;

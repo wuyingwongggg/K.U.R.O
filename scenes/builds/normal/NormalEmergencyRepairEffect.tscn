@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://8s6kddgs7ja"]
+
+[ext_resource type="Script" path="res://scripts/builds/normal/NormalEmergencyRepairEffect.cs" id="1"]
+
+[node name="NormalEmergencyRepairEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "9c1d3e5f-7d4b-4a0c-8e3f-5b8d9c4a7f69"
+Description = "低血应急修复"

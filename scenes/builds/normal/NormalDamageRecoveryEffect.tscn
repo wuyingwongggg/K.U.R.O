@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://yuus4ecgba6a"]
+
+[ext_resource type="Script" uid="uid://bfv5oq4m6xs1h" path="res://scripts/builds/normal/NormalDamageRecoveryEffect.cs" id="1"]
+
+[node name="NormalDamageRecoveryEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "b3e5f7a9-2c4d-4e6f-8a1b-7d9c5b3f6e82"
+Description = "受击后伤害回收"

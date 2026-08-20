@@ -1,6 +1,7 @@
 using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Builds.Machine;
+using Kuros.Core;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -32,14 +33,18 @@ namespace Kuros.Actors.Heroes.States
         private float _totalDuration;
 
         public int Charges => _charges;
-        /// <summary>闪避可用性：热能闪避（B_008）激活期间完全由热量判定（热量不足则无法闪避），否则由充能判定。</summary>
+        /// <summary>最近一次闪避是否为后撤（供 B_003 闪避缓存等效果检测前向闪避方向）。</summary>
+        public bool LastDashWasBackDash { get; private set; }
+        /// <summary>最近一次闪避 Enter 时刻（含 Reenter 连闪——B_003 等效果检测"闪避开始"用）。</summary>
+        public ulong LastDashEnteredAtMs { get; private set; }
+        /// <summary>闪避可用性：热能闪避（B_008）激活期间热量优先，热量不足时回退充能（B_002 兜底）；否则由充能判定。</summary>
         public bool CanDash
         {
             get
             {
                 var heatDash = GetHeatDashEffect();
                 if (heatDash != null && heatDash.IsActive)
-                    return heatDash.CanConsumeForDash;
+                    return heatDash.CanConsumeForDash || _charges > 0;
                 return _charges > 0;
             }
         }
@@ -70,27 +75,45 @@ namespace Kuros.Actors.Heroes.States
 
         public override bool CanEnterFrom(string? previousState)
         {
-            if (!CanDash) return false;
+            // 免费窗口（B_003）：仅"后撤"闪避在窗口内无资源时放行（前向闪避仍需资源）
+            if (!CanDash && !IsFreeBackDashWindow()) return false;
             return base.CanEnterFrom(previousState);
+        }
+
+        /// <summary>是否为免费后撤窗口：当前无方向输入（后撤）且 B_003 免费窗口激活。</summary>
+        private bool IsFreeBackDashWindow()
+        {
+            if (GetMovementInput() != Vector2.Zero) return false;
+            return Actor is GameActor actor && actor.IsDashBackWindowActive?.Invoke() == true;
         }
 
         public override void Enter()
         {
-            // 热能闪避（B_008）：buff 期间消耗热量替代充能（热量不足时 CanDash 已拦截进入）
-            var heatDash = GetHeatDashEffect();
-            if (heatDash != null && heatDash.IsActive)
-            {
-                heatDash.ConsumeForDash();
-            }
-            else
-            {
-                _charges--;
-                if (_charges < MaxCharges && _rechargeTimer <= 0f)
-                    _rechargeTimer = RechargeTime;
-            }
-
             Vector2 input = GetMovementInput();
             bool isBackDash = input == Vector2.Zero;
+            LastDashWasBackDash = isBackDash;
+            LastDashEnteredAtMs = Time.GetTicksMsec();
+
+            // 闪避缓存（B_003）：前向闪避后的免费窗口内，后撤闪避不消耗任何闪避资源
+            bool freeBackDash = isBackDash && IsFreeBackDashWindow();
+
+            // 热能闪避（B_008）：buff 期间热量优先（不耗充能）；热量不足时回退充能（B_002 兜底）。
+            // CanDash 前置防御：免费窗口放行的无资源前向闪避不扣成负数（白闪）
+            if (!freeBackDash)
+            {
+                var heatDash = GetHeatDashEffect();
+                if (heatDash != null && heatDash.IsActive && heatDash.CanConsumeForDash)
+                {
+                    heatDash.ConsumeForDash();
+                }
+                else if (CanDash)
+                {
+                    _charges--;
+                    if (_charges < MaxCharges && _rechargeTimer <= 0f)
+                        _rechargeTimer = RechargeTime;
+                }
+            }
+
             if (isBackDash)
                 _dashDirection = new Vector2(Actor.FacingRight ? -1f : 1f, 0f);
             else
@@ -156,7 +179,8 @@ namespace Kuros.Actors.Heroes.States
                 var buffered = ConsumeBufferedInput();
                 if (buffered == "dash" && CanDash)
                 {
-                    ChangeState("Dash");
+                    // 连闪：当前已是 Dash，ChangeState 同状态会被状态机忽略——必须 Reenter 重置两阶段
+                    Machine.ReenterState("Dash");
                     return;
                 }
                 if (buffered == "attack" || IsAttackTriggered())
@@ -165,9 +189,10 @@ namespace Kuros.Actors.Heroes.States
                     ChangeState("Attack");
                     return;
                 }
-                if (IsActionJustPressed("dash") && CanDash)
+                if (IsActionJustPressed("dash") && (CanDash || IsFreeBackDashWindow()))
                 {
-                    ChangeState("Dash");
+                    // 连闪/dashback：同上，同状态重进（免费后撤窗口内无资源也放行）
+                    Machine.ReenterState("Dash");
                     return;
                 }
                 if (GetMovementInput() != Vector2.Zero)

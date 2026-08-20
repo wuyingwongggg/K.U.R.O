@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://8s6kdcqs5ci1"]
+
+[ext_resource type="Script" path="res://scripts/builds/normal/NormalDashCacheEffect.cs" id="1"]
+
+[node name="NormalDashCacheEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "f7c9d1e3-6a8b-4c0d-9e5f-3b4c6d8e0f27"
+Description = "闪避缓存"

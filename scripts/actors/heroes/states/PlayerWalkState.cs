@@ -75,10 +75,11 @@ namespace Kuros.Actors.Heroes.States
 				return;
 			}
 			
-			// Movement Logic
+			// Movement Logic（含 SpeedBonusPercent 加法加成）
 			Vector2 velocity = Actor.Velocity;
-			velocity.X = input.X * Actor.Speed;
-			velocity.Y = input.Y * Actor.Speed;
+			float speed = Actor.Speed * (1f + Actor.SpeedBonusPercent / 100f);
+			velocity.X = input.X * speed;
+			velocity.Y = input.Y * speed;
 			
 			Actor.Velocity = velocity;
 			
