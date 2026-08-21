@@ -1965,6 +1965,8 @@ namespace Kuros.Items.World
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
+						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+							attackerProvider.Attacker = LastDroppedBy;
 					}
 					else
 					{
@@ -2028,6 +2030,8 @@ namespace Kuros.Items.World
 							worldNode?.AddChild(node2D);
 							node2D.GlobalPosition = spawnPos;
 								node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
+							if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+								attackerProvider.Attacker = LastDroppedBy;
 						}
 						else if (node is Kuros.Core.Effects.ActorEffect actorEffect)
 						{

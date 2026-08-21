@@ -16,7 +16,7 @@ namespace Kuros.Fx
     ///   - 伤害逻辑：AttackArea 范围内每 DamageInterval 秒造成一次伤害并使目标速度归零。
     ///   - 基础逻辑和规范严格按照 EFFECT_STANDARD.md
     /// </summary>
-    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional
+    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional, IAttackerProvider
     {
         [ExportCategory("Movement")]
         [Export(PropertyHint.Range, "50,5000,10")] public float Speed = 1800f;
@@ -118,8 +118,19 @@ namespace Kuros.Fx
             ResolveAttacker();
         }
 
+        /// <summary>
+        /// 显式攻击来源（由投掷方传入，同 IAttackerProvider 项目模式）。
+        /// 优先于父节点解析：父节点下第一个玩家不一定是投掷者，解析错误会导致 AllowSelfDamage 保护失效。
+        /// </summary>
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
+
         private void ResolveAttacker()
         {
+            if (_attacker != null) return;
             var parent = GetParent();
             if (parent == null) return;
             foreach (var child in parent.GetChildren())
@@ -299,7 +310,14 @@ namespace Kuros.Fx
                 return;
             }
 
-            if (body is not GameActor actor) return;
+            if (body is not GameActor actor)
+            {
+                // WorldItem（DestructibleObject 等 TakeDamage 节点）：一次性结算（不计时、无速度概念）
+                if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+                DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
+                return;
+            }
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
             AddActorRef(actor);
         }

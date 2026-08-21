@@ -17,7 +17,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "Damage": 10.0,
 "DespawnDuration": 0.15,
 "Duration": 1.0,
-"Speed": 500.0
+"Speed": 500.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 

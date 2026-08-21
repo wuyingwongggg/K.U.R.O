@@ -158,7 +158,9 @@ namespace Kuros.Fx
 
 攻击特效/投射物造成伤害时需要知道攻击者（`AllowSelfDamage` 自伤保护、阵营过滤、击退来源）。通过接口显式传递，避免从父节点猜测——父节点下第一个敌人不一定是发射者，解析错误会导致自伤保护失效（打自己）。
 
-### 调用方：EnemyAttackTemplate.SpawnEffectAtEnemy()
+### 调用方
+
+**EnemyAttackTemplate.SpawnEffectAtEnemy()**（敌人攻击特效）：
 
 ```csharp
 // scripts/actors/enemies/attacks/EnemyAttackTemplate.cs
@@ -168,14 +170,27 @@ if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
 }
 ```
 
+**RigidBodyWorldItemEntity 投掷系统**（投掷武器特效，如回旋镖）：
+
+```csharp
+// scripts/items/world/RigidBodyWorldItemEntity.cs（SpawnThrowDestroyEffects / Destroy）
+if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+{
+	attackerProvider.Attacker = LastDroppedBy;
+}
+```
+
 ### 实现方
 
 | 类 | 文件 |
 |---|---|
 | `LaserBeamA` | [scripts/fx/LaserBeamA.cs](../scripts/fx/LaserBeamA.cs) |
 | `LaserBeamUltimate` | [scripts/fx/LaserBeamUltimate.cs](../scripts/fx/LaserBeamUltimate.cs) |
+| `EnemyPaperBullet` | [scripts/fx/EnemyPaperBullet.cs](../scripts/fx/EnemyPaperBullet.cs) |
 | `RotatingCube` | [scripts/fx/RotatingCube.cs](../scripts/fx/RotatingCube.cs) |
 | `EnemyWaiterAThrowProjectile` | [scripts/actors/enemies/attacks/EnemyWaiterAThrowProjectile.cs](../scripts/actors/enemies/attacks/EnemyWaiterAThrowProjectile.cs) |
+| `BoomerangAttackEffect` | [scripts/effects/BoomerangAttackEffect.cs](../scripts/effects/BoomerangAttackEffect.cs) |
+| `ECoreAttackEffect` | [scripts/effects/ECoreAttackEffect.cs](../scripts/effects/ECoreAttackEffect.cs) |
 
 ### 新增实现步骤
 
@@ -214,9 +229,12 @@ SamplePlayer         ──→  IDamageable          ←──  DestructibleWorl
 												   (未来：BreakableWall, ExplosiveBarrel...)
 
 EnemyAttackTemplate  ──→  IAttackerProvider    ←──  LaserBeamA
-													   LaserBeamUltimate
+RigidBodyWorldItem   ──→                       ←──  LaserBeamUltimate
+(投掷系统)                                       ←──  EnemyPaperBullet
 													   RotatingCube
 													   EnemyWaiterAThrowProjectile
+													   BoomerangAttackEffect
+													   ECoreAttackEffect
 ```
 
 - **调用方只依赖接口**，不 import 实现类的命名空间

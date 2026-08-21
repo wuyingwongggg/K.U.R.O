@@ -13,7 +13,7 @@ namespace Kuros.Fx
     ///   - 弹跳途中接触其他非角色（墙/障碍）后：弹跳方向镜面反射，并从接触点沿新方向继续弹跳。
     ///   - 使用 Duration 控制生命周期，到期后销毁自身。
     /// </summary>
-    public partial class ECoreAttackEffect : Node2D, IFacingDirectional
+    public partial class ECoreAttackEffect : Node2D, IFacingDirectional, IAttackerProvider
     {
         [ExportCategory("Movement")]
         [Export(PropertyHint.Range, "50,3000,10")] public float Speed = 600f;
@@ -187,7 +187,15 @@ namespace Kuros.Fx
 
         private void OnBodyEntered(Node body)
         {
-            if (body is not GameActor actor) return;
+            if (body is not GameActor actor)
+            {
+                // WorldItem（DestructibleObject 等 TakeDamage 节点）：一次性结算（不计时）；
+                // 墙/障碍无 TakeDamage 接口时 DealDamage 返回 false，无副作用
+                if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+                DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+                    DamageSource.AreaEffect, TargetableFactions, AllowSelfDamage, null);
+                return;
+            }
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
             AddActorRef(actor);
         }
@@ -247,8 +255,19 @@ namespace Kuros.Fx
             _actorTimers.Remove(actor);
         }
 
+        /// <summary>
+        /// 显式攻击来源（由投掷方传入，同 IAttackerProvider 项目模式——投掷系统 RigidBodyWorldItemEntity 自动设置）。
+        /// 优先于父节点解析：父节点下第一个玩家不一定是投掷者。
+        /// </summary>
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
+
         private void ResolveAttacker()
         {
+            if (_attacker != null) return;
             var parent = GetParent();
             if (parent == null) return;
             foreach (var child in parent.GetChildren())

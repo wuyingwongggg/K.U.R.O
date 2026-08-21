@@ -203,7 +203,7 @@ shape = SubResource("CapsuleShape2D_55fyn")
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(60, -2100)
+position = Vector2(0, -1500)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("7_tcukf")
