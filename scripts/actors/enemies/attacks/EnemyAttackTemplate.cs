@@ -649,7 +649,7 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
             Vector2 knockbackVelocity = direction.Normalized() * speed;
-            player.Velocity = knockbackVelocity;
+            player.ApplyKnockback(knockbackVelocity.Normalized(), speed);
             ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);
             return true;
         }
@@ -750,8 +750,8 @@ namespace Kuros.Actors.Enemies.Attacks
                     if (FlipEffectWithFacing && !Enemy.FacingRight)
                         node2D.Scale = new Vector2(-node2D.Scale.X, node2D.Scale.Y);
 
-                    if (node2D is EnemyWaiterAThrowProjectile projectile)
-                        projectile.Attacker = Enemy;
+                    if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+                        attackerProvider.Attacker = Enemy;
 
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;

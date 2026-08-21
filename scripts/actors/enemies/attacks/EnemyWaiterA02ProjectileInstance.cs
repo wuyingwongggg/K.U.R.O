@@ -211,7 +211,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
             // 设置玩家速度（击退）
             Vector2 knockbackVelocity = knockbackDir * speed;
-            player.Velocity = knockbackVelocity;
+            player.ApplyKnockback(knockbackVelocity.Normalized(), speed);
 
             // 如果玩家在 Frozen 状态，应用外部位移
             ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);

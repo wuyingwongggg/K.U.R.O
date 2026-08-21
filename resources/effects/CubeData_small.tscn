@@ -55,16 +55,19 @@ MaxVerticalTiltDegrees = 0.0
 BuildDuration = 0.01
 DespawnDuration = 0.2
 
-[node name="FaceFill" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
+
+[node name="FaceFill" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_faces")
 texture = ExtResource("3_p08mm")
 
-[node name="Wireframe" type="Sprite2D" parent="."]
+[node name="Wireframe" type="Sprite2D" parent="Visual"]
 modulate = Color(0.3019608, 0.8, 1, 1)
 material = SubResource("ShaderMaterial_cube")
 texture = ExtResource("3_p08mm")
 
-[node name="BuildMask" type="Sprite2D" parent="."]
+[node name="BuildMask" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_build")
 texture = ExtResource("3_p08mm")
 

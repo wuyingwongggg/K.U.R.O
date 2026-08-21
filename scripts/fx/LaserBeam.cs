@@ -286,7 +286,7 @@ namespace Kuros.Fx
                     ? KnockbackSpeed
                     : (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
                 if (knockSpeed > 0f)
-                    actor.Velocity = beamDir * knockSpeed;
+                    actor.ApplyKnockback(beamDir, knockSpeed);
             }
         }
 

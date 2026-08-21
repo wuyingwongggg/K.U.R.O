@@ -1,20 +1,21 @@
+using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
-	public partial class LaserBeamA : Node2D, IFacingDirectional
+	public partial class LaserBeamA : Node2D, IFacingDirectional, IAttackerProvider
 	{
 		[ExportCategory("Nodes")]
-		/// <summary>命中检测射线节点路径（RayCast2D，决定光束长度）。</summary>
-		[Export] public NodePath RayCastPath { get; set; } = new("RayCast2D");
 		/// <summary>光晕层节点路径（Sprite2D）。</summary>
 		[Export] public NodePath GlowSpritePath { get; set; } = new("GlowSprite");
 		/// <summary>核心光束层节点路径（Sprite2D）。</summary>
 		[Export] public NodePath BeamSpritePath { get; set; } = new("BeamSprite");
 		/// <summary>发光点节点路径（Sprite2D，独立生命周期）。</summary>
 		[Export] public NodePath SpotlightPath { get; set; } = new("Spotlight");
+		/// <summary>光束判定区节点路径（Area2D，判定带随光束生长）。</summary>
+		[Export] public NodePath HitAreaPath { get; set; } = new("BeamHitArea");
 
 		[ExportCategory("Delay")]
 		/// <summary>延迟射出时长（秒）：施加后整体隐藏，到点才显示。纯前置时间，不占用 Lifetime 与 SpotlightDuration。</summary>
@@ -49,6 +50,8 @@ namespace Kuros.Fx
 		public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
 		[Export] public bool AllowSelfDamage { get; set; } = false;
 		[Export(PropertyHint.Range, "0,500,1")] public int Damage = 0;
+		/// <summary>地面判定带垂直半高（像素）：玩家 HitArea 与此带重叠即命中。</summary>
+		[Export(PropertyHint.Range, "10,500,1")] public float DetectionRadius = 150f;
 
 		[ExportCategory("Knockback")]
 		[Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
@@ -56,11 +59,13 @@ namespace Kuros.Fx
 		[Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 0f;
 
 		[ExportCategory("Targeting")]
+		/// <summary>自动瞄准：射出前物理查询前方可攻击对象，光束向目标微倾斜。false = 保持 FacingRight 水平方向。</summary>
 		[Export] public bool AutoAimAtPlayer = true;
+		/// <summary>垂直倾斜上限（度）：水平基础方向固定，仅在 ±此值内跟随目标高度微调（只影响视觉，判定带保持水平）。</summary>
 		[Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 5f;
+		/// <summary>水平基础朝向：true = 向右（0°），false = 向左（180°）。由生成方（EnemyAttackTemplate）按敌人朝向设置。</summary>
 		[Export] public bool FacingRight { get; set; } = true;
 
-		private RayCast2D? _ray;
 		private Sprite2D? _glowSprite;
 		private Sprite2D? _beamSprite;
 		private Sprite2D? _spotlight;
@@ -70,20 +75,34 @@ namespace Kuros.Fx
 		private float _texHeight;
 		private bool _pendingAutoAim;
 		private bool _hasDamaged;
-		private Node2D? _cachedPlayer;
 		private GameActor? _attacker;
+		private Area2D? _hitArea;
+		private CollisionShape2D? _hitShape;
+		private Node2D? _visual;
 		private float _emitElapsed;      // 射出后已过时间（延迟期间为负/0，生长/淡入基于此）
 		private bool _emitted;           // 是否已射出（延迟结束置位，首次显示）
 
 		public override void _Ready()
 		{
 			// 节点引用全部走导出路径（可重命名场景节点，无需改脚本）
-			_ray = RayCastPath != null && !RayCastPath.IsEmpty ? GetNodeOrNull<RayCast2D>(RayCastPath) : null;
 			_glowSprite = GlowSpritePath != null && !GlowSpritePath.IsEmpty ? GetNodeOrNull<Sprite2D>(GlowSpritePath) : null;
 			_beamSprite = BeamSpritePath != null && !BeamSpritePath.IsEmpty ? GetNodeOrNull<Sprite2D>(BeamSpritePath) : null;
 			_spotlight = SpotlightPath != null && !SpotlightPath.IsEmpty ? GetNodeOrNull<Sprite2D>(SpotlightPath) : null;
+			_visual = GetNodeOrNull<Node2D>("Visual");
+			_hitArea = HitAreaPath != null && !HitAreaPath.IsEmpty ? GetNodeOrNull<Area2D>(HitAreaPath) : null;
+			if (_hitArea != null)
+			{
+				_hitArea.CollisionLayer = 0;
+				_hitShape = _hitArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+				if (_hitShape?.Shape is RectangleShape2D rs)
+				{
+					rs.Size = new Vector2(MinLength, DetectionRadius * 2f);
+					// 带从发射点向一端伸展（同光束视觉 centered=false）：shape 居中前移半个长度，方向由判定带旋转驱动
+					_hitShape.Position = new Vector2(MinLength * 0.5f, 0f);
+				}
+			}
 
-			if (_ray == null || _beamSprite == null)
+			if (_beamSprite == null)
 			{
 				GD.PushWarning("[LaserBeamA] 缺少子节点");
 				QueueFree();
@@ -113,8 +132,10 @@ namespace Kuros.Fx
 			if (_glowSprite != null) _glowSprite.Scale = new Vector2(MinLength / _texWidth, GlowWidth / _texHeight);
 			if (_beamSprite != null) _beamSprite.Scale = new Vector2(MinLength / _texWidth, BeamWidth / _texHeight);
 
-			_ray.TargetPosition = new Vector2(MaxLength, 0f);
-			_ray.Enabled = true;
+			// 根恒 0 旋转（旋转只作用于 Visual/判定带）：初始方向按 FacingRight
+			float initAngle = FacingRight ? 0f : Mathf.Pi;
+			if (_visual != null) _visual.Rotation = initAngle;
+			if (_hitArea != null) _hitArea.Rotation = initAngle;
 
 			ResolveAttacker();
 			_timer = Lifetime;
@@ -144,16 +165,8 @@ namespace Kuros.Fx
 			if (_pendingAutoAim)
 			{
 				_pendingAutoAim = false;
-				var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
-				if (player != null)
-				{
-					_cachedPlayer = player;
-					var hitArea = player.GetNodeOrNull<Area2D>("HitArea")
-						?? player.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-					var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-					Vector2 aimTarget = hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? player.GlobalPosition;
+				if (FindAimTarget() is Vector2 aimTarget)
 					AimHorizontalWithVerticalTilt(aimTarget);
-				}
 				UpdateBeam();
 			}
 
@@ -249,22 +262,26 @@ namespace Kuros.Fx
 				tilt = Mathf.Atan2(toTarget.Y * dySign, Mathf.Abs(toTarget.X));
 				tilt = Mathf.Clamp(tilt, -maxR, maxR);
 			}
-			Rotation = baseAngle + tilt;
+			// 旋转只作用于视觉层与判定带（根恒 0 旋转，Visual 位置不随朝向翻转到 +200）：
+			// 判定带跟随瞄准角度旋转，与视觉光束方向一致
+			float angle = baseAngle + tilt;
+			if (_visual != null) _visual.Rotation = angle;
+			else Rotation = angle; // 兼容无 Visual 节点的旧结构
+			if (_hitArea != null) _hitArea.Rotation = angle;
 		}
 
 		public void LookAtGlobal(Vector2 globalTarget)
 		{
 			Vector2 dir = (globalTarget - GlobalPosition).Normalized();
-			if (dir != Vector2.Zero) Rotation = dir.Angle();
+			if (dir == Vector2.Zero) return;
+			if (_visual != null) _visual.Rotation = dir.Angle();
+			else Rotation = dir.Angle();
 		}
 
 		private void UpdateBeam()
 		{
-			if (_ray == null) return;
-			_ray.ForceRaycastUpdate();
-			float rawLength = _ray.IsColliding()
-				? ToLocal(_ray.GetCollisionPoint()).Length()
-				: MaxLength;
+			// 光束恒为 MaxLength 全长（不撞墙、不撞目标截断），仅保留生长动画
+			float rawLength = MaxLength;
 
 			float elapsed = Lifetime - _timer;
 			float grow = GrowDuration > 0f ? Mathf.Clamp(elapsed / GrowDuration, 0f, 1f) : 1f;
@@ -284,56 +301,96 @@ namespace Kuros.Fx
 
 			if (_spotlight != null)
 				_spotlight.Position = Vector2.Zero;
+
+			// 判定带随光束生长同步扩展（Area2D 物理重叠由引擎维护）；带从发射点向一端伸展，方向由判定带旋转驱动
+			if (_hitShape?.Shape is RectangleShape2D rs)
+			{
+				rs.Size = new Vector2(_currentLength, DetectionRadius * 2f);
+				_hitShape.Position = new Vector2(_currentLength * 0.5f, 0f);
+			}
 		}
 
 		private void TryDamagePlayer()
 		{
 			if (_hasDamaged) return;
 			if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
-			if (_cachedPlayer == null) return;
+			if (_hitArea == null) return;
 
-			var hitArea = _cachedPlayer.GetNodeOrNull<Area2D>("HitArea")
-				?? _cachedPlayer.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-			Vector2 targetCenter = hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? _cachedPlayer.GlobalPosition;
+			// 俯视角地面判定（Area2D 物理重叠，与子弹同构）：判定带 = 光束水平段 × DetectionRadius 垂直容差，
+			// 随光束生长同步扩展（UpdateBeam），方向由判定带旋转（= 瞄准角度）驱动。
+			// 击退沿地面水平分量（俯视角）
+			float beamAngle = _hitArea?.Rotation ?? (FacingRight ? 0f : Mathf.Pi);
+			Vector2 beamDir = new(Mathf.Cos(beamAngle), 0f);
+			if (beamDir == Vector2.Zero) beamDir = new Vector2(FacingRight ? 1f : -1f, 0f);
 
-			// 俯视角地面判定：判定起点/方向投影到 y=0 地面平面——
-			// 光束视觉在发射点高度（含 tilt 俯仰），判定不受视觉高度/倾斜影响
-			Vector2 judgeOrigin = new(GlobalPosition.X, 0f);
-			Vector2 beamDir = new(Mathf.Cos(Rotation), 0f);
-			if (beamDir == Vector2.Zero)
-				beamDir = new Vector2(FacingRight ? 1f : -1f, 0f);
+			var damaged = new HashSet<ulong>();
+			// Area 目标：只接受受击判定区（HitArea/TriggerArea），玩家攻击/交互 Area 探入光束不触发（同 Boomerang 过滤）
+			foreach (var area in _hitArea.GetOverlappingAreas())
+			{
+				if (area.Name != "HitArea" && area.Name != "TriggerArea") continue;
+				TryDamageReceiver(area, beamDir, damaged);
+			}
+			// Body 目标（DestructibleObject 等 StaticBody2D）
+			foreach (var body in _hitArea.GetOverlappingBodies())
+				TryDamageReceiver(body, beamDir, damaged);
 
-			float along = (targetCenter.X - judgeOrigin.X) * beamDir.X;
-			if (along < 0f || along > _currentLength) return;
-
-			// 地面平面内玩家高度容差：HitArea 半径（地面判定只关心玩家是否贴地）
-			float perp = Mathf.Abs(targetCenter.Y - judgeOrigin.Y);
-			float detectionRadius = 150f;
-			if (hitShape?.Shape is CapsuleShape2D cap)
-				detectionRadius = cap.Radius * Mathf.Abs(hitShape.GlobalTransform.Scale.X);
-
-			if (perp > detectionRadius) return;
-			if (_cachedPlayer is not GameActor actor) return;
-
-			bool alreadyInvincible = actor is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 			_hasDamaged = true;
+		}
 
-			bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
+		private void TryDamageReceiver(Node collider, Vector2 beamDir, HashSet<ulong> damaged)
+		{
+			// 阵营过滤（ResolveDamageReceiver）→ 接收者解析（GameActor 或带 TakeDamage 的节点，如 WorldItem）+ 去重
+			if (DamageDispatcher.ResolveDamageReceiver(collider, TargetableFactions) is not Node receiver)
+				return;
+			if (!damaged.Add(receiver.GetInstanceId())) return;
+
+			bool dealt = DamageDispatcher.DealDamage(receiver, Damage, GlobalPosition, _attacker,
 				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
 			if (!dealt) return;
 
-			if (!alreadyInvincible)
+			// 击退只对 GameActor（WorldItem 无速度概念）
+			if (receiver is GameActor actor)
 			{
 				float knockSpeed = KnockbackSpeed > 0f
 					? KnockbackSpeed
 					: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-				if (knockSpeed > 0f) actor.Velocity = beamDir * knockSpeed;
+				if (knockSpeed > 0f) actor.ApplyKnockback(beamDir, knockSpeed);
 			}
+		}
+
+		/// <summary>
+		/// 瞄准目标：玩家组查找（同 DamageDispatcher.DealDamageFromArea 玩家发现先例）。
+		/// 物理查询受带高/距离/方向限制，大部分时候检测不到玩家——瞄准必须全局可靠。
+		/// 目标在光束背后（FacingRight 反侧）时由 AimHorizontalWithVerticalTilt 的 front 检查保持水平。
+		/// </summary>
+		private Vector2? FindAimTarget()
+		{
+			var player = GetTree().GetFirstNodeInGroup("player");
+			return player is GameActor ga ? GetAimCenter(ga) : null;
+		}
+
+		/// <summary>取目标 HitArea CollisionShape2D 的世界坐标作为瞄准中心。</summary>
+		private static Vector2 GetAimCenter(GameActor actor)
+		{
+			var hitArea = actor.GetNodeOrNull<Area2D>("HitArea")
+				?? actor.FindChild("HitArea", recursive: true, owned: false) as Area2D;
+			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			return hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? actor.GlobalPosition;
+		}
+
+		/// <summary>
+		/// 显式攻击来源（由生成方传入，如 EnemyAttackTemplate 生成时设置）。
+		/// 优先于父节点解析：父节点下第一个敌人不一定是发射者，解析错误会导致 AllowSelfDamage 保护失效（打自己）。
+		/// </summary>
+		public GameActor? Attacker
+		{
+			get => _attacker;
+			set => _attacker = value;
 		}
 
 		private void ResolveAttacker()
 		{
+			if (_attacker != null) return;
 			var parent = GetParent();
 			if (parent == null) return;
 			foreach (var child in parent.GetChildren())

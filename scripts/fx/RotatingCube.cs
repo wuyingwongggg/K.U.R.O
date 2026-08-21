@@ -9,7 +9,7 @@ namespace Kuros.Fx
     /// 三层 Sprite2D 叠加渲染：FaceFill（面+二进制雨）+ Wireframe（发光线框）+ BuildMask（构建扫描线）。
     /// 生命周期：spawn 构建动画 → 直线飞行 → 超时或命中后 despawn 消解动画。
     /// </summary>
-    public partial class RotatingCube : Node2D, IFacingDirectional
+    public partial class RotatingCube : Node2D, IFacingDirectional, IAttackerProvider
     {
         [ExportCategory("Movement")]
         [Export] public bool FacingRight { get; set; } = true;
@@ -47,9 +47,8 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 25;
 
         [ExportCategory("Collision Layers")]
-        [Export(PropertyHint.Range, "1,32,1")] public int PlayerCollisionLayer = 3;
-        [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayer = 2;
-        [Export(PropertyHint.Range, "1,32,1")] public int WorldItemCollisionLayer = 1;
+        /// <summary>物理查询碰撞掩码（层 1 = HitArea/DestructibleObject，层 2 = 敌人 body，层 3 = 玩家 body）。阵营过滤由 TargetableFactions 负责。</summary>
+        [Export(PropertyHint.Layers2DPhysics)] public uint TargetCollisionMask = 7u;
 
         [ExportCategory("Knockback")]
         [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 400f;
@@ -266,9 +265,9 @@ namespace Kuros.Fx
         /// </summary>
         private void ResolveSprites()
         {
-            _wireframeSprite = GetNodeOrNull<Sprite2D>("Wireframe");
-            _buildSprite = GetNodeOrNull<Sprite2D>("BuildMask");
-            _faceSprite = GetNodeOrNull<Sprite2D>("FaceFill");
+            _wireframeSprite = GetNodeOrNull<Sprite2D>("Visual/Wireframe");
+            _buildSprite = GetNodeOrNull<Sprite2D>("Visual/BuildMask");
+            _faceSprite = GetNodeOrNull<Sprite2D>("Visual/FaceFill");
         }
 
         /// <summary>
@@ -294,27 +293,11 @@ namespace Kuros.Fx
             }
         }
 
-        /// <summary>
-        /// 根据 TargetableFactions 构建碰撞掩码，追加到 AttackArea 的 CollisionMask 上。
-        /// </summary>
-        private uint BuildFactionMask()
-        {
-            uint mask = 0;
-            if (TargetableFactions.HasFlag(TargetableFactions.Player))
-                mask |= 1u << (PlayerCollisionLayer - 1);
-            if (TargetableFactions.HasFlag(TargetableFactions.Enemy))
-                mask |= 1u << (EnemyCollisionLayer - 1);
-            if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
-                mask |= 1u << (WorldItemCollisionLayer - 1);
-            return mask;
-        }
-
         private void ApplyCollisionMaskOverride()
         {
             if (_attackArea == null) return;
-            uint factionMask = BuildFactionMask();
-            if (factionMask == 0) return;
-            _attackArea.CollisionMask |= factionMask;
+            if (TargetCollisionMask == 0) return;
+            _attackArea.CollisionMask |= TargetCollisionMask;
         }
 
         /// <summary>
@@ -385,7 +368,7 @@ namespace Kuros.Fx
         private void ApplyKnockback(GameActor actor)
         {
             if (KnockbackSpeed > 0f && _velocity.LengthSquared() > 0.01f)
-                actor.Velocity = _velocity.Normalized() * KnockbackSpeed;
+                actor.ApplyKnockback(_velocity.Normalized(), KnockbackSpeed);
         }
 
         /// <summary>

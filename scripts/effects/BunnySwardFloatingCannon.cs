@@ -44,6 +44,7 @@ namespace Kuros.Effects
         public float DespawnAnimDuration { get; set; } = 0.3f;
 
         private Marker2D? _laserSpawnPoint;      // 激光发射点（场景内 Marker2D，激光在此生成并继承旋转）
+        private float _beamHitOffsetY;           // 激光判定带相对根的 y 偏移（运行时从激光场景读取，瞄准偏移的唯一来源）
         private float _fireTimer;                // 开火计时器（累加 delta，达到 FireInterval 发射）
         private ShaderMaterial? _outlineMat;     // 轮廓 Sprite2D 的材质（控制 scanline 着色器参数）
         private ShaderMaterial? _spriteMat;      // 内部 Sprite2D 的材质（同上，两个图层同步动画）
@@ -56,6 +57,7 @@ namespace Kuros.Effects
         {
             base.OnApply();
             _laserSpawnPoint = GetNode<Marker2D>("Marker2D");
+            _beamHitOffsetY = ResolveLaserHitOffset();
             _fireTimer = 0f;
             _despawning = false;
             _lifeElapsed = 0f;
@@ -138,11 +140,12 @@ namespace Kuros.Effects
                 return;
             }
 
-            // 找最近敌人并转向瞄准
+            // 找最近敌人并转向瞄准（朝目标上方 _beamHitOffsetY 偏移：
+            // 激光从炮口射出命中目标上方，判定带（相对根偏移同量）正好落在目标中心——与偏移值无关）
             var nearestEnemy = FindNearestEnemy();
             if (nearestEnemy != null)
             {
-                RotateToward(GetEnemyAimCenter(nearestEnemy));
+                RotateToward(GetEnemyAimCenter(nearestEnemy) + new Vector2(0f, -_beamHitOffsetY));
             }
 
             // 定时开火（有目标时才发射）
@@ -216,6 +219,16 @@ namespace Kuros.Effects
                 scale.Y = direction.X < 0 ? -Mathf.Abs(scale.Y) : Mathf.Abs(scale.Y);
                 _outline.Scale = scale;
             }
+        }
+
+        /// <summary>读取激光判定带相对根的 y 偏移（单一来源：激光场景 BeamHitArea 位置），瞄准偏移与判定带位置自动一致。</summary>
+        private float ResolveLaserHitOffset()
+        {
+            if (LaserEffect == null) return 0f;
+            var probe = LaserEffect.Instantiate<Node2D>();
+            var offset = probe?.GetNodeOrNull<Area2D>("BeamHitArea")?.Position.Y ?? 0f;
+            probe?.QueueFree();
+            return offset;
         }
 
         /// <summary>在检测范围内查找最近的存活敌人（enemies 组，跳过无效/已死亡）。</summary>

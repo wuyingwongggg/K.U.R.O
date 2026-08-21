@@ -139,7 +139,7 @@ namespace Kuros.Fx
             if (dir.LengthSquared() < 0.01f)
                 dir = Vector2.Right;
 
-            actor.Velocity = dir.Normalized() * KnockbackSpeed;
+            actor.ApplyKnockback(dir.Normalized(), KnockbackSpeed);
         }
 
         /// <summary>

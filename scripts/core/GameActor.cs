@@ -127,6 +127,17 @@ namespace Kuros.Core
 		/// </summary>
 		public ImmunityFlags ActiveImmunities { get; set; } = ImmunityFlags.None;
 
+		/// <summary>
+		/// 统一击退入口（EFFECT_STANDARD.md 第四条）：ForcedMovement 免疫与生死门检查后写入速度。
+		/// 所有命中击退必须走此方法，禁止直接赋值 Velocity。
+		/// </summary>
+		public virtual void ApplyKnockback(Vector2 direction, float speed)
+		{
+			if (IsDeadOrDying) return;
+			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			Velocity = direction * speed;
+		}
+
 		public float GetSecondsSinceLastDamageTaken()
 		{
 			if (_lastDamageTakenAtMs == 0)

@@ -17,6 +17,7 @@ TrackStartTime = 1.3
 RotateWithVelocity = false
 Duration = 15.0
 HitPlayerDelay = 0.1
+TargetableFactions = 6
 Damage = 20
 DamageInterval = 0.30000000000000004
 EnableSlowOnHit = true
@@ -27,6 +28,7 @@ Pseudo3DXAngle = 55.0
 Pseudo3DZSpeed = 2000.0
 
 [node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
 scale = Vector2(0.33, 0.33)

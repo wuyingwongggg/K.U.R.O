@@ -172,7 +172,7 @@ skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 1.28
 script = ExtResource("5_muxhp")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -242,13 +242,13 @@ shape = SubResource("CapsuleShape2D_jjtbv")
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(-100, -620)
+position = Vector2(-200, -120)
 
 [node name="Marker2D2" type="Marker2D" parent="Node2D"]
-position = Vector2(780, -1020)
+position = Vector2(700, -520)
 
 [node name="Marker2D3" type="Marker2D" parent="Node2D"]
-position = Vector2(-250, -2290)
+position = Vector2(-250, -1890)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("4_state_machine")

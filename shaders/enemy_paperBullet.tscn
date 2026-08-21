@@ -12,39 +12,28 @@ z_index = 3
 z_as_relative = false
 script = ExtResource("1_g1yeh")
 Speed = 1800.0
-MaxVerticalTiltDegrees = 20.0
+MaxVerticalTiltDegrees = 30.0
 Duration = 2.0
-TrailPoints = 10
-BeamColor = Color(1, 1, 1, 0)
-GlowColor = Color(1, 0.23137255, 0, 0)
-BeamWidth = 100.0
-GlowWidth = 100.0
 TargetableFactions = 1
 EnableAfterimage = true
-Pseudo3DTargetPath = NodePath("Sprite2D")
+Pseudo3DTargetPath = NodePath("Visual/Sprite2D")
 Pseudo3DXAngle = 60.0
 Pseudo3DZSpeed = 1800.0
 
 [node name="AfterimageController" type="Node" parent="."]
 script = ExtResource("3_afterimage")
-sprite_path = NodePath("../Sprite2D")
+sprite_path = NodePath("../Visual/Sprite2D")
 is_spine = false
 lifetime = 0.1
 
-[node name="BeamLine" type="Line2D" parent="."]
-skew = 1.0471976
-antialiased = true
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -300)
 
-[node name="GlowLine" type="Line2D" parent="."]
-skew = 1.0471976
-antialiased = true
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
 texture = ExtResource("2_otowl")
 region_rect = Rect2(0, 0, 128, 128)
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("CircleShape2D_hgsvh")

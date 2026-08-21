@@ -20,7 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
     ///   y = lerp(startY, targetY, t) - sin(t * π) * PeakHeight
     ///   其中 t = elapsed / Duration ∈ [0, 1]
     /// </summary>
-    public partial class EnemyWaiterAThrowProjectile : Node2D
+    public partial class EnemyWaiterAThrowProjectile : Node2D, Kuros.Fx.IAttackerProvider
     {
         /// <summary>飞行总时长（秒）。</summary>
         [Export] public float Duration { get; set; } = 0.8f;

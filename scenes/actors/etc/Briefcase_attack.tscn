@@ -147,7 +147,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l6vw5"]
-size = Vector2(450, 600)
+size = Vector2(750, 600)
 
 [node name="BriefcaseAttack" type="Node2D" node_paths=PackedStringArray("SpawnMarkers")]
 z_index = 2
@@ -164,6 +164,7 @@ EffectOverrides = Dictionary[String, Variant]({
 })
 SpawnInterval = 1.0
 SpawnMarkers = [NodePath("Node2D/Marker2D")]
+EffectId = "12042d70-ea97-448c-a084-dde9a4df0136"
 Duration = 10.0
 
 [node name="Shadow" type="Sprite2D" parent="."]
@@ -183,10 +184,10 @@ offset = Vector2(-220, -250)
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(0, 100)
+position = Vector2(-175, 100)
 shape = SubResource("RectangleShape2D_l6vw5")
 
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(0, -400)
+position = Vector2(0, -100)

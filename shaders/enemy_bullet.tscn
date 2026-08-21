@@ -13,7 +13,10 @@ Speed = 6000.0
 MaxVerticalTiltDegrees = 7.5
 Duration = 2.0
 TrailPoints = 2
-TargetableFactions = 1
+TargetableFactions = 3
+KnockbackSpeed = 0.0
+KnockbackDistance = 25.0
+KnockbackDuration = 0.08
 
 [node name="Visual" type="Node2D" parent="."]
 position = Vector2(0, -190)

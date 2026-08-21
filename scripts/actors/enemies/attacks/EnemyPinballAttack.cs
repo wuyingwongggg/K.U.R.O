@@ -272,7 +272,7 @@ namespace Kuros.Actors.Enemies.Attacks
 					: 0f);
 
 			if (knockSpeed > 0f)
-				actor.Velocity = (actor.GlobalPosition - Enemy.GlobalPosition).Normalized() * knockSpeed;
+				actor.ApplyKnockback((actor.GlobalPosition - Enemy.GlobalPosition).Normalized(), knockSpeed);
 		}
 
 		// 结束弹射：停止 dash、进入 Recovery

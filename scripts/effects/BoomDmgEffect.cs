@@ -110,20 +110,17 @@ namespace Kuros.Fx
 
             if (speed <= 0f) return;
 
-            if (actor.ActiveImmunities.HasFlag(Core.ImmunityFlags.ForcedMovement))
-                return;
-
             Vector2 direction = actor.GlobalPosition - origin;
             if (direction == Vector2.Zero) direction = Vector2.Up;
 
             Vector2 knockbackVelocity = direction.Normalized() * speed;
 
-            // 玩家：通过 ConsumePendingHitKnockback 走标准击退路径
+            // 玩家：通过 ConsumePendingHitKnockback 走标准击退路径（ApplyKnockback 内置 ForcedMovement 守门）
             if (actor is Actors.Heroes.MainCharacter mainCharacter)
             {
                 if (mainCharacter.ConsumePendingHitKnockback())
                 {
-                    mainCharacter.Velocity = knockbackVelocity;
+                    mainCharacter.ApplyKnockback(knockbackVelocity.Normalized(), speed);
 
                     // 若玩家处于 Frozen 状态且允许外力位移，同步通知
                     var frozenState = mainCharacter.StateMachine?
@@ -138,8 +135,7 @@ namespace Kuros.Fx
             }
             else
             {
-                // 敌人：直接覆写速度（TakeDamage 已触发 Hit 状态）
-                actor.Velocity = knockbackVelocity;
+                actor.ApplyKnockback(knockbackVelocity.Normalized(), speed);
             }
         }
     }

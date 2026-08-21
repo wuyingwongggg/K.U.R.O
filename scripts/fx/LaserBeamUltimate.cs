@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Events;
 using System.Collections.Generic;
 
 namespace Kuros.Fx
@@ -14,7 +15,7 @@ namespace Kuros.Fx
     ///   - BeamLine / GlowLine 实时渲染飞行拖尾（存储最近 N 个世界坐标）。
     ///   - 超过 Duration 后自动销毁。
     /// </summary>
-    public partial class LaserBeamUltimate : Node2D
+    public partial class LaserBeamUltimate : Node2D, IAttackerProvider
     {
         public GameActor? Attacker { get; set; }
 
@@ -54,6 +55,7 @@ namespace Kuros.Fx
         private Line2D? _beamLine;
         private Line2D? _glowLine;
         private Area2D? _attackArea;
+        private Node2D? _visual;
 
         // ── 运行时状态 ────────────────────────────────────────────
 
@@ -74,9 +76,10 @@ namespace Kuros.Fx
             _initialized = false;
             _hit         = false;
 
-            _beamLine   = GetNodeOrNull<Line2D>("BeamLine");
-            _glowLine   = GetNodeOrNull<Line2D>("GlowLine");
+            _beamLine   = GetNodeOrNull<Line2D>("Visual/BeamLine");
+            _glowLine   = GetNodeOrNull<Line2D>("Visual/GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
+            _visual     = GetNodeOrNull<Node2D>("Visual");
 
             if (_beamLine != null)
             {
@@ -128,12 +131,17 @@ namespace Kuros.Fx
             // ─ 移动 ────────────────────────────────────────────────
             GlobalPosition += _currentVelocity * dt;
 
-            // ─ 旋转朝向速度方向 ────────────────────────────────────
+            // ─ 旋转朝向速度方向（只转视觉层：判定点固定在地面，不随旋转偏移）──
             if (_currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
+            {
+                if (_visual != null)
+                    _visual.Rotation = _currentVelocity.Angle();
+                else
+                    Rotation = _currentVelocity.Angle(); // 兼容无 Visual 节点的旧结构
+            }
 
-            // ─ 更新拖尾 ────────────────────────────────────────────
-            _trail.Enqueue(GlobalPosition);
+            // ─ 更新拖尾（记录视觉轨迹：视觉节点位置而非根/判定点位置）──
+            _trail.Enqueue(_visual != null ? _visual.GlobalPosition : GlobalPosition);
             while (_trail.Count > TrailPoints)
                 _trail.Dequeue();
             UpdateTrail();
@@ -161,40 +169,68 @@ namespace Kuros.Fx
             var pts = new Vector2[_trail.Count];
             int i = 0;
             foreach (var p in _trail)
-                pts[i++] = ToLocal(p);   // 全局坐标 → 本节点局部坐标
+            {
+                // 拖尾属于视觉层：相对 Visual 局部空间（Visual 旋转时拖尾跟随视觉）
+                pts[i++] = _visual != null ? _visual.ToLocal(p) : ToLocal(p);
+            }
 
             if (_beamLine != null) _beamLine.Points = pts;
             if (_glowLine != null) _glowLine.Points = pts;
         }
 
         /// <summary>
-        /// 每帧轮询：用 IsHitByArea 检测 AttackArea 与玩家 HitArea 的重叠，
-        /// 与项目其他攻击（PerformAttack / IsHitByArea）保持一致。
+        /// 每帧轮询（参考 EnemyBullet）：遍历 AttackArea 的重叠对象，对每个目标直接 DealDamage——
+        /// TargetableFactions 完整过滤（玩家/敌人/WorldItem）+ 自伤保护，命中即销毁。
         /// </summary>
         private void TryHitPlayer()
         {
             if (_attackArea == null || !_attackArea.IsInsideTree()) return;
-            if (_player is not GameActor actor) return;
-            if (!actor.IsHitByArea(_attackArea)) return;
 
-            _hit = true;
-
-            bool alreadyInvincible = actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
-
-            DamageDispatcher.DealDamageFromArea(_attackArea, Damage, Attacker, TargetableFactions, AllowSelfDamage);
-
-            if (!alreadyInvincible)
+            foreach (var area in _attackArea.GetOverlappingAreas())
             {
-                float knockSpeed = KnockbackSpeed > 0f
-                    ? KnockbackSpeed
-                    : (KnockbackDistance > 0f
-                        ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-                        : 0f);
-                if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                    actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
+                var target = area.Owner ?? area;
+                if (target == null) continue;
+                if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, Attacker)) continue;
+
+                bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, Attacker,
+                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                if (!dealt) continue;
+
+                if (area.Owner is GameActor hitActor)
+                    ApplyKnockbackTo(hitActor);
+                _hit = true;
+                QueueFree();
+                return;
             }
 
-            QueueFree();
+            foreach (var body in _attackArea.GetOverlappingBodies())
+            {
+                if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, Attacker)) continue;
+
+                bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, Attacker,
+                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                if (!dealt) continue;
+
+                if (body is GameActor hitActor)
+                    ApplyKnockbackTo(hitActor);
+                _hit = true;
+                QueueFree();
+                return;
+            }
+        }
+
+        /// <summary>击退（参考子弹）：玩家无敌帧内跳过；速度优先，否则由 KnockbackDistance/Duration 推算。</summary>
+        private void ApplyKnockbackTo(GameActor actor)
+        {
+            if (actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible) return;
+
+            float knockSpeed = KnockbackSpeed > 0f
+                ? KnockbackSpeed
+                : (KnockbackDistance > 0f
+                    ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
+                    : 0f);
+            if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
+                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
         }
 
         /// <summary>取玩家 HitArea CollisionShape2D 的世界坐标作为转向瞄准中心。</summary>

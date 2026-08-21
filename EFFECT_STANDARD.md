@@ -116,6 +116,14 @@ area.BodyEntered += OnBodyEntered;
 
 **待解决**：是否接受"用 `GetNodesInGroup("world_items")` 处理 WorldItem，其余阵营走 `IntersectShape`"的混合方案，还是为 WorldItem 统一碰撞层后全部迁移。
 
+### WorldItem 阵营的现状（2026-08 定稿）
+
+`TargetableFactions.WorldItem` 的实际语义 = **只对 DestructibleObject（可破坏物）生效**：
+- `DestructibleObject`：有 `TakeDamage(float)` 接口（HP/摧毁），StaticBody2D 在层 1 → 可被伤害
+- `WorldItemEntity` / `RigidBodyWorldItemEntity`（掉落物）：无 `TakeDamage` → `ResolveDamageReceiver` 解析不出伤害接收者，**免疫伤害**（掉落物不该被打碎）
+
+因此配置 `WorldItem` flag 时实际命中目标只有可破坏物；掉落物即使物理层被检测到也会被伤害结算拒绝。
+
 ---
 
 ### 场景根节点类型规范

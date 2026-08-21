@@ -242,7 +242,7 @@ namespace Kuros.Fx
                     ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
                     : 0f);
             if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
+                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
         }
 
         // ── 私有方法 ──────────────────────────────────────────────

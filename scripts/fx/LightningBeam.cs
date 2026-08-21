@@ -330,7 +330,7 @@ namespace Kuros.Fx
 					float knockSpeed = KnockbackSpeed > 0f
 						? KnockbackSpeed
 						: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-					if (knockSpeed > 0f) actor.Velocity = dir * knockSpeed;
+					if (knockSpeed > 0f) actor.ApplyKnockback(dir, knockSpeed);
 				}
 				return;
 			}
@@ -408,7 +408,7 @@ namespace Kuros.Fx
 				float knockSpeed = KnockbackSpeed > 0f
 					? KnockbackSpeed
 					: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-				if (knockSpeed > 0f) actor.Velocity = beamDir * knockSpeed;
+				if (knockSpeed > 0f) actor.ApplyKnockback(beamDir, knockSpeed);
 			}
 		}
 
