@@ -33,7 +33,7 @@ namespace Kuros.Fx
         /// </summary>
         [Export] public bool FacingRight { get; set; } = true;
         /// <summary>垂直倾斜最大角度（度）。水平基础方向固定，此值限制上下偏转幅度。</summary>
-        [Export(PropertyHint.Range, "0,45,0.5")] public float MaxVerticalTiltDegrees = 15f;
+        [Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 15f;
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 4.0f;
@@ -60,6 +60,7 @@ namespace Kuros.Fx
 
         // ── 子节点引用 ────────────────────────────────────────────
 
+        private Node2D? _visual;
         private Line2D? _beamLine;
         private Line2D? _glowLine;
         private Area2D? _attackArea;
@@ -84,8 +85,9 @@ namespace Kuros.Fx
             _initialized = false;
             _hit         = false;
 
-            _beamLine   = GetNodeOrNull<Line2D>("BeamLine");
-            _glowLine   = GetNodeOrNull<Line2D>("GlowLine");
+            _visual     = GetNodeOrNull<Node2D>("Visual");
+            _beamLine   = GetNodeOrNull<Line2D>("Visual/BeamLine");
+            _glowLine   = GetNodeOrNull<Line2D>("Visual/GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
 
             if (_attackArea != null)
@@ -162,12 +164,17 @@ namespace Kuros.Fx
             // ─ 移动 ────────────────────────────────────────────────
             GlobalPosition += _currentVelocity * dt;
 
-            // ─ 旋转朝向速度方向 ────────────────────────────────────
+            // ─ 旋转朝向速度方向（只转视觉节点：判定点固定在地面投影，不随旋转偏移）──
             if (_currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
+            {
+                if (_visual != null)
+                    _visual.Rotation = _currentVelocity.Angle();
+                else
+                    Rotation = _currentVelocity.Angle(); // 兼容无 Visual 节点的旧结构
+            }
 
-            // ─ 更新拖尾 ────────────────────────────────────────────
-            _trail.Enqueue(GlobalPosition);
+            // ─ 更新拖尾（记录视觉轨迹：视觉节点位置而非根/判定点位置）──
+            _trail.Enqueue(_visual != null ? _visual.GlobalPosition : GlobalPosition);
             while (_trail.Count > TrailPoints)
                 _trail.Dequeue();
             UpdateTrail();
@@ -277,7 +284,10 @@ namespace Kuros.Fx
             var pts = new Vector2[_trail.Count];
             int i = 0;
             foreach (var p in _trail)
-                pts[i++] = ToLocal(p);
+            {
+                // 拖尾属于视觉层：相对 Visual 局部空间（Visual 旋转时拖尾跟随视觉）
+                pts[i++] = _visual != null ? _visual.ToLocal(p) : ToLocal(p);
+            }
 
             if (_beamLine != null) _beamLine.Points = pts;
             if (_glowLine != null) _glowLine.Points = pts;

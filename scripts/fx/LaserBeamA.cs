@@ -297,12 +297,18 @@ namespace Kuros.Fx
 			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			Vector2 targetCenter = hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? _cachedPlayer.GlobalPosition;
 
-			Vector2 beamDir = new(Mathf.Cos(Rotation), Mathf.Sin(Rotation));
-			Vector2 toTarget = targetCenter - GlobalPosition;
-			float along = toTarget.Dot(beamDir);
+			// 俯视角地面判定：判定起点/方向投影到 y=0 地面平面——
+			// 光束视觉在发射点高度（含 tilt 俯仰），判定不受视觉高度/倾斜影响
+			Vector2 judgeOrigin = new(GlobalPosition.X, 0f);
+			Vector2 beamDir = new(Mathf.Cos(Rotation), 0f);
+			if (beamDir == Vector2.Zero)
+				beamDir = new Vector2(FacingRight ? 1f : -1f, 0f);
+
+			float along = (targetCenter.X - judgeOrigin.X) * beamDir.X;
 			if (along < 0f || along > _currentLength) return;
 
-			float perp = Mathf.Abs(toTarget.X * beamDir.Y - toTarget.Y * beamDir.X);
+			// 地面平面内玩家高度容差：HitArea 半径（地面判定只关心玩家是否贴地）
+			float perp = Mathf.Abs(targetCenter.Y - judgeOrigin.Y);
 			float detectionRadius = 150f;
 			if (hitShape?.Shape is CapsuleShape2D cap)
 				detectionRadius = cap.Radius * Mathf.Abs(hitShape.GlobalTransform.Scale.X);

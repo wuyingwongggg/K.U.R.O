@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
 [ext_resource type="Texture2D" uid="uid://cik0ghw1l45p2" path="res://assets/BuildIcon/Normal_B_002_闪避扩容.png" id="3_fefd0"]
-[ext_resource type="PackedScene" path="res://scenes/builds/normal/NormalDashChargeBoostEffect.tscn" id="3_scene"]
+[ext_resource type="PackedScene" uid="uid://8s6kdcqs5bi1" path="res://scenes/builds/normal/NormalDashChargeBoostEffect.tscn" id="3_scene"]
 
 [sub_resource type="Resource" id="Resource_B002"]
 script = ExtResource("1_entry")

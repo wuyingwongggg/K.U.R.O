@@ -84,6 +84,7 @@ namespace Kuros.Fx
         private bool _initialized;
         private bool _caught;
         private GameActor? _attacker;
+        private Node2D? _visual;
         private ShaderMaterial? _pseudo3DMaterial;
         private Node2D? _pseudo3DTarget;
         private float _pseudo3DZAccum;
@@ -100,6 +101,7 @@ namespace Kuros.Fx
             _caught = false;
 
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
+            _visual = GetNodeOrNull<Node2D>("Visual");
             if (_attackArea != null)
             {
                 _attackArea.BodyEntered += OnBodyEntered;
@@ -175,10 +177,14 @@ namespace Kuros.Fx
             _currentVelocity = new Vector2(vx, vy);
             GlobalPosition += _currentVelocity * dt;
 
-            if (RotateWithVelocity && _currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
-            else if (!RotateWithVelocity)
-                Rotation = _currentVelocity.X > 0.1f ? 0f : (_currentVelocity.X < -0.1f ? Mathf.Pi : Rotation);
+            // 旋转只作用于视觉节点：攻击判定（AttackArea）固定不随旋转偏移
+            float targetAngle = RotateWithVelocity
+                ? (_currentVelocity.LengthSquared() > 0.1f ? _currentVelocity.Angle() : Rotation)
+                : (_currentVelocity.X > 0.1f ? 0f : (_currentVelocity.X < -0.1f ? Mathf.Pi : Rotation));
+            if (_visual != null)
+                _visual.Rotation = targetAngle;
+            else
+                Rotation = targetAngle; // 兼容无 Visual 节点的旧结构
 
             if (Pseudo3DZSpeed != 0f && _pseudo3DMaterial != null)
             {

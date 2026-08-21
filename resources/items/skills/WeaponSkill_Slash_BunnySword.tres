@@ -31,7 +31,6 @@ DisplayName = "光剑攻击"
 SkillType = 1
 AnimationName = "Weapon_Slash_BunnySword"
 DamageMultiplier = 0.6
-ShowHitboxDebug = false
 Description = "攻击时召唤浮游炮，冷却10秒，浮游炮每秒对目标的敌人发射激光造成伤害，持续5秒。每次攻击消耗电量，电量不足无法攻击"
 Effects = Array[ExtResource("1_2po5m")]([SubResource("Resource_2po5m"), SubResource("Resource_battery")])
 WarmupDuration = 0.17

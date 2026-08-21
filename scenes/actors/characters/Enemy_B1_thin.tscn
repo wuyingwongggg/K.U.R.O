@@ -62,16 +62,17 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xj5bf"]
-size = Vector2(300, 600)
+size = Vector2(350, 300)
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(900, 400)
+size = Vector2(1000, 250)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h8apo"]
-size = Vector2(650, 400)
+size = Vector2(650, 600)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_l3qmk"]
-radius = 180.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_nb4oj"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="Resource" id="Resource_33td2"]
 script = ExtResource("18_iwg3l")
@@ -180,23 +181,22 @@ script = ExtResource("21_8xfgw")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("20_5i0uy")
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "skill"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.91
 script = ExtResource("21_8xfgw")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(5.4499846, -328.82996)
-rotation = -1.5865043
-scale = Vector2(0.99999976, 0.99999976)
+position = Vector2(371.15, -354.11935)
+rotation = -2.5898046
+scale = Vector2(1.0015165, 1.0038908)
+skew = -0.0046402216
 bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -600)
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -220,7 +220,6 @@ shape = SubResource("CircleShape2D_8xfgw")
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 150)
 shape = SubResource("RectangleShape2D_xj5bf")
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
@@ -228,20 +227,18 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(550, 160)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(500, 0)
 shape = SubResource("2")
 
 [node name="KickArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/KickArea"]
-position = Vector2(450, 200)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(325, 0)
 shape = SubResource("RectangleShape2D_h8apo")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_l3qmk")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_nb4oj")
 
 [node name="Node2D" type="Node2D" parent="."]
 scale = Vector2(0.99999994, 0.99999994)

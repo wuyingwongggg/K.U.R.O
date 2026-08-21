@@ -32,7 +32,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cc1qw"]
-size = Vector2(1200, 500)
+size = Vector2(1000, 350)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q6o81"]
 radius = 1024.0
@@ -41,10 +41,11 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dsttm"]
-size = Vector2(300, 800)
+size = Vector2(600, 450)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_yski7"]
-radius = 180.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_561kr"]
+radius = 150.0
+height = 600.0
 
 [sub_resource type="Resource" id="Resource_u2rds"]
 script = ExtResource("14_nf2mn")
@@ -135,15 +136,13 @@ script = ExtResource("5_htedi")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(450, -200)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(500, 0)
 shape = SubResource("RectangleShape2D_cc1qw")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -169,18 +168,16 @@ shape = SubResource("CircleShape2D_7t51a")
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, -120)
 shape = SubResource("RectangleShape2D_dsttm")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("CircleShape2D_yski7")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_561kr")
 
 [node name="Node2D" type="Node2D" parent="."]
-scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(0, -1200)
+position = Vector2(0, -900)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_ugem5")
@@ -226,7 +223,7 @@ CooldownDurationMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TargetableFactions = 7
 KnockbackDistance = 200.0
-KnockbackDuration = 0.09999999999999999
+KnockbackDuration = 0.1
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
 metadata/attack_weight = 40.0

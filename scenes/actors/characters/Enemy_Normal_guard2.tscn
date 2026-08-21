@@ -29,7 +29,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(1100, 500)
+size = Vector2(1100, 250)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
@@ -38,13 +38,15 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
-size = Vector2(300, 600)
+size = Vector2(350, 300)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_gkl6r"]
-radius = 700.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_e0def"]
+radius = 300.0
+height = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
-radius = 180.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_bo3lt"]
+radius = 100.0
+height = 300.0
 
 [node name="Enemy_Normal_guard2" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -58,8 +60,6 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 10
 MaxHealth = 150
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用警棍攻击客户，会胡乱挥舞警棍攻击周围的目标"
 StateMachine = NodePath("StateMachine")
@@ -140,15 +140,14 @@ bone_name = "bone2"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(400, 130)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(550, 0)
+scale = Vector2(0.99999994, 0.99999994)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -174,19 +173,18 @@ shape = SubResource("CircleShape2D_ooggc")
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 130)
 shape = SubResource("RectangleShape2D_k8d2p")
 
 [node name="MoveAttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/MoveAttackArea"]
-position = Vector2(0, 100)
-scale = Vector2(1.1, 0.5)
-shape = SubResource("CircleShape2D_gkl6r")
+rotation = 1.5707964
+scale = Vector2(1.5, 1.5)
+shape = SubResource("CapsuleShape2D_e0def")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_d5sdg")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_bo3lt")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("5_hayra")

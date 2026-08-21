@@ -49,14 +49,15 @@ shader = ExtResource("2_4ht1x")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_vj0fg"]
-radius = 180.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_t2lf0"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vj0fg"]
-size = Vector2(400, 500)
+size = Vector2(350, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
-size = Vector2(650, 400)
+size = Vector2(650, 300)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
 radius = 660.0
@@ -145,7 +146,7 @@ skeleton_data_res = ExtResource("4_o4xwm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.12
+preview_time = 0.6666667
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -171,21 +172,18 @@ scale = Vector2(0.99999994, 0.99999994)
 bone_name = "bone2"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("CircleShape2D_vj0fg")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_t2lf0")
 
 [node name="HitArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
-position = Vector2(0, -400)
 shape = SubResource("RectangleShape2D_vj0fg")
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
-position = Vector2(0, 100)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(325, -600)
+position = Vector2(325, 0)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
 
@@ -194,7 +192,6 @@ collision_layer = 7
 collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
-position = Vector2(0, -650)
 shape = SubResource("CircleShape2D_0y2r2")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]

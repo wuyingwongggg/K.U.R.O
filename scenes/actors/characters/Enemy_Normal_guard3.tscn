@@ -42,7 +42,7 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(4000, 400)
+size = Vector2(4000, 600)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
@@ -51,10 +51,11 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofcms"]
-size = Vector2(300, 600)
+size = Vector2(350, 300)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
-radius = 180.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3kv8y"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="Resource" id="Resource_3kv8y"]
 script = ExtResource("15_06rhn")
@@ -79,7 +80,6 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-AttackDamage = 0
 MaxHealth = 120
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用手枪攻击客户，会朝客户投掷炸弹，建议优先击破"
 StateMachine = NodePath("StateMachine")
@@ -157,19 +157,15 @@ rotation = -1.5480726
 bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -600)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
 position = Vector2(2000, 0)
-scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("2")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -193,21 +189,18 @@ scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 130)
 shape = SubResource("RectangleShape2D_ofcms")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("CircleShape2D_d5sdg")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_3kv8y")
 
 [node name="Node2D" type="Node2D" parent="."]
-scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(465, -630)
+position = Vector2(465, 0)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("7_ewc2t")
