@@ -66,6 +66,7 @@ material = SubResource("ShaderMaterial_o1fls")
 texture = SubResource("CompressedTexture2D_32rtd")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 shape = SubResource("RectangleShape2D_o1fls")

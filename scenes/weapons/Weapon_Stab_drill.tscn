@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_0qove"]
 [ext_resource type="Resource" uid="uid://ba0kuifke6v7o" path="res://resources/items/Weapon_Stab_drill.tres" id="2_0qove"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_1l2vw"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="3_emqd7"]
-[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_ie112"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="3_emqd7"]
+[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_ie112"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_g0q5t"]
 shader = ExtResource("3_1l2vw")
@@ -39,7 +39,7 @@ load_path = "res://.godot/imported/钻头.png-2a47c7fe5d274a9cfe49d5c8ed85d08a.c
 size = Vector2(420, 130)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
-size = Vector2(550, 25)
+size = Vector2(550, 50)
 
 [node name="WeaponStabDrill" type="CharacterBody2D"]
 z_index = 1
@@ -65,13 +65,13 @@ material = SubResource("ShaderMaterial_t6geh")
 texture = SubResource("CompressedTexture2D_ie112")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 position = Vector2(5, 8)
 shape = SubResource("RectangleShape2D_g0q5t")
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("RectangleShape2D_t6geh")

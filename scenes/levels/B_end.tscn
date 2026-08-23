@@ -57,10 +57,10 @@ size = Vector2(700, 1500)
 size = Vector2(700, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b2kum"]
-size = Vector2(356.1626, 200)
+size = Vector2(382.49802, 239.5458)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_rvxy7"]
-vertices = PackedVector2Array(4, 1345, 2390, 1370, -2773.7969, 1370, -356, 1345, -598, 591, 2201, 538, 2390, 538, 2390, 680, 2290, 791, 1630, 791, -338, 624, 2390, 810, 2290, 1251, 1630, 1251, 1904, -221, 1904, -581, 2250, -381, 2250, 278, 2201, 278, 4, 1065, -1810, -479, -577, -578, 544, -581, 544, -372, 323, -372, -332, -392, 1849, -10, -598, 131, -332, 98, 1416, -9, 2694.8594, 680, 2694.7266, 810, -577, -627, -247, -627, -247, -770, 2390, -770, 2390, -381, 323, -112, 601, -112, 601, -10, 956, -10, 956, -9, 1416, -10, -1551, -392, -1551, -416, -2015, -416, -2170, -479, -2015, -2, -1692, -2, -1692, 98, -1698, 624, -2015, 784, 1849, -221, -1378, 131, -338, 1065, -1698, 784, -2015, 1065, -2170, 1065, -2771.7578, -770, -1810, 1345, -1810, 1198, -1551, 1198, -1551, 1114, -356, 1114, -1378, 591, -2170, 1345, -2170, -759, -1590, -770, -1810, -759, -1590, -578)
+vertices = PackedVector2Array(4, 1345, 2390, 1370, -2773.7969, 1370, -356, 1345, -598, 591, 2201, 538, 2390, 538, 2390, 680, 2290, 791, 1630, 791, -338, 624, 2390, 810, 2290, 1251, 1630, 1251, 1904, -221, 1904, -581, 2250, -381, 2250, 278, 2201, 278, 4, 1065, -1810, -479, -577, -578, 544, -581, 544, -372, 323, -372, -332, -392, 1849, -10, -598, 131, -332, 98, 1416, -9, 2694.8594, 680, 2694.7422, 810, -577, -627, -247, -627, -247, -770, 2390, -770, 2390, -381, 323, -112, 601, -112, 601, -10, 956, -10, 956, -9, 1416, -10, -1551, -392, -1551, -416, -2015, -416, -2170, -479, -2015, -2, -1692, -2, -1692, 98, -1698, 624, -2015, 784, 1849, -221, -1378, 131, -338, 1065, -1698, 784, -2015, 1065, -2170, 1065, -2771.7578, -770, -1810, 1345, -1810, 1198, -1551, 1198, -1551, 1114, -356, 1114, -1378, 591, -2170, 1345, -2170, -759, -1590, -770, -1810, -759, -1590, -578)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8, 9, 10), PackedInt32Array(11, 1, 12, 8), PackedInt32Array(12, 1, 0, 13), PackedInt32Array(14, 15, 16, 17, 18), PackedInt32Array(13, 0, 19, 9), PackedInt32Array(20, 21, 22, 23, 24, 25), PackedInt32Array(26, 18, 5, 4, 27, 28, 29), PackedInt32Array(7, 30, 31, 11, 8), PackedInt32Array(21, 32, 33, 22), PackedInt32Array(33, 34, 35, 15, 22), PackedInt32Array(35, 36, 16, 15), PackedInt32Array(37, 38, 39, 28), PackedInt32Array(39, 40, 41, 28), PackedInt32Array(29, 42, 26), PackedInt32Array(41, 29, 28), PackedInt32Array(37, 28, 25, 24), PackedInt32Array(25, 43, 44), PackedInt32Array(20, 25, 44), PackedInt32Array(20, 44, 45, 46), PackedInt32Array(47, 48, 49, 50, 51), PackedInt32Array(26, 52, 14, 18), PackedInt32Array(49, 28, 27, 53), PackedInt32Array(19, 54, 10, 9), PackedInt32Array(50, 55, 51), PackedInt32Array(51, 56, 57, 58), PackedInt32Array(59, 60, 61, 3), PackedInt32Array(61, 62, 63, 3), PackedInt32Array(49, 53, 64, 50), PackedInt32Array(46, 45, 47), PackedInt32Array(4, 10, 50, 64), PackedInt32Array(59, 3, 2), PackedInt32Array(65, 59, 2), PackedInt32Array(65, 2, 58, 57), PackedInt32Array(47, 51, 58, 46), PackedInt32Array(66, 46, 58), PackedInt32Array(66, 58, 67, 68), PackedInt32Array(68, 67, 69, 20), PackedInt32Array(20, 69, 21)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2851, -1555, 2777, -1551, 2774, 1570, -2854, 1572)])
 source_geometry_mode = 2
@@ -225,7 +225,7 @@ shape = SubResource("RectangleShape2D_rvxy7")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(2988.7097, 617.04675)
+position = Vector2(2945.1958, 601.1916)
 rotation = 0.56548667
 shape = SubResource("RectangleShape2D_b2kum")
 debug_color = Color(0, 0, 0, 0.19607843)

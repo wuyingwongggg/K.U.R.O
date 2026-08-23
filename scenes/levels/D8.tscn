@@ -47,9 +47,6 @@ agent_radius = 80.0
 [node name="D8" type="Node2D"]
 y_sort_enabled = true
 
-[node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2000, 850)
-
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false
 

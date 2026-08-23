@@ -1,17 +1,17 @@
 [gd_scene load_steps=24 format=3 uid="uid://cl1ki1csawpip"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
-[ext_resource type="Script" uid="uid://cifwu23mu55li" path="res://scripts/managers/LightRevealController.cs" id="1_lightreveal"]
-[ext_resource type="Texture2D" uid="uid://20khta50kpjb" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
-[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
+[ext_resource type="Script" uid="uid://lgp7yrac0ds8" path="res://scripts/managers/LightRevealController.cs" id="1_lightreveal"]
+[ext_resource type="Texture2D" uid="uid://crnd0nvw77ix2" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
+[ext_resource type="Texture2D" uid="uid://bwy3ynxccmpby" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
+[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_utjd6"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="6_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
+[ext_resource type="Texture2D" uid="uid://dcewcyug72e3w" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_utjd6"]
-[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
-[ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
-[ext_resource type="Texture2D" uid="uid://cq8g22puau18l" path="res://assets/ui/card/card_glow.png" id="13_4wkas"]
+[ext_resource type="Texture2D" uid="uid://cecnum8sfj2jh" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
+[ext_resource type="Texture2D" uid="uid://cjttmrhar2ued" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
+[ext_resource type="Texture2D" uid="uid://djhr5ix181y8p" path="res://assets/ui/card/card_glow.png" id="13_4wkas"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_r1xlm"]
 size = Vector2(5860, 3000)
@@ -20,7 +20,7 @@ size = Vector2(5860, 3000)
 size = Vector2(5600, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4wkas"]
-size = Vector2(5600, 3000)
+size = Vector2(5281, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eajhg"]
 size = Vector2(5800, 800)
@@ -85,7 +85,8 @@ visible = false
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LightTrigger"]
-position = Vector2(18.5, -340)
+z_index = 10
+position = Vector2(-43.5, -340)
 shape = SubResource("RectangleShape2D_4wkas")
 debug_color = Color(0.9607843, 0, 0, 0.41960785)
 
@@ -178,9 +179,10 @@ script = ExtResource("1_lightreveal")
 DarkLayerPath = NodePath("Sprite2D")
 SpotGroups = Array[Array]([[NodePath("Spot1"), NodePath("Spot5")], [NodePath("Spot2"), NodePath("Spot6")], [NodePath("Spot3"), NodePath("Spot7")], [NodePath("Spot4"), NodePath("Spot8")]])
 TriggerAreaPath = NodePath("../LightTrigger")
-SpotRadius = 950.0
-Softness = 500.0
-FadeDurationSeconds = 0.30000000000000004
+PreheatSoftness = 400.0
+SpotRadius = 400.0
+Softness = 200.0
+FadeIntervalSeconds = 1.0
 
 [node name="Sprite2D" type="Sprite2D" parent="DarkCovers"]
 modulate = Color(1, 1, 1, 0.60784316)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=57 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -47,7 +47,6 @@
 [ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="44_w0sof"]
 [ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="45_ve5oi"]
 [ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="46_4yi35"]
-[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="47_ve5oi"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
 load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
@@ -133,7 +132,7 @@ scale = Vector2(0.65, 0.8)
 texture = ExtResource("8_eh1sc")
 
 [node name="wall5" type="Sprite2D" parent="World/Environments"]
-position = Vector2(0, -1480)
+position = Vector2(0, -1439)
 skew = 0.08726646
 texture = ExtResource("9_kwrre")
 
@@ -141,7 +140,7 @@ texture = ExtResource("9_kwrre")
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(0, -1530)
+position = Vector2(0, -1550)
 shape = SubResource("RectangleShape2D_m86xd")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="World/AirWall"]
@@ -206,64 +205,64 @@ PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
 
 [node name="WeaponBrawlDiscoBall" parent="World" instance=ExtResource("17_pja2j")]
-position = Vector2(-2120, -1540.9999)
+position = Vector2(-2146, -1379.9999)
 
 [node name="WeaponBrawlMechGlove" parent="World" instance=ExtResource("4_7yh4q")]
-position = Vector2(-2160, -1357.9999)
+position = Vector2(-2179, -1248.9999)
 
 [node name="WeaponBrawlRiotBracer" parent="World" instance=ExtResource("5_s6mo5")]
-position = Vector2(-1810, -1542)
+position = Vector2(-1875, -1386)
 
 [node name="WeaponBrawlRiotGlove" parent="World" instance=ExtResource("6_28ted")]
-position = Vector2(-1815, -1353)
+position = Vector2(-1873, -1244)
 
 [node name="WeaponSlashBaguette" parent="World" instance=ExtResource("17_w0p8f")]
-position = Vector2(-1451.0001, -1345.9999)
+position = Vector2(-1470.0001, -1236.9999)
 
 [node name="WeaponSlashBarrierGate" parent="World" instance=ExtResource("7_pja2j")]
-position = Vector2(-1448, -1529.9999)
+position = Vector2(-1467, -1359.9999)
 
 [node name="WeaponSlashBunnySword" parent="World" instance=ExtResource("21_5dr7i")]
-position = Vector2(-1092, -1332.9999)
+position = Vector2(-1111, -1223.9999)
 
 [node name="WeaponSlashExpandBaton" parent="World" instance=ExtResource("8_w0p8f")]
-position = Vector2(-1091, -1496.9999)
+position = Vector2(-1110, -1326.9999)
 
 [node name="WeaponSlashViolinBow" parent="World" instance=ExtResource("12_ngl7c")]
-position = Vector2(-324, -1504)
+position = Vector2(-343, -1334)
 
 [node name="WeaponStabCorkscrew" parent="World" instance=ExtResource("19_dxexl")]
-position = Vector2(-386.00024, -1333.9999)
+position = Vector2(-405.00024, -1224.9999)
 
 [node name="WeaponStabDrill" parent="World" instance=ExtResource("9_ngl7c")]
-position = Vector2(-701.0001, -1519.9998)
+position = Vector2(-720.0001, -1349.9998)
 
 [node name="WeaponStabUmbrella" parent="World" instance=ExtResource("10_dxexl")]
-position = Vector2(-716.00024, -1327.9999)
+position = Vector2(-735.00024, -1218.9999)
 
 [node name="WeaponStabLaserPointer" parent="World" instance=ExtResource("35_4yi35")]
-position = Vector2(-3, -1327)
+position = Vector2(-22, -1242)
 
 [node name="WeaponThrowGravityGrenade" parent="World" instance=ExtResource("11_5dr7i")]
-position = Vector2(-8, -1513)
+position = Vector2(-27, -1383)
 
 [node name="WeaponThrowMetalSpike" parent="World" instance=ExtResource("12_mkebo")]
-position = Vector2(463, -1389.0001)
+position = Vector2(444, -1320.0001)
 
 [node name="WeaponThrowSmokeGrenade2" parent="World" instance=ExtResource("13_pxy7y")]
-position = Vector2(1087, -1348.0001)
+position = Vector2(1068, -1279.0001)
 
 [node name="WeaponThrowEmojiBomb" parent="World" instance=ExtResource("20_mkebo")]
-position = Vector2(808, -1360.0001)
+position = Vector2(789, -1291.0001)
 
 [node name="WeaponThrowBoomerang" parent="World" instance=ExtResource("35_bnjvr")]
-position = Vector2(1499, -1386.0001)
+position = Vector2(1480, -1317.0001)
 
 [node name="WeaponThrowBriefcase" parent="World" instance=ExtResource("36_eh1sc")]
-position = Vector2(1943, -1334.0001)
+position = Vector2(1924, -1265.0001)
 
 [node name="WeaponThrowECore" parent="World" instance=ExtResource("36_kwrre")]
-position = Vector2(2224, -1353)
+position = Vector2(2205, -1284)
 
 [node name="LoadingElevator" type="Node2D" parent="World"]
 position = Vector2(4285, -336)
@@ -280,9 +279,6 @@ position = Vector2(-1176, 741)
 
 [node name="FurnitureSofaB" parent="World" instance=ExtResource("46_4yi35")]
 position = Vector2(1456, 698)
-
-[node name="FurnitureTableRoundC" parent="World" instance=ExtResource("47_ve5oi")]
-position = Vector2(-332, -610)
 
 [node name="center" type="Sprite2D" parent="."]
 z_index = 10

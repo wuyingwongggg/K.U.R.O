@@ -57,7 +57,7 @@ height = 300.0
 size = Vector2(350, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqj82"]
-size = Vector2(650, 300)
+size = Vector2(600, 300)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
 radius = 700.0
@@ -80,7 +80,7 @@ DebugOverlayColor = Color(0, 0.76862746, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 10.0
+AttackDamage = 1000.0
 MaxHealth = 9999
 AiDescription = "玩家，受博士委托前来调查失控酒店AI的搭档、伙伴"
 StateMachine = NodePath("StateMachine")
@@ -146,7 +146,7 @@ skeleton_data_res = ExtResource("4_o4xwm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.6666667
+preview_time = 0.51
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -183,7 +183,7 @@ shape = SubResource("RectangleShape2D_vj0fg")
 [node name="AttackArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(325, 0)
+position = Vector2(300, 0)
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
 

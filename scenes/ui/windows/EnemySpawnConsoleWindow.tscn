@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dy0pchsyvmjhy"]
 
-[ext_resource type="Script" uid="uid://bm4x4gek0h6nb" path="res://scripts/ui/EnemySpawnConsoleWindow.cs" id="1_esp_window_script"]
+[ext_resource type="Script" uid="uid://cwfaqw4bmf0m" path="res://scripts/ui/EnemySpawnConsoleWindow.cs" id="1_esp_window_script"]
 
 [node name="EnemySpawnConsoleWindow" type="Control"]
 visible = false
@@ -51,7 +51,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 22
-text = "敌人生成控制台"
+text = "战斗测试控制台"
 vertical_alignment = 1
 
 [node name="CloseButton" type="Button" parent="MainPanel/Header"]
@@ -111,13 +111,13 @@ theme_override_constants/separation = 8
 [node name="DisableAICheckBox" type="CheckBox" parent="MainPanel/Footer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "暂停敌人AI"
+text = "暂停AI"
 
 [node name="KillAllEnemiesButton" type="Button" parent="MainPanel/Footer"]
 custom_minimum_size = Vector2(120, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "消灭所有敌人"
+text = "清除"
 
 [node name="Spacer" type="Control" parent="MainPanel/Footer"]
 layout_mode = 2

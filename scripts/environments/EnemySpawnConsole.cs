@@ -443,8 +443,9 @@ namespace Kuros.Environments
             var scenes = GetConfiguredEnemyScenes();
             if (scenes.Count == 0)
             {
+                // 不拦截开窗：窗口内有"未配置敌人"空状态占位（EnemySpawnConsoleWindow.PopulateEnemyList），
+                // 且"消灭全部敌人"按钮在没有敌人列表时依然可用，窗口仍有一定用途。
                 GD.PushWarning("[EnemySpawnConsole] No enemy scenes configured in EnemyScenes!");
-                return;
             }
 
             EnsureSpawnWindow();

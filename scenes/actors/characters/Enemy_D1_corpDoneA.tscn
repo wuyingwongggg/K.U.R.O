@@ -42,7 +42,7 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
-size = Vector2(350, 200)
+size = Vector2(350, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hglex"]
 size = Vector2(800, 600)
@@ -158,6 +158,7 @@ bone_name = "bone"
 z_index = 10
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -188,9 +189,11 @@ shape = SubResource("CircleShape2D_ooggc")
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
+position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_k8d2p")
 
 [node name="PinballAttackArea" type="Area2D" parent="Sprite2D"]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/PinballAttackArea"]
 shape = SubResource("RectangleShape2D_hglex")

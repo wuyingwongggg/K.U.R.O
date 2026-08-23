@@ -113,6 +113,7 @@ scale = Vector2(90, 90)
 texture = ExtResource("8_k3458")
 
 [node name="BuildMask" type="Sprite2D" parent="RigidBody2D/Outline"]
+visible = false
 modulate = Color(0, 0.5176471, 0, 1)
 self_modulate = Color(0.19215687, 0.6627451, 0, 1)
 material = SubResource("ShaderMaterial_u3pnw")
