@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://de5p3deu3oubn"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kd6m3"]
+[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kd6m3"]
 [ext_resource type="Resource" uid="uid://cgu7oebpx76uo" path="res://resources/items/Furniture_D_WaterMachineA.tres" id="2_kd6m3"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ctife"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_ggfh1"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_bwbxs"]
-[ext_resource type="Texture2D" uid="uid://bni7br7sgi3v" path="res://assets/furnitures/hotel_scene4/WaterMachineA.png" id="6_kd6m3"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_bwbxs"]
+[ext_resource type="Texture2D" uid="uid://j8pw3fxjxpvd" path="res://assets/furnitures/hotel_scene4/WaterMachineA.png" id="6_kd6m3"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_ctife")
@@ -21,13 +21,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cf8n5"]
-size = Vector2(170, 100)
+size = Vector2(70, 40)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(230, 230)
+size = Vector2(230, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(220, 220)
+size = Vector2(220, 190)
 
 [node name="FurnitureWaterMachineA" type="Node2D"]
 z_index = 2
@@ -71,17 +71,17 @@ texture = ExtResource("6_kd6m3")
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, -100)
+position = Vector2(0, 65)
 shape = SubResource("RectangleShape2D_cf8n5")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 50)
+position = Vector2(0, 65)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, 50)
+position = Vector2(0, 65)
 shape = SubResource("RectangleShape2D_jyvv2")

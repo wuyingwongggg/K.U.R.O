@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_hnhuv"]
 [ext_resource type="Resource" uid="uid://bfijfbb5m32i6" path="res://resources/items/Weapon_Slash_ExpandBaton.tres" id="2_hnhuv"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_o1fls"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_6dn8i"]
-[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_32rtd"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_6dn8i"]
+[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_32rtd"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_o1fls")
@@ -38,8 +38,8 @@ load_path = "res://.godot/imported/甩棍.png-cb967a69ead333a0884aefc694f60152.c
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o1fls"]
 size = Vector2(240, 60)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_djioy"]
-radius = 200.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mhf4g"]
+size = Vector2(500, 400)
 
 [node name="WeaponSlashExpandBaton" type="CharacterBody2D"]
 z_index = 1
@@ -71,8 +71,7 @@ texture = SubResource("CompressedTexture2D_32rtd")
 shape = SubResource("RectangleShape2D_o1fls")
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_djioy")
+shape = SubResource("RectangleShape2D_mhf4g")

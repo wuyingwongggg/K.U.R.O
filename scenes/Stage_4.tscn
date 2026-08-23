@@ -1,9 +1,9 @@
 [gd_scene load_steps=20 format=3 uid="uid://ci2kfp5gmklqh"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctvdj"]
-[ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_qpui1"]
-[ext_resource type="Script" uid="uid://l1558pct4220" path="res://scripts/managers/StageGeneratorManager.cs" id="3_k6j0r"]
-[ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_qpui1"]
+[ext_resource type="Script" uid="uid://coitrymap658x" path="res://scripts/managers/CameraZoneManager.cs" id="2_qpui1"]
+[ext_resource type="Script" uid="uid://blpmcqsnlwt3p" path="res://scripts/managers/StageGeneratorManager.cs" id="3_k6j0r"]
+[ext_resource type="Script" uid="uid://c8onw3fjyarwe" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_qpui1"]
 [ext_resource type="PackedScene" uid="uid://efbd75vs2jik" path="res://scenes/levels/D_begin.tscn" id="5_dx62n"]
 [ext_resource type="PackedScene" uid="uid://5pavro7ckavp" path="res://scenes/levels/D_end.tscn" id="6_dx62n"]
 [ext_resource type="PackedScene" uid="uid://b564u7lastysy" path="res://scenes/levels/D1.tscn" id="7_ctvdj"]

@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://daox4k6bu5oqt"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_eisny"]
+[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_eisny"]
 [ext_resource type="Resource" uid="uid://buhvnqsf11osg" path="res://resources/items/Furniture_A_SofaB.tres" id="2_eisny"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_gkqfo"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_ym6rm"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_grr3h"]
-[ext_resource type="Texture2D" uid="uid://jmm74ttculrj" path="res://assets/furnitures/home_scene1/SofaB.png" id="6_x6e03"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_grr3h"]
+[ext_resource type="Texture2D" uid="uid://dt2366f41ga6b" path="res://assets/furnitures/home_scene1/SofaB.png" id="6_x6e03"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_gkqfo")
@@ -21,13 +21,13 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(950, 200)
+size = Vector2(850, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_or1aa"]
-size = Vector2(1010, 360)
+size = Vector2(1010, 310)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(1000, 350)
+size = Vector2(1000, 300)
 
 [node name="FurnitureSofaB" type="Node2D"]
 z_index = 2
@@ -72,17 +72,17 @@ texture = ExtResource("6_x6e03")
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, -200)
+position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, -50)
+position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_or1aa")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, -50)
+position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_jyvv2")

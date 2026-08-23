@@ -1,28 +1,28 @@
 [gd_scene load_steps=33 format=3 uid="uid://6q7k85h5kvvg"]
 
-[ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_cdf4i"]
+[ext_resource type="Script" uid="uid://caim1xf7ihlm7" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_cdf4i"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_62kop"]
 [ext_resource type="PackedScene" uid="uid://cvdv22giw51s8" path="res://scenes/items/Furniture_D_drone.tscn" id="3_2csbb"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ebj63"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_ln77y"]
-[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_x0tw8"]
+[ext_resource type="Script" uid="uid://cbasgy23b5jmr" path="res://scripts/controllers/ShadowFollower.cs" id="5_x0tw8"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://didg4j2bh0iqe" path="res://animations/spine/Enemy_D1_drone.tres" id="6_cdf4i"]
-[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="7_02rt2"]
+[ext_resource type="Script" uid="uid://vrprwog5yn1j" path="res://scripts/controllers/SpineController.gd" id="7_02rt2"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="8_352fs"]
-[ext_resource type="Script" uid="uid://dy6nxg6ncc1dl" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="9_qqh46"]
-[ext_resource type="Script" uid="uid://ca6my22csxkmt" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_0fdmv"]
+[ext_resource type="Script" uid="uid://ch3u7tfeu0u3l" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="9_qqh46"]
+[ext_resource type="Script" uid="uid://c6vkojv6k0700" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="10_0fdmv"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="11_cdf4i"]
-[ext_resource type="Script" uid="uid://04usu0butu18" path="res://scripts/actors/enemies/attacks/EnemyD1DroneAttackController.cs" id="12_oa3vu"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_4nsh5"]
+[ext_resource type="Script" uid="uid://cdpckvojim7td" path="res://scripts/actors/enemies/attacks/EnemyD1DroneAttackController.cs" id="12_oa3vu"]
+[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_4nsh5"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="16_kyb42"]
 [ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="17_cdf4i"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="18_n1d74"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="19_1cqrr"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="20_xpivn"]
-[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_dr4x7"]
+[ext_resource type="Script" uid="uid://bprxf1sr1x5q4" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_dr4x7"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="22_tvm81"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="23_k0aye"]
-[ext_resource type="Script" uid="uid://cmotujoew8bvf" path="res://scripts/actors/enemies/animation/EnemyD1DroneSpineAnimationController.cs" id="24_2csbb"]
+[ext_resource type="Script" uid="uid://bl7t4bcel3ai5" path="res://scripts/actors/enemies/animation/EnemyD1DroneSpineAnimationController.cs" id="24_2csbb"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="24_q85o3"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="25_0c734"]
 
@@ -41,10 +41,11 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
-size = Vector2(600, 600)
+size = Vector2(500, 300)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_collision"]
-radius = 200.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("14_4nsh5")
@@ -82,11 +83,11 @@ DeathEffect = ExtResource("3_2csbb")
 Speed = 400
 AttackDamage = 0
 MaxHealth = 80
+AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
@@ -147,7 +148,7 @@ skeleton_data_res = ExtResource("6_cdf4i")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.75
 script = ExtResource("7_02rt2")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -160,7 +161,6 @@ bone_name = "bone"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -200)
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
 collision_layer = 0
@@ -194,16 +194,16 @@ shape = SubResource("CircleShape2D_controller_detect")
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_hit")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_collision")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_2csbb")
 
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(620, -145)
+position = Vector2(620, 350)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("8_352fs")
