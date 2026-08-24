@@ -30,6 +30,14 @@ namespace Kuros.Core.Effects
             }
         }
 
+        public override void _ExitTree()
+        {
+            // 节点销毁（场景卸载/角色销毁）时清理效果：保证 ActorEffect.OnRemoved 执行（恢复属性/清除注入委托），
+            // 否则效果修改的数值与委托残留到下次战斗
+            ClearAll();
+            base._ExitTree();
+        }
+
         public ActorEffect? GetEffect(string effectId)
         {
             return _effects.Find(effect => effect.EffectId == effectId);

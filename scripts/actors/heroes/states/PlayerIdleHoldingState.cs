@@ -24,8 +24,11 @@ namespace Kuros.Actors.Heroes.States
 		public override void Enter()
 		{
 			Player.NotifyMovementState(Name);
+			// 静止持物：移动速度归零（供投掷惯性继承）——否则从 RunHolding 回到本状态时残留奔跑速度
+			Actor.CurrentMoveSpeed = 0f;
+			Actor.CurrentMoveDirection = Vector2.Zero;
 			//GD.Print($"[PlayerIdleHoldingState] 进入持握状态");
-			
+
 			// 播放持握动画
 			if (Player is MainCharacter mainChar)
 			{

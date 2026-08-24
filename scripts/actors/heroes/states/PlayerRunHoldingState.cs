@@ -108,9 +108,11 @@ namespace Kuros.Actors.Heroes.States
             Vector2 velocity = Actor.Velocity;
             velocity.X = input.X * (Actor.Speed * 2f);
             velocity.Y = input.Y * (Actor.Speed * 2f);
-            
+
             Actor.Velocity = velocity;
-            
+            Actor.CurrentMoveSpeed = Actor.Speed * 2f;   // 记录当前移动速度（供投掷惯性等继承）
+            Actor.CurrentMoveDirection = input.Normalized();
+
             if (input.X != 0)
             {
                 Actor.FlipFacing(input.X > 0);

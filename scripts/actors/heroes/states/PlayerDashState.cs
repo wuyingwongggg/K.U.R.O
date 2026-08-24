@@ -80,6 +80,16 @@ namespace Kuros.Actors.Heroes.States
             return base.CanEnterFrom(previousState);
         }
 
+        /// <summary>当前是否持握投掷物（快捷栏投掷武器 / 家具槽投掷家具 / 武器槽投掷武器）——持物攻击应触发投掷而非普通攻击。</summary>
+        private bool IsHoldingThrowable()
+        {
+            var inv = Player.InventoryComponent;
+            if (inv == null) return false;
+            return (inv.GetSelectedQuickBarStack()?.Item.IsThrowable == true)
+                || (inv.HasFurnitureItem && inv.FurnitureSlotStack?.Item.IsThrowable == true)
+                || (inv.GetActiveCombatWeaponDefinition()?.IsThrowable == true);   // 武器槽投掷武器（回旋镖等装备在武器槽）
+        }
+
         /// <summary>是否为免费后撤窗口：当前无方向输入（后撤）且 B_003 免费窗口激活。</summary>
         private bool IsFreeBackDashWindow()
         {
@@ -179,16 +189,26 @@ namespace Kuros.Actors.Heroes.States
                 // Burst 中攻击直接打断冲刺（CanExitTo 放行）：先结算本帧阶段（Burst 可能在本帧结束），
                 // 攻击继承"打断瞬间的实际速度"——避免 Burst 尾段打断却继承 4000 与即将减速脱节
                 var bufferedAttack = ConsumeBufferedInput();
-                if (bufferedAttack == "attack" || IsActionJustPressed("attack") || IsAttackTriggered())
+                // 打断输入：攻击键 或 投掷键（持握投掷物时——持物玩家的投掷习惯用 throw 键）
+                bool throwInput = Player.IsActionJustPressedArbitrated("throw") && IsHoldingThrowable();
+                if (bufferedAttack == "attack" || IsActionJustPressed("attack") || IsAttackTriggered() || throwInput)
                 {
                     // 结算本帧阶段（Burst 可能在本帧结束）——决定攻击继承的移动速度（Burst/Recovery）
                     if (_elapsed + (float)delta >= BurstDuration)
                         _inBurst = false;
                     Actor.CurrentMoveSpeed = _inBurst ? BurstSpeed : RecoverySpeed;
                     Actor.CurrentMoveDirection = _dashDirection;
-                    Player.AttackTimer = 0f;   // 豁免攻击冷却：冲刺中攻击是连续动作（否则 TryStart 冷却失败回 Idle，重攻击时速度已归零）
-                    Player.RequestAttackFromState(Name);
-                    ChangeState("Attack");
+                    // 持握投掷物（快捷栏/家具槽）时攻击/投掷键 = 投掷；否则普通攻击
+                    if (IsHoldingThrowable())
+                    {
+                        ChangeState("Throw");
+                    }
+                    else
+                    {
+                        Player.AttackTimer = 0f;   // 豁免攻击冷却：冲刺中攻击是连续动作（否则 TryStart 冷却失败回 Idle，重攻击时速度已归零）
+                        Player.RequestAttackFromState(Name);
+                        ChangeState("Attack");
+                    }
                     return;
                 }
             }
@@ -201,14 +221,23 @@ namespace Kuros.Actors.Heroes.States
                     Machine.ReenterState("Dash");
                     return;
                 }
-                if (buffered == "attack" || IsAttackTriggered())
+                bool throwInput = Player.IsActionJustPressedArbitrated("throw") && IsHoldingThrowable();
+                if (buffered == "attack" || IsAttackTriggered() || throwInput)
                 {
                     // 与 Burst 打断一致：记录打断瞬间速度 + 豁免冷却（否则 TryStart 冷却失败回 Idle，重攻击时速度已归零）
                     Actor.CurrentMoveSpeed = RecoverySpeed;
                     Actor.CurrentMoveDirection = _dashDirection;
-                    Player.AttackTimer = 0f;
-                    Player.RequestAttackFromState(Name);
-                    ChangeState("Attack");
+                    // 持握投掷物（快捷栏/家具槽）时攻击/投掷键 = 投掷；否则普通攻击
+                    if (IsHoldingThrowable())
+                    {
+                        ChangeState("Throw");
+                    }
+                    else
+                    {
+                        Player.AttackTimer = 0f;
+                        Player.RequestAttackFromState(Name);
+                        ChangeState("Attack");
+                    }
                     return;
                 }
                 if (IsActionJustPressed("dash") && (CanDash || IsFreeBackDashWindow()))
@@ -235,8 +264,8 @@ namespace Kuros.Actors.Heroes.States
         {
             if (nextState == "Dying" || nextState == "Dead")
                 return true;
-            // Burst 中允许攻击打断（冲刺攻击：继承 Burst 速度）；其余状态仍需 Recovery 后才可切换
-            if (nextState == "Attack")
+            // Burst 中允许攻击/投掷打断（冲刺攻击/冲刺投掷：继承 Burst 速度）；其余状态仍需 Recovery 后才可切换
+            if (nextState == "Attack" || nextState == "Throw")
                 return true;
             return !_inBurst;
         }

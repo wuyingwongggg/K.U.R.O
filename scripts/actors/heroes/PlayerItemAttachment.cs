@@ -577,6 +577,18 @@ namespace Kuros.Actors.Heroes
                 return;
             }
 
+            // 投掷类（投掷武器/投掷家具）：不继承其 AttackArea——玩家近战攻击用默认范围，
+            // 投掷物的 AttackArea 是投掷物实体自己的判定，不应映射到玩家
+            if (item.IsThrowable)
+            {
+                ClearEquippedAttackArea();
+                if (_actor is SamplePlayer player)
+                {
+                    player.RestoreDefaultAttackArea();
+                }
+                return;
+            }
+
             string scenePath = item.ResolveWorldScenePath();
             if (string.IsNullOrWhiteSpace(scenePath))
             {

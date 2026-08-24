@@ -22,6 +22,12 @@ namespace Kuros.Actors.Heroes.States
         [Export(PropertyHint.Range, "0,2,0.01")] public float ThrowRecoveryDuration = 0.29f;
         public float ThrowAnimationTotalTime = 0.64f;  // 动画总时长（与三阶段之和一致）
 
+        [ExportGroup("Throw Momentum")]
+        /// <summary>投掷惯性（类似攻击模板 EnableDashMovement）：进入投掷时保留玩家当前速度，Warmup 阶段线性衰减，Active 开始速度归零。</summary>
+        [Export] public bool EnableThrowMomentum = true;
+        /// <summary>投掷起步速度倍率（当前移动速度的 N%）。100 = 不变，0 = 无惯性。</summary>
+        [Export(PropertyHint.Range, "0,300,0.01")] public float ThrowMomentumSpeedPercent = 100f;
+
         private PlayerItemInteractionComponent? _interaction;
         private bool _hasRequestedThrow;
         private bool _animationFinished;
@@ -29,6 +35,9 @@ namespace Kuros.Actors.Heroes.States
         private float _phaseRemaining;
         private float _animRemaining;
         private float _originalSpeedScale = 1.0f;
+        private float _momentumSpeed;      // 投掷起步速度（Enter 时捕获当前移动速度）
+        private Vector2 _momentumDir;      // 投掷移动方向（投掷前移动方向/面朝）
+        private float _momentumElapsed;    // Warmup 衰减计时
 
         protected override void _ReadyState()
         {
@@ -54,6 +63,13 @@ namespace Kuros.Actors.Heroes.States
 
             // 投掷开始：标记投掷物未出手（ItemHoldingAttachment 显示投掷物）
             Player.GetNodeOrNull<PlayerItemAttachment>("ItemHoldingAttachment")?.SetThrowInProgress(true);
+
+            // 投掷惯性：保留玩家当前移动速度（CurrentMoveSpeed——移动状态写入），Warmup 内衰减到 0
+            _momentumSpeed = Player.CurrentMoveSpeed * (ThrowMomentumSpeedPercent / 100f);
+            _momentumDir = Player.CurrentMoveDirection != Vector2.Zero
+                ? Player.CurrentMoveDirection
+                : (Player.FacingRight ? Vector2.Right : Vector2.Left);
+            _momentumElapsed = 0f;
         }
 
         public override void Exit()
@@ -94,6 +110,7 @@ namespace Kuros.Actors.Heroes.States
 
             UpdateAnimationState();
             UpdatePhase((float)delta);
+            UpdateMomentum((float)delta);
 
             // 动画完整播放完毕后再切换状态
             if (_animationFinished)
@@ -108,6 +125,28 @@ namespace Kuros.Actors.Heroes.States
                     ChangeState("Idle");
                 }
             }
+        }
+
+        /// <summary>投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度线性衰减到 0（Active 前归零）——出手时已无位移惯性。</summary>
+        private void UpdateMomentum(float delta)
+        {
+            if (!EnableThrowMomentum) return;
+            if (Player == null) return;
+
+            if (_phase == ThrowPhase.Warmup)
+            {
+                _momentumElapsed += delta;
+                float t = ThrowWarmupDuration > 0f ? Mathf.Clamp(_momentumElapsed / ThrowWarmupDuration, 0f, 1f) : 1f;
+                Player.Velocity = _momentumDir * (_momentumSpeed * (1f - t));
+            }
+            else
+            {
+                // Active/Recovery：速度 0（Warmup 已衰减完）
+                Player.Velocity = Vector2.Zero;
+            }
+
+            Player.MoveAndSlide();
+            Player.ClampPositionToScreen();
         }
 
         /// <summary>阶段推进：Warmup 结束触发投掷 → Active 出手保护 → Recovery 后摇（动画播完即结束）。</summary>

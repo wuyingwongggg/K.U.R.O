@@ -419,6 +419,15 @@ namespace Kuros.Managers
             return null;
         }
 
+        /// <summary>清除构筑选择状态（返回主菜单/退出战斗时调用）——清空已选记录，重进存档后重新选择构筑，避免旧构筑效果跨主菜单残留。</summary>
+        public void ClearBuildState()
+        {
+            _pickedEffectIds.Clear();
+            _selectedCoreId = null;
+            _playerCoreClass = null;
+            PickedEffectsChanged?.Invoke();
+        }
+
         /// <summary>跨场景恢复核心效果和所有已选构筑效果。</summary>
         public void RestoreBuildState(SamplePlayer player)
         {

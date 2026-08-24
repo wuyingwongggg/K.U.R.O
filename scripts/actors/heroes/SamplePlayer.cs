@@ -327,6 +327,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		ApplyAttackAreaFacingTransform(FacingRight);
 	}
 
+	/// <summary>恢复玩家默认 AttackArea（投掷类道具——投掷武器/投掷家具——选中时不继承其 AttackArea，用默认范围）。</summary>
+	public void RestoreDefaultAttackArea() => RestoreDefaultMainAttackArea();
+
 	private void RestoreDefaultMainAttackArea()
 	{
 		if (_mainAttackCollisionShape == null)
