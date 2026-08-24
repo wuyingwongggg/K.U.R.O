@@ -6,7 +6,8 @@ namespace Kuros.Actors.Heroes.Attacks
     /// <summary>
     /// 激光笔专属攻击：长按进入 Active 阶段循环播放期间，按玩家移动方向实时切换
     /// 站立 / 前进(fwd) / 后退(bwd) 三种 Spine 动画。三动画阶段时长一致，仅动作不同。
-    /// 方向规则：移动方向 == 面朝方向 → fwd；反向 → bwd；X 在 deadzone 内 → 站立。
+    /// 方向规则：Y 轴有移动 → 按 X 符号分流（x ≥ 0 → fwd，x < 0 → bwd）；
+    /// 仅 X 轴移动 → 移动方向 == 面朝方向 → fwd；反向 → bwd；X 在 deadzone 内 → 站立。
     /// 全程不翻转角色（Active 期间状态机无翻转源，天然保持面朝）。
     /// 切换动画时必须同步 Spine hit 事件匹配名，否则新动画的 hit 事件被过滤、伤害消失。
     /// Active 期间移动时按移动方向接管位移：移动速度 = 当前实际速度 × MoveSpeedPercent%。
@@ -60,13 +61,11 @@ namespace Kuros.Actors.Heroes.Attacks
 
         /// <summary>Active 期间直接接管 Velocity（同 PlayerBrawlRiotBracerAttack 的位移模式：
         /// 攻击状态下玩家移动不读 Speed 属性，必须由模板每帧设置 Velocity 供状态机 MoveAndSlide）。
-        /// 仅 X 轴移动（Y 输入忽略，与 fwd/bwd 动画判定的 X 轴规则一致）；
-        /// 有 X 输入 → 以「当前实际速度 ×N%」沿水平方向移动；无 X 输入 → 停下。</summary>
+        /// 全方向移动（X/Y 输入均参与）：有输入 → 以「当前实际速度 ×N%」沿输入方向移动；无输入 → 停下。</summary>
         private void UpdateMoveVelocity()
         {
             if (Player == null) return;
             Vector2 input = Player.GetControlledMovementInput();
-            input.Y = 0f; // 限制仅 X 轴
             if (input.LengthSquared() <= 0.01f)
             {
                 Player.Velocity = Vector2.Zero;
@@ -90,10 +89,21 @@ namespace Kuros.Actors.Heroes.Attacks
             SetSpineAttackAnimation(target);
         }
 
-        /// <summary>按面朝与移动输入解析目标动画：同向 → fwd，反向 → bwd，静止 → 站立动画。</summary>
+        /// <summary>按面朝与移动输入解析目标动画：Y 轴有移动 → 按 X 符号分流（x ≥ 0 → fwd，x < 0 → bwd）；
+        /// 仅 X 轴移动 → 同向 → fwd，反向 → bwd，X 在 deadzone 内 → 站立动画。</summary>
         private string ResolveDirectionalAnimation()
         {
-            float x = Player.GetControlledMovementInput().X;
+            Vector2 input = Player.GetControlledMovementInput();
+            float x = input.X;
+            float y = input.Y;
+
+            // Y 轴有移动：方向由 X 符号决定（与面朝无关，全程不翻转）
+            if (y > InputDeadzone || y < -InputDeadzone)
+            {
+                return x >= 0f ? ForwardAnimationName : BackwardAnimationName;
+            }
+
+            // 仅 X 轴移动：保持原面朝规则
             bool forward = Player.FacingRight ? x > InputDeadzone : x < -InputDeadzone;
             bool backward = Player.FacingRight ? x < -InputDeadzone : x > InputDeadzone;
             if (forward) return ForwardAnimationName;

@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_rlv6v"]
 [ext_resource type="Resource" uid="uid://deh2q01buwkpa" path="res://resources/items/Weapon_Slash_ViolinBow.tres" id="2_rlv6v"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_huuy5"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="4_2yapo"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="5_fg7c5"]
-[ext_resource type="Shader" uid="uid://dohrihv500dkc" path="res://shaders/materials/sparkling_star.gdshader" id="6_8ydt5"]
-[ext_resource type="Texture2D" uid="uid://cte5bwtt7ps1d" path="res://assets/art/godot_icon.png" id="7_huuy5"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="4_2yapo"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="5_fg7c5"]
+[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="6_8ydt5"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="7_huuy5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_huuy5")
@@ -67,8 +67,9 @@ shader_parameter/curve_ci = 0.2000000095
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rlv6v"]
 size = Vector2(320, 45)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_8ydt5"]
-radius = 250.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_huuy5"]
+radius = 700.0
+height = 1700.0
 
 [node name="WeaponSlashViolinBow" type="CharacterBody2D"]
 z_index = 1
@@ -119,7 +120,9 @@ position = Vector2(0, -2.5)
 shape = SubResource("RectangleShape2D_rlv6v")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_8ydt5")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_huuy5")

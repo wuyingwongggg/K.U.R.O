@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://bnciia32kya54"]
 
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
-[ext_resource type="Script" uid="uid://c84xwwivf01ua" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
 [ext_resource type="Texture2D" uid="uid://ci63dmofhif3e" path="res://assets/BuildIcon/Normal_A_004_神经稳压.png" id="3_48taf"]
-[ext_resource type="PackedScene" uid="uid://8s6kddgs8ja" path="res://scenes/builds/normal/NormalSmallHitSuppressEffect.tscn" id="3_scene"]
+[ext_resource type="PackedScene" path="res://scenes/builds/normal/NormalSmallHitSuppressEffect.tscn" id="3_scene"]
 
 [sub_resource type="Resource" id="Resource_A004"]
 script = ExtResource("1_entry")

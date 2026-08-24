@@ -3,9 +3,9 @@
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_odxds"]
 [ext_resource type="Resource" uid="uid://bckpievppp7bh" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="2_odxds"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_3jtwq"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_2aeow"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_2aeow"]
 [ext_resource type="Texture2D" uid="uid://xnx60hboixpd" path="res://assets/weapons/迪斯科闪光球.png" id="5_v2efu"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_crgrq"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_crgrq"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rrc52"]
 shader = ExtResource("3_3jtwq")
@@ -34,7 +34,7 @@ shader_parameter/highlight_interval = 1.00000002375
 size = Vector2(200, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_odbs7"]
-size = Vector2(250, 100)
+size = Vector2(750, 300)
 
 [node name="WeaponBrawlDiscoBall" type="CharacterBody2D"]
 z_index = 1
@@ -68,6 +68,7 @@ position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_3jtwq")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]

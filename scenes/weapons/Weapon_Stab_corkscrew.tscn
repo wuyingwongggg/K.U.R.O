@@ -3,9 +3,9 @@
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_q4fla"]
 [ext_resource type="Resource" uid="uid://cxxnxtyv1yqw6" path="res://resources/items/Weapon_Stab_Corkscrew.tres" id="2_gccxh"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ckqsu"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="4_alhvj"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="4_alhvj"]
 [ext_resource type="Texture2D" uid="uid://c5sebjgcu2ugl" path="res://assets/weapons/开瓶器.png" id="5_gccxh"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="5_k0yrj"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="5_k0yrj"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_g0q5t"]
 shader = ExtResource("3_ckqsu")
@@ -34,7 +34,7 @@ shader_parameter/highlight_interval = 1.00000002375
 size = Vector2(210, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
-size = Vector2(350, 50)
+size = Vector2(1100, 150)
 
 [node name="WeaponStabCorkscrew" type="CharacterBody2D"]
 z_index = 1
@@ -67,6 +67,7 @@ position = Vector2(15, -2.5)
 shape = SubResource("RectangleShape2D_g0q5t")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("RectangleShape2D_t6geh")

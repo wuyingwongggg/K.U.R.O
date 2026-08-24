@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_64hvb"]
 [ext_resource type="Resource" uid="uid://b1jpt8qriaub8" path="res://resources/items/Weapon_Slash_BarrierGate.tres" id="2_64hvb"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="3_07ll6"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="3_07ll6"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_aybeu"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_ofv0e"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_ofv0e"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_aybeu")
@@ -38,8 +38,9 @@ load_path = "res://.godot/imported/闸门刀.png-62da3b15c6dbcdb7dc0259889e21b21
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofv0e"]
 size = Vector2(620, 60)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ofv0e"]
-radius = 360.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_waoek"]
+radius = 900.0
+height = 1900.0
 
 [node name="WeaponSlashBarrierGate" type="CharacterBody2D"]
 z_index = 1
@@ -74,7 +75,9 @@ position = Vector2(0, 12)
 shape = SubResource("RectangleShape2D_ofv0e")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_ofv0e")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_waoek")

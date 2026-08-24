@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=8 format=3 uid="uid://bhw6g0qv1c1ix"]
 
-[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_77l4c"]
-[ext_resource type="Script" uid="uid://c84xwwivf01ua" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_pn44j"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_77l4c"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_pn44j"]
 [ext_resource type="Texture2D" uid="uid://ckutcag1ttawo" path="res://assets/BuildIcon/Machine_A_008_灼热反馈.png" id="2_ya66l"]
 [ext_resource type="PackedScene" uid="uid://dnrgi45oa3s3k" path="res://scenes/builds/machine/MachineScorchingFeedbackEffect.tscn" id="3_scene"]
 [ext_resource type="PackedScene" uid="uid://y1isgrju8g0h" path="res://resources/effects/DotBurnEffect.tscn" id="4_burn"]

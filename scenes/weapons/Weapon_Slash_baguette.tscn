@@ -4,9 +4,9 @@
 [ext_resource type="Resource" uid="uid://b7cpmnpvb42rf" path="res://resources/items/Weapon_Slash_Baguette.tres" id="2_p6fpp"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_4cgri"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_em7lt"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_jactd"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_jactd"]
 [ext_resource type="Texture2D" uid="uid://xcu3hnecxemh" path="res://assets/weapons/法棍.png" id="6_p6fpp"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_6masb"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_6masb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nqlfu"]
 shader = ExtResource("3_4cgri")
@@ -31,8 +31,9 @@ shader_parameter/highlight_interval = 1.00000002375
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1hj56"]
 size = Vector2(300, 70)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_p6fpp"]
-radius = 250.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_p6fpp"]
+radius = 600.0
+height = 1600.0
 
 [node name="WeaponSlashBaguette" type="CharacterBody2D"]
 z_index = 1
@@ -65,7 +66,9 @@ visible = false
 shape = SubResource("RectangleShape2D_1hj56")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_p6fpp")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_p6fpp")

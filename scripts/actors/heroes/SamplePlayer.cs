@@ -305,18 +305,20 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		}
 		AttackArea.CollisionLayer = 0;
 
-		Vector2 parentScale = GetGlobalScaleFromTransform(AttackArea.GlobalTransform);
+		// 武器实例挂玩家身上，与玩家 AttackArea 共享同一缩放链（玩家根 scale 0.33）——两侧抵消，
+		// 烘焙只需保留武器场景局部缩放（武器根/AttackArea/shape）；除以 parentScale 会让玩家 shape 放大 1/0.33 倍
 		Vector2 templateScale = GetGlobalScaleFromTransform(templateTransform);
-		Vector2 bakedScale = new Vector2(
-			templateScale.X / Mathf.Max(0.0001f, parentScale.X),
-			templateScale.Y / Mathf.Max(0.0001f, parentScale.Y));
+		Vector2 bakedScale = templateScale;
 		Shape2D syncedShape = DuplicateShapeWithBakedScale(templateShape, bakedScale);
 
 		// The weapon scene's local transform is relative to its own root/icon setup,
 		// not the player root. Only copy the shape size here and keep the player's
 		// default hitbox anchor so the attack area remains in front of the character.
-		_currentAttackShapeBasePosition = ComputeForwardAnchoredAttackShapePosition(syncedShape);
-		_currentAttackShapeBaseRotation = _defaultAttackShapeRotation;
+		// 例外：武器胶囊旋转 ±90°（横向胶囊）——CapsuleShape2D 本身垂直，左右拉伸只能靠节点旋转表达；
+		// 烘焙轴缩放已按旋转后轴自动交换（GetGlobalScaleFromTransform 取轴长），这里补上节点旋转与锚定
+		bool horizontalCapsule = syncedShape is CapsuleShape2D && IsCapsuleHorizontal(templateTransform);
+		_currentAttackShapeBasePosition = ComputeForwardAnchoredAttackShapePosition(syncedShape, horizontalCapsule);
+		_currentAttackShapeBaseRotation = horizontalCapsule ? Mathf.Pi * 0.5f : _defaultAttackShapeRotation;
 		_currentAttackAreaBaseScale = new Vector2(Mathf.Abs(AttackArea.Scale.X), Mathf.Abs(AttackArea.Scale.Y));
 		AttackArea.Scale = _currentAttackAreaBaseScale;
 		_mainAttackCollisionShape.Scale = Vector2.One;
@@ -1566,14 +1568,14 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		return new Vector2(transform.X.Length(), transform.Y.Length());
 	}
 
-	private Vector2 ComputeForwardAnchoredAttackShapePosition(Shape2D shape)
+	private Vector2 ComputeForwardAnchoredAttackShapePosition(Shape2D shape, bool horizontalCapsule)
 	{
 		float defaultRearEdge = _defaultAttackShapePosition.X - GetShapeHalfWidth(_defaultAttackShape);
-		float newHalfWidth = GetShapeHalfWidth(shape);
+		float newHalfWidth = GetShapeHalfWidth(shape, horizontalCapsule);
 		return new Vector2(defaultRearEdge + newHalfWidth, _defaultAttackShapePosition.Y);
 	}
 
-	private static float GetShapeHalfWidth(Shape2D? shape)
+	private static float GetShapeHalfWidth(Shape2D? shape, bool horizontalCapsule = false)
 	{
 		if (shape is RectangleShape2D rect)
 		{
@@ -1587,10 +1589,18 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 
 		if (shape is CapsuleShape2D capsule)
 		{
-			return capsule.Radius;
+			// 横向胶囊（旋转 ±90°）：前向长度 = Height；垂直胶囊：前向宽度 = Radius
+			return horizontalCapsule ? capsule.Height * 0.5f : capsule.Radius;
 		}
 
 		return 0f;
+	}
+
+	/// <summary>武器胶囊是否横向摆放（collisionShape 旋转 ±90°）：CapsuleShape2D 本身垂直，横向需节点旋转表达。</summary>
+	private static bool IsCapsuleHorizontal(Transform2D transform)
+	{
+		float rotation = transform.Rotation;
+		return Mathf.Abs(Mathf.Abs(rotation) - Mathf.Pi * 0.5f) < 0.1f;
 	}
 
 	private static Shape2D DuplicateShapeWithBakedScale(Shape2D originalShape, Vector2 scale)

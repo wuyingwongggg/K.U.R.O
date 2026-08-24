@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_f06cv"]
 [ext_resource type="Resource" uid="uid://dsmyr3iwkk7n5" path="res://resources/items/Weapon_Brawl_MechGlove.tres" id="2_f06cv"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="3_15lfw"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="3_15lfw"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_f1ntn"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_5you7"]
-[ext_resource type="Texture2D" uid="uid://cpamu248jskai" path="res://assets/weapons/机械冲撞臂.png" id="4_f06cv"]
-[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_f1ntn"]
-[ext_resource type="Shader" uid="uid://dohrihv500dkc" path="res://shaders/materials/sparkling_star.gdshader" id="8_5you7"]
-[ext_resource type="Texture2D" uid="uid://cte5bwtt7ps1d" path="res://assets/art/godot_icon.png" id="9_wh64k"]
+[ext_resource type="Texture2D" uid="uid://cvlce2kc8uucx" path="res://assets/weapons/机械冲撞臂.png" id="4_f06cv"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_f1ntn"]
+[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="8_5you7"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="9_wh64k"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wh64k"]
 shader = ExtResource("3_f1ntn")
@@ -64,7 +64,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(180, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
-size = Vector2(350, 100)
+size = Vector2(1050, 300)
 
 [node name="WeaponBrawlMechGlove" type="CharacterBody2D"]
 z_index = 1
@@ -117,6 +117,7 @@ position = Vector2(5, 0)
 shape = SubResource("BodyShape_rr6vl")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]

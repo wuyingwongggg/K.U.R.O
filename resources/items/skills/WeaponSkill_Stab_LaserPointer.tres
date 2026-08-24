@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_g83ek"]
 [ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_02i83"]
-[ext_resource type="Script" uid="uid://cvprs5lr1h4sp" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_65vvs"]
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_65vvs"]
 [ext_resource type="PackedScene" uid="uid://calasrptr0be2" path="res://resources/effects/LaserPointerBeam.tscn" id="4_laserbeam"]
 [ext_resource type="PackedScene" uid="uid://c1bk77cs1ipbb" path="res://resources/effects/WeaponBatteryEffect.tscn" id="5_battery"]
 
