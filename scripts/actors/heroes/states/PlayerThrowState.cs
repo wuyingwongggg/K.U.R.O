@@ -4,153 +4,187 @@ using Kuros.Items.World;
 namespace Kuros.Actors.Heroes.States
 {
     /// <summary>
-    /// 投掷状态：播放投掷动画，动画结束后真正投掷物品
-    /// 投掷完成后根据是否还有可投掷物品决定转到 IdleHolding 或 Idle
+    /// 投掷状态：三阶段（Warmup 蓄力 → Active 出手 → Recovery 后摇），
+    /// Warmup 结束触发投掷（TryTriggerThrowAfterAnimation），动画播完后切 IdleHolding/Idle。
+    /// 闪避取消：Warmup（未出手）/Recovery（后摇）阶段可按闪避取消投掷；Active（出手中）不可打断。
     /// </summary>
     public partial class PlayerThrowState : PlayerState
-{
-    public string ThrowAnimation = "throw_holding_item";
-    public float ThrowAnimationSpeed = 1f;
-    public float ThrowTriggerTime = 0.3f;  // 投掷触发时间点
-    public float ThrowAnimationTotalTime = 0.64f;  // 动画总时长
-
-    private PlayerItemInteractionComponent? _interaction;
-    private bool _hasRequestedThrow;
-    private bool _animationFinished;
-    private float _animRemaining;
-    private float _throwTriggerRemaining;  // 投掷触发倒计时
-    private float _originalSpeedScale = 1.0f;
-
-    protected override void _ReadyState()
     {
-        base._ReadyState();
-        _interaction = Player.GetNodeOrNull<PlayerItemInteractionComponent>("ItemInteraction");
-    }
+        private enum ThrowPhase { Warmup, Active, Recovery }
 
-    public override void Enter()
-    {
-        //GD.Print($"[PlayerThrowState] 进入投掷状态");
+        public string ThrowAnimation = "throw_holding_item";
+        public float ThrowAnimationSpeed = 1f;
+        /// <summary>蓄力时长（秒）：Warmup 结束后触发投掷。</summary>
+        [Export(PropertyHint.Range, "0,2,0.01")] public float ThrowWarmupDuration = 0.3f;
+        /// <summary>出手时长（秒）：投掷触发后的出手保护窗口（不可闪避打断）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.01")] public float ThrowActiveDuration = 0.05f;
+        /// <summary>后摇时长（秒）：Recovery 可闪避取消；动画播完即结束（不受此值限制）。</summary>
+        [Export(PropertyHint.Range, "0,2,0.01")] public float ThrowRecoveryDuration = 0.29f;
+        public float ThrowAnimationTotalTime = 0.64f;  // 动画总时长（与三阶段之和一致）
 
-        if (_interaction == null)
+        private PlayerItemInteractionComponent? _interaction;
+        private bool _hasRequestedThrow;
+        private bool _animationFinished;
+        private ThrowPhase _phase;
+        private float _phaseRemaining;
+        private float _animRemaining;
+        private float _originalSpeedScale = 1.0f;
+
+        protected override void _ReadyState()
         {
-            GD.PrintErr($"[PlayerThrowState] ItemInteraction 不存在，无法进行投掷");
-            ChangeState("Idle");
-            return;
+            base._ReadyState();
+            _interaction = Player.GetNodeOrNull<PlayerItemInteractionComponent>("ItemInteraction");
         }
 
-        Player.Velocity = Vector2.Zero;
-        _hasRequestedThrow = false;
-        _animationFinished = false;
-        _throwTriggerRemaining = ThrowTriggerTime;
-        PlayThrowAnimation();
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-        _hasRequestedThrow = false;
-
-        if (Actor.AnimPlayer != null)
+        public override void Enter()
         {
-            Actor.AnimPlayer.SpeedScale = _originalSpeedScale;
-        }
-    }
-
-    public override void PhysicsUpdate(double delta)
-    {
-        if (_interaction == null)
-        {
-            ChangeState("Idle");
-            return;
-        }
-
-        UpdateAnimationState();
-
-        // 第一阶段：0.3秒时触发投掷，但不结束状态
-        if (!_hasRequestedThrow && _throwTriggerRemaining <= 0f)
-        {
-            GD.Print($"[PlayerThrowState] 0.3秒触发投掷");
-            _interaction.TryTriggerThrowAfterAnimation();
-            _hasRequestedThrow = true;
-        }
-
-        // 第二阶段：动画完整播放完毕后再切换状态
-        if (_animationFinished)
-        {
-            var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
-            if (selectedStack != null && !selectedStack.IsEmpty && selectedStack.Item.IsThrowable && !selectedStack.IsThrowOnCooldown)
+            if (_interaction == null)
             {
-                GD.Print($"[PlayerThrowState] 还有可投掷物品，返回 IdleHolding");
-                ChangeState("IdleHolding");
-            }
-            else
-            {
-                GD.Print($"[PlayerThrowState] 没有可投掷物品，返回 Idle");
+                GD.PrintErr($"[PlayerThrowState] ItemInteraction 不存在，无法进行投掷");
                 ChangeState("Idle");
+                return;
+            }
+
+            Player.Velocity = Vector2.Zero;
+            _hasRequestedThrow = false;
+            _animationFinished = false;
+            _phase = ThrowPhase.Warmup;
+            _phaseRemaining = ThrowWarmupDuration;
+            PlayThrowAnimation();
+
+            // 投掷开始：标记投掷物未出手（ItemHoldingAttachment 显示投掷物）
+            Player.GetNodeOrNull<PlayerItemAttachment>("ItemHoldingAttachment")?.SetThrowInProgress(true);
+        }
+
+        public override void Exit()
+        {
+            base.Exit();
+            _hasRequestedThrow = false;
+
+            if (Actor.AnimPlayer != null)
+            {
+                Actor.AnimPlayer.SpeedScale = _originalSpeedScale;
             }
         }
-    }
 
-    private void PlayThrowAnimation()
-    {
-        //GD.Print($"[PlayerThrowState] 播放投掷动画: {ThrowAnimation}");
-
-        if (Player is MainCharacter mainChar)
+        /// <summary>Warmup/Recovery 可被闪避取消（build 无关——所有投掷默认允许）；Active 出手保护不可打断。</summary>
+        public override bool CanExitTo(string nextState)
         {
-            mainChar.PlaySpineAnimation(ThrowAnimation, loop: false, timeScale: ThrowAnimationSpeed);
-            _animRemaining = ThrowAnimationTotalTime / ThrowAnimationSpeed;
-            //GD.Print($"[PlayerThrowState] Spine 动画已播放，预计时长: {_animRemaining}s");
-        }
-        else if (Actor.AnimPlayer != null)
-        {
-            if (Actor.AnimPlayer.HasAnimation(ThrowAnimation))
+            if (nextState == "Dash")
             {
-                _originalSpeedScale = Actor.AnimPlayer.SpeedScale;
-                Actor.AnimPlayer.Play(ThrowAnimation);
-                Actor.AnimPlayer.SpeedScale = ThrowAnimationSpeed;
+                return _phase != ThrowPhase.Active;
+            }
+            return base.CanExitTo(nextState);
+        }
 
-                var speed = Mathf.Max(Actor.AnimPlayer.SpeedScale, 0.0001f);
-                _animRemaining = (float)Actor.AnimPlayer.CurrentAnimationLength / speed;
-                //GD.Print($"[PlayerThrowState] AnimationPlayer 动画已播放，时长: {_animRemaining}s");
+        public override void PhysicsUpdate(double delta)
+        {
+            if (_interaction == null)
+            {
+                ChangeState("Idle");
+                return;
+            }
+
+            // 闪避取消：Warmup（未出手）/Recovery（后摇）阶段按闪避打断投掷
+            if (IsActionJustPressed("dash") && _phase != ThrowPhase.Active)
+            {
+                ChangeState("Dash");
+                return;
+            }
+
+            UpdateAnimationState();
+            UpdatePhase((float)delta);
+
+            // 动画完整播放完毕后再切换状态
+            if (_animationFinished)
+            {
+                var selectedStack = Player.InventoryComponent?.GetSelectedQuickBarStack();
+                if (selectedStack != null && !selectedStack.IsEmpty && selectedStack.Item.IsThrowable && !selectedStack.IsThrowOnCooldown)
+                {
+                    ChangeState("IdleHolding");
+                }
+                else
+                {
+                    ChangeState("Idle");
+                }
+            }
+        }
+
+        /// <summary>阶段推进：Warmup 结束触发投掷 → Active 出手保护 → Recovery 后摇（动画播完即结束）。</summary>
+        private void UpdatePhase(float delta)
+        {
+            _phaseRemaining -= delta;
+            if (_phaseRemaining > 0f) return;
+
+            switch (_phase)
+            {
+                case ThrowPhase.Warmup:
+                    // 蓄力结束：真正触发投掷（出手）
+                    _interaction!.TryTriggerThrowAfterAnimation();
+                    _hasRequestedThrow = true;
+                    _phase = ThrowPhase.Active;
+                    _phaseRemaining = ThrowActiveDuration;
+                    break;
+
+                case ThrowPhase.Active:
+                    // 出手完成：进入后摇（可闪避取消窗口）
+                    _phase = ThrowPhase.Recovery;
+                    _phaseRemaining = ThrowRecoveryDuration;
+                    break;
+
+                case ThrowPhase.Recovery:
+                    // 后摇结束（动画播完由 UpdateAnimationState 置 _animationFinished）
+                    _animationFinished = true;
+                    break;
+            }
+        }
+
+        private void PlayThrowAnimation()
+        {
+            if (Player is MainCharacter mainChar)
+            {
+                mainChar.PlaySpineAnimation(ThrowAnimation, loop: false, timeScale: ThrowAnimationSpeed);
+                _animRemaining = ThrowAnimationTotalTime / ThrowAnimationSpeed;
+            }
+            else if (Actor.AnimPlayer != null)
+            {
+                if (Actor.AnimPlayer.HasAnimation(ThrowAnimation))
+                {
+                    _originalSpeedScale = Actor.AnimPlayer.SpeedScale;
+                    Actor.AnimPlayer.Play(ThrowAnimation);
+                    Actor.AnimPlayer.SpeedScale = ThrowAnimationSpeed;
+
+                    var speed = Mathf.Max(Actor.AnimPlayer.SpeedScale, 0.0001f);
+                    _animRemaining = (float)Actor.AnimPlayer.CurrentAnimationLength / speed;
+                }
+                else
+                {
+                    _animationFinished = true;
+                }
             }
             else
             {
-                //GD.PrintErr($"[PlayerThrowState] 找不到动画: {ThrowAnimation}");
                 _animationFinished = true;
             }
         }
-        else
+
+        private void UpdateAnimationState()
         {
-            //GD.PrintErr($"[PlayerThrowState] 无法找到动画播放方式");
-            _animationFinished = true;
-        }
-    }
+            float delta = (float)GetPhysicsProcessDeltaTime();
 
-    private void UpdateAnimationState()
-    {
-        float delta = (float)GetPhysicsProcessDeltaTime();
-
-        // 投掷触发倒计时
-        if (_throwTriggerRemaining > 0f)
-        {
-            _throwTriggerRemaining -= delta;
-        }
-
-        // 动画总时长倒计时
-        if (!_animationFinished)
-        {
-            _animRemaining -= delta;
-
-            if (_animRemaining <= 0f)
+            if (!_animationFinished)
             {
-                _animationFinished = true;
-            }
-            else if (Actor.AnimPlayer != null && !Actor.AnimPlayer.IsPlaying())
-            {
-                _animationFinished = true;
+                _animRemaining -= delta;
+
+                if (_animRemaining <= 0f)
+                {
+                    _animationFinished = true;
+                }
+                else if (Actor.AnimPlayer != null && !Actor.AnimPlayer.IsPlaying())
+                {
+                    _animationFinished = true;
+                }
             }
         }
     }
 }
-}
-

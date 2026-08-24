@@ -122,6 +122,12 @@ namespace Kuros.Core
 		public Vector2 CurrentMoveDirection { get; set; } = Vector2.Zero;
 		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>
 		public Func<bool>? IsDashBackWindowActive { get; set; }
+		/// <summary>是否允许在 holding 状态持投掷武器（IsThrowable &amp;&amp; IsThrowWeapon）时闪避——由构筑效果注入。null = 不允许。</summary>
+		public Func<bool>? IsDashFromThrowWeaponHoldingAllowed { get; set; }
+		/// <summary>临时验证开关：允许持投掷武器（IsThrowWeapon）时闪避（构建效果卡完成后由效果注入替代）。</summary>
+		[Export] public bool AllowDashFromThrowWeaponHolding = false;
+		/// <summary>是否允许在 holding 状态持投掷家具（IsThrowable &amp;&amp; !IsThrowWeapon，一次性）时闪避——由构筑效果注入。null = 不允许。</summary>
+		public Func<bool>? IsDashFromThrowFurnitureHoldingAllowed { get; set; }
 		/// <summary>小伤害不打断：受到的伤害 ≤ MaxHealth × SmallDamageHitThresholdRatio 时不进入 Hit 状态（神经稳压）。</summary>
 		public bool SuppressSmallDamageHit { get; set; } = false;
 		/// <summary>小伤害判定阈值（最大生命比例，0.1 = 10%）。</summary>
@@ -158,6 +164,9 @@ namespace Kuros.Core
 		{
 			CurrentHealth = MaxHealth;
 			CurrentShield = 0;
+
+			// 临时验证：导出开关驱动持物闪避委托（build 效果卡完成后由效果注入替代）
+			IsDashFromThrowWeaponHoldingAllowed = () => AllowDashFromThrowWeaponHolding;
 			
 			
 			

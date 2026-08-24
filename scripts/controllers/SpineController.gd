@@ -83,6 +83,18 @@ func play_from(anim: String, start_time: float, loop := true, mix_duration := 0.
 			entry.track_time = start_time
 	return entry
 
+## 当前动画的播放时间（秒）——供切换动画时保持时间轴位置（hit 帧不因切换丢失）
+func get_track_time() -> float:
+	var state = get_animation_state()
+	if not state:
+		return 0.0
+	var entry = state.get_current(0)
+	if entry:
+		if entry.has_method("get_track_time"):
+			return entry.get_track_time()
+		return entry.track_time
+	return 0.0
+
 ## 动态修改当前正在播放动画的时间缩放，无需重启动画。
 func change_time_scale(time_scale: float):
 	var state = get_animation_state()

@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Kuros.Actors.Heroes;
+using Kuros.Items;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -68,7 +69,15 @@ namespace Kuros.Actors.Heroes.States
                 ChangeState("Throw");
                 return;
             }
-            
+
+            // 持物闪避（构筑效果条件）：投掷武器（IsThrowWeapon）与投掷家具（一次性）分别按各自委托判定
+            if (Player.IsActionJustPressedArbitrated("dash")
+                && IsDashFromHoldingAllowedByItem(selectedStack?.Item))
+            {
+                ChangeState("Dash");
+                return;
+            }
+
             // 检查移动输入
             Vector2 input = GetMovementInput();
             if (input == Vector2.Zero)
@@ -117,6 +126,15 @@ namespace Kuros.Actors.Heroes.States
                 ?? FindHeldAnimatedSprite(Player);
             if (_interaction != null)
                 _interaction.PendingThrowFrame = sprite?.Frame ?? -1;
+        }
+
+        /// <summary>按所持物品类型判定持物闪避是否允许：投掷家具（IsFurniture）与投掷武器分别走各自构筑委托。</summary>
+        private bool IsDashFromHoldingAllowedByItem(ItemDefinition? item)
+        {
+            if (item == null) return false;
+            return item.IsFurniture
+                ? Actor.IsDashFromThrowFurnitureHoldingAllowed?.Invoke() == true
+                : Actor.IsDashFromThrowWeaponHoldingAllowed?.Invoke() == true;
         }
 
         /// <summary>按类型在玩家场景树下找第一个 AnimatedSprite2D（附件缓存失败时的回退）。</summary>

@@ -78,14 +78,21 @@ namespace Kuros.Actors.Heroes
             base._ExitTree();
         }
 
-        public float ModifyAttackDamage(float baseDamage)
+        public float ModifyAttackDamage(float baseDamage, bool isDashAttack = false)
         {
             if (_defaultActiveSkill == null)
             {
                 return baseDamage;
             }
 
-            return baseDamage * MathF.Max(0f, _defaultActiveSkill.DamageMultiplier <= 0 ? 1f : _defaultActiveSkill.DamageMultiplier);
+            // 冲刺攻击使用专属伤害倍率（DashDamageMultiplier；-1 = 用普通 DamageMultiplier）
+            float multiplier = _defaultActiveSkill.DamageMultiplier;
+            if (isDashAttack && _defaultActiveSkill.DashDamageMultiplier >= 0f)
+            {
+                multiplier = _defaultActiveSkill.DashDamageMultiplier;
+            }
+
+            return baseDamage * MathF.Max(0f, multiplier <= 0 ? 1f : multiplier);
         }
 
         public string? GetPrimarySkillAnimation()

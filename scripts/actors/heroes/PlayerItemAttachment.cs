@@ -20,6 +20,13 @@ namespace Kuros.Actors.Heroes
         [Export] public Godot.Collections.Array<NodePath> SpineBoneNodePaths { get; set; } = new();
         [Export] public Godot.Collections.Array<string> SpineBoneOrder { get; set; } = new() { "WQ1", "WQ2", "WP" };
         [Export] public Godot.Collections.Array<string> ShowHoldingItemStates { get; set; } = new() { "Idle", "Walk", "Run", "Hit" };
+        /// <summary>此实例是否管理投掷物显示（false = 投掷物永不显示——由持物实例 ItemHoldingAttachment 负责，避免双份）。</summary>
+        [Export] public bool ManageThrowableItems = true;
+        /// <summary>投掷进行中且未出手：投掷开始置 true（显示投掷物），投掷出手置 false（后摇期间持续不显示——防背包选中物回落到手上）。</summary>
+        public bool ThrowInProgress { get; private set; }
+
+        /// <summary>投掷状态标记（由 PlayerThrowState/ItemInteraction 控制）：投掷开始 true、出手 false。</summary>
+        public void SetThrowInProgress(bool inProgress) => ThrowInProgress = inProgress;
         [Export] public bool FlipBoneAttachmentWithFacing { get; set; } = false;
         [Export(PropertyHint.Range, "-1024,1024,1")] public Vector2 BoneIconOffset { get; set; } = Vector2.Zero;
         [Export] public bool RotateBoneOffsetWithBone { get; set; } = false;
@@ -216,6 +223,9 @@ namespace Kuros.Actors.Heroes
             var instance = scene.Instantiate();
             if (instance == null) return;
 
+            // 挂本实例骨骼（SpineSlotIconContainer/SpineSlotNode——按实例配置）：
+            // 投掷物由 ItemHoldingAttachment 实例显示（SpineHoldingBoneNode 手上）；非投掷物由 ItemAttachment 显示（SpineBoneNode 背上）。
+            // 投掷物不再"跳过骨骼"——背上实例已 ManageThrowableItems=false，投掷物只走手上实例，其骨骼即正确挂点
             Node? parent = (_SpineSlotIconContainer as Node) ?? _spineSlotNode ?? (Node?)ResolveActiveBoneNode() ?? (Node?)_attachmentParent ?? _actor;
             if (parent == null)
             {
@@ -272,6 +282,18 @@ namespace Kuros.Actors.Heroes
         {
             // Combat weapon source: special weapon slot > quick bar > backpack.
             ItemDefinition? activeItem = Inventory?.GetActiveCombatWeaponDefinition();
+            // 持握投掷物优先：举起显示当前投掷物，而非武器槽/背包选中武器。
+            // 来源一：快捷栏选中的投掷武器；来源二：家具槽投掷家具（一次性家具占家具槽，
+            // 拾取后背包/快捷栏选中项仍是其他武器——必须从家具槽取投掷家具）
+            var selectedStack = Inventory?.GetSelectedQuickBarStack();
+            if (selectedStack?.Item.IsThrowable == true)
+            {
+                activeItem = selectedStack.Item;
+            }
+            else if (Inventory?.HasFurnitureItem == true && Inventory.FurnitureSlotStack?.Item.IsThrowable == true)
+            {
+                activeItem = Inventory.FurnitureSlotStack.Item;
+            }
 
             // Hitbox 始终根据当前持握物品更新（不受视觉状态影响）
             // 这样武器的攻击区始终有效，不会被清空而回退到角色自身AttackArea
@@ -279,6 +301,14 @@ namespace Kuros.Actors.Heroes
 
             // 获取当前状态名
             string? currentState = _actor?.StateMachine?.CurrentState?.Name;
+
+            // Throw 状态且投掷物已出手（ThrowInProgress=false）：投掷后摇期间持续不显示——
+            // 否则每帧 UpdateAttachmentIcon 会把背包选中物（含投掷武器）重新显示到手上
+            if (currentState == "Throw" && !ThrowInProgress)
+            {
+                ClearHeldVisual();
+                return;
+            }
 
             // 只控制视觉显示（是否显示图标），与Hitbox独立
 
@@ -289,7 +319,7 @@ namespace Kuros.Actors.Heroes
             }
             // 对于可投掷物(投掷类)：在IdleHolding、RunHolding状态显示
             // 对于不可投掷物(武器类)：在Idle、Run、Walk、Hit状态显示
-            if (!ShouldShowHoldingItem(currentState))
+            if (!ShouldShowHoldingItem(currentState, activeItem?.IsThrowable == true))
             {
                 ClearHeldVisual();  // 隐藏视觉，但Hitbox保留
                 return;
@@ -519,7 +549,7 @@ namespace Kuros.Actors.Heroes
             _currentHoldScenePath = null;
         }
 
-        private void ClearHeldVisual()
+        public void ClearHeldVisual()
         {
             ShowItemIcon(null);
             ClearHeldScene();
@@ -1022,13 +1052,26 @@ namespace Kuros.Actors.Heroes
         /// <summary>
         /// 判断当前状态/动画名是否需要显示持握物品
         /// </summary>
-        public bool ShouldShowHoldingItem(string? stateOrAnimationName)
+        public bool ShouldShowHoldingItem(string? stateOrAnimationName, bool isThrowableItem)
         {
             if (string.IsNullOrWhiteSpace(stateOrAnimationName))
             {
                 return false;
             }
 
+            if (ManageThrowableItems && !isThrowableItem)
+            {
+                // 持物实例（ItemHoldingAttachment 手上）：只显示投掷物——非投掷物（背包选中武器等）不显示。
+                // 防漏：投掷家具投出后（家具槽空、仍 Throw 状态）activeItem 回落到背包选中武器——手上应隐藏而非举起武器
+                return false;
+            }
+            if (isThrowableItem && !ManageThrowableItems)
+            {
+                // 非持物实例（ItemAttachment 背上）：投掷物由 ItemHoldingAttachment（手上）负责——本实例不显示，避免双份
+                return false;
+            }
+
+            // 非投掷物（武器）：背身后显示
             foreach (var state in ShowHoldingItemStates)
             {
                 if (string.Equals(state, stateOrAnimationName, StringComparison.OrdinalIgnoreCase))

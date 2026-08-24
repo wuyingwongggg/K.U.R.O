@@ -80,12 +80,13 @@ DebugOverlayColor = Color(0, 0.76862746, 0, 1)
 AttackArea = NodePath("AttackArea")
 LeftHandAttachmentPath = NodePath("SpineSprite/SpineBoneNode")
 Speed = 500.0
-AttackDamage = 1.0
+AttackDamage = 0.0
 MaxHealth = 9999
 AiDescription = "玩家，受博士委托前来调查失控酒店AI的搭档、伙伴"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
+AllowDashFromThrowWeaponHolding = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0y2r2")
@@ -146,7 +147,7 @@ skeleton_data_res = ExtResource("4_o4xwm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.51
+preview_time = 0.0
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -224,6 +225,7 @@ AttackId = "riot_glove_melee_attack"
 DisplayName = "Riot Glove Melee Attack"
 Description = "镇暴拳套专属攻击模板示例"
 EnableDashMovement = true
+EnableDirectionalMovement = true
 HitEffectScene = ExtResource("11_6hy0m")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -268,6 +270,7 @@ AttackId = "expand_baton_melee_attack"
 DisplayName = "expand_baton Melee Attack"
 Description = "甩棍专属攻击模板示例"
 EnableDashMovement = true
+EnableDirectionalMovement = true
 HitEffectScene = ExtResource("11_6hy0m")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -324,6 +327,7 @@ AttackId = "umbrella_melee_attack"
 DisplayName = "Umbrella Melee Attack"
 Description = "雨伞专属攻击模板示例"
 EnableDashMovement = true
+EnableDirectionalMovement = true
 HitEffectScene = ExtResource("13_f18x1")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -355,10 +359,13 @@ RequiredItemId = "Weapon_Stab_corkscrew"
 
 [node name="StabLaserPointer" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("0_laserptr")
-MoveSpeedPercent = 15.0
 BatterySkillId = "WeaponSkill_LaserPointer"
 EnableDashMovement = true
 AllowBackwardDashAttack = true
+EnableDirectionalMovement = true
+ForwardAnimationName = "Weapon_Stab_LaserPointer_fwd"
+BackwardAnimationName = "Weapon_Stab_LaserPointer_bwd"
+MoveSpeedPercent = 30.0
 RequiredItemId = "Weapon_Stab_laserPointer"
 SkipWarmupOnRecoveryRestart = true
 
@@ -383,6 +390,9 @@ script = ExtResource("15_0y6jy")
 
 [node name="Throw" type="Node" parent="StateMachine"]
 script = ExtResource("16_oc5yk")
+ThrowWarmupDuration = 0.2
+ThrowActiveDuration = 0.1
+ThrowRecoveryDuration = 0.37
 
 [node name="IdleHolding" type="Node" parent="StateMachine"]
 script = ExtResource("20_h3qap")
@@ -422,6 +432,7 @@ script = ExtResource("20_4ht1x")
 Inventory = NodePath("../Inventory")
 AttachmentParentPath = NodePath("../SpineSprite")
 SpineSlotNodePath = NodePath("../SpineSprite/SpineBoneNode")
+ManageThrowableItems = false
 RotateBoneOffsetWithBone = true
 IconRotationDegrees = -120.0
 

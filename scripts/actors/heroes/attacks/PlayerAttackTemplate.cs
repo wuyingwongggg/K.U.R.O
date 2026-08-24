@@ -51,6 +51,20 @@ namespace Kuros.Actors.Heroes.Attacks
         [Export(PropertyHint.Range, "0,3000,10")] public float RecoverySpeed = 0f;
         /// <summary>允许向后冲刺攻击：true = 后撤（dashback）时冲刺方向沿后撤方向（向后）；false = 反方向（面朝向前 + 移动 Y）。</summary>
         [Export] public bool AllowBackwardDashAttack = false;
+        /// <summary>仅从 Dash（冲刺闪避）状态进入攻击才触发冲刺攻击（RunAttack）；其他来源（Run/Walk/Idle）用普通攻击。false = 任何来源都冲刺。</summary>
+        [Export] public bool DashAttackOnlyFromDash = true;
+
+        [ExportGroup("Directional Movement")]
+        /// <summary>攻击中方向移动（激光笔同款机制）：Active 期间按移动方向实时切换 fwd/bwd/站立动画 + 接管位移。默认关闭。</summary>
+        [Export] public bool EnableDirectionalMovement = false;
+        /// <summary>前进动画名（移动方向与面朝同向；Y 移动时 x ≥ 0）。</summary>
+        [Export] public string ForwardAnimationName = string.Empty;
+        /// <summary>后退动画名（移动方向与面朝反向；Y 移动时 x &lt; 0）。</summary>
+        [Export] public string BackwardAnimationName = string.Empty;
+        /// <summary>输入死区：X 在此范围内视为站立（不切换方向动画）。</summary>
+        [Export(PropertyHint.Range, "0,0.5,0.01")] public float InputDeadzone = 0.1f;
+        /// <summary>Active 期间移动速度倍率（当前实际速度的 N%）。100 = 不变，0 = 不动。</summary>
+        [Export(PropertyHint.Range, "0,300,0.01")] public float MoveSpeedPercent = 15f;
         /// <summary>碰敌归零检测形状路径（可选）：配置后 EnableDashMovement 移动期间，该形状碰到敌人 HitArea → 前冲速度立即归零（Brawl 同款效果）。空 = 不检测。</summary>
         [Export] public NodePath ContactShapePath = new();
 
@@ -116,6 +130,8 @@ namespace Kuros.Actors.Heroes.Attacks
         protected bool _isDashing;           // Warmup+Active 衰减移动中
         protected bool _isSliding;           // Recovery 滑行中
         protected bool _dashDisabled;        // 移动被禁用（碰敌归零等）
+        private string _lastDirectionalAnimation = string.Empty;   // 已播放的方向动画（去重，同名不重播）
+        private bool _directionalActive;                            // Active 方向移动接管标志
         private float _dashElapsed;          // 衰减计时（Warmup 内从起步速度衰减到 0）
         private float _dashStartSpeed;       // 本段攻击的起步速度（首段=AttackEntrySpeed，连击=上一段衰减结果）
         private CollisionShape2D? _contactShape;   // 碰敌检测形状缓存（ContactShapePath）
@@ -149,16 +165,35 @@ namespace Kuros.Actors.Heroes.Attacks
 
         /// <summary>当前攻击动画的 Warmup 段时长（动画时间轴秒数，未缩放），供子类切换动画时跳帧到 Active 段。</summary>
         protected float ResolveWarmupAnimationTime()
-            => ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration);
+            => ResolveDashOrSkillDuration(_activeWeaponSkill?.DashWarmupDuration, _activeWeaponSkill?.WarmupDuration, WarmupDuration);
 
         /// <summary>当前 Active 阶段的动画播放速度（技能 ActiveAnimationSpeed × 全局攻速倍率，与阶段计时同源），
         /// 供子类切换动画时保持速度一致，避免播放速度被重置为 1× 导致与阶段计时错位。</summary>
         protected float ResolveActiveAnimationSpeed()
-            => Mathf.Max((_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f)
+            => Mathf.Max(ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashActiveAnimationSpeed ?? -1f, _activeWeaponSkill?.ActiveAnimationSpeed ?? 1f)
                 * Mathf.Max(Player.AttackSpeedMultiplier, 0.01f), 0.01f);
+
+        /// <summary>是否处于冲刺攻击（EnableDashMovement 开启，且满足来源状态条件——DashAttackOnlyFromDash 时仅 Dash 来源触发 RunAttack）。</summary>
+        protected bool ShouldUseDashMovement()
+        {
+            if (!EnableDashMovement) return false;
+            if (!DashAttackOnlyFromDash) return true;
+            return TriggerSourceState == "Dash";
+        }
+
+        /// <summary>阶段时长解析（冲刺攻击优先技能 Dash 配置，-1 = 用普通阶段）：技能覆盖或模板默认。</summary>
+        private float ResolveDashOrSkillDuration(float? dashOverride, float? skillOverride, float templateDefault)
+            => ShouldUseDashMovement() && dashOverride >= 0f
+                ? dashOverride.Value
+                : ResolveSkillTiming(skillOverride, templateDefault);
+
+        /// <summary>动画速度解析：冲刺攻击时优先技能 Dash 动画速度（&gt;=0），否则技能/默认。</summary>
+        private float ResolveDashOrSkillSpeed(float dashSpeed, float skillSpeed)
+            => ShouldUseDashMovement() && dashSpeed >= 0f ? dashSpeed : skillSpeed;
         private WeaponSkillDefinition? _activeWeaponSkill;
         private AttackHitboxDebugDrawer? _hitboxDebugDrawer;
         private int _currentHitStep = 1;  // 记录当前 Spine 动画段数（1-based）
+        private readonly HashSet<int> _resolvedHitSteps = new();  // 本次攻击已结算的 hit 段（同段不重复结算——方向切换动画变体不产生额外伤害）
         private PlayerInventoryComponent? _inventoryComponent;
         private uint _cachedAttackAreaMask;
         private bool _hasAttackAreaMaskOverride;
@@ -396,32 +431,103 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnTick(double delta)
         {
-            if (!EnableDashMovement || _dashDisabled) return;
-
-            // 碰敌归零（通用）：检测形状（ContactShapePath 或默认玩家 AttackArea）碰到敌人 HitArea → 前冲速度立即归零
-            if (TryStopDashOnEnemyContact())
-                return;
-
-            if (_isDashing)
+            // 位移对所有来源启用（普通攻击也有攻击惯性——Run/Walk 进入攻击带当前速度衰减）；
+            // Dash 动画/阶段/速度仍由 ShouldUseDashMovement（仅 Dash 来源）控制
+            if (EnableDashMovement && !_dashDisabled)
             {
-                if (ShouldDecayDashSpeed)
+                // 碰敌归零（通用）：检测形状（ContactShapePath 或默认玩家 AttackArea）碰到敌人 HitArea → 前冲速度立即归零
+                if (!TryStopDashOnEnemyContact())
                 {
-                    // Warmup 内从本段起步速度线性衰减到 0（Active 前归零——出手时已无位移惯性）
-                    _dashElapsed += (float)delta;
-                    float total = _effectiveWarmup;
-                    float t = total > 0f ? Mathf.Clamp(_dashElapsed / total, 0f, 1f) : 1f;
-                    _currentDashSpeed = _dashStartSpeed * (1f - t);
+                    if (_isDashing)
+                    {
+                        if (ShouldDecayDashSpeed)
+                        {
+                            // Warmup 内从本段起步速度线性衰减到 0（Active 前归零——出手时已无位移惯性）
+                            _dashElapsed += (float)delta;
+                            float total = _effectiveWarmup;
+                            float t = total > 0f ? Mathf.Clamp(_dashElapsed / total, 0f, 1f) : 1f;
+                            _currentDashSpeed = _dashStartSpeed * (1f - t);
+                        }
+                        Player.Velocity = _dashDirection * _currentDashSpeed;
+                    }
+                    else if (_isSliding)
+                    {
+                        Player.Velocity = _dashDirection * RecoverySpeed;
+                    }
+                    else if (IsInRecovery)
+                    {
+                        Player.Velocity = Vector2.Zero;
+                    }
                 }
-                Player.Velocity = _dashDirection * _currentDashSpeed;
             }
-            else if (_isSliding)
+
+            // 方向移动（激光笔同款）：Active 期间按移动方向实时切换 fwd/bwd + 接管位移。
+            // 可与冲刺攻击顺序组合：冲刺速度衰减到 0（或未冲刺）后方向移动接管——冲刺阶段冲刺位移优先
+            if (EnableDirectionalMovement && (!_isDashing || _currentDashSpeed <= 0.01f))
             {
-                Player.Velocity = _dashDirection * RecoverySpeed;
+                if (!_directionalActive || !IsInActivePhase)
+                {
+                    _directionalActive = false; // 退出 Active 停止接管，Warmup/Recovery 走基类原有逻辑
+                    return;
+                }
+
+                UpdateDirectionalMoveVelocity();
+
+                string target = ResolveDirectionalAnimation();
+                if (target == _lastDirectionalAnimation) return; // 动画名未变：不重播
+                PlayDirectional(target);
+                _lastDirectionalAnimation = target;
             }
-            else if (IsInRecovery)
+        }
+
+        /// <summary>Active 期间直接接管 Velocity（同冲刺位移模式：攻击状态下玩家移动不读 Speed 属性，
+        /// 必须由模板每帧设置 Velocity 供状态机 MoveAndSlide）。全方向移动：有输入 → 按「当前实际速度 ×N%」移动；无输入 → 停下。</summary>
+        private void UpdateDirectionalMoveVelocity()
+        {
+            if (Player == null) return;
+            Vector2 input = Player.GetControlledMovementInput();
+            if (input.LengthSquared() <= 0.01f)
             {
                 Player.Velocity = Vector2.Zero;
+                return;
             }
+
+            float speed = Player.Speed * (MoveSpeedPercent / 100f);
+            Player.Velocity = input.Normalized() * speed;
+        }
+
+        /// <summary>播放方向动画：若目标已是当前播放的动画则跳过（防重播）；否则切换动画并**保持当前时间轴位置**。
+        /// 三动画共用同一 timing——不重置播放位置，否则快速前后切换时动画永远停在起点，hit 帧（时间轴后段）永远不触发。
+        /// timeScale 必须传当前 Active 阶段速度，否则播放速度被重置为 1×，与阶段计时错位。</summary>
+        private void PlayDirectional(string target)
+        {
+            if (Player is not MainCharacter mc) return;
+            if (target == mc.CurrentAnimationName) return; // 已在该动画：不重播
+            mc.PlaySpineAnimationFrom(target, mc.CurrentAnimationTime, loop: true,
+                ResolveActiveAnimationSpeed());
+            SetSpineAttackAnimation(target);
+        }
+
+        /// <summary>按面朝与移动输入解析目标动画：Y 轴有移动 → 按 X 符号分流（x ≥ 0 → fwd，x < 0 → bwd）；
+        /// 仅 X 轴移动 → 同向 → fwd，反向 → bwd，X 在 deadzone 内 → 站立动画。全程不翻转角色。</summary>
+        private string ResolveDirectionalAnimation()
+        {
+            Vector2 input = Player.GetControlledMovementInput();
+            float x = input.X;
+            float y = input.Y;
+
+            // Y 轴有移动：方向由 X 符号决定（与面朝无关）
+            if (y > InputDeadzone || y < -InputDeadzone)
+            {
+                return x >= 0f ? ForwardAnimationName : BackwardAnimationName;
+            }
+
+            // 仅 X 轴移动：保持原面朝规则
+            bool forward = Player.FacingRight ? x > InputDeadzone : x < -InputDeadzone;
+            bool backward = Player.FacingRight ? x < -InputDeadzone : x > InputDeadzone;
+            if (forward) return ForwardAnimationName;
+            if (backward) return BackwardAnimationName;
+            return _resolvedAnimationName;
         }
 
         /// <summary>从 Recovery 打断重启时跳过 Warmup，直接进入 Active 阶段（伤害立即判定）。</summary>
@@ -449,18 +555,18 @@ namespace Kuros.Actors.Heroes.Attacks
                 ? ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration)
                 : -1f;
 
-            // 提前解析当前武器技能，以便应用 timing 覆盖
+            // 提前解析当前武器技能，以便应用 timing 覆盖（冲刺攻击优先技能 Dash 阶段配置）
             _activeWeaponSkill = Player.WeaponSkillController?.GetPrimarySkillDefinition();
-            _effectiveWarmup   = ResolveSkillTiming(_activeWeaponSkill?.WarmupDuration, WarmupDuration);
-            _effectiveActive   = ResolveSkillTiming(_activeWeaponSkill?.ActiveDuration, ActiveDuration);
-            _effectiveRecovery = ResolveSkillTiming(_activeWeaponSkill?.RecoveryDuration, RecoveryDuration);
+            _effectiveWarmup   = ResolveDashOrSkillDuration(_activeWeaponSkill?.DashWarmupDuration, _activeWeaponSkill?.WarmupDuration, WarmupDuration);
+            _effectiveActive   = ResolveDashOrSkillDuration(_activeWeaponSkill?.DashActiveDuration, _activeWeaponSkill?.ActiveDuration, ActiveDuration);
+            _effectiveRecovery = ResolveDashOrSkillDuration(_activeWeaponSkill?.DashRecoveryDuration, _activeWeaponSkill?.RecoveryDuration, RecoveryDuration);
 
             // 阶段时长按动画速度调整：速度越慢，阶段越久，确保动画完整播放
-            // 全局攻速倍率与武器技能速度相乘，空手（无技能）时 1f × 倍率同样生效
+            // 全局攻速倍率与武器技能速度相乘，空手（无技能）时 1f × 倍率同样生效；冲刺攻击优先技能 Dash 动画速度
             float globalSpeed = Mathf.Max(Player.AttackSpeedMultiplier, 0.01f);
-            float warmupSpeed = (_activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed;
-            float activeSpeed = (_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed;
-            float recoverySpeed = (_activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed;
+            float warmupSpeed = ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashWarmupAnimationSpeed ?? -1f, _activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed;
+            float activeSpeed = ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashActiveAnimationSpeed ?? -1f, _activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed;
+            float recoverySpeed = ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashRecoveryAnimationSpeed ?? -1f, _activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed;
             _effectiveWarmup   /= Mathf.Max(warmupSpeed, 0.01f);
             _effectiveActive   /= Mathf.Max(activeSpeed, 0.01f);
             _effectiveRecovery /= Mathf.Max(recoverySpeed, 0.01f);
@@ -614,9 +720,9 @@ namespace Kuros.Actors.Heroes.Attacks
             float globalSpeed = Mathf.Max(Player.AttackSpeedMultiplier, 0.01f);
             float speed = phase switch
             {
-                AttackPhase.Warmup => (_activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed,
-                AttackPhase.Active => (_activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed,
-                AttackPhase.Recovery => (_activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed,
+                AttackPhase.Warmup => ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashWarmupAnimationSpeed ?? -1f, _activeWeaponSkill?.WarmupAnimationSpeed ?? 1f) * globalSpeed,
+                AttackPhase.Active => ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashActiveAnimationSpeed ?? -1f, _activeWeaponSkill?.ActiveAnimationSpeed ?? 1f) * globalSpeed,
+                AttackPhase.Recovery => ResolveDashOrSkillSpeed(_activeWeaponSkill?.DashRecoveryAnimationSpeed ?? -1f, _activeWeaponSkill?.RecoveryAnimationSpeed ?? 1f) * globalSpeed,
                 _ => 1f * globalSpeed
             };
 
@@ -660,6 +766,7 @@ namespace Kuros.Actors.Heroes.Attacks
             _currentHitStep = 1;  // 重置段数计数器
             CurrentAttackHitStep = 1;  // 重置静态段数
             CurrentAttackRoundId++;  // 新攻击回合：连击/段数效果按此隔离回合
+            _resolvedHitSteps.Clear();  // 新攻击回合：hit 段去重重置（每攻击每段最多一次伤害）
 
             // 如果是 MainCharacter，使用 Spine 动画
             if (Player is MainCharacter mainChar)
@@ -689,6 +796,12 @@ namespace Kuros.Actors.Heroes.Attacks
 
         private string ResolveAnimationName(WeaponSkillDefinition? primarySkill)
         {
+            // 冲刺攻击动画最高优先（冲刺攻击时使用技能 Dash 专属动画）
+            if (ShouldUseDashMovement() && !string.IsNullOrWhiteSpace(_activeWeaponSkill?.DashAnimationName))
+            {
+                return _activeWeaponSkill.DashAnimationName;
+            }
+
             if (!UseEquippedWeaponSkillAnimation)
             {
                 return AnimationName;
@@ -834,6 +947,14 @@ namespace Kuros.Actors.Heroes.Attacks
                 StartDashMovement();
             }
 
+            if (EnableDirectionalMovement)
+            {
+                // 方向移动：Active 开始接管方向动画 + 位移
+                _directionalActive = true;
+                _lastDirectionalAnimation = string.Empty;
+                PlayDirectional(ResolveDirectionalAnimation());
+            }
+
             if (ShouldUseSpineHitEvents())
             {
                 return;
@@ -844,9 +965,11 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnRecoveryStarted()
         {
+            // 位移清理/接管用 EnableDashMovement（所有来源都有位移——惯性衰减或 Brawl 固定冲刺）；
+            // Dash 动画/阶段/速度才用 ShouldUseDashMovement（仅 Dash 来源）
             if (EnableDashMovement)
             {
-                // 两段速度模式：Active 前冲 → Recovery 滑行（速度由 OnTick 接管）
+                // 冲刺模式：Active 前冲 → Recovery 滑行（速度由 OnTick 接管）
                 _isDashing = false;
                 _isSliding = RecoverySpeed > 0f;
                 return;
@@ -858,12 +981,20 @@ namespace Kuros.Actors.Heroes.Attacks
         protected virtual void OnAttackFinished()
         {
             RestoreAttackAreaMask();
+            // 清理用 EnableDashMovement（所有来源）——否则 Brawl 非 Dash 来源碰敌后 _dashDisabled 残留，
+            // 下次攻击冲刺永久失效
             if (EnableDashMovement)
             {
                 _isDashing = false;
                 _isSliding = false;
                 _dashDisabled = false;
                 // 保留 _currentDashSpeed：连击时继承上一段衰减结果（自然延续，不回到初始速度）
+                Player.Velocity = Vector2.Zero;
+            }
+            if (EnableDirectionalMovement)
+            {
+                // 攻击结束/被打断后停止接管位移，Velocity 归零
+                _directionalActive = false;
                 Player.Velocity = Vector2.Zero;
             }
         }
@@ -1047,6 +1178,13 @@ namespace Kuros.Actors.Heroes.Attacks
             }
 
             if (!string.IsNullOrEmpty(_spineAttackAnimationName) && !string.Equals(animationName, _spineAttackAnimationName, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            // 同段只结算一次：方向切换（fwd/bwd 互切）是动画变体——来回快速切换时新动画的 hit 帧会反复触发，
+            // 去重保证每次攻击每段最多一次伤害
+            if (!_resolvedHitSteps.Add(hitStep))
             {
                 return;
             }

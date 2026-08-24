@@ -17662,6 +17662,9 @@
 					{ "slot": "014", "offset": 14 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 0.26, "name": "hit" }
 		]
 	},
 	"walk": {
@@ -37568,6 +37571,9 @@
 					{ "slot": "JG", "offset": -37 }
 				]
 			}
+		],
+		"events": [
+			{ "time": 0.22, "name": "hit" }
 		]
 	},
 	"Weapon_Slash_ViolinBow": {
@@ -55791,10 +55797,9 @@
 				]
 			}
 		],
+
 		"events": [
-			{ "name": "hit" },
-			{ "time": 0.16666667, "name": "hit" },
-			{ "time": 0.3666667, "name": "hit" }
+			{ "time": 0.4, "name": "hit" }
 		]
 	}
 },

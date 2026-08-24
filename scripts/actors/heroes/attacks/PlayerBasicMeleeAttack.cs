@@ -49,7 +49,7 @@ namespace Kuros.Actors.Heroes.Attacks
 
             if (_weaponSkillController != null)
             {
-                DamageOverride = _weaponSkillController.ModifyAttackDamage(DamageOverride);
+                DamageOverride = _weaponSkillController.ModifyAttackDamage(DamageOverride, ShouldUseDashMovement());
                 _weaponSkillController.TriggerDefaultSkill();
             }
 
