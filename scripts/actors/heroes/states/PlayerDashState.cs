@@ -8,7 +8,7 @@ namespace Kuros.Actors.Heroes.States
     public partial class PlayerDashState : PlayerState
     {
         [ExportCategory("Dash Burst")]
-        [Export(PropertyHint.Range, "100,5000,10")] public float BurstSpeed = 4000f;
+        [Export(PropertyHint.Range, "100,10000,10")] public float BurstSpeed = 4000f;
         [Export(PropertyHint.Range, "0.01,1,0.01")] public float BurstDuration = 0.1f;
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float BurstAnimationSpeed = 2f;
 
@@ -126,6 +126,11 @@ namespace Kuros.Actors.Heroes.States
             _inBurst = true;
             _totalDuration = BurstDuration + RecoveryDuration;
 
+            // 同帧攻击输入（dash+attack 同时按下）：缓冲供 Burst 打断分支消费——
+            // 否则 attack 的 just pressed 在下一帧已过期，攻击被吞（最终从 Idle/Run 进导致冲刺速度 0/奔跑速度）
+            if (IsActionJustPressed("attack") || IsAttackTriggered())
+                BufferInput("attack", AttackPriority);
+
             if (Player is MainCharacter mainChar)
                 mainChar.StartHitInvincibility(InvincibilityDuration);
 
@@ -171,8 +176,21 @@ namespace Kuros.Actors.Heroes.States
 
             if (_inBurst)
             {
-                if (IsActionJustPressed("attack"))
-                    BufferInput("attack", AttackPriority);
+                // Burst 中攻击直接打断冲刺（CanExitTo 放行）：先结算本帧阶段（Burst 可能在本帧结束），
+                // 攻击继承"打断瞬间的实际速度"——避免 Burst 尾段打断却继承 4000 与即将减速脱节
+                var bufferedAttack = ConsumeBufferedInput();
+                if (bufferedAttack == "attack" || IsActionJustPressed("attack") || IsAttackTriggered())
+                {
+                    // 结算本帧阶段（Burst 可能在本帧结束）——决定攻击继承的移动速度（Burst/Recovery）
+                    if (_elapsed + (float)delta >= BurstDuration)
+                        _inBurst = false;
+                    Actor.CurrentMoveSpeed = _inBurst ? BurstSpeed : RecoverySpeed;
+                    Actor.CurrentMoveDirection = _dashDirection;
+                    Player.AttackTimer = 0f;   // 豁免攻击冷却：冲刺中攻击是连续动作（否则 TryStart 冷却失败回 Idle，重攻击时速度已归零）
+                    Player.RequestAttackFromState(Name);
+                    ChangeState("Attack");
+                    return;
+                }
             }
             else
             {
@@ -185,6 +203,10 @@ namespace Kuros.Actors.Heroes.States
                 }
                 if (buffered == "attack" || IsAttackTriggered())
                 {
+                    // 与 Burst 打断一致：记录打断瞬间速度 + 豁免冷却（否则 TryStart 冷却失败回 Idle，重攻击时速度已归零）
+                    Actor.CurrentMoveSpeed = RecoverySpeed;
+                    Actor.CurrentMoveDirection = _dashDirection;
+                    Player.AttackTimer = 0f;
                     Player.RequestAttackFromState(Name);
                     ChangeState("Attack");
                     return;
@@ -203,6 +225,8 @@ namespace Kuros.Actors.Heroes.States
             }
             float speed = _inBurst ? BurstSpeed : RecoverySpeed;
             Actor.Velocity = _dashDirection * speed;
+            Actor.CurrentMoveSpeed = speed;
+            Actor.CurrentMoveDirection = _dashDirection;
             Actor.MoveAndSlide();
             Actor.ClampPositionToScreen();
         }
@@ -210,6 +234,9 @@ namespace Kuros.Actors.Heroes.States
         public override bool CanExitTo(string nextState)
         {
             if (nextState == "Dying" || nextState == "Dead")
+                return true;
+            // Burst 中允许攻击打断（冲刺攻击：继承 Burst 速度）；其余状态仍需 Recovery 后才可切换
+            if (nextState == "Attack")
                 return true;
             return !_inBurst;
         }

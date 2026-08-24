@@ -43,6 +43,17 @@ namespace Kuros.Actors.Heroes.Attacks
         [Export(PropertyHint.Range, "0,5,0.01")] public float RecoveryDuration = 0.25f;
         [Export(PropertyHint.Range, "0,10,0.01")] public float CooldownDuration = 0.6f;
 
+        [ExportCategory("Dash Movement")]
+        /// <summary>攻击惯性衰减：Warmup 开始后沿面朝方向移动，速度从攻击前玩家速度在 Warmup 内线性衰减到 0（Active 前归零，连贯不跳变）→ Recovery 按 RecoverySpeed 滑行。
+        /// 速度纯粹由攻击前玩家速度决定（站立攻击不移动）。默认关闭（不影响现有攻击）。</summary>
+        [Export] public bool EnableDashMovement = false;
+        /// <summary>Recovery 阶段滑行速度（像素/秒）。0 = Recovery 立即停止。</summary>
+        [Export(PropertyHint.Range, "0,3000,10")] public float RecoverySpeed = 0f;
+        /// <summary>允许向后冲刺攻击：true = 后撤（dashback）时冲刺方向沿后撤方向（向后）；false = 反方向（面朝向前 + 移动 Y）。</summary>
+        [Export] public bool AllowBackwardDashAttack = false;
+        /// <summary>碰敌归零检测形状路径（可选）：配置后 EnableDashMovement 移动期间，该形状碰到敌人 HitArea → 前冲速度立即归零（Brawl 同款效果）。空 = 不检测。</summary>
+        [Export] public NodePath ContactShapePath = new();
+
         [ExportCategory("Damage")]
         [Export(PropertyHint.Range, "0,500,1")] public float DamageOverride = 25.0f;
         [Export(PropertyHint.Range, "0,1000,1")] public float AttackRange = 120.0f;
@@ -99,6 +110,16 @@ namespace Kuros.Actors.Heroes.Attacks
         public static int CurrentAttackHitStep { get; private set; } = 1;
         /// <summary>当前攻击回合 ID：每次攻击开始递增，供连击/段数效果隔离回合（防止跨回合命中污染判定）。</summary>
         public static int CurrentAttackRoundId { get; private set; } = 1;
+
+        protected float _currentDashSpeed;   // 实际移动速度（运行时状态）
+        protected Vector2 _dashDirection;    // 移动方向（面朝）
+        protected bool _isDashing;           // Warmup+Active 衰减移动中
+        protected bool _isSliding;           // Recovery 滑行中
+        protected bool _dashDisabled;        // 移动被禁用（碰敌归零等）
+        private float _dashElapsed;          // 衰减计时（Warmup 内从起步速度衰减到 0）
+        private float _dashStartSpeed;       // 本段攻击的起步速度（首段=AttackEntrySpeed，连击=上一段衰减结果）
+        private CollisionShape2D? _contactShape;   // 碰敌检测形状缓存（ContactShapePath）
+        private bool _isRestartAttack;       // 本次攻击是否为 Recovery 打断重启（连击：延续上一段衰减结果）
 
         private AttackPhase _phase = AttackPhase.Idle;
         private float _phaseTimer = 0f;
@@ -277,7 +298,131 @@ namespace Kuros.Actors.Heroes.Attacks
             RefreshCurrentHitboxDebug();
         }
 
-        protected virtual void OnTick(double delta) { }
+        /// <summary>移动起步时机：true = Warmup 开始起步（惯性衰减模式，默认）；false = Active 开始起步（阶段前冲模式，Brawl 原语义：Warmup 停）。</summary>
+        protected virtual bool ShouldStartDashInWarmup => true;
+        /// <summary>起步后是否在 Warmup+Active 内衰减到 0；false = 保持匀速冲刺（阶段前冲模式）。</summary>
+        protected virtual bool ShouldDecayDashSpeed => true;
+        /// <summary>起步速度解析（首段攻击）：默认读玩家当前移动速度（移动状态写入 CurrentMoveSpeed——Run/Walk/Dash 实时速度，Idle 为 0）。
+        /// 子类可重载（如 BrawlRiotBracer：固定 DashSpeed 冲刺）。</summary>
+        protected virtual float ResolveDashStartSpeed()
+        {
+            return Player.CurrentMoveSpeed;
+        }
+
+        /// <summary>碰敌归零：ContactShapePath 形状碰到敌人 HitArea → 前冲速度归零（返回 true 表示已停止，本帧不再写入速度）。</summary>
+        private bool TryStopDashOnEnemyContact()
+        {
+            var shape = ResolveContactShape();
+            if (shape?.Shape == null) return false;
+
+            var spaceState = shape.GetWorld2D().DirectSpaceState;
+            var query = new PhysicsShapeQueryParameters2D
+            {
+                Shape = shape.Shape,
+                Transform = shape.GlobalTransform,
+                CollideWithAreas = true,
+                CollideWithBodies = false
+            };
+            foreach (var result in spaceState.IntersectShape(query))
+            {
+                if (!result.TryGetValue("collider", out var collider)) continue;
+                if (collider.As<GodotObject>() is not Area2D area) continue;
+                if ((string)area.Name != "HitArea") continue;
+                var actor = area.GetParent() as GameActor
+                    ?? area.GetParent()?.GetParent() as GameActor;
+                if (actor != null
+                    && actor.IsInGroup("enemies")
+                    && !actor.IsDeathSequenceActive
+                    && !actor.IsDead)
+                {
+                    _dashDisabled = true;
+                    _currentDashSpeed = 0f;
+                    _isDashing = false;
+                    _isSliding = false;
+                    Player.Velocity = Vector2.Zero;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private CollisionShape2D? ResolveContactShape()
+        {
+            if (_contactShape != null && IsInstanceValid(_contactShape) && _contactShape.Shape != null)
+                return _contactShape;
+
+            if (!ContactShapePath.IsEmpty)
+                _contactShape = GetNodeOrNull<CollisionShape2D>(ContactShapePath);
+            // 空路径 → 默认玩家 AttackArea（EnableDashMovement 开启即自动碰敌归零，无需每武器配置）
+            _contactShape ??= Player?.GetNodeOrNull<CollisionShape2D>("AttackArea/CollisionShape2D");
+            return _contactShape;
+        }
+
+        /// <summary>冲刺方向解析：允许向后冲刺时沿攻击前移动方向（后撤时向后）；不允许时——站立回退面朝、纯 Y 移动沿 Y、有 X 分量则面朝 X + 移动 Y（后撤时向前）。</summary>
+        protected virtual Vector2 ResolveDashDirection()
+        {
+            Vector2 input = Player.CurrentMoveDirection;
+
+            if (AllowBackwardDashAttack)
+            {
+                return input != Vector2.Zero
+                    ? input
+                    : (Player.FacingRight ? Vector2.Right : Vector2.Left);
+            }
+
+            if (Mathf.Abs(input.X) <= 0.01f && Mathf.Abs(input.Y) <= 0.01f)
+                return Player.FacingRight ? Vector2.Right : Vector2.Left;   // 站立：面朝
+            if (Mathf.Abs(input.X) <= 0.01f)
+                return new Vector2(0f, Mathf.Sign(input.Y));               // 纯 Y 移动：沿 Y（不含面朝 X 分量）
+
+            Vector2 dir = new(Player.FacingRight ? 1f : -1f, input.Y);     // 有 X 分量：面朝 X + 移动 Y
+            return dir.Normalized();
+        }
+
+        /// <summary>启动移动：沿冲刺方向以起步速度移动。
+        /// 首段起步 = ResolveDashStartSpeed（攻击前速度/子类兜底）；连击（Recovery 打断重启）起步 = 上一段衰减结果（0）。
+        /// 起步速度存入 _dashStartSpeed：衰减公式必须用它（而非 AttackEntrySpeed），否则连击会被初始速度覆盖。</summary>
+        private void StartDashMovement()
+        {
+            _dashDirection = ResolveDashDirection();
+            _dashStartSpeed = _isRestartAttack ? _currentDashSpeed : ResolveDashStartSpeed();
+            _currentDashSpeed = _dashStartSpeed;
+            _dashElapsed = 0f;
+            _dashDisabled = false;
+            _isDashing = true;
+            _isSliding = false;
+            Player.Velocity = _dashDirection * _currentDashSpeed;
+        }
+
+        protected virtual void OnTick(double delta)
+        {
+            if (!EnableDashMovement || _dashDisabled) return;
+
+            // 碰敌归零（通用）：检测形状（ContactShapePath 或默认玩家 AttackArea）碰到敌人 HitArea → 前冲速度立即归零
+            if (TryStopDashOnEnemyContact())
+                return;
+
+            if (_isDashing)
+            {
+                if (ShouldDecayDashSpeed)
+                {
+                    // Warmup 内从本段起步速度线性衰减到 0（Active 前归零——出手时已无位移惯性）
+                    _dashElapsed += (float)delta;
+                    float total = _effectiveWarmup;
+                    float t = total > 0f ? Mathf.Clamp(_dashElapsed / total, 0f, 1f) : 1f;
+                    _currentDashSpeed = _dashStartSpeed * (1f - t);
+                }
+                Player.Velocity = _dashDirection * _currentDashSpeed;
+            }
+            else if (_isSliding)
+            {
+                Player.Velocity = _dashDirection * RecoverySpeed;
+            }
+            else if (IsInRecovery)
+            {
+                Player.Velocity = Vector2.Zero;
+            }
+        }
 
         /// <summary>从 Recovery 打断重启时跳过 Warmup，直接进入 Active 阶段（伤害立即判定）。</summary>
         [Export] public bool SkipWarmupOnRecoveryRestart = false;
@@ -286,7 +431,14 @@ namespace Kuros.Actors.Heroes.Attacks
         {
             // Recovery 打断重启是玩家主动连击，豁免 AttackTimer 冷却
             bool isRestart = _wantsRestart;
-            if (!CanStart(checkInput, allowDuringCooldown: isRestart)) return false;
+            if (!CanStart(checkInput, allowDuringCooldown: isRestart))
+            {
+                // 失败也重置：否则 _wantsRestart 残留 true，下次（如 Dash 打断攻击）被误判为连击，
+                // 起步速度走 _currentDashSpeed（上次攻击残留）而绕过 ResolveDashStartSpeed（实时速度）
+                _wantsRestart = false;
+                return false;
+            }
+            _isRestartAttack = isRestart;
 
             bool skipWarmup = isRestart && SkipWarmupOnRecoveryRestart;
             _wantsRestart = false;
@@ -492,6 +644,11 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnAttackStarted()
         {
+            if (EnableDashMovement && ShouldStartDashInWarmup)
+            {
+                StartDashMovement();
+            }
+
             ApplyAttackAreaMaskOverride();
             // _activeWeaponSkill 已在 TryStart() 中解析，此处无需重复赋值
             ShowCurrentHitboxDebug(_activeWeaponSkill);
@@ -672,6 +829,11 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnActivePhase()
         {
+            if (EnableDashMovement && !ShouldStartDashInWarmup)
+            {
+                StartDashMovement();
+            }
+
             if (ShouldUseSpineHitEvents())
             {
                 return;
@@ -682,12 +844,28 @@ namespace Kuros.Actors.Heroes.Attacks
 
         protected virtual void OnRecoveryStarted()
         {
+            if (EnableDashMovement)
+            {
+                // 两段速度模式：Active 前冲 → Recovery 滑行（速度由 OnTick 接管）
+                _isDashing = false;
+                _isSliding = RecoverySpeed > 0f;
+                return;
+            }
+
             Player.Velocity = Player.Velocity.MoveToward(Vector2.Zero, Player.Speed);
         }
 
         protected virtual void OnAttackFinished()
         {
             RestoreAttackAreaMask();
+            if (EnableDashMovement)
+            {
+                _isDashing = false;
+                _isSliding = false;
+                _dashDisabled = false;
+                // 保留 _currentDashSpeed：连击时继承上一段衰减结果（自然延续，不回到初始速度）
+                Player.Velocity = Vector2.Zero;
+            }
         }
 
         private uint BuildFactionMask()

@@ -92,6 +92,7 @@ namespace Kuros.Core
 		private ulong _spriteFlashToken;
 		
 		// GDScript Helper to bypass C# wrapper issues with GDExtension
+		private float _currentMoveSpeed;
 		private Node _spineHelper = null!;
 
 		private bool _deathStarted = false;
@@ -115,6 +116,10 @@ namespace Kuros.Core
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
 		/// <summary>额外速度加成百分比（加法叠加，供超频/动能增幅等共享——各效果增量写入，移动状态统一消费）。</summary>
 		public float SpeedBonusPercent { get; set; } = 0f;
+		/// <summary>当前实际移动速度（由移动状态写入：Run/Walk/Dash 写各自速度，Idle 写 0）——供攻击模板查询做"移动速度驱动的位移"，与其他状态最小耦合。</summary>
+		public float CurrentMoveSpeed { get => _currentMoveSpeed; set => _currentMoveSpeed = value; }
+		/// <summary>当前移动方向（归一化，由移动状态写入；静止为 Zero）——供攻击模板继承含 Y 轴的移动方向。</summary>
+		public Vector2 CurrentMoveDirection { get; set; } = Vector2.Zero;
 		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>
 		public Func<bool>? IsDashBackWindowActive { get; set; }
 		/// <summary>小伤害不打断：受到的伤害 ≤ MaxHealth × SmallDamageHitThresholdRatio 时不进入 Hit 状态（神经稳压）。</summary>

@@ -36,6 +36,7 @@ namespace Kuros.Actors.Heroes.States
 
 		public override void Enter()
 		{
+			// 速度归零：攻击前移动速度由移动状态写入 CurrentMoveSpeed（Run/Walk/Dash），模板启动时查询——无需在此捕获
 			Player.Velocity = Vector2.Zero;
 			AlignFacingToInput();
 			

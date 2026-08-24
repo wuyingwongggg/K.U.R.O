@@ -1815,7 +1815,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	private void UpdateDebugOverlayText()
 	{
 		string stateName = StateMachine?.CurrentState?.Name ?? "None";
-		_debugOverlayText = $"{Name} | State: {stateName} | HP: {CurrentHealth}/{MaxHealth}";
+		_debugOverlayText = $"{Name} | State: {stateName} | HP: {CurrentHealth}/{MaxHealth} | Vel: {Velocity.Length():F0} | Speed: {CurrentMoveSpeed:F0}";
 	}
 
 	private void UpdateStatsUI()

@@ -12,7 +12,9 @@ namespace Kuros.Actors.Heroes.States
 		public override void Enter()
 		{
 			Player.NotifyMovementState(Name);
-			
+			Actor.CurrentMoveSpeed = 0f;   // 静止状态：移动速度归零（供攻击模板查询冲刺起步速度）
+			Actor.CurrentMoveDirection = Vector2.Zero;
+
 			// 使用 PlayAnimation 方法，自动适配 MainCharacter 和 SamplePlayer
 			if (Player is MainCharacter mainChar)
 			{

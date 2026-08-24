@@ -80,8 +80,10 @@ namespace Kuros.Actors.Heroes.States
 			float speed = Actor.Speed * (1f + Actor.SpeedBonusPercent / 100f);
 			velocity.X = input.X * speed;
 			velocity.Y = input.Y * speed;
-			
+
 			Actor.Velocity = velocity;
+			Actor.CurrentMoveSpeed = speed;
+			Actor.CurrentMoveDirection = input.Normalized();
 			
 			if (input.X != 0)
 			{
