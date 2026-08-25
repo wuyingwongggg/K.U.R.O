@@ -2086,11 +2086,13 @@ namespace Kuros.Items.World
 					else if (node is Node2D node2D)
 					{
 						entry.ApplyOverrides(node2D);
+						// Attacker 必须在 AddChild（触发 _Ready）之前注入——否则效果的 _Ready
+						// 读到的 Attacker 为 null（如 BriefcaseOpenEffect 的朝向翻转）
+						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+							attackerProvider.Attacker = LastDroppedBy;
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
-						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
-							attackerProvider.Attacker = LastDroppedBy;
 					}
 					else
 					{
@@ -2149,13 +2151,14 @@ namespace Kuros.Items.World
 						if (node is Node2D node2D)
 						{
 							entry.ApplyOverrides(node2D);
+								// Attacker 在 AddChild（触发 _Ready）之前注入
+								if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+									attackerProvider.Attacker = LastDroppedBy;
 								var worldNode = GetTree().CurrentScene?.GetNodeOrNull<Node>("World")
 								?? GetTree().CurrentScene;
 							worldNode?.AddChild(node2D);
 							node2D.GlobalPosition = spawnPos;
 								node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
-							if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
-								attackerProvider.Attacker = LastDroppedBy;
 						}
 						else if (node is Kuros.Core.Effects.ActorEffect actorEffect)
 						{

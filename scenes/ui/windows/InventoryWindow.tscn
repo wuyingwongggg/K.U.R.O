@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bpad88uh6vf2y"]
 
-[ext_resource type="Script" path="res://scripts/ui/InventoryWindow.cs" id="1_inventory_window_script"]
+[ext_resource type="Script" uid="uid://1swy1fh7adke" path="res://scripts/ui/InventoryWindow.cs" id="1_inventory_window_script"]
 
 [sub_resource type="StyleBoxFlat" id="PanelStyle_TrashBin"]
 bg_color = Color(0.5, 0.2, 0.2, 0.8)
@@ -132,5 +132,5 @@ title = "确认删除"
 initial_position = 2
 size = Vector2i(300, 120)
 ok_button_text = "确认删除"
-cancel_button_text = "取消"
 dialog_text = "确定要删除这个物品吗？此操作无法撤销。"
+cancel_button_text = "取消"

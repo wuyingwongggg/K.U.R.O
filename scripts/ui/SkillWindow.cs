@@ -16,7 +16,6 @@ namespace Kuros.UI
         private bool _isOpen;
         private SkillDetailWindow? _skillDetailWindow;
         private const string SkillDetailWindowPath = "res://scenes/ui/windows/SkillDetailWindow.tscn";
-        private InventoryWindow? _cachedInventoryWindow;
 
         public bool IsOpen => _isOpen;
 

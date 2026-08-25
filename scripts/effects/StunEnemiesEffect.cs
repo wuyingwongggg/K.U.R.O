@@ -6,29 +6,29 @@ using Kuros.Core.Effects;
 namespace Kuros.Effects
 {
     /// <summary>
-    /// 持续区域眩晕效果。
+    /// 持续区域眩晕效果（世界空间 Node2D 效果，非 ActorEffect）。
     /// 效果存活期间，Area2D 范围内所有 Enemies 层的敌人持续被冻结；
     /// 效果到期时自动解除全部眩晕。
+    ///
+    /// 使用 Node2D 而非 ActorEffect：不参与 EffectId 去重与 Actor 生命周期绑定——
+    /// 多投掷（如多个烟雾弹）各自独立眩晕区域。
     /// </summary>
     [GlobalClass]
-    public partial class StunEnemiesEffect : ActorEffect, Kuros.Core.Effects.IWorldSpawnable
+    public partial class StunEnemiesEffect : Node2D
     {
         private const uint EnemiesLayerMask = 2u;
 
-        /// <summary>
-        /// 由 SpawnThrowDestroyEffects 在应用前设置，将 Area2D 定位到抛物落点。
-        /// </summary>
-        public Vector2? WorldSpawnPosition { get; set; }
+        [Export(PropertyHint.Range, "0,600,0.1")] public float Duration { get; set; } = 5.0f;
 
         private Area2D? _area;
         private readonly HashSet<GameActor> _stunnedEnemies = new();
         private bool _cleaned = false;
+        private float _elapsed;
         // 每个实例唯一前缀，便于精确移除 FreezeEffect
         private string _idPrefix = "";
 
-        protected override void OnApply()
+        public override void _Ready()
         {
-            base.OnApply();
             _idPrefix = $"area_stun_{GetInstanceId()}";
 
             _area = GetNodeOrNull<Area2D>("Area2D");
@@ -42,17 +42,29 @@ namespace Kuros.Effects
             _area.BodyEntered += OnBodyEntered;
             _area.BodyExited += OnBodyExited;
 
-            // 等物理帧同步后扫描已在范围内的敌人
+            // 等物理帧同步后扫描已在范围内的敌人（根已定位到投掷落点）
             CallDeferred(MethodName.InitialScan);
+        }
+
+        public override void _Process(double delta)
+        {
+            _elapsed += (float)delta;
+            if (Duration > 0f && _elapsed >= Duration)
+            {
+                Cleanup();
+                QueueFree();
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            Cleanup();
+            base._ExitTree();
         }
 
         private void InitialScan()
         {
             if (_area == null || !IsInstanceValid(_area)) return;
-
-            // 修正 Area2D 到世界坐标落点（ActorEffect 挂在玩家树下，默认跟随玩家）
-            if (WorldSpawnPosition.HasValue)
-                _area.GlobalPosition = WorldSpawnPosition.Value;
 
             // GetOverlappingBodies() 依赖物理帧，移动 Area2D 后立刻调用结果为空。
             // 改用直接空间查询，立即得到落点处的所有敌人。
@@ -62,7 +74,7 @@ namespace Kuros.Effects
             var spaceState = _area.GetWorld2D().DirectSpaceState;
             if (spaceState == null) return;
 
-            Vector2 center = WorldSpawnPosition ?? _area.GlobalPosition;
+            Vector2 center = _area.GlobalPosition;
             var queryParams = new PhysicsShapeQueryParameters2D
             {
                 Shape = shapeNode.Shape,
@@ -118,18 +130,6 @@ namespace Kuros.Effects
             enemy.ApplyEffect(freeze);
         }
 
-        protected override void OnExpire()
-        {
-            Cleanup();
-            base.OnExpire();
-        }
-
-        public override void OnRemoved()
-        {
-            Cleanup();
-            base.OnRemoved();
-        }
-
         private void Cleanup()
         {
             if (_cleaned) return;
@@ -144,10 +144,10 @@ namespace Kuros.Effects
             foreach (var enemy in _stunnedEnemies)
             {
                 if (!IsInstanceValid(enemy)) continue;
-                
+
                 // 移除应用的 FreezeEffect
                 enemy.RemoveEffect($"{_idPrefix}_{enemy.GetInstanceId()}");
-                
+
                 // 清空残留的 Frozen 状态恢复时长，防止后续 Hit 状态错误恢复 Frozen
                 enemy.FrozenStateRemainingTime = 0f;
             }

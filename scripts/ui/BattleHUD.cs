@@ -31,19 +31,8 @@ namespace Kuros.UI
 	[Export] public TextureProgressBar? ExpFillBar { get; private set; } = null!;
 	[Export] public Label? ExpValueLabel { get; private set; } = null!;
 	[Export] public Button PauseButton { get; private set; } = null!;
-	[Export] public Label GoldLabel { get; private set; } = null!;
 
 		[ExportCategory("Styles")]
-		// 快捷物品栏整体面板样式（例如使用武器栏底图做 StyleBoxTexture）
-		[Export] public StyleBox? QuickBarPanelStyle { get; set; }
-		// 非锁定武器槽的底层空白方块纹理（在所有已解锁槽位上持续显示，位于武器图标下方）
-		[Export] public Texture2D? EmptySlotFrameTexture { get; set; }
-		// 当前选中武器槽的高亮框架纹理（选中框，选中时替换 EmptySlotFrameTexture）
-		[Export] public Texture2D? SelectedFrameTexture { get; set; }
-		// 锁定武器槽的遮掩纹理（覆盖在未解锁的槽位上）
-		[Export] public Texture2D? LockedFrameTexture { get; set; }
-		// 金币文本样式（可配合金币图标背景）
-		[Export] public StyleBox? GoldLabelStyle { get; set; }
 		// 暂停键按钮样式（例如使用“暂停键底”资源）
 		[Export] public StyleBox? PauseButtonStyle { get; set; }
 
@@ -66,23 +55,10 @@ namespace Kuros.UI
 		private GhostHealthComponent? _ghostComponent;
 
 		// 物品栏相关
-		private InventoryWindow? _inventoryWindow;
-		private InventoryContainer? _inventoryContainer;
 		private InventoryContainer? _quickBarContainer;
-		
-		// 快捷栏UI引用
-		private readonly Label[] _quickSlotLabels = new Label[5];
-		private readonly Panel[] _quickSlotPanels = new Panel[5];
-		private readonly TextureRect[] _quickSlotIcons = new TextureRect[5];
-		// 槽位框架（SlotFrame）纹理：选中框/锁定遮罩由导出属性配置；解锁未选中槽无框
-		private readonly TextureRect?[] _quickSlotFrames = new TextureRect?[5];
-		private int _leftHandSlotIndex = -1;
-		private int _rightHandSlotIndex = -1;
-		// 投掷武器冷却遮罩覆盖层（每个快捷槽一个）
-		private readonly ThrowCooldownOverlay?[] _quickSlotCooldownOverlays = new ThrowCooldownOverlay?[5];
-		private float _throwCooldownUpdateTimer = 0f;
-		private const float ThrowCooldownUpdateInterval = 0.05f;
-		
+		// 快捷栏面板（独立组件：槽位展示 + 金币显示）
+		private QuickBarPanel? _quickBarPanel;
+
 		// 小地图相关
 		private Vector2 _mapSize = new Vector2(2000, 1500); // 地图总大小（可以根据实际地图调整）
 		private Vector2 _minimapSize = new Vector2(200, 200); // 小地图显示大小
@@ -159,11 +135,6 @@ namespace Kuros.UI
 				PauseButton = GetNodeOrNull<Button>("PauseButton");
 			}
 
-			if (GoldLabel == null)
-			{
-				GoldLabel = GetNodeOrNull<Label>("GoldContainer/GoldLabel");
-			}
-
 			// 使用 Godot 原生 Connect 方法连接信号，在导出版本中更可靠
 			if (PauseButton != null)
 			{
@@ -174,8 +145,8 @@ namespace Kuros.UI
 				}
 			}
 
-			// 缓存快捷栏Label引用（必须在初始化物品栏之前）
-			CacheQuickBarLabels();
+			// 缓存快捷栏面板引用（独立组件：槽位展示 + 金币显示）
+			_quickBarPanel = GetNodeOrNull<QuickBarPanel>("QuickBarPanel");
 
 			// 应用可自定义样式（快捷物品栏、金币、暂停键）
 			ApplyCustomStyles();
@@ -209,47 +180,8 @@ namespace Kuros.UI
 			}
 		}
 
-		private void CacheQuickBarLabels()
-		{
-			for (int i = 0; i < 5; i++)
-			{
-				_quickSlotLabels[i] = GetNodeOrNull<Label>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotLabel{i + 1}");
-				_quickSlotPanels[i] = GetNodeOrNull<Panel>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}");
-				_quickSlotIcons[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/QuickSlotIcon{i + 1}");
-				_quickSlotFrames[i] = GetNodeOrNull<TextureRect>($"QuickBarPanel/QuickBarContainer/QuickSlot{i + 1}/SlotFrame");
-
-				if (_quickSlotLabels[i] == null)
-				{
-					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotLabel{i + 1}");
-				}
-
-				if (_quickSlotPanels[i] == null)
-				{
-					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotPanel{i + 1}");
-				}
-
-				if (_quickSlotIcons[i] == null)
-				{
-					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotIcon{i + 1}");
-				}
-
-				if (_quickSlotFrames[i] == null)
-				{
-					GD.PrintErr($"CacheQuickBarLabels: Failed to find QuickSlotFrame{i + 1}");
-				}
-			}
-		}
-
 		private void InitializeInventory()
 		{
-			// 创建物品栏容器
-			_inventoryContainer = new InventoryContainer
-			{
-				Name = "PlayerInventory",
-				SlotCount = 16
-			};
-			AddChild(_inventoryContainer);
-
 			// 创建快捷栏容器
 			_quickBarContainer = new InventoryContainer
 			{
@@ -258,10 +190,8 @@ namespace Kuros.UI
 			};
 			AddChild(_quickBarContainer);
 
-		// 连接快捷栏变化信号
-		// 注意：_quickBarContainer 在此方法中刚刚创建，且 _Ready() 只调用一次，因此无需检查重复订阅
-		_quickBarContainer.SlotChanged += OnQuickBarSlotChanged;
-		_quickBarContainer.InventoryChanged += OnQuickBarChanged;
+		// 将容器注入快捷栏面板（面板负责展示与信号订阅）
+		_quickBarPanel?.SetQuickBarContainer(_quickBarContainer);
 
 			if (SpawnDefaultSwordInQuickBar)
 			{
@@ -290,148 +220,29 @@ namespace Kuros.UI
 			// 初始化空白道具：填充快捷栏和物品栏的空槽位
 			CallDeferred(MethodName.InitializeEmptyItems);
 
-			// 通过UIManager加载物品栏窗口（放在GameUI层，在HUD之上）
-			LoadInventoryWindow();
 			UIManager.RegisterInteractiveChildren(this);
 		}
 
-		/// <summary>
-		/// 加载物品栏窗口
-		/// </summary>
-		private void LoadInventoryWindow()
-		{
-			if (UIManager.Instance == null)
-			{
-				GD.PrintErr("BattleHUD: UIManager未初始化！");
-				return;
-			}
-
-		_inventoryWindow = UIManager.Instance.LoadInventoryWindow();
-		
-		if (_inventoryWindow != null && _inventoryContainer != null && _quickBarContainer != null)
-		{
-			_inventoryWindow.SetInventoryContainer(_inventoryContainer, _quickBarContainer);
-			_inventoryWindow.HideWindow();
-		}
-		else if (_inventoryWindow != null)
-		{
-			GD.PrintErr("BattleHUD: 无法设置物品栏容器，_inventoryContainer 或 _quickBarContainer 为 null");
-		}
-		}
-
-		private void OnQuickBarSlotChanged(int slotIndex, string itemId, int quantity)
-		{
-			// 使用 CallDeferred 确保在下一帧更新，避免在信号处理过程中更新UI
-			CallDeferred(MethodName.UpdateQuickBarSlot, slotIndex);
-		}
-
-		private void OnQuickBarChanged()
-		{
-			UpdateQuickBarDisplay();
-		}
-
+		// 快捷栏展示已委托 QuickBarPanel；以下方法保留为转发层（外部通过
+		// Godot 字符串/方法名调用：拾取/投掷流程 UpdateQuickBarDisplay、UpdateHandSlotHighlight）
 		public void UpdateQuickBarDisplay()
 		{
-			if (_quickBarContainer == null)
-			{
-				GD.PrintErr("UpdateQuickBarDisplay: QuickBarContainer is null");
-				return;
-			}
-
-			for (int i = 0; i < 5; i++)
-			{
-				UpdateQuickBarSlot(i);
-			}
+			_quickBarPanel?.UpdateQuickBarDisplay();
 		}
 
-		private void UpdateQuickBarSlot(int slotIndex)
+		public void UpdateQuickBarSlot(int slotIndex)
 		{
-			if (slotIndex < 0 || slotIndex >= 5) return;
-			if (_quickBarContainer == null)
-			{
-				GD.PrintErr($"UpdateQuickBarSlot: QuickBarContainer is null for slot {slotIndex}");
-				return;
-			}
-
-			var stack = _quickBarContainer.GetStack(slotIndex);
-			bool isEmpty = stack == null || stack.IsEmpty;
-			bool isEmptyItem = !isEmpty && stack!.Item.ItemId == "empty_item";
-
-
-			// u66f4u65b0u6807u7b7eu6587u5b57
-			if (_quickSlotLabels[slotIndex] != null)
-			{
-				if (isEmpty || isEmptyItem)
-					_quickSlotLabels[slotIndex].Text = "";
-				else
-					_quickSlotLabels[slotIndex].Text = stack!.Item.DisplayName;
-			}
-
-			// u66f4u65b0u56feu6807
-			if (_quickSlotIcons[slotIndex] != null)
-			{
-				if (isEmpty || isEmptyItem)
-				{
-					_quickSlotIcons[slotIndex].Texture = null;
-					_quickSlotIcons[slotIndex].Modulate = new Color(1, 1, 1, 0.3f);
-				}
-				else
-				{
-					_quickSlotIcons[slotIndex].Texture = stack!.Item.Icon;
-					_quickSlotIcons[slotIndex].Modulate = Colors.White;
-				}
-			}
-
-			// u66f4u65b0u6295u63b7u51b7u5374u906eu7f69uff08u4eceu69fdu4f4d stack u8bfbu53d6uff09
-			UpdateThrowCooldownOverlay(slotIndex, stack);
-
-			// 槽位内容变化（如放入武器）后同步刷新框架纹理，保证物品不被锁定遮罩盖住
-			UpdateSlotFrames();
+			_quickBarPanel?.UpdateQuickBarSlot(slotIndex);
 		}
-		
-		/// <summary>
-		/// 更新左右手选择的快捷栏高亮（保存选中索引并刷新槽位框架纹理）
-		/// </summary>
-		/// <param name="leftHandSlotIndex">左手选择的槽位索引（0-4，-1表示未选择）</param>
-		/// <param name="rightHandSlotIndex">右手选择的槽位索引（-1表示不高亮右手）</param>
+
 		public void UpdateHandSlotHighlight(int leftHandSlotIndex, int rightHandSlotIndex = -1)
 		{
-			_leftHandSlotIndex = leftHandSlotIndex;
-			_rightHandSlotIndex = rightHandSlotIndex;
-			UpdateSlotFrames();
+			_quickBarPanel?.UpdateHandSlotHighlight(leftHandSlotIndex, rightHandSlotIndex);
 		}
 
-		/// <summary>
-		/// 刷新 5 个槽位的框架纹理（底图不含槽位图案，槽位背景由纹理层负责）：
-		/// 锁定空槽 → 锁定遮罩（LockedFrameTexture）；锁定槽有物品 → 不遮掩（物品优先）；
-		/// 解锁槽被选中 → 选中框（SelectedFrameTexture，替换空白方块）；
-		/// 其余已解锁槽 → 空白方块（EmptySlotFrameTexture，持续显示在武器图标下方）。
-		/// 解锁数量来自玩家 GetUnlockedWeaponSlots（初始 3，Build 每次升级 +1）。
-		/// </summary>
-		private void UpdateSlotFrames()
+		public void UpdateSlotFrames()
 		{
-			int unlocked = _player?.InventoryComponent?.GetUnlockedWeaponSlots() ?? 5;
-
-			for (int i = 0; i < 5; i++)
-			{
-				var frame = _quickSlotFrames[i];
-				if (frame == null) continue;
-
-				bool hasItem = _player?.InventoryComponent?.QuickBar?.GetStack(i) is { } stack
-					&& !stack.IsEmpty && stack.Item.ItemId != "empty_item";
-
-				// 锁定遮罩只作用于空槽：有物品的槽位即使判定锁定也不遮掩
-				if (i >= unlocked && !hasItem)
-				{
-					frame.Texture = LockedFrameTexture;
-					continue;
-				}
-
-				bool selected = (i == _rightHandSlotIndex && _rightHandSlotIndex >= 0)
-					|| (i == _leftHandSlotIndex && _leftHandSlotIndex >= 0);
-				// 选中时用选中框替换空白方块，其余解锁槽持续显示空白方块
-				frame.Texture = selected ? SelectedFrameTexture : EmptySlotFrameTexture;
-			}
+			_quickBarPanel?.UpdateSlotFrames();
 		}
 
 		/// <summary>
@@ -460,18 +271,6 @@ namespace Kuros.UI
 				}
 			}
 			
-			// 填充物品栏空槽位
-			if (_inventoryContainer != null)
-			{
-				for (int i = 0; i < _inventoryContainer.SlotCount; i++)
-				{
-					var stack = _inventoryContainer.GetStack(i);
-					if (stack == null || stack.IsEmpty)
-					{
-						_inventoryContainer.TryAddItemToSlot(emptyItem, 1, i);
-					}
-				}
-			}
 		}
 		
 		/// <summary>
@@ -632,45 +431,12 @@ namespace Kuros.UI
 		}
 
 		/// <summary>
-		/// 应用战斗 UI 的可自定义样式：快捷物品栏、金币文本、暂停键按钮等。
+		/// 应用战斗 UI 的可自定义样式：暂停键按钮等。
+		/// 快捷物品栏/金币样式已随 QuickBarPanel 独立组件迁移。
 		/// 仅在对应 StyleBox 被设置时才覆盖，避免破坏你在编辑器中已有的视觉配置。
 		/// </summary>
 		private void ApplyCustomStyles()
 		{
-			// 快捷物品栏整体面板：武器栏底（与金币/暂停同样方式，默认贴图）
-			var quickBarPanel = GetNodeOrNull<Panel>("QuickBarPanel");
-			if (quickBarPanel != null)
-			{
-				StyleBox? panelStyle = QuickBarPanelStyle;
-				if (panelStyle == null)
-				{
-					var tex = GD.Load<Texture2D>("res://resources/ui/武器栏底.png");
-					if (tex != null)
-					{
-						var stb = new StyleBoxTexture();
-						stb.Texture = tex;
-						panelStyle = stb;
-					}
-				}
-				if (panelStyle != null)
-					quickBarPanel.AddThemeStyleboxOverride("panel", panelStyle);
-			}
-
-			// 槽位框架（解锁框/选中框）由 CacheQuickBarLabels 加载、UpdateSlotFrames 刷新，此处不再设置面板样式
-
-			// 金币文本样式
-			if (GoldLabel != null && GoldLabelStyle != null)
-			{
-				GoldLabel.AddThemeStyleboxOverride("normal", GoldLabelStyle);
-			}
-
-			// 金币图标：使用 金币.png，点采样避免透明边灰圈
-			var goldIcon = GetNodeOrNull<TextureRect>("GoldContainer/GoldIcon");
-			if (goldIcon != null)
-			{
-				goldIcon.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
-			}
-
 			// 暂停键：透明 StyleBox + 用 TextureRect 显示 暂停.png 并设点采样，去掉透明边缘的灰圈
 			if (PauseButton != null)
 			{
@@ -748,14 +514,8 @@ namespace Kuros.UI
 					samplePlayer.StatsChanged += OnPlayerStatsChanged;
 				}
 				
-				// 连接玩家金币变化信号
-				if (!samplePlayer.IsConnected(SamplePlayer.SignalName.GoldChanged, new Callable(this, MethodName.OnPlayerGoldChanged)))
-				{
-					samplePlayer.GoldChanged += OnPlayerGoldChanged;
-				}
-				
-				// 初始化金币显示
-				UpdateGoldDisplay(samplePlayer.GetGold());
+				// 金币显示由快捷栏面板负责
+				_quickBarPanel?.ConnectPlayer(samplePlayer);
 
 				// 绑定时立即刷新一次生命值，避免必须等待下一次事件才更新。
 				UpdateStats(samplePlayer.CurrentHealth, samplePlayer.MaxHealth, samplePlayer.Score);
@@ -780,11 +540,8 @@ namespace Kuros.UI
 				{
 					samplePlayer.StatsChanged -= OnPlayerStatsChanged;
 				}
-				
-				if (samplePlayer.IsConnected(SamplePlayer.SignalName.GoldChanged, new Callable(this, MethodName.OnPlayerGoldChanged)))
-				{
-					samplePlayer.GoldChanged -= OnPlayerGoldChanged;
-				}
+
+				_quickBarPanel?.DisconnectPlayer(samplePlayer);
 			}
 		}
 
@@ -907,37 +664,11 @@ namespace Kuros.UI
 			UpdateStats(health, maxHealth, _score);
 		}
 		
-		private void OnPlayerGoldChanged(int gold)
-		{
-			UpdateGoldDisplay(gold);
-		}
-		
-		private void UpdateGoldDisplay(int gold)
-		{
-			if (GoldLabel != null)
-			{
-				GoldLabel.Text = $"{gold}";
-			}
-		}
-
-
 		public override void _Process(double delta)
 		{
 			base._Process(delta);
 			UpdateGhostHealthBars();
 			UpdateDashDisplay((float)delta);
-			// u5b9au671fu5237u65b0u6295u63b7u6b66u5668u69fdu4f4d CD u906eu7f69
-			_throwCooldownUpdateTimer -= (float)delta;
-			if (_throwCooldownUpdateTimer <= 0f)
-			{
-				_throwCooldownUpdateTimer = ThrowCooldownUpdateInterval;
-				for (int i = 0; i < 5; i++)
-				{
-					var qbStack = _player?.InventoryComponent?.QuickBar?.GetStack(i);
-					if (qbStack != null)
-						UpdateQuickBarSlot(i);
-				}
-			}
 		}
 
 		/// <summary>
@@ -970,61 +701,6 @@ namespace Kuros.UI
 			}
 		}
 
-		private void UpdateThrowCooldownOverlay(int slotIndex, InventoryItemStack? stack)
-		{
-			if (_quickSlotIcons[slotIndex] == null) return;
-
-			if (stack != null && stack.IsThrowOnCooldown)
-			{
-				var overlay = GetOrCreateCooldownOverlay(slotIndex);
-				float cd = stack.Item.ThrowWeaponCooldown;
-				overlay.Progress = cd > 0f ? stack.ThrowCooldownRemaining / cd : 0f;
-				overlay.Visible = true;
-			}
-			else
-			{
-				if (_quickSlotCooldownOverlays[slotIndex] != null)
-					_quickSlotCooldownOverlays[slotIndex]!.Visible = false;
-			}
-		}
-
-		/// <summary>
-		/// 懒加载创建冷却遮罩节点（添加到图标节点的子节点，自动跟随尺寸）
-		/// </summary>
-		private ThrowCooldownOverlay GetOrCreateCooldownOverlay(int slotIndex)
-		{
-			if (_quickSlotCooldownOverlays[slotIndex] != null
-				&& GodotObject.IsInstanceValid(_quickSlotCooldownOverlays[slotIndex]))
-				return _quickSlotCooldownOverlays[slotIndex]!;
-
-			var icon = _quickSlotIcons[slotIndex];
-			var overlay = new ThrowCooldownOverlay();
-			overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-			overlay.OffsetLeft = 0; overlay.OffsetTop = 0;
-			overlay.OffsetRight = 0; overlay.OffsetBottom = 0;
-			icon.AddChild(overlay);
-			_quickSlotCooldownOverlays[slotIndex] = overlay;
-			return overlay;
-		}
-
-		public override void _UnhandledInput(InputEvent @event)
-		{
-			if (@event.IsActionPressed("open_inventory"))
-			{
-				if (_inventoryWindow != null)
-				{
-					if (_inventoryWindow.Visible)
-					{
-						_inventoryWindow.HideWindow();
-					}
-					else
-					{
-						_inventoryWindow.ShowWindow();
-					}
-					GetViewport().SetInputAsHandled();
-				}
-			}
-		}
 	private void UpdateDashDisplay(float delta)
 	{
 		if (_dashState == null || _dashIcon == null) return;

@@ -101,7 +101,6 @@ script = ExtResource("1_script")
 EffectScene = ExtResource("2_q5omx")
 DelaySeconds = 0.5
 SpawnMarkers = [NodePath("Node2D/Marker2D")]
-EffectId = "12042d70-ea97-448c-a084-dde9a4df0136"
 Duration = 10.0
 
 [node name="Shadow" type="Sprite2D" parent="."]

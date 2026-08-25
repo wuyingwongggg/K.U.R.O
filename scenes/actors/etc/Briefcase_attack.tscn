@@ -164,7 +164,6 @@ EffectOverrides = Dictionary[String, Variant]({
 })
 SpawnInterval = 1.0
 SpawnMarkers = [NodePath("Node2D/Marker2D")]
-EffectId = "12042d70-ea97-448c-a084-dde9a4df0136"
 Duration = 10.0
 
 [node name="Shadow" type="Sprite2D" parent="."]

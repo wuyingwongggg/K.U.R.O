@@ -3,32 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Kuros.Core;
-using Kuros.Core.Effects;
 using Kuros.Core.Events;
+using Kuros.Fx;
 
 namespace Kuros.Effects
 {
     /// <summary>
-    /// 地面持续伤害 + 减速区域效果（阵营无关）。
+    /// 地面持续伤害 + 减速区域效果（世界空间 Node2D 效果，阵营无关）。
     /// 任何进入 Area2D 的 GameActor 都会受到持续伤害和减速。
     /// TargetCollisionMask 决定影响哪些物理层（支持多选）。
     ///
-    /// 两种工作模式：
-    ///   独立模式：直接 AddChild 到场景树（Actor == null），_Ready + _Process 驱动。
-    ///   ActorEffect 模式：通过 actor.ApplyEffect() 应用，EffectController 管理生命周期。
+    /// 使用 Node2D 而非 ActorEffect：投掷落点的世界效果，不参与 EffectId 去重与
+    /// Actor 生命周期绑定——多投掷各自独立区域。
     /// </summary>
     [GlobalClass]
-    public partial class SlowHitAreaEffect : ActorEffect, IWorldSpawnable
+    public partial class SlowHitAreaEffect : Node2D, IAttackerProvider
     {
-        // ── IWorldSpawnable ──────────────────────────────────────────────────
-        public Vector2? WorldSpawnPosition { get; set; }
-
         // ── 伤害 ─────────────────────────────────────────────────────────────
         [Export(PropertyHint.Range, "1,999,1")]
         public int DamagePerTick { get; set; } = 5;
 
         [Export(PropertyHint.Range, "0.1,10,0.1")]
         public float DamageInterval { get; set; } = 1.0f;
+
+        [Export(PropertyHint.Range, "0,600,0.1")] public float Duration { get; set; } = 5.0f;
 
         // ── 减速 ─────────────────────────────────────────────────────────────
         [Export(PropertyHint.Range, "0,100,1")]
@@ -47,6 +45,9 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "0,30,0.1")]
         public float FadeOutDuration { get; set; } = 0f;
 
+        /// <summary>投掷者（由投掷系统 IAttackerProvider 注入）。</summary>
+        public GameActor? Attacker { get; set; }
+
         // ── 私有状态 ─────────────────────────────────────────────────────────
         private Area2D? _area;
         private Sprite2D? _sprite;
@@ -56,7 +57,7 @@ namespace Kuros.Effects
         private readonly Dictionary<GameActor, float> _actorTimers = new();
         private readonly Dictionary<GameActor, float> _appliedMultipliers = new();
 
-        private float _standaloneElapsed;
+        private float _elapsed;
 
         // ── 全局减速状态（此类型的所有实例共享）───────────────────────────────
         private static readonly Dictionary<GameActor, List<float>> GlobalSpeedMultipliers = new();
@@ -69,24 +70,18 @@ namespace Kuros.Effects
                 Setup();
         }
 
-        public override void _ExitTree()
-        {
-            Cleanup();
-            base._ExitTree();
-        }
-
         public override void _Process(double delta)
         {
-            // ActorEffect 模式由 EffectController 驱动，不自行 Process
-            if (Actor != null) return;
+            if (!_initialized)
+                return;
 
+            _elapsed += (float)delta;
             TickAllActors((float)delta);
 
             if (Duration > 0f)
             {
-                _standaloneElapsed += (float)delta;
-                UpdateFade(Mathf.Max(Duration - _standaloneElapsed, 0f));
-                if (_standaloneElapsed >= Duration)
+                UpdateFade(Mathf.Max(Duration - _elapsed, 0f));
+                if (_elapsed >= Duration)
                 {
                     Cleanup();
                     QueueFree();
@@ -94,36 +89,16 @@ namespace Kuros.Effects
             }
         }
 
-        protected override void OnApply()
-        {
-            base.OnApply();
-            if (!_initialized)
-                Setup();
-        }
-
-        protected override void OnTick(double delta)
-        {
-            TickAllActors((float)delta);
-            UpdateFade(GetRemainingDuration());
-        }
-
-        protected override void OnExpire()
+        public override void _ExitTree()
         {
             Cleanup();
-            base.OnExpire();
-        }
-
-        public override void OnRemoved()
-        {
-            Cleanup();
-            base.OnRemoved();
+            base._ExitTree();
         }
 
         // ── 初始化 ───────────────────────────────────────────────────────────
         private void Setup()
         {
             _initialized = true;
-            EffectId = $"slow_area_{Guid.NewGuid()}";
             _speedMultiplier = 1f - SpeedSlowPercent / 100f;
 
             _area = GetNodeOrNull<Area2D>("Area2D");
@@ -131,9 +106,7 @@ namespace Kuros.Effects
 
             _sprite = _area.GetNodeOrNull<Sprite2D>("Sprite2D");
 
-            if (WorldSpawnPosition.HasValue)
-                _area.GlobalPosition = WorldSpawnPosition.Value;
-
+            // 根已由投掷系统定位到落点，Area2D 相对根自动就位
             _area.CollisionMask = TargetCollisionMask;
             _area.Monitoring = true;
             _area.BodyEntered += OnBodyEntered;
@@ -149,7 +122,7 @@ namespace Kuros.Effects
             _actorTimers[actor] = 0f;
 
             if (!actor.IsDeadOrDying)
-                actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Actor,
+                actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Attacker,
                     DamageSource.AreaEffect);
 
             if (!actor.ActiveImmunities.HasFlag(ImmunityFlags.SpeedSlow))
@@ -181,7 +154,7 @@ namespace Kuros.Effects
                 if (_actorTimers[actor] >= DamageInterval)
                 {
                     _actorTimers[actor] = 0f;
-                    actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Actor,
+                    actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Attacker,
                         DamageSource.AreaEffect);
                 }
             }

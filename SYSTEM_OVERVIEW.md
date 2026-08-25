@@ -43,9 +43,11 @@
   - 提供通用背包容器，支持栈叠、信号通知、属性聚合 (通过 `ItemAttributeAccumulator`)。  
   - `InventoryItemStack` 封装单个栈的数量、属性查询、标签判定。
 
+- 快捷栏 UI（当前使用的背包界面）见 `QUICKBAR_INVENTORY_GUIDE.md`；`InventoryWindow`（16 格物品栏窗口）已暂停使用。
 - `scripts/actors/heroes/PlayerInventoryComponent.cs` + `PlayerItemInteractionComponent.cs`  
-  - `PlayerInventoryComponent` 负责维护背包指针 `SelectedBackpackSlot`（通过 `ActiveBackpackSlotChanged` 广播），所有拾取/放下/投掷操作都围绕该槽位进行：拾取会尝试把物品直接放入当前槽位，放下/投掷则从该槽位抽出整栈；不再包含任何 Held 槽或额外日志。事件 `ItemPicked` / `ItemRemoved` 仍负责驱动骨骼附件与 UI。  
-  - `PlayerItemInteractionComponent` 监听 `take_up`/`put_down`/`throw`，只有当当前选中栏位为空时才允许拾取，当栏位存在物品时才允许放下/投掷；`item_select_left` / `item_select_right` 仅改变指针位置（不会搬运物品或输出日志），直接影响后续操作的目标栏位。如缺少 `Throw` 状态则跳过动画直接执行投掷；`item_use` 则调用 `PlayerInventoryComponent.TryConsumeSelectedItem()` —— 仅持有 `tag_food` 标签的物品会被消耗，触发其 `OnConsume` 效果、扣减耐久/数量并在必要时触发 `OnBreak` 行为。
+  - `PlayerInventoryComponent` 是玩家背包的中央组件：持有 `Backpack` 容器（`BackpackSlots` 默认 5 格）与 `QuickBar` 容器（由 BattleHUD 创建后经 `SetQuickBar()` 注入）。**槽位体系**：`SelectedQuickBarSlot`（数字键切换）是放下/投掷/消耗的目标槽位；`SelectedBackpackSlot`（`item_select_left/right` 切换，`ActiveBackpackSlotChanged` 广播）用于消耗与属性查询兜底；`FurnitureSlotStack`（家具槽，持有可投掷家具）；`SpecialSlots` 特殊装备槽（主武器 `WeaponSlot`，经 `TryEquipWeaponFromBackpack`/`TryUnequipWeaponToBackpack` 装备/卸下）；`ReservedQuickBarSlots`（投掷武器飞行期间预占的快捷栏槽位，防止其他物品占用）。事件 `ItemPicked`/`ItemRemoved`/`QuickBarSlotChanged`/`FurnitureSlotChanged` 驱动骨骼附件与 UI。  
+  - `AddItemSmart()` 是统一物品放入入口：选中快捷栏 → 同类合并 → 最左空槽 → 溢出背包（武器受 `MaxCarriedWeaponCount` 限制）。  
+  - `PlayerItemInteractionComponent` 监听 `take_up`/`put_down`/`throw`：放下/投掷以 `GetSelectedQuickBarStack()`/`TryExtractFromSelectedQuickBarSlot()` 为源（快捷栏语义），`item_select_left/right` 仅改变背包指针不搬运物品；如缺少 `Throw` 状态则跳过动画直接投掷。`item_use` 调用 `TryConsumeSelectedItem()` —— 仅 `tag_food` 物品被消耗，触发 `OnConsume` 效果、扣减耐久/数量并在必要时触发 `OnBreak`。
 
 - `scripts/items/world/WorldItemEntity.cs`、`WorldItemSpawner.cs`  
   - `WorldItemEntity` 继承 `CharacterBody2D`，负责地面物品的触发检测、拾取、属性/效果传播、投掷阻尼。  
@@ -90,9 +92,9 @@
   - 主动技能效果：枚举 `enemies` 组逐一 `TakeDamage(int.MaxValue)`，同时在拥有者的 `Meta` 上累计使用次数，超过阈值后生成 `AcceptDialog` 警告并在玩家确认/关闭时强制退出游戏。
 
 - 交互/拾取/放下/投掷流程：  
-  - 地图物品：`WorldItemEntity` 挂在 tscn 中，`TryTransferToActor()` 只会把物品写入玩家当前选中栏位（若不可用则直接拒绝），随后触发 `PlayerInventoryComponent.ItemPicked` 并按 `ItemDefinition.EffectEntries` 应用拾取效果。  
-  - 快捷键：`PlayerItemInteractionComponent` 监听 `put_down` / `throw`，仅当当前栏位存在物品时才会通过 `WorldItemSpawner` 生成实体；`item_select_left` / `item_select_right` 循环调整指针但不会移动物品。  
-  - 骨骼绑定：`PlayerItemAttachment` 订阅 `ItemPicked`/`ItemRemoved` 以及 `ActiveBackpackSlotChanged`，始终展示当前指针对应物品，放下/投掷时自动清除。  
+  - 地图物品：`WorldItemEntity` 挂在 tscn 中，`TryTransferToActor()` 经 `AddItemSmart()` 放入（选中快捷栏 → 同类合并 → 最左空槽 → 溢出背包，武器受 `MaxCarriedWeaponCount` 限制），随后触发 `PlayerInventoryComponent.ItemPicked` 并按 `ItemDefinition.EffectEntries` 应用拾取效果。  
+  - 快捷键：`PlayerItemInteractionComponent` 监听 `put_down` / `throw`，以 `GetSelectedQuickBarStack()` 为源槽，通过 `WorldItemSpawner` 生成实体；投掷武器（`IsThrowWeapon`）飞行期间预留原快捷栏槽位（`ReservedQuickBarSlots`），冷却结束后自动归还。  
+  - 骨骼绑定：`PlayerItemAttachment` 订阅 `ItemPicked`/`ItemRemoved` 与 `ActiveBackpackSlotChanged`/`QuickBarSlotChanged`，始终展示当前选中物品，放下/投掷时自动清除。  
 - 拾取/投掷动画链路：  
   - `PlayerItemInteractionComponent` 会在 `take_up` 输入时切入 `PlayerPickUpState`，播放 `animations/pickup`（Spine/AnimationPlayer），动画结束后才实际执行拾取。  
   - 投掷流程同理：按下 `throw` 时先切换到 `PlayerThrowState` 播放投掷动画，动画完成后 `TryTriggerThrowAfterAnimation()` 生成并抛出物品。

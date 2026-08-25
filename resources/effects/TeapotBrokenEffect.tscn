@@ -8,14 +8,11 @@
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_eq1tq"]
 points = PackedVector2Array(142, -80, 234, -47, 290, 28, 243, 74, 116, 101, -20, 115, -175, 98, -303.5, 40, -194, -60, -42, -98)
 
-[node name="TeapotBrokenEffect" type="Node"]
+[node name="TeapotBrokenEffect" type="Node2D"]
 script = ExtResource("1_yj7h6")
 DamagePerTick = 10
 TargetCollisionMask = 4
 FadeOutDuration = 0.5
-EffectId = "bf603bfc-da75-4fd8-a483-fe291ed85769"
-DisplayName = "伤害减速"
-Description = "对象进入该范围后持续收到伤害并减速"
 
 [node name="Area2D" type="Area2D" parent="."]
 z_as_relative = false

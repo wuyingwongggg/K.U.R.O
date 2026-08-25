@@ -287,9 +287,8 @@ namespace Kuros.UI
 
             bool isEscKey = @event.IsActionPressed("ui_cancel") ||
                 (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.Escape);
-            bool isInventoryKey = @event.IsActionPressed("open_inventory");
 
-            if (isEscKey || isInventoryKey)
+            if (isEscKey)
             {
                 HideWindow();
                 if (useSetInputAsHandled) GetViewport().SetInputAsHandled();
@@ -297,42 +296,6 @@ namespace Kuros.UI
                 return true;
             }
             return false;
-        }
-
-        private bool IsInventoryWindowOpen()
-        {
-            var root = GetTree().Root;
-            if (root != null)
-            {
-                var inventoryWindows = FindAllInventoryWindowsInTree(root);
-
-                foreach (var inventoryWindow in inventoryWindows)
-                {
-                    if (inventoryWindow.Visible)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private List<InventoryWindow> FindAllInventoryWindowsInTree(Node node)
-        {
-            var result = new List<InventoryWindow>();
-
-            if (node is InventoryWindow inventoryWindow)
-            {
-                result.Add(inventoryWindow);
-            }
-
-            foreach (Node child in node.GetChildren())
-            {
-                result.AddRange(FindAllInventoryWindowsInTree(child));
-            }
-
-            return result;
         }
 
         private bool IsSkillWindowOpen()

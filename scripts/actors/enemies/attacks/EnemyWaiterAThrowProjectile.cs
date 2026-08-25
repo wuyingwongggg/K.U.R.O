@@ -126,6 +126,10 @@ namespace Kuros.Actors.Enemies.Attacks
                     continue;
                 }
 
+                // Attacker 在 AddChild（触发 _Ready）之前注入，保证效果的 _Ready 能读取（如朝向翻转）
+                if (fx is Kuros.Fx.IAttackerProvider attackerProvider)
+                    attackerProvider.Attacker = Attacker;
+
                 GetParent()?.AddChild(fx);
                 if (fx is Node2D fx2d)
                 {

@@ -34,6 +34,30 @@ namespace Kuros.Systems.Inventory
             }
         }
 
+        /// <summary>
+        /// 复制构造：完整克隆堆叠状态（含投掷冷却、耐久、运行时属性）——
+        /// 用于槽位换位/移动等整体搬迁场景，避免运行时状态（如投掷武器 CD）丢失。
+        /// 拆分请用 <see cref="Split"/>（不复制运行时属性与 CD，保持"新堆叠全新"语义）。
+        /// </summary>
+        public InventoryItemStack(InventoryItemStack other)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            Item = other.Item;
+            Quantity = other.Quantity;
+            ThrowCooldownRemaining = other.ThrowCooldownRemaining;
+            if (other.DurabilityState != null)
+            {
+                DurabilityState = new ItemDurabilityState(other.DurabilityState.Config);
+                DurabilityState.Reset();
+                DurabilityState.ApplyDamage(other.DurabilityState.Config.MaxDurability - other.DurabilityState.CurrentDurability);
+            }
+            if (other._runtimeAttributeAdditions.Count > 0)
+            {
+                foreach (var kv in other._runtimeAttributeAdditions)
+                    _runtimeAttributeAdditions[kv.Key] = kv.Value;
+            }
+        }
+
         public int Add(int amount)
         {
             if (amount <= 0) return 0;
