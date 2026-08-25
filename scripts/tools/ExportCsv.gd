@@ -47,7 +47,7 @@ func _export_items() -> void:
 	var headers := [
 		"file", "ItemId", "DisplayName", "Description", "Category", "Tags",
 		"MaxStackSize", # "BuildClass" -- build 重做后已失效
-		"IsThrowable", "IsThrowWeapon", "PreventDropDuringCooldown",
+		"IsThrowable", "IsThrowWeapon", "PreventDropDuringCooldown", "SpawnEffectOnThrow",
 		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
 		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
 		"attack_power", "SkillRefs"
@@ -93,6 +93,7 @@ func _export_items() -> void:
 			str(r.get("IsThrowable", "false")),
 			str(r.get("IsThrowWeapon", "false")),
 			str(r.get("PreventDropDuringCooldown", "false")),
+			str(r.get("SpawnEffectOnThrow", "false")),
 			_vec2_str(str(r.get("ThrowStartOffset", "Vector2(0, -400)"))),
 			str(r.get("ThrowParabolicDuration", "0.35")),
 			str(r.get("ThrowParabolicPeakHeight", "10")),

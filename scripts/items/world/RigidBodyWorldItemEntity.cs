@@ -518,6 +518,13 @@ namespace Kuros.Items.World
 
 		public virtual void ApplyThrowImpulse(Vector2 velocity)
 		{
+			// 投掷即效果：不进入飞行，投掷瞬间销毁武器本体并生成 OnThrowDestroy 效果（回旋镖等）
+			if (ItemDefinition?.SpawnEffectOnThrow == true)
+			{
+				ImmediateEffectThrow();
+				return;
+			}
+
 			if (_rigidBody == null)
 			{
 				// Try to resolve rigidbody if it wasn't found earlier
@@ -1315,6 +1322,30 @@ namespace Kuros.Items.World
 			if (body is Node node && !string.Equals((string)node.Name, "AirWall", System.StringComparison.OrdinalIgnoreCase))
 				return false;
 			return true;
+		}
+
+		/// <summary>
+		/// 投掷即效果（SpawnEffectOnThrow）：投掷瞬间销毁武器本体并触发 OnThrowDestroy 效果。
+		/// 不进入飞行、不做槽位预占（投掷武器为背包副本，原 stack 保留带 CD），伤害由效果自带的判定负责。
+		/// </summary>
+		private void ImmediateEffectThrow()
+		{
+			if (_isDestroying) return;
+			_isDestroying = true;
+			Visible = false; // 不闪一帧
+
+			if (_grabArea != null)
+			{
+				DisableGrabArea();
+			}
+			if (_hitboxArea != null)
+			{
+				_hitboxArea.SetDeferred(Area2D.PropertyName.Monitoring, false);
+			}
+
+			// 生成 OnThrowDestroy 效果（BoomerangAttackEffect，Attacker 由 SpawnThrowDestroyEffects 设置）
+			SpawnThrowDestroyEffects();
+			QueueFree();
 		}
 
 		/// <summary>

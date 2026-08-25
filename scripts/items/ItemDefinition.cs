@@ -70,6 +70,8 @@ namespace Kuros.Items
         [Export] public ItemDurabilityConfig? DurabilityConfig { get; set; }
 
         [ExportGroup("Throw Physics")]
+        /// <summary>投掷瞬间立即销毁武器本体并触发 OnThrowDestroy 效果（视觉由效果接管，不飞行）——用于回旋镖等轨迹由独立效果表现的道具。</summary>
+        [Export] public bool SpawnEffectOnThrow { get; set; } = false;
         [Export(PropertyHint.Range, "-1000,1000,1")] public Vector2 ThrowStartOffset { get; set; } = new Vector2(0, -400); // 投掷时相对于玩家的偏移
         [Export(PropertyHint.Range, "0,10,0.01")] public double ThrowParabolicDuration { get; set; } = 0.35;    // 投掷物飞行的总时间（秒）
         [Export(PropertyHint.Range, "0,500,10")] public float ThrowParabolicPeakHeight { get; set; } = 10f;   // 投掷物飞行过程中达到的最高点相对于起始点的高度

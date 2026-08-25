@@ -183,6 +183,9 @@ namespace Kuros.Items.World
             var stack = _player.InventoryComponent?.GetSelectedQuickBarStack();
             if (stack == null || stack.IsEmpty || !stack.Item.IsThrowable) return false;
 
+            // 投掷即效果武器不飞行（轨迹由效果表现），不显示投掷轨迹预览
+            if (stack.Item.SpawnEffectOnThrow) return false;
+
             // 确保武器参数已缓存
             EnsureParamsCached(stack.Item);
             if (_cachedParams.HorizontalDistance <= 0f || _cachedParams.Duration <= 0)
