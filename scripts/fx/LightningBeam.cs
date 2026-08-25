@@ -1,9 +1,11 @@
 using Godot;
 using Kuros.Core;
-using Kuros.Core.Events;
 
 namespace Kuros.Fx
 {
+	/// <summary>
+	/// 纯视觉闪电光束效果（伤害判定由宿主的 AttackArea 负责，本项目统一解耦模式）。
+	/// </summary>
 	public partial class LightningBeam : Node2D, IFacingDirectional
 	{
 		[ExportCategory("Beam")]
@@ -30,17 +32,6 @@ namespace Kuros.Fx
 		/// <summary>总存在时间：0 = 永久存在（脉冲不断），> 0 = 持续 N 秒后销毁自身。</summary>
 		[Export(PropertyHint.Range, "0,60,0.5")] public float Duration = 0f;
 
-		[ExportCategory("Damage")]
-		[Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
-		public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
-		[Export] public bool AllowSelfDamage { get; set; } = false;
-		[Export(PropertyHint.Range, "0,500,1")] public int Damage = 0;
-
-		[ExportCategory("Knockback")]
-		[Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
-		[Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
-		[Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 0f;
-
 		[ExportCategory("Targeting")]
 		[Export] public bool AutoAimAtPlayer = true;
 		[Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 5f;
@@ -57,9 +48,6 @@ namespace Kuros.Fx
 		private float _texWidth;
 		private float _texHeight;
 		private bool _pendingAutoAim;
-		private bool _hasDamaged;
-		private Node2D? _cachedPlayer;
-		private GameActor? _attacker;
 
 		private struct ArcData
 		{
@@ -86,7 +74,28 @@ namespace Kuros.Fx
 				_texWidth = Mathf.Max(_lightningSprite.Texture?.GetWidth() ?? 2f, 2f);
 				_texHeight = Mathf.Max(_lightningSprite.Texture?.GetHeight() ?? 2f, 2f);
 				_lightningSprite.Visible = false; // 仅作为模板，随机电弧为子节点
-				SpawnRandomArcs();
+
+				// 预创建电弧 Sprite 池：每脉冲只更新参数（方向/长度/seed），
+				// 不再创建/销毁节点与复制材质——消除长时间存在时的周期性 GC/分配峰值
+				var templateMat = _lightningSprite.Material as ShaderMaterial;
+				for (int i = 0; i < ArcCount; i++)
+				{
+					var sprite = new Sprite2D
+					{
+						Texture = _lightningSprite.Texture,
+						Scale = new Vector2(1f, _lightningSprite.Scale.Y),
+						ZIndex = _lightningSprite.ZIndex,
+					};
+					if (templateMat != null)
+					{
+						var mat = (ShaderMaterial)templateMat.Duplicate();
+						mat.SetShaderParameter("seed", GD.Randf());
+						sprite.Material = mat;
+					}
+					AddChild(sprite);
+					_arcs.Add(new ArcData { Sprite = sprite, Direction = 0f, TargetLength = 0f, CurrentLength = 0f });
+				}
+				SpawnRandomArcs(); // 首次就位
 			}
 			else
 			{
@@ -110,51 +119,43 @@ namespace Kuros.Fx
 				_ray.Enabled = true;
 			}
 
-			ResolveAttacker();
 			_pulseLifetime = RollPulseLifetime();
 			_pulseTotal = GrowDuration + _pulseLifetime + FadeDuration;
-			_timer = _pulseTotal;
+			// 相位随机：错开多个实例的脉冲重建/射线峰值，避免周期性同步卡顿
+			_timer = _pulseTotal * GD.Randf();
 			_angularVelocity = RollAngularVelocity();
 			_pendingAutoAim = AutoAimAtPlayer;
-			_cachedPlayer ??= GetTree().GetFirstNodeInGroup("player") as Node2D;
 		}
 
 		/// <summary>
-		/// 随机电弧生成：以节点（中心点）为原点，向 360° 随机角度生成 ArcCount 条闪电，
+		/// 随机电弧更新（复用预创建池）：以节点（中心点）为原点，向 360° 随机角度更新 ArcCount 条闪电，
 		/// 每条长度在 [MinLength, MaxLength] 间随机（撞墙截断），
 		/// 每条形状由独立随机 seed 驱动（需要 shader 的 seed uniform）。
 		/// </summary>
 		public void SpawnRandomArcs()
 		{
-			if (_lightningSprite == null) return;
 			float texW = Mathf.Max(_texWidth, 2f);
 
-			for (int i = 0; i < ArcCount; i++)
+			for (int i = 0; i < _arcs.Count; i++)
 			{
 				float dir = GD.Randf() * Mathf.Tau;
 				float targetLen = Mathf.Lerp(MinLength, MaxLength, GD.Randf());
 				float wallLen = ProbeWallDistance(dir, MaxLength);
 				if (wallLen < targetLen) targetLen = wallLen;
 
+				var arc = _arcs[i];
+				arc.Direction = dir;
+				arc.TargetLength = targetLen;
+				arc.CurrentLength = 0f;
 				// 电弧一端固定在节点（原点），沿 dir 方向朝外延伸到 len：
 				// 精灵中心沿 dir 前移 len/2（父空间坐标，必须乘方向向量），
 				// 使闪电（本地 x=0 处）覆盖 原点..原点+dir*len
-				var sprite = new Sprite2D
-				{
-					Texture = _lightningSprite.Texture,
-					Position = new Vector2(Mathf.Cos(dir), Mathf.Sin(dir)) * (targetLen * 0.5f),
-					Rotation = dir,
-					Scale = new Vector2(Mathf.Max(targetLen, 1f) / texW, _lightningSprite.Scale.Y),
-					ZIndex = _lightningSprite.ZIndex,
-				};
-				if (_lightningSprite.Material is ShaderMaterial sm)
-				{
-					var mat = (ShaderMaterial)sm.Duplicate();
+				arc.Sprite.Position = new Vector2(Mathf.Cos(dir), Mathf.Sin(dir)) * (targetLen * 0.5f);
+				arc.Sprite.Rotation = dir;
+				arc.Sprite.Scale = new Vector2(Mathf.Max(targetLen, 1f) / texW, arc.Sprite.Scale.Y);
+				if (arc.Sprite.Material is ShaderMaterial mat)
 					mat.SetShaderParameter("seed", GD.Randf());
-					sprite.Material = mat;
-				}
-				AddChild(sprite);
-				_arcs.Add(new ArcData { Sprite = sprite, Direction = dir, TargetLength = targetLen });
+				_arcs[i] = arc;
 			}
 		}
 
@@ -166,7 +167,6 @@ namespace Kuros.Fx
 				var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
 				if (player != null)
 				{
-					_cachedPlayer = player;
 					var hitArea = player.GetNodeOrNull<Area2D>("HitArea")
 						?? player.FindChild("HitArea", recursive: true, owned: false) as Area2D;
 					var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
@@ -194,35 +194,22 @@ namespace Kuros.Fx
 				Rotation += Mathf.DegToRad(_angularVelocity) * (float)delta;
 
 			if (_arcs.Count > 0)
-			{
 				UpdateArcs();
-				if (!_hasDamaged && _pulseTotal - _timer >= GrowDuration)
-					TryDamageArcs();
-			}
 			else
-			{
 				UpdateBeam();
-				if (!_hasDamaged && _pulseTotal - _timer >= GrowDuration)
-					TryDamagePlayer();
-			}
 		}
 
 		/// <summary>
-		/// 开始下一脉冲：电弧模式销毁旧电弧并重新随机生成；
-		/// 光束模式重新生长。伤害结算、角速度与脉冲时长也随脉冲重置。
+		/// 开始下一脉冲：电弧模式复用池更新随机电弧；
+		/// 光束模式重新生长。角速度与脉冲时长随脉冲重置。
 		/// </summary>
 		private void StartPulse()
 		{
-			_hasDamaged = false;
 			_angularVelocity = RollAngularVelocity();
 			_pulseLifetime = RollPulseLifetime();
 			_pulseTotal = GrowDuration + _pulseLifetime + FadeDuration;
 			if (_arcs.Count > 0)
-			{
-				foreach (var arc in _arcs) arc.Sprite.QueueFree();
-				_arcs.Clear();
 				SpawnRandomArcs();
-			}
 		}
 
 		/// <summary>在 [MinAngularVelocity, MaxAngularVelocity] 间随机本脉冲角速度（度/秒，可负值反向）。</summary>
@@ -291,51 +278,6 @@ namespace Kuros.Fx
 			}
 		}
 
-		private void TryDamageArcs()
-		{
-			if (_hasDamaged) return;
-			if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
-			if (_cachedPlayer == null) return;
-
-			var hitArea = _cachedPlayer.GetNodeOrNull<Area2D>("HitArea")
-				?? _cachedPlayer.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-			Vector2 targetCenter = hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? _cachedPlayer.GlobalPosition;
-
-			float detectionRadius = 150f;
-			if (hitShape?.Shape is CapsuleShape2D cap)
-				detectionRadius = cap.Radius * Mathf.Abs(hitShape.GlobalTransform.Scale.X);
-
-			for (int i = 0; i < _arcs.Count; i++)
-			{
-				var arc = _arcs[i];
-				// 电弧方向 = 自身角度 + 节点旋转（脉冲旋转后仍命中正确位置）
-				Vector2 dir = new(Mathf.Cos(arc.Direction + Rotation), Mathf.Sin(arc.Direction + Rotation));
-				Vector2 toTarget = targetCenter - GlobalPosition;
-				float along = toTarget.Dot(dir);
-				if (along < 0f || along > arc.CurrentLength) continue;
-				float perp = Mathf.Abs(toTarget.X * dir.Y - toTarget.Y * dir.X);
-				if (perp > detectionRadius) continue;
-				if (_cachedPlayer is not GameActor actor) continue;
-
-				bool alreadyInvincible = actor is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
-				_hasDamaged = true;
-
-				bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
-					DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
-				if (!dealt) return;
-
-				if (!alreadyInvincible)
-				{
-					float knockSpeed = KnockbackSpeed > 0f
-						? KnockbackSpeed
-						: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-					if (knockSpeed > 0f) actor.ApplyKnockback(dir, knockSpeed);
-				}
-				return;
-			}
-		}
-
 		public void AimHorizontalWithVerticalTilt(Vector2 globalTarget)
 		{
 			Vector2 toTarget = globalTarget - GlobalPosition;
@@ -372,52 +314,5 @@ namespace Kuros.Fx
 			_lightningSprite.Scale = new Vector2(_currentLength / _texWidth, _lightningSprite.Scale.Y);
 		}
 
-		private void TryDamagePlayer()
-		{
-			if (_hasDamaged) return;
-			if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
-			if (_cachedPlayer == null) return;
-
-			var hitArea = _cachedPlayer.GetNodeOrNull<Area2D>("HitArea")
-				?? _cachedPlayer.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-			Vector2 targetCenter = hitShape?.GlobalPosition ?? hitArea?.GlobalPosition ?? _cachedPlayer.GlobalPosition;
-
-			Vector2 beamDir = new(Mathf.Cos(Rotation), Mathf.Sin(Rotation));
-			Vector2 toTarget = targetCenter - GlobalPosition;
-			float along = toTarget.Dot(beamDir);
-			if (along < 0f || along > _currentLength) return;
-
-			float perp = Mathf.Abs(toTarget.X * beamDir.Y - toTarget.Y * beamDir.X);
-			float detectionRadius = 150f;
-			if (hitShape?.Shape is CapsuleShape2D cap)
-				detectionRadius = cap.Radius * Mathf.Abs(hitShape.GlobalTransform.Scale.X);
-
-			if (perp > detectionRadius) return;
-			if (_cachedPlayer is not GameActor actor) return;
-
-			bool alreadyInvincible = actor is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
-			_hasDamaged = true;
-
-			bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
-			if (!dealt) return;
-
-			if (!alreadyInvincible)
-			{
-				float knockSpeed = KnockbackSpeed > 0f
-					? KnockbackSpeed
-					: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-				if (knockSpeed > 0f) actor.ApplyKnockback(beamDir, knockSpeed);
-			}
-		}
-
-		private void ResolveAttacker()
-		{
-			var parent = GetParent();
-			if (parent == null) return;
-			foreach (var child in parent.GetChildren())
-			{ if (child.IsInGroup("enemies") && child is GameActor ga) { _attacker = ga; break; } }
-		}
 	}
 }

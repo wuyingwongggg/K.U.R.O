@@ -206,6 +206,7 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 script = ExtResource("10_75dbm")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 OnePunchAttackAreaPath = NodePath("../../../../Sprite2D/OnePunchAttackArea")
+DashSpeedMultiplier = 5.0
 DashDistance = 750.0
 MinDashDistanceBeforeSmash = 0.0
 SnapshotDelaySeconds = 0.9

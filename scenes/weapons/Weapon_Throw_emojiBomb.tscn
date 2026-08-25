@@ -116,7 +116,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(200, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w57jh"]
-size = Vector2(150, 150)
+size = Vector2(150, 200)
 
 [node name="WeaponThrowEmojiBomb" type="Node2D"]
 z_index = 1
@@ -128,10 +128,9 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
 KnockbackForce = 0.0
-StopOnHit = true
-StopFallDuration = 0.1
+BounceAfterStop = true
 DestructionAnimationDuration = 0.0
-LandingHideDelay = 0.09999999999999999
+LandingHideDelay = 0.1
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 ShadowPath = NodePath("RigidBody2D/Shadow")
@@ -186,5 +185,4 @@ shape = SubResource("RectangleShape2D_idk0v")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(5, 25)
 shape = SubResource("RectangleShape2D_w57jh")

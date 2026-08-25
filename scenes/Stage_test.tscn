@@ -96,6 +96,7 @@ EffectPool = Array[ExtResource("7_4yi35")]([ExtResource("8_8rv4v"), ExtResource(
 position = Vector2(-2306, 0)
 
 [node name="Environments" type="Node2D" parent="World"]
+visible = false
 
 [node name="floor" type="Sprite2D" parent="World/Environments"]
 texture = SubResource("CompressedTexture2D_v4xrh")
