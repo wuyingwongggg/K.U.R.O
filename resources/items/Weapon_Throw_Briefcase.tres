@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_u3jcx"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_oo772"]
 [ext_resource type="PackedScene" uid="uid://dly4tcnl66v70" path="res://scenes/actors/etc/Briefcase_defense.tscn" id="3_oo772"]
-[ext_resource type="Texture2D" uid="uid://bqvp7vj7idub3" path="res://assets/objects/briefcase/choose/时间轴 1_0001.png" id="4_u3jcx"]
+[ext_resource type="Texture2D" uid="uid://l1gye3cxvw6o" path="res://assets/objects/briefcase/choose/时间轴 1_0001.png" id="4_u3jcx"]
 [ext_resource type="PackedScene" uid="uid://bfy7edlq83jl6" path="res://scenes/actors/etc/Briefcase_attack.tscn" id="4_uuih4"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_t5rl6"]
 
@@ -37,7 +37,7 @@ Description = "普通类投掷武器：多功能公文包。投掷前来回切�
 Icon = ExtResource("4_u3jcx")
 HoldScenePath = "uid://d2k8mvhgfao4i"
 Category = "Weapon"
-Tags = Array[String](["tag_weapon", "tag_throw"])
+Tags = ["tag_weapon", "tag_throw"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_u3jcx")]([SubResource("Attribute_AttackPower")])
 EffectEntries = Array[ExtResource("2_oo772")]([SubResource("Resource_hcgjl"), SubResource("Resource_hx5md")])

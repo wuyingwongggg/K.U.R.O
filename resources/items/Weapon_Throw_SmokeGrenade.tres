@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_0ac3k"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_letw0"]
 [ext_resource type="PackedScene" uid="uid://ckvi05o7l1mv4" path="res://shaders/smoke.tscn" id="3_0ac3k"]
-[ext_resource type="Texture2D" uid="uid://n0ciynpx53jh" path="res://assets/weapons/镇暴烟雾弹.png" id="3_vod1j"]
+[ext_resource type="Texture2D" uid="uid://djqiu2bhspc0l" path="res://assets/weapons/镇暴烟雾弹.png" id="3_vod1j"]
 [ext_resource type="PackedScene" uid="uid://dm13v6vu200sa" path="res://resources/effects/WeaponStunEffect.tscn" id="4_letw0"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_3rggb"]
 
@@ -34,7 +34,7 @@ DisplayName = "镇暴烟雾弹"
 Description = "普通类投掷武器：镇暴烟雾弹。投掷后生成一个烟雾弹，对范围内的敌人持续眩晕"
 Icon = ExtResource("3_vod1j")
 Category = "Weapon"
-Tags = Array[String](["tag_weapon", "tag_throw"])
+Tags = ["tag_weapon", "tag_throw"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_0ac3k")]([SubResource("Attribute_AttackPower")])
 EffectEntries = Array[ExtResource("2_letw0")]([SubResource("Resource_letw0"), SubResource("Resource_0ac3k")])

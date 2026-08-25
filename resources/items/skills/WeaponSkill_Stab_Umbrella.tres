@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_w8ttm"]
 [ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_bt0ev"]
-[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hduh6"]
+[ext_resource type="Script" uid="uid://cvprs5lr1h4sp" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hduh6"]
 [ext_resource type="PackedScene" uid="uid://cx24huqp7qade" path="res://resources/effects/ShieldUmbrellaEffect.tscn" id="3_umbrella"]
 
 [sub_resource type="Resource" id="Resource_a5flt"]
@@ -28,7 +28,7 @@ SkillId = "WeaponSkill_Stab_Umbrella"
 DisplayName = "雨伞攻击"
 SkillType = 1
 AnimationName = "Weapon_Stab_Umbrella"
-DashDamageMultiplier = 1.2000000000000002
+DashDamageMultiplier = 1.2
 ShowHitboxDebug = false
 Description = "攻击时生成跟随玩家的伞状护盾并击退敌人0.3m"
 Effects = Array[ExtResource("1_w8ttm")]([SubResource("Resource_a5flt"), SubResource("Resource_umbrella")])
@@ -38,8 +38,8 @@ RecoveryDuration = 0.1
 WarmupAnimationSpeed = 0.4
 RecoveryAnimationSpeed = 0.5
 DashAnimationName = "Weapon_Stab_Umbrella_RunAttack"
-DashWarmupDuration = 0.30000000000000004
-DashActiveDuration = 0.19999999999999996
+DashWarmupDuration = 0.3
+DashActiveDuration = 0.2
 DashRecoveryDuration = 0.17
 DashWarmupAnimationSpeed = 0.7
 DashActiveAnimationSpeed = 1.0
