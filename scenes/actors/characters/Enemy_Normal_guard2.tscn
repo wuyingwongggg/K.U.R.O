@@ -60,6 +60,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+Speed = 300.0
+AttackDamage = 10.0
+AttackCooldown = 1.0
 MaxHealth = 150
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用警棍攻击客户，会胡乱挥舞警棍攻击周围的目标"
 StateMachine = NodePath("StateMachine")
@@ -132,9 +135,8 @@ script = ExtResource("19_gkl6r")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(18.659986, -285.75998)
-rotation = -1.5481071
-scale = Vector2(0.99999994, 0.99999994)
+position = Vector2(18.661425, -285.7593)
+rotation = -1.5480726
 bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -208,12 +210,10 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 script = ExtResource("10_gkl6r")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 MoveAttackAreaPath = NodePath("../../../../Sprite2D/MoveAttackArea")
-DashSpeedMultiplier = 1.2000000000000002
 DashDuration = 3.0
 LockFacingDuringDash = false
-SnapshotDelaySeconds = 0.3
+SnapshotDelaySeconds = 1.0
 DashEndSelfFrozenDuration = 2.0
-WarmupDuration = 0.3
 DamageMultiplier = 0.5
 KnockbackDistance = 100.0
 KnockbackDuration = 0.08
@@ -225,9 +225,9 @@ metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("11_vt7ga")
-WarmupDuration = 0.33
-ActiveDuration = 0.11
-RecoveryDuration = 0.23
+WarmupDuration = 0.65
+ActiveDuration = 0.2
+RecoveryDuration = 0.15
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 30.0
 KnockbackDuration = 0.04

@@ -76,6 +76,7 @@ func import_items_from_csv() -> void:
 		_s_str(res,   "ItemId",      row, hm, "ItemId")
 		_s_str(res,   "DisplayName", row, hm, "DisplayName")
 		_s_str(res,   "Description", row, hm, "Description")
+		_s_str_array(res, "Tags", row, hm)
 		# _s_str(res,   "BuildClass",  row, hm, "BuildClass")  # build 重做后已失效
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
@@ -212,6 +213,15 @@ func _save(res: Resource, path: String) -> bool:
 func _s_str(res: Resource, prop: String, row: Array, hm: Dictionary, col: String) -> void:
 	var v = _col(row, hm, col)
 	res.set(prop, v)
+
+## 回写 `|` 分隔的字符串数组（对应导出 _arr_str 的 "a|b|c" 格式，如 Tags）
+func _s_str_array(res: Resource, prop: String, row: Array, hm: Dictionary) -> void:
+	var raw := _col(row, hm, prop)
+	if raw == "": return
+	var out: Array = []
+	for t in raw.split("|", false):
+		out.append(t.strip_edges())
+	res.set(prop, out)
 
 func _s_float(res: Resource, prop: String, row: Array, hm: Dictionary, col: String) -> void:
 	var v = _col(row, hm, col)

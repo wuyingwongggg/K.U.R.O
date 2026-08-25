@@ -58,9 +58,12 @@ namespace Kuros.Actors.Enemies.Attacks
         private Area2D? _hitbox;
         private bool _hasHit;
         private GameActor? _attacker;
+        private Node2D? _visual;
 
         public override void _Ready()
         {
+            _visual = GetNodeOrNull<Node2D>("Visual");
+
             // 获取 hitbox（用于检测碰撞）
             if (!HitboxPath.IsEmpty)
             {
@@ -95,10 +98,13 @@ namespace Kuros.Actors.Enemies.Attacks
             float y = Mathf.Lerp(_startPos.Y, _targetPos.Y, t) - upDown * PeakHeight;
             GlobalPosition = new Vector2(x, y);
 
-            // 旋转
+            // 旋转只作用于视觉层（飞旋的碟子）：判定 Area2D 固定不随旋转偏移
             if (Mathf.Abs(RotationDegreesPerSecond) > 0.01f)
             {
-                RotationDegrees += RotationDegreesPerSecond * (float)delta;
+                if (_visual != null)
+                    _visual.RotationDegrees += RotationDegreesPerSecond * (float)delta;
+                else
+                    RotationDegrees += RotationDegreesPerSecond * (float)delta; // 兼容无 Visual 节点的旧结构
             }
 
             // 到达终点

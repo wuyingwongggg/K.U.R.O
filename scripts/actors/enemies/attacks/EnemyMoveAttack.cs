@@ -20,7 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [ExportCategory("Dash")]
         /// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配，无需同步改绝对值）。</summary>
-        [Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 2f;
+        [Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 1.1f;
 		[Export(PropertyHint.Range, "0.05,10,0.05")] public float DashDuration = 0.5f; // 冲刺持续时间（秒）
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,5,0.01")] public float MinDashTimeBeforeAttack = 0f; // 允许命中前的最短冲刺时间（秒）
@@ -214,16 +214,23 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
-			// 快照延迟计时
-			if (_waitingForSnapshot)
+			// 预热阶段（快照等待 / Warmup）：持续静止——防 MoveAndSlide 惯性/外部移动系统重写
+			// （仅 OnWarmupStarted 归零一次不够：后续帧的 Velocity 会被外部移动源重新写入）
+			if (_waitingForSnapshot || CurrentPhase == AttackPhase.Warmup)
 			{
-				_snapshotTimer -= (float)delta;
-				if (_snapshotTimer <= 0f)
+				Enemy.Velocity = Vector2.Zero;
+
+				// 快照延迟计时
+				if (_waitingForSnapshot)
 				{
-					_waitingForSnapshot = false;
-					PrepareDashTowardsPlayer(); // 延迟结束，此时快照玩家位置
+					_snapshotTimer -= (float)delta;
+					if (_snapshotTimer <= 0f)
+					{
+						_waitingForSnapshot = false;
+						PrepareDashTowardsPlayer(); // 延迟结束，此时快照玩家位置
+					}
 				}
-				return; 
+				return;
 			}
 
 			if (_postAttackCooldown > 0f)

@@ -29,14 +29,14 @@ namespace Kuros.Core
 		public static event Action<GameActor>? DeathFinalized;
 
 		[ExportCategory("Stats")]
-		[Export] public float Speed = 300.0f;
-		[Export] public float AttackDamage = 5.0f;
+		[Export] public float Speed = 100.0f;
+		[Export] public float AttackDamage = 1.0f;
 		/// <summary>受到的伤害倍率（1 = 正常）。由外部效果设置。</summary>
 		public float IncomingDamageMultiplier { get; set; } = 1f;
 		/// <summary>全局攻速倍率（1 = 正常，2 = 双倍攻速）。由外部效果设置。</summary>
 		public float AttackSpeedMultiplier { get; set; } = 1f;
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
-		[Export] public float AttackCooldown = 1f;
+		[Export] public float AttackCooldown = 0f;
 		[Export] public int MaxHealth = 15;
 		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
 		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
