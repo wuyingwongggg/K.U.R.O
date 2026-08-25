@@ -50,6 +50,7 @@ namespace Kuros.Items.World
 		[Export] public float MinDamageVelocity { get; set; } = 300f; // 造成伤害的最小速度阈值
         [Export] public float KnockbackForce { get; set; } = 200f; // 击退力度
 		[Export] public bool StopOnHit { get; set; } = false; // 命中敌人后是否停止（false = 穿过敌人）
+		[Export(PropertyHint.Range, "0.05,2,0.05")] public float StopFallDuration { get; set; } = 0.25f; // 停止后视觉从半空下落到判定层的时长（命中/撞墙停止时）
 
 		[ExportGroup("Durability")]
 		/// <summary>
@@ -108,7 +109,12 @@ namespace Kuros.Items.World
 		private bool _inFlight = false;
 		private double _flightTimer = 0.0;
 		private float _throwStartY = 0f; // 投掷起始的Y坐标
+		private float _throwJudgmentY = 0f; // 判定层的Y坐标（投掷者地面层——玩家/敌人站立的世界Y，非场景原点 0）
 		private float _throwHorizontalVelocity = 0f; // 投掷的水平速度
+		private bool _fallingToJudgment = false; // 停止后视觉正从半空下落到判定层
+		private float _fallTimer = 0f; // 下落过渡计时
+		private float _fallFromX = 0f; // 下落起点 X
+		private float _fallFromY = 0f; // 下落起点 Y（停止时的抛物线高度）
 		private bool _isDropping = false;
 		private float _dropStartY = 0f;
 		private bool _initialMonitoring;
@@ -526,8 +532,9 @@ namespace Kuros.Items.World
 					// ignore if property not available on this build
 				}
 				// Ensure the physics body position lines up with the Node2D root
-				// 应用投掷起点偏移（优先使用 ItemDefinition 参数）
-				_rigidBody.GlobalPosition = GlobalPosition + GetEffectiveThrowStartOffset();
+				// 投掷起点归到玩家原点（根节点可能带 ThrowOffset 偏移），视觉从玩家原点+视觉偏移抛出
+				Vector2 origin = LastDroppedBy?.GlobalPosition ?? GlobalPosition;
+				_rigidBody.GlobalPosition = origin + GetEffectiveThrowStartOffset();
 				// Set linear velocity and apply impulse to simulate a throw
 				_rigidBody.LinearVelocity = velocity;
 				// ApplyImpulse may be available; call defensively
@@ -548,7 +555,9 @@ namespace Kuros.Items.World
 			_throwHorizontalVelocity = velocity.X > 0 ? horizontalVelocity : -horizontalVelocity;
 			// 记录抛物线飞行相关数据
 			_throwStartY = _rigidBody.GlobalPosition.Y;
-				
+			// 判定层：投掷者站立的地面世界 Y（敌人 HitArea 同层）——不是场景原点 0
+			_throwJudgmentY = origin.Y;
+
 				// 激活伤害检测并应用投掷时的碰撞设置
 				if (velocity.LengthSquared() > 0.01f)
 				{
@@ -677,6 +686,26 @@ namespace Kuros.Items.World
 				}
 			}
 
+			// 停止后视觉从半空下落到判定层（命中/撞墙停止时视觉停在抛物线上方，下落到 attackarea 位置）
+			if (_fallingToJudgment)
+			{
+				_fallTimer += (float)delta;
+				float ft = Mathf.Clamp((float)(_fallTimer / Mathf.Max(StopFallDuration, 0.01f)), 0f, 1f);
+				float eased = 1f - Mathf.Pow(1f - ft, 2f); // ease-out：快速下落、落地减速
+				_rigidBody.GlobalPosition = new Vector2(_fallFromX, Mathf.Lerp(_fallFromY, _throwJudgmentY, eased));
+				if (_hitboxArea != null)
+				{
+					_hitboxArea.GlobalPosition = new Vector2(_fallFromX, _throwJudgmentY);
+				}
+
+				if (ft >= 1f)
+				{
+					_fallingToJudgment = false;
+					SetShadowVisible(true); // 落到地面，恢复阴影
+				}
+				return;
+			}
+
 			// 抛物线飞行逻辑：平顺的参数化抛物线轨迹
 			if (_inFlight)
 			{
@@ -726,6 +755,7 @@ namespace Kuros.Items.World
 				_rigidBody.LinearVelocity = Vector2.Zero;
 				try { _rigidBody.Set("freeze", true); } catch { }
 				RestoreRigidBodyCollision();
+				StartFallToJudgment(); // 视觉下落到判定层（撞墙停止）
 				if (!_isDestroying)
 				{
 					_landingHideTimer = LandingHideDelay;
@@ -736,6 +766,13 @@ namespace Kuros.Items.World
 			}
 
 			_rigidBody.GlobalPosition = new Vector2(newX, newY);
+
+			// 视觉/判定分离：判定 Hitbox 投影在投掷者地面层（_throwJudgmentY），X 每帧跟随视觉——
+			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层
+			if (_hitboxArea != null)
+			{
+				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, _throwJudgmentY);
+			}
 
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
 			Vector2 simulatedVelocity = new Vector2(
@@ -1209,6 +1246,7 @@ namespace Kuros.Items.World
 						try { _rigidBody.Set("freeze", true); } catch { }
 					}
 					RestoreRigidBodyCollision();
+					StartFallToJudgment(); // 视觉下落到判定层（命中停止）
 					if (!_isDestroying)
 					{
 						_landingHideTimer = LandingHideDelay;
@@ -1261,6 +1299,19 @@ namespace Kuros.Items.World
 			if (body is Node node && !string.Equals((string)node.Name, "AirWall", System.StringComparison.OrdinalIgnoreCase))
 				return false;
 			return true;
+		}
+
+		/// <summary>
+		/// 停止飞行后，视觉从当前抛物线高度下落到判定层（attackarea 位置）。
+		/// 仅记录起点，实际插值在 _PhysicsProcess 的 _fallingToJudgment 分支执行。
+		/// </summary>
+		private void StartFallToJudgment()
+		{
+			if (_rigidBody == null) return;
+			_fallingToJudgment = true;
+			_fallTimer = 0f;
+			_fallFromX = _rigidBody.GlobalPosition.X;
+			_fallFromY = _rigidBody.GlobalPosition.Y;
 		}
 
 		/// <summary>

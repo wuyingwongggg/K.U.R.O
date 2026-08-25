@@ -54,7 +54,7 @@ Weapon_Stab_Corkscrew,Weapon_Stab_Corkscrew,开瓶器,普通类戳刺武器：�
 Weapon_Stab_drill,Weapon_Stab_Drill,钻头,普通类戳刺武器：钻头。攻速慢。距离远。电池类武器，攻击时消耗电量，电量耗尽后无法继续攻击需要等待电量恢复。攻击时对敌人造成击退效果,Weapon,tag_weapon|tag_stab|hit_4,1,false,false,false,0|-250,0.35,100.0,500,250.0,2.0,20.0,WeaponSkill_Stab_Drill
 Weapon_Stab_LaserPointer,Weapon_Stab_LaserPointer,激光笔,稀有类戳刺武器：激光笔。攻速中。距离极远。电池类武器，攻击时消耗电量，电量耗尽后无法继续攻击需要等待电量恢复。攻击距离极远的激光武器,Weapon,tag_weapon|tag_stab|hit_3,1,false,false,false,0|-250,0.35,100.0,500,250.0,2.0,20.0,WeaponSkill_Stab_LaserPointer
 Weapon_Stab_umbrella,Weapon_Stab_Umbrella,雨伞,普通类戳刺武器：雨伞。攻速中。距离较远。攻击时生成一面伞状护盾，抵挡一次伤害后破碎。,Weapon,tag_weapon|tag_stab|hit_1,1,false,false,false,0|-250,0.35,100.0,500,250.0,2.0,20.0,WeaponSkill_Stab_Umbrella
-Weapon_Throw_Boomerang,Weapon_Throw_Boomerang,回旋镖,稀有类投掷武器：回旋镖。投掷后生成一个飞行一段距离后返回的回旋镖，接住回旋镖可以立刻刷新投掷CD。在特定距离朝敌人投掷可判定多段伤害,Weapon,tag_weapon|tag_throw,1,true,true,true,0|-150,0.01,0.0,1.0,-150.0,15.0,,
+Weapon_Throw_Boomerang,Weapon_Throw_Boomerang,回旋镖,稀有类投掷武器：回旋镖。投掷后生成一个飞行一段距离后返回的回旋镖，接住回旋镖可以立刻刷新投掷CD。在特定距离朝敌人投掷可判定多段伤害,Weapon,tag_weapon|tag_throw,1,true,true,true,0|10,0.01,0.0,1.0,10.0,15.0,,
 Weapon_Throw_Briefcase,Weapon_Throw_Briefcase,多功能公文包,普通类投掷武器：多功能公文包。投掷前来回切换武器图标。投掷时根据当前图标触发武器效果：1.可破坏的阻挡移动的护盾 2.持续朝敌人发射并造成伤害的数据模块,Weapon,tag_weapon|tag_throw,1,true,true,false,0|-250,0.3,100.0,300.0,250.0,10.0,,
 Weapon_Throw_ECore,Weapon_Throw_ECore,电击核心,普通类投掷武器：电击核心。投掷后生成一个遇到障碍物后回弹的电击核心，对范围敌人造成伤害。,Weapon,tag_weapon|tag_throw,1,true,true,true,0|-150,0.01,0.0,1.0,-150.0,10.0,,
 Weapon_Throw_EmojiBomb,Weapon_Throw_EmojiBomb,emoji炸弹,稀有类投掷武器：emoji炸弹。投掷前来回切换emoji表情。投掷时根据当前表情触发武器效果：不同表情造成的范围和伤害不同,Weapon,tag_weapon|tag_throw,1,true,true,false,0|-250,0.4,100.0,700.0,250.0,3.0,,

@@ -120,7 +120,10 @@ func _export_skills() -> void:
 		"DamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
 		"Description", "ActivationAction", "AllowHoldContinuousAttack",
 		"WarmupDuration", "ActiveDuration", "RecoveryDuration",
-			"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed"
+			"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
+			"DashDamageMultiplier", "DashAnimationName",
+			"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
+			"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed"
 	]
 	var rows: Array = [headers]
 
@@ -146,7 +149,15 @@ func _export_skills() -> void:
 			str(r.get("RecoveryDuration", "-1")),
 			str(r.get("WarmupAnimationSpeed", "1.0")),
 			str(r.get("ActiveAnimationSpeed", "1.0")),
-			str(r.get("RecoveryAnimationSpeed", "1.0"))
+			str(r.get("RecoveryAnimationSpeed", "1.0")),
+			str(r.get("DashDamageMultiplier", "-1")),
+			_str(str(r.get("DashAnimationName", ""))),
+			str(r.get("DashWarmupDuration", "-1")),
+			str(r.get("DashActiveDuration", "-1")),
+			str(r.get("DashRecoveryDuration", "-1")),
+			str(r.get("DashWarmupAnimationSpeed", "-1")),
+			str(r.get("DashActiveAnimationSpeed", "-1")),
+			str(r.get("DashRecoveryAnimationSpeed", "-1"))
 		])
 
 	_write_csv(OUT_SKILLS, rows)

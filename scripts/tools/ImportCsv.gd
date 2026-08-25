@@ -56,6 +56,14 @@ func import_skills_from_csv() -> void:
 		_s_float(res, "WarmupAnimationSpeed",    row, hm, "WarmupAnimationSpeed")
 		_s_float(res, "ActiveAnimationSpeed",    row, hm, "ActiveAnimationSpeed")
 		_s_float(res, "RecoveryAnimationSpeed",  row, hm, "RecoveryAnimationSpeed")
+		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
+		_s_str(res, "DashAnimationName",         row, hm, "DashAnimationName")
+		_s_float_neg1(res, "DashWarmupDuration",        row, hm)
+		_s_float_neg1(res, "DashActiveDuration",        row, hm)
+		_s_float_neg1(res, "DashRecoveryDuration",      row, hm)
+		_s_float_neg1(res, "DashWarmupAnimationSpeed",  row, hm)
+		_s_float_neg1(res, "DashActiveAnimationSpeed",  row, hm)
+		_s_float_neg1(res, "DashRecoveryAnimationSpeed", row, hm)
 		if _save(res, path): count += 1
 	_log.info("  → 更新 %d 个" % count)
 

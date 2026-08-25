@@ -114,7 +114,8 @@ AttackRangeCheckDistance = 600.0
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 50
 Speed = 400.0
-AttackDamage = 25.0
+AttackDamage = 20.0
+AttackCooldown = 1.0
 MaxHealth = 750
 AiDescription = "安保队长，精英敌人，似乎错误的把我们识别为非法入侵对象，行动敏捷，使用棍棒和踢击攻击客户，要小心她召唤其他安保机器人"
 StateMachine = NodePath("StateMachine")
@@ -273,7 +274,7 @@ WarmupDuration = 0.5
 ActiveDuration = 1.2
 RecoveryDuration = 0.4
 CooldownDurationMultiplier = 1.5
-DamageMultiplier = 0.5
+DamageMultiplier = 0.7
 AttackAreaPath = NodePath("../../../../Sprite2D/KickArea")
 KnockbackDistance = 300.0
 KnockbackDuration = 0.14
@@ -319,7 +320,6 @@ script = ExtResource("18")
 
 [node name="DashBack" type="Node" parent="StateMachine"]
 script = ExtResource("19_h8apo")
-DashSpeedMultiplier = 3.75
 DashDuration = 0.6000000000000001
 AnimationName = "animations/Skill3"
 CooldownAfterUses = 3.0
