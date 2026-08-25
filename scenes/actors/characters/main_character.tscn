@@ -412,7 +412,7 @@ script = ExtResource("21_6hy0m")
 [node name="Dash" type="Node" parent="StateMachine"]
 script = ExtResource("44_dashstate")
 BurstSpeed = 3000.0
-BurstDuration = 0.3
+BurstDuration = 0.2
 BurstAnimationSpeed = 1.5
 RecoverySpeed = 100.0
 RecoveryDuration = 0.47

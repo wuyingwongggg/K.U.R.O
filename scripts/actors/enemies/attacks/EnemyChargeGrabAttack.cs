@@ -18,7 +18,9 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath GrabAreaPath = new NodePath();
 
         [ExportCategory("Dash")]
-        [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
+		/// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配）。</summary>
+		[Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 2f;
+		private float DashSpeed => Enemy?.Speed * DashSpeedMultiplier ?? 0f;
 		[Export(PropertyHint.Range, "0,2000,10")] public float DashDistance = 0f;
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeGrab = 24f;

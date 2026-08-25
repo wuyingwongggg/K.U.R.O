@@ -8,7 +8,7 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_otg7e"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="5"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_2sv5o"]
-[ext_resource type="Script" uid="uid://cbasgy23b5jmr" path="res://scripts/controllers/ShadowFollower.cs" id="5_ao33d"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_ao33d"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://b4v5ybpg1m84k" path="res://animations/spine/Enemy_B1_fat01.tres" id="6_2sv5o"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
@@ -21,7 +21,7 @@
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="15"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="16"]
 [ext_resource type="Script" uid="uid://b46a7dixq64qm" path="res://scripts/actors/enemies/animation/EnemyB1FatSpineAnimationController.cs" id="17"]
-[ext_resource type="Script" uid="uid://vrprwog5yn1j" path="res://scripts/controllers/SpineController.gd" id="20_2sv5o"]
+[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="20_2sv5o"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("4_otg7e")
@@ -41,7 +41,7 @@ size = Vector2(700, 300)
 size = Vector2(1600, 400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_otg7e"]
-size = Vector2(1000, 400)
+size = Vector2(1000, 500)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ao33d"]
 radius = 150.0
@@ -205,7 +205,8 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 script = ExtResource("11_otg7e")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 GrabAreaPath = NodePath("../../../../Sprite2D/GrabArea")
-DashSpeed = 800.0
+DashSpeedMultiplier = 4
+DashDistance = 1000.0
 SnapshotDelaySeconds = 0.9
 AppliedFrozenDuration = 3.0
 EscapeWindowSeconds = 3.0

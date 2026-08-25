@@ -19,7 +19,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath MoveAttackAreaPath = new NodePath();
 
         [ExportCategory("Dash")]
-        [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
+        /// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配，无需同步改绝对值）。</summary>
+        [Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 2f;
 		[Export(PropertyHint.Range, "0.05,10,0.05")] public float DashDuration = 0.5f; // 冲刺持续时间（秒）
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,5,0.01")] public float MinDashTimeBeforeAttack = 0f; // 允许命中前的最短冲刺时间（秒）
@@ -173,7 +174,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
 			if (Enemy == null) return;
 			_isDashing = true;
-			Enemy.Velocity = _dashDirection * DashSpeed;
+			Enemy.Velocity = _dashDirection * (Enemy.Speed * DashSpeedMultiplier);
 
 			// 启用动画事件触发时，开放命中窗口供 TriggerAnimationHit 调用
 			if (RequireAnimationHitTrigger)
@@ -514,7 +515,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			// 持续冲刺，直到 DashDuration 到期由基类切入 Recovery
-			Enemy.Velocity = _dashDirection * DashSpeed;
+			Enemy.Velocity = _dashDirection * (Enemy.Speed * DashSpeedMultiplier);
 		}
 
 		protected override void OnAnimationHit()
