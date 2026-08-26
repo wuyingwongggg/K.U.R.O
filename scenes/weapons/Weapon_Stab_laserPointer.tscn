@@ -64,7 +64,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(320, 90)
 
 [sub_resource type="RectangleShape2D" id="TriggerShape_yahcm"]
-size = Vector2(6600, 200)
+size = Vector2(6600, 250)
 
 [node name="WeaponStabLaserPointer" type="CharacterBody2D"]
 z_index = 1

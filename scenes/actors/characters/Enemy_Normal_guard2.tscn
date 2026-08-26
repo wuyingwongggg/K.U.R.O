@@ -130,7 +130,7 @@ skeleton_data_res = ExtResource("18_wixbd")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 3.9
 script = ExtResource("19_gkl6r")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -213,13 +213,18 @@ MoveAttackAreaPath = NodePath("../../../../Sprite2D/MoveAttackArea")
 DashDuration = 3.0
 LockFacingDuringDash = false
 SnapshotDelaySeconds = 1.0
-DashEndSelfFrozenDuration = 2.0
+WarmupDuration = 1.0
+ActiveDuration = 2.8
+RecoveryDuration = 0.1
 DamageMultiplier = 0.5
 KnockbackDistance = 100.0
 KnockbackDuration = 0.08
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
+StunInterruptOnDamage = true
+StunDuringWarmup = false
+DamageTakenFrozenDuration = 1.5
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 

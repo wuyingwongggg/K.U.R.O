@@ -553,6 +553,13 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
+			// 清冲刺状态与残留速度：dash 中被 Cancel 打断会跳过 FinishDash/Recovery
+			// （_isDashing 残留 true）——_PhysicsProcess 的 UpdateDashMovement 会在后续
+			// 攻击期间每帧写入 dash 速度（如 Guard1 近战攻击时移动）
+			_isDashing = false;
+			_canAttemptOnePunch = false;
+			if (Enemy != null)
+				Enemy.Velocity = Vector2.Zero;
 			_playerInsideDetection = false;
 			if (_postAttackCooldown <= 0f)
 			{

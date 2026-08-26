@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://ba8fktvib2e1o"]
+[gd_scene load_steps=33 format=3 uid="uid://ba8fktvib2e1o"]
 
 [ext_resource type="Script" uid="uid://e0dl460gdllx" path="res://scripts/actors/enemies/EnemyC2WaiterA02.cs" id="1_n7wqi"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4msjm"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="15_plwgt"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="16_20ym2"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="17_8l6xl"]
+[ext_resource type="PackedScene" uid="uid://3cwbpbcapw1o" path="res://resources/effects/GreenHealPuff.tscn" id="17_561kr"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="18_javbh"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="19_hbjer"]
 [ext_resource type="Script" uid="uid://dn16hs3duvemc" path="res://scripts/actors/enemies/animation/EnemyC2WaiterA02SpineAnimationController.cs" id="19_n7wqi"]
@@ -64,7 +65,7 @@ DebugOverlayFontSize = 128
 DebugOverlayColor = Color(1, 0.95, 0.2, 1)
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
+Speed = 250.0
 AttackDamage = 10
 AttackCooldown = 1
 MaxHealth = 120
@@ -181,6 +182,9 @@ shape = SubResource("CapsuleShape2D_561kr")
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
 position = Vector2(0, -450)
 
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(220, -1000)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_ugem5")
 InitialState = NodePath("Idle")
@@ -221,17 +225,20 @@ WarmupDuration = 0.65
 ActiveDuration = 0.2
 RecoveryDuration = 0.48
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-TargetableFactions = 7
 KnockbackDistance = 200.0
 KnockbackDuration = 0.1
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
 metadata/attack_weight = 40.0
 
-[node name="Assist" type="Node" parent="StateMachine"]
+[node name="Assist" type="Node" parent="StateMachine" node_paths=PackedStringArray("AssistSpawnMarkers")]
 script = ExtResource("14_0xfei")
-HealDelay = 1.5
-AssistMoveSpeed = 200.0
+ScanRadius = 3000.0
+ApproachDistance = 400.0
+AssistMoveSpeedMultiplier = 1.1
+IgnoreEnemyCollisionDuringAssist = true
+AssistEffectScene = ExtResource("17_561kr")
+AssistSpawnMarkers = [NodePath("../../Node2D/Marker2D2")]
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("15_plwgt")

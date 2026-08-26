@@ -260,11 +260,11 @@ public void ApplyEffect(ActorEffect effect)
 ```csharp
 public enum TargetableFactions
 {
-    None = 0,
-    Player = 1 << 0,
-    Enemy = 1 << 1,
-    WorldItem = 1 << 2,
-    All = Player | Enemy | WorldItem
+	None = 0,
+	Player = 1 << 0,
+	Enemy = 1 << 1,
+	WorldItem = 1 << 2,
+	All = Player | Enemy | WorldItem
 }
 ```
 

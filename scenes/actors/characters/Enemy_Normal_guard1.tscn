@@ -218,6 +218,8 @@ DamageMultiplier = 1.5
 KnockbackDistance = 200.0
 KnockbackDuration = 0.1
 GrantedImmunities = 16
+StunInterruptOnDamage = true
+StunDuringWarmup = false
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 

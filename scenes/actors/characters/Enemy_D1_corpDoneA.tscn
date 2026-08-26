@@ -245,6 +245,8 @@ KnockbackDuration = 0.15
 KnockbackSpeed = 1500.0
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
+StunInterruptOnDamage = true
+StunDuringWarmup = false
 metadata/attack_weight = 30.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_iojcn"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_go0k2"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_go0k2"]
-[ext_resource type="Texture2D" uid="uid://bk0eino0ld1q0" path="res://assets/furnitures/hotel_scene2/PlantA.png" id="3_iojcn"]
+[ext_resource type="Texture2D" uid="uid://b2ayj5n4oq8xr" path="res://assets/furnitures/hotel_scene2/PlantA.png" id="3_iojcn"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="4_jx5cc"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_qoudf"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_jx5cc"]
@@ -43,7 +43,7 @@ DisplayName = "大堂盆栽"
 Description = "一次性投掷道具：大堂盆栽"
 Icon = ExtResource("3_iojcn")
 Category = "Furniture"
-Tags = ["tag_throw", "furniture"]
+Tags = Array[String](["tag_throw", "furniture"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_iojcn")]([SubResource("Resource_iojcn")])
 EffectEntries = Array[ExtResource("2_go0k2")]([SubResource("Resource_qoudf"), SubResource("Resource_jx5cc"), SubResource("Resource_er004")])

@@ -281,6 +281,8 @@ KnockbackDuration = 0.14
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
+StunInterruptOnDamage = true
+StunDuringWarmup = false
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 

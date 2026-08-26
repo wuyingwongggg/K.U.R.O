@@ -273,6 +273,8 @@ namespace Kuros.Effects
             if (laser is LaserBeamPlayerWeapon weaponLaser)
                 weaponLaser.Attacker = Actor;
 
+            // 挂到场景（静态）：判定带（BeamHitArea）是地面判定层，跟随挂载对象移动会破坏
+            // 视觉/判定分离（视觉在炮口上方、判定固定地面）
             GetTree()?.CurrentScene?.AddChild(laser);
             laser.GlobalPosition = _laserSpawnPoint.GlobalPosition;
             laser.GlobalRotation = _laserSpawnPoint.GlobalRotation;

@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies.States;
 using Kuros.Core;
 using Kuros.Fx;
 
@@ -64,6 +65,22 @@ namespace Kuros.Actors.Enemies.Attacks
         /// </summary>
         [Export(PropertyHint.Flags, "Stun,ForcedMovement,SpeedSlow,WarmupSuperArmor,ActiveSuperArmor,RecoverySuperArmor,ThrowableDamage,NonThrowableDamage")]
         public ImmunityFlags GrantedImmunities = ImmunityFlags.None;
+
+        [ExportCategory("Damage Interrupt")]
+        /// <summary>
+        /// 受伤眩晕打断（霸体反制机制）：攻击期间自身受伤时，中断当前攻击并切入 Frozen（眩晕）。
+        /// 注意是"自己受伤 → 自己眩晕"，不是命中眩晕目标。
+        /// 总开关；各阶段是否触发由下方三个阶段开关细分。
+        /// </summary>
+        [Export] public bool StunInterruptOnDamage = false;
+        /// <summary>Warmup 阶段受伤进入眩晕（StunInterruptOnDamage=true 时生效）。</summary>
+        [Export] public bool StunDuringWarmup = true;
+        /// <summary>Active 阶段受伤进入眩晕。</summary>
+        [Export] public bool StunDuringActive = true;
+        /// <summary>Recovery 阶段受伤进入眩晕。</summary>
+        [Export] public bool StunDuringRecovery = true;
+        /// <summary>受伤眩晕时长（秒）。</summary>
+        [Export(PropertyHint.Range, "0.1,10,0.1")] public float DamageTakenFrozenDuration = 1.5f;
 
         [ExportCategory("Collision Override")]
         [Export] public bool IgnoreEnemyCollisionDuringAttack = false;
@@ -210,15 +227,67 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public override void _ExitTree()
         {
+            UnsubscribeDamageInterrupt();
             RestoreEnemyCollisionMask();
             RestoreAttackAreaMask();
             base._ExitTree();
         }
 
+        // ── 受伤眩晕打断（StunInterruptOnDamage）─────────────────────────────
+
+        private bool _damageInterruptSubscribed;
+
+        private void SubscribeDamageInterrupt()
+        {
+            if (!StunInterruptOnDamage || Enemy == null || _damageInterruptSubscribed) return;
+            Enemy.DamageTaken += OnDamageTakenDuringAttack;
+            _damageInterruptSubscribed = true;
+        }
+
+        private void UnsubscribeDamageInterrupt()
+        {
+            if (Enemy == null || !_damageInterruptSubscribed) return;
+            Enemy.DamageTaken -= OnDamageTakenDuringAttack;
+            _damageInterruptSubscribed = false;
+        }
+
+        private void OnDamageTakenDuringAttack(int _)
+        {
+            if (!IsRunning || Enemy == null) return;
+
+            // 阶段细分开关：当前阶段不允许眩晕则忽略本次受伤
+            if (!IsStunEnabledForCurrentPhase()) return;
+
+            // 中断当前攻击（进入冷却）并切入眩晕
+            Cancel();
+            var frozenState = Enemy.StateMachine?.GetNodeOrNull<EnemyFrozenState>("Frozen");
+            if (frozenState != null)
+                frozenState.FrozenDuration = Mathf.Max(DamageTakenFrozenDuration, 0.1f);
+            Enemy.StateMachine?.ChangeState("Frozen");
+
+            // 子类追加行为（如恢复攻击期间移动的节点位置）
+            OnDamageTakenInterrupt();
+        }
+
+        private bool IsStunEnabledForCurrentPhase()
+        {
+            return _phase switch
+            {
+                AttackPhase.Warmup => StunDuringWarmup,
+                AttackPhase.Active => StunDuringActive,
+                AttackPhase.Recovery => StunDuringRecovery,
+                _ => false
+            };
+        }
+
+        /// <summary>受伤眩晕触发后调用，供子类覆写追加行为（默认无操作）。</summary>
+        protected virtual void OnDamageTakenInterrupt() { }
+
         protected virtual void OnAttackStarted()
         {
             ApplyEnemyCollisionMaskOverride();
             ApplyAttackAreaMaskOverride();
+            SubscribeDamageInterrupt();
 
             // 将非霸体类免疫写入 ActiveImmunities（霸体按阶段独立管理）
             var nonSuperFlags = GrantedImmunities
@@ -270,6 +339,7 @@ namespace Kuros.Actors.Enemies.Attacks
         protected virtual void OnAttackFinished()
         {
             _cooldownTimer = GetCooldown();
+            UnsubscribeDamageInterrupt();
 
             RestoreEnemyCollisionMask();
             RestoreAttackAreaMask();

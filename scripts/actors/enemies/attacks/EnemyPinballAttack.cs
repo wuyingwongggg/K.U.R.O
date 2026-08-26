@@ -118,6 +118,11 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
+			// 清冲刺状态与残留速度：dash 中被打断（眩晕/冰冻）会跳过 Recovery，
+			// _isDashing 残留 true 会让 _PhysicsProcess 在后续攻击期间持续运行
+			_isDashing = false;
+			if (Enemy != null)
+				Enemy.Velocity = Vector2.Zero;
 			GameActor.AnyDamageTaken -= OnAnyDamageTaken;
 			DisconnectAttackAreaSignals();
 		}

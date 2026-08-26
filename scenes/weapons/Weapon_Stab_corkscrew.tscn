@@ -34,7 +34,7 @@ shader_parameter/highlight_interval = 1.00000002375
 size = Vector2(210, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
-size = Vector2(1100, 200)
+size = Vector2(1100, 225)
 
 [node name="WeaponStabCorkscrew" type="CharacterBody2D"]
 z_index = 1
