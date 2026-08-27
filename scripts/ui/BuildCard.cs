@@ -5,7 +5,7 @@ namespace Kuros.UI
 {
     public partial class BuildCard : Control
     {
-        [Signal] public delegate void ConfirmedEventHandler(int index);
+        [Signal] public delegate void SelectedEventHandler(int index);
 
         [Export] public int CardIndex { get; set; }
         [Export] public Control? CardInner { get; set; }
@@ -21,8 +21,10 @@ namespace Kuros.UI
         [Export(PropertyHint.Range, "5,30,1")]
         public float TiltStrength { get; set; } = 15f;
 
-        [Export(PropertyHint.Range, "1,1.3,0.01")]
-        public float HoverScale { get; set; } = 1.05f;
+        /// <summary>字号缩放比例下限：卡牌缩小到一定程度后字号不再继续缩小（长文本保持可读）。</summary>
+        [Export(PropertyHint.Range, "0.5,1,0.05")] public float MinFontScaleRatio = 0.5f;
+
+        [Export(PropertyHint.Range, "1,1.3,0.01")] public float HoverScale { get; set; } = 1.05f;
 
         [ExportGroup("Rarity Visuals")]
         [Export] public Texture2D? CardBgCommon { get; set; }
@@ -57,10 +59,8 @@ namespace Kuros.UI
                     BuildRarity.Core => GlowCore,
                     _ => GlowCommon,
                 };
-                RarityGlow.Modulate = color;
-                var transparent = new Color(color.R, color.G, color.B, 0f);
-                _glowShaderMat?.SetShaderParameter("starting_colour", color);
-                _glowShaderMat?.SetShaderParameter("ending_colour", transparent);
+                // 边框上色：alpha 强制 1（帧体实色；光晕透明度由 shader 的 opacity 控制）
+                RarityGlow.Modulate = new Color(color.R, color.G, color.B, 1f);
             }
         }
 
@@ -90,7 +90,6 @@ namespace Kuros.UI
 
         private bool _isHovered;
         private ShaderMaterial? _shaderMat;
-        private ShaderMaterial? _glowShaderMat;
         private TextureRect? _displayRect;
         private SubViewport? _subViewport;
         private static readonly Vector2 ReferenceSize = new(500, 340);
@@ -102,18 +101,44 @@ namespace Kuros.UI
 
         public void ApplyCardScale()
         {
-            float ratio = Mathf.Min(Size.X / ReferenceSize.X, 1f);
+            // 直接缩小文本字号：卡宽/基准 500，上限 1、下限 MinFontScaleRatio。
+            // 描述（Desc）基准字号从 12 降到 9——长文本在缩小卡片上完整显示
+            float ratio = Mathf.Clamp(Size.X / ReferenceSize.X, MinFontScaleRatio, 1f);
             NameLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(30 * ratio));
             KeyLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(20 * ratio));
-            BuildClassLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
-            DescLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(12 * ratio));
-            ProgressLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(10 * ratio));
+            BuildClassLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(10 * ratio));
+            DescLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(9 * ratio));
+            ProgressLabel?.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(8 * ratio));
         }
 
         public void SyncViewportSize()
         {
             if (_subViewport == null) return;
             _subViewport.Size = new Vector2I(Mathf.RoundToInt(Size.X), Mathf.RoundToInt(Size.Y));
+        }
+
+        /// <summary>
+        /// 进入动画（从屏幕下方飞入到位，Back-out 缓动）。
+        /// 动画期间 _displayRect 鼠标过滤为 Ignore——玩家无法点击/误触卡牌（如连续攻击时触发升级弹窗）。
+        /// </summary>
+        public void PlayEnterAnimation(float delay, float flyDistance = 500f)
+        {
+            if (_displayRect == null) return;
+
+            var targetPos = Position;
+            _displayRect.MouseFilter = MouseFilterEnum.Ignore;
+            Position = targetPos + new Vector2(0, flyDistance);
+
+            var tween = CreateTween();
+            tween.TweenInterval(delay);
+            tween.TweenProperty(this, "position", targetPos, 0.3f)
+                .SetTrans(Tween.TransitionType.Back)
+                .SetEase(Tween.EaseType.Out);
+            tween.TweenCallback(Callable.From(() =>
+            {
+                if (IsInstanceValid(_displayRect))
+                    _displayRect.MouseFilter = MouseFilterEnum.Stop;
+            }));
         }
 
 
@@ -176,12 +201,10 @@ namespace Kuros.UI
                 Material = _shaderMat,
             };
             _displayRect.SetAnchorsPreset(LayoutPreset.FullRect);
-            _displayRect.MouseEntered += () => { _isHovered = true; ZIndex = 1; UpdateSelectionHighlight(); };
-            _displayRect.MouseExited += () => { _isHovered = false; ZIndex = 0; UpdateSelectionHighlight(); };
+            _displayRect.MouseEntered += () => { _isHovered = true; UpdateSelectionHighlight(); };
+            _displayRect.MouseExited += () => { _isHovered = false; UpdateSelectionHighlight(); };
             _displayRect.GuiInput += OnDisplayRectGuiInput;
             AddChild(_displayRect);
-
-            _glowShaderMat = RarityGlow?.Material as ShaderMaterial;
 
             ApplyEnabledState();
         }
@@ -190,6 +213,8 @@ namespace Kuros.UI
         {
             if (!_enabled || _displayRect == null) return;
 
+            // 选中与悬停视觉一致：悬停 = 倾斜 + 缩放；仅选中（键盘） = 只缩放不倾斜（无鼠标位置）
+            bool active = _isHovered || _isSelected;
             float targetRotY = 0f, targetRotX = 0f, targetScale = 1f;
 
             if (_isHovered)
@@ -203,8 +228,9 @@ namespace Kuros.UI
                     targetRotY = (u - 0.5f) * 2f * TiltStrength;
                     targetRotX = (0.5f - v) * 2f * TiltStrength;
                 }
-                targetScale = ReferenceSize.X * HoverScale / Size.X;
             }
+            if (active)
+                targetScale = ReferenceSize.X * HoverScale / Size.X;
 
             float lerpSpeed = 0.15f;
             _currentRotY = Mathf.Lerp(_currentRotY, targetRotY, lerpSpeed);
@@ -222,7 +248,7 @@ namespace Kuros.UI
             _displayRect.PivotOffset = _displayRect.Size / 2f;
             _displayRect.Scale = new Vector2(_currentHoverScale, _currentHoverScale);
 
-            bool atRest = !_isHovered
+            bool atRest = !active
                 && Mathf.Abs(_currentRotY) < 0.05f
                 && Mathf.Abs(_currentRotX) < 0.05f
                 && Mathf.Abs(_currentHoverScale - 1f) < 0.001f;
@@ -238,14 +264,17 @@ namespace Kuros.UI
         private void OnDisplayRectGuiInput(InputEvent @event)
         {
             if (!_enabled) return;
+            // 确认制：单击只发选中（高亮）——确认由操作栏按钮/键盘完成，卡片本身不直接确认
             if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-                EmitSignal(SignalName.Confirmed, CardIndex);
+                EmitSignal(SignalName.Selected, CardIndex);
         }
 
         private void UpdateSelectionHighlight()
         {
             if (RarityGlow != null)
                 RarityGlow.Visible = _isSelected || _isHovered;
+            // 选中/悬停的卡置顶：放大后不被相邻卡覆盖
+            ZIndex = _isSelected || _isHovered ? 1 : 0;
         }
 
         private void ApplyEnabledState()

@@ -33,8 +33,9 @@ shader_parameter/highlight_interval = 1.00000002375
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g0q5t"]
 size = Vector2(210, 150)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
-size = Vector2(1100, 225)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gccxh"]
+radius = 112.5
+height = 1100.0
 
 [node name="WeaponStabCorkscrew" type="CharacterBody2D"]
 z_index = 1
@@ -70,4 +71,5 @@ shape = SubResource("RectangleShape2D_g0q5t")
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("RectangleShape2D_t6geh")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_gccxh")

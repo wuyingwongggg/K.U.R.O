@@ -15,7 +15,6 @@ BounceHeight = 300.0
 BounceLength = 800.0
 BounceCooldown = 0.05
 BounceDetectSize = Vector2(80, 100)
-ShowBounceDetectDebug = true
 RotationSpeed = 1080.0
 RotateNode = NodePath("Visual/Sprite2D")
 Duration = 10.0

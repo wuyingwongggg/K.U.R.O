@@ -63,8 +63,9 @@ shader_parameter/curve_ci = 0.2000000095
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
 size = Vector2(180, 120)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
-size = Vector2(1050, 300)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wh64k"]
+radius = 150.0
+height = 1050.0
 
 [node name="WeaponBrawlMechGlove" type="CharacterBody2D"]
 z_index = 1
@@ -121,4 +122,5 @@ visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("RectangleShape2D_82c6d")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_wh64k")

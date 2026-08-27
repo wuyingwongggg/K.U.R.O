@@ -66,6 +66,7 @@ namespace Kuros.UI
 
 		public override void _Ready()
 		{
+			SetProcessUnhandledInput(true); // 接收滚轮切换武器槽（GUI 之后，槽位只消费左键，滚轮可达）
 			CacheQuickBarLabels();
 			GoldLabel ??= GetNodeOrNull<Label>("GoldSection/GoldLabel");
 			TrashBin ??= GetNodeOrNull<Control>("TrashBin");
@@ -515,6 +516,47 @@ namespace Kuros.UI
 		private void OnQuickBarChanged()
 		{
 			UpdateQuickBarDisplay();
+		}
+
+		/// <summary>
+		/// 鼠标滚轮切换武器槽（全局）：滚轮上 = 上一个解锁槽，滚轮下 = 下一个解锁槽（循环）。
+		/// 任意位置滚轮均可切换（经典滚轮切枪）；游戏暂停（构筑选择/背包/菜单）时不响应。
+		/// 使用 _UnhandledInput：GUI 阶段（_UnhandledInput 之前）槽位只消费左键拖拽，滚轮会到达此处。
+		/// </summary>
+		public override void _UnhandledInput(InputEvent @event)
+		{
+			if (@event is not InputEventMouseButton mouseBtn || !mouseBtn.Pressed) return;
+			if (_player == null) return;
+			// 树暂停（构筑选择/背包/暂停菜单等）时不响应——QuickBarPanel 默认 INHERIT 暂停时不触发，此处双重保险
+			if (PauseManager.Instance != null && PauseManager.Instance.IsPaused) return;
+
+			int direction = mouseBtn.ButtonIndex switch
+			{
+				MouseButton.WheelUp => -1,
+				MouseButton.WheelDown => 1,
+				_ => 0,
+			};
+			if (direction == 0) return;
+
+			CycleWeaponSlot(direction);
+			GetViewport().SetInputAsHandled();
+		}
+
+		/// <summary>从当前视觉选中槽位沿方向循环，跳到最近的已解锁槽位（跳过未解锁/锁定的槽位）。</summary>
+		private void CycleWeaponSlot(int direction)
+		{
+			int unlocked = _player?.InventoryComponent?.GetUnlockedWeaponSlots() ?? 5;
+			// 用视觉槽位（预输入优先）：攻击中连续滚轮以当前高亮为起点，方向感一致
+			int current = _player?.VisualQuickBarSlot ?? 0;
+			int target = current;
+			for (int step = 0; step < 5; step++)
+			{
+				target = (target + direction + 5) % 5;
+				if (target < unlocked)
+					break;
+			}
+			if (target == current) return;
+			_player?.TrySwitchQuickBarSlot(target);
 		}
 
 		public void UpdateQuickBarSlot(int slotIndex)

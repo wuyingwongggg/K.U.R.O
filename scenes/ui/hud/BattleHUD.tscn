@@ -33,10 +33,6 @@ layout_mode = 1
 [node name="BossHUD" parent="." instance=ExtResource("10_boss_hud")]
 layout_mode = 1
 
-[node name="QuickBarPanel" parent="." instance=ExtResource("16_quickbar")]
-layout_mode = 0
-anchors_preset = 0
-
 [node name="MinimapPanel" type="Panel" parent="."]
 visible = false
 layout_mode = 1
@@ -307,14 +303,14 @@ text = "0"
 [node name="PauseButton" type="Button" parent="."]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.95900005
-anchor_top = 0.014
-anchor_right = 1.0220001
-anchor_bottom = 0.127
-offset_left = -47.28015
-offset_top = -9.120001
-offset_right = -47.240112
-offset_bottom = -9.160004
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -121.0
+offset_bottom = 122.0
 grow_horizontal = 0
 icon = ExtResource("13_thm3t")
+
+[node name="QuickBarPanel" parent="." instance=ExtResource("16_quickbar")]
+layout_mode = 1
+metadata/_edit_use_anchors_ = true

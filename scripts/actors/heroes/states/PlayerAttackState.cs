@@ -15,6 +15,12 @@ namespace Kuros.Actors.Heroes.States
 
 		public IReadOnlyList<PlayerAttackTemplate> AttackTemplates => _attackTemplates;
 
+		/// <summary>
+		/// 当前攻击模板是否处于 Recovery（后摇）阶段：攻击判定已完成，
+		/// 该阶段是连击之间的窗口期，允许切换武器（预输入应用点）。
+		/// </summary>
+		public bool IsInRecovery => _activeTemplate?.IsInRecovery == true;
+
 		protected override void _ReadyState()
 			{
 			base._ReadyState();
@@ -95,6 +101,21 @@ namespace Kuros.Actors.Heroes.States
 				_activeTemplate.Cancel(clearCooldown: true);
 				ChangeState("Dash");
 				return;
+			}
+
+			// Run 打断：Recovery 期间按住移动键直接切 Run（长按实时检测，无需预输入——
+			// dash 是瞬时按下需缓冲，移动键按住期间持续可读）。
+			// 必须在模板 Tick 之前检查：Tick 内 Recovery 移动会走 _wantsMove（攻击结束→Idle→Run 两帧中转），
+			// 这里直接切 Run 更顺滑。按住攻击键时让位给连击重启（Tick 内处理）。
+			if (_activeTemplate.AllowRecoveryCancel && !IsActionPressed("attack"))
+			{
+				Vector2 moveInput = GetMovementInput();
+				if (moveInput.LengthSquared() > 0.01f)
+				{
+					_activeTemplate.Cancel(clearCooldown: true);
+					ChangeState("Run");
+					return;
+				}
 			}
 		}
 

@@ -2,6 +2,7 @@ using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Builds.Machine;
 using Kuros.Core;
+using Kuros.Systems.Inventory;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -80,15 +81,25 @@ namespace Kuros.Actors.Heroes.States
             return base.CanEnterFrom(previousState);
         }
 
-        /// <summary>当前是否持握投掷物（快捷栏投掷武器 / 家具槽投掷家具 / 武器槽投掷武器）——持物攻击应触发投掷而非普通攻击。</summary>
+        /// <summary>当前是否持握投掷物（快捷栏投掷武器 / 家具槽投掷家具 / 武器槽投掷武器）——持物攻击应触发投掷而非普通攻击。
+        /// 投掷武器 CD 中不算持握投掷物：冲刺攻击应触发徒手/基础攻击而非投掷（与 Idle/Run 的 CD 检查一致）。</summary>
         private bool IsHoldingThrowable()
         {
             var inv = Player.InventoryComponent;
             if (inv == null) return false;
-            return (inv.GetSelectedQuickBarStack()?.Item.IsThrowable == true)
-                || (inv.HasFurnitureItem && inv.FurnitureSlotStack?.Item.IsThrowable == true)
-                || (inv.GetActiveCombatWeaponDefinition()?.IsThrowable == true);   // 武器槽投掷武器（回旋镖等装备在武器槽）
+            if (IsThrowableAndReady(inv.GetSelectedQuickBarStack())) return true;
+            // 家具投掷无 CD（一次性物品）
+            if (inv.HasFurnitureItem && inv.FurnitureSlotStack?.Item.IsThrowable == true) return true;
+            // 武器槽投掷武器（回旋镖等装备在武器槽）——同样受 CD 约束
+            if (IsThrowableAndReady(inv.GetEquippedWeaponStack())) return true;
+            // 背包选中槽（原 GetActiveCombatWeaponDefinition 链的兜底）
+            var backpackStack = inv.GetSelectedBackpackStack();
+            return backpackStack != null && !backpackStack.IsEmpty
+                && backpackStack.Item.IsThrowable && !backpackStack.IsThrowOnCooldown;
         }
+
+        private static bool IsThrowableAndReady(InventoryItemStack? stack)
+            => stack != null && !stack.IsEmpty && stack.Item.IsThrowable && !stack.IsThrowOnCooldown;
 
         /// <summary>是否为免费后撤窗口：当前无方向输入（后撤）且 B_003 免费窗口激活。</summary>
         private bool IsFreeBackDashWindow()

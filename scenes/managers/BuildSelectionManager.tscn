@@ -50,9 +50,9 @@ ThresholdCurve = SubResource("ThresholdCurve")
 CorePool = Array[ExtResource("3_core")]([ExtResource("22"), ExtResource("23"), ExtResource("24")])
 EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("11_51j2i"), ExtResource("12_hmd15"), ExtResource("13_f1ni1"), ExtResource("14_28q7w"), ExtResource("15_sy28j"), ExtResource("16_o8bjk"), ExtResource("17_k6o6d"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("21_fiv8j"), ExtResource("22_f3soq"), ExtResource("23_a8dc1"), ExtResource("24_qq6bi"), ExtResource("25_y7t65"), ExtResource("26_gaso4"), ExtResource("27_tqvmv"), ExtResource("28_f3soq"), ExtResource("29_qq6bi"), ExtResource("30_y7t65"), ExtResource("31_gaso4"), ExtResource("32_tqvmv"), ExtResource("33_tqvmv"), ExtResource("34_an8ih"), ExtResource("35_hia2b"), ExtResource("36_jnoys")])
 RarityMultiplier = Dictionary[String, float]({
-"Common": 0.0,
+"Common": 3.0,
 "Epic": 1.0,
-"Rare": 0.0
+"Rare": 2.0
 })
-CardsPerSelection = 10
-DebugTrigger = true
+SkipGoldReward = 5
+CoreSkipGoldReward = 15

@@ -100,7 +100,17 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	/// -1 表示未装备任何物品
 	/// </summary>
 	public int LeftHandSlotIndex { get; private set; } = -1;
-	
+
+	/// <summary>
+	/// 预输入的目标槽位：攻击/投掷期间切换武器只更新视觉高亮（背包选中框跟随），
+	/// 实际武器待状态结束后应用——视觉与判定分离，切换手感不卡顿。
+	/// -1 = 无预输入。
+	/// </summary>
+	private int _pendingQuickBarSlot = -1;
+
+	/// <summary>视觉选中的槽位（预输入优先）：攻击中返回玩家想切换的目标，否则为实际槽位。</summary>
+	public int VisualQuickBarSlot => _pendingQuickBarSlot >= 0 ? _pendingQuickBarSlot : LeftHandSlotIndex;
+
 	private int _score = 0;
 	private int _gold = 0; // 金币数量
 	private string _pendingAttackSourceState = string.Empty;
@@ -196,6 +206,11 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		base._Process(delta);
 		_holdTracker.Process((float)delta);
 		UpdateSyncedAttackAreaAttackBoneMotion();
+
+		// 攻击/投掷结束后应用预输入的武器切换（视觉高亮已提前跟随，此处同步实际武器）
+		if (_pendingQuickBarSlot >= 0 && !IsWeaponSwitchLocked())
+			ApplyPendingQuickBarSlot();
+
 		if (!EnableStateDebugOverlay) return;
 
 		UpdateDebugOverlayText();
@@ -561,10 +576,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			
 			if (slotIndex.HasValue)
 			{
-				if (CanSwitchQuickBarSlot())
-				{
-					SwitchToQuickBarSlot(slotIndex.Value);
-				}
+				// 攻击/投掷中的切换由预输入处理（视觉立即跟随，实际武器状态结束后应用）
+				SwitchToQuickBarSlot(slotIndex.Value);
 				GetViewport().SetInputAsHandled();
 			}
 		}
@@ -759,18 +772,33 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	// }
 	
 	/// <summary>
-	/// 切换到指定快捷栏槽位的物品
-	/// 严格绑定：LeftHandSlotIndex 和 LeftHandItem 必须严格对应
-	/// 同時同步 PlayerInventoryComponent.SelectedQuickBarSlot
+	/// 切换到指定快捷栏槽位的物品（预输入式）：
+	/// 视觉高亮（背包选中框）立即跟随目标槽位；
+	/// 攻击/投掷状态中只记录预输入，实际武器（LeftHandItem/判定）待状态结束后应用。
+	/// 严格绑定：LeftHandSlotIndex 和 LeftHandItem 必须严格对应。
 	/// </summary>
 	/// <param name="slotIndex">快捷栏槽位索引（0-4，对应数字键1-5）</param>
-	private bool CanSwitchQuickBarSlot()
+	private bool IsWeaponSwitchLocked()
 	{
-		var currentState = StateMachine?.CurrentState?.Name ?? string.Empty;
-		if (currentState == "Attack" || currentState == "Throw")
+		var currentState = StateMachine?.CurrentState;
+		string name = currentState?.Name ?? string.Empty;
+		if (name == "Throw") return true; // 投掷是单次动作，全程锁定
+		if (name == "Attack" && currentState is PlayerAttackState attackState)
 		{
-			return false;
+			// 连击时状态不退出，但每个攻击的 Recovery（后摇）是切换窗口——判定已完成
+			return !attackState.IsInRecovery;
 		}
+		return false;
+	}
+
+	/// <summary>
+	/// UI（鼠标滚轮切换等）调用的公开切换入口：接受切换意图（视觉立即跟随），
+	/// 实际切换由预输入机制在状态允许时应用。返回 true 表示意图已接受。
+	/// </summary>
+	public bool TrySwitchQuickBarSlot(int slotIndex)
+	{
+		if (slotIndex < 0 || slotIndex > 4) return false;
+		SwitchToQuickBarSlot(slotIndex);
 		return true;
 	}
 
@@ -782,41 +810,44 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 			return;
 		}
 
-		// 家具槽有物品时禁止切换快捷栏槽位
+		// 家具槽有物品时禁止切换快捷栏槽位（硬性约束，不做预输入）
 		if (InventoryComponent?.HasFurnitureItem == true)
 		{
 			return;
 		}
-		
-		// 如果 QuickBar 还未初始化，先记录选中的槽位索引，稍后在 QuickBar 设置后会同步
+
+		// 预输入：记录目标槽位，视觉高亮立即跟随（背包选中框反馈——切换手感不卡顿）
+		_pendingQuickBarSlot = slotIndex;
+		UpdateBattleHUDHandHighlight();
+
+		// 攻击/投掷中只记录，状态结束后由 _Process 应用（视觉与判定分离）
+		if (!IsWeaponSwitchLocked())
+			ApplyPendingQuickBarSlot();
+	}
+
+	/// <summary>应用预输入的槽位：实际武器/物品/手上视觉切换（攻击/投掷结束后调用）。</summary>
+	private void ApplyPendingQuickBarSlot()
+	{
+		if (_pendingQuickBarSlot < 0) return;
+		int slotIndex = _pendingQuickBarSlot;
+		_pendingQuickBarSlot = -1;
+
+		// 如果 QuickBar 还未初始化，只记录选中的槽位索引，稍后在 QuickBar 设置后会同步
 		if (InventoryComponent?.QuickBar == null)
 		{
-			// 仅记录槽位索引，等待 QuickBar 初始化后再同步物品
 			LeftHandSlotIndex = slotIndex;
-			// 同步到 PlayerInventoryComponent
 			if (InventoryComponent != null)
-			{
 				InventoryComponent.SelectedQuickBarSlot = slotIndex;
-			}
 			return;
 		}
-		
+
 		// 严格绑定：设置 LeftHandSlotIndex，然后同步 LeftHandItem
 		LeftHandSlotIndex = slotIndex;
-		
-		// 同步到 PlayerInventoryComponent
 		if (InventoryComponent != null)
-		{
 			InventoryComponent.SelectedQuickBarSlot = slotIndex;
-		}
-		
+
 		SyncLeftHandItemFromSlot();
-		
-		// 更新视觉反馈：显示/隐藏手上的物品
 		UpdateHandItemVisual();
-		
-		// 通知 BattleHUD 更新边框颜色
-		UpdateBattleHUDHandHighlight();
 	}
 	
 	/// <summary>
@@ -1018,7 +1049,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		
 		if (battleHUD != null)
 		{
-			battleHUD.CallDeferred(BattleHUD.MethodName.UpdateHandSlotHighlight, LeftHandSlotIndex, -1);
+			// 视觉高亮槽位：预输入优先（攻击中显示玩家想切换的目标），否则显示实际槽位
+			int visualSlot = _pendingQuickBarSlot >= 0 ? _pendingQuickBarSlot : LeftHandSlotIndex;
+			battleHUD.CallDeferred(BattleHUD.MethodName.UpdateHandSlotHighlight, visualSlot, -1);
 		}
 	}
 	

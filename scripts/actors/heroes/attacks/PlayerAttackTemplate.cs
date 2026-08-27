@@ -473,6 +473,11 @@ namespace Kuros.Actors.Heroes.Attacks
 
                 UpdateDirectionalMoveVelocity();
 
+                // 前后移动动画未配置：回退默认攻击动画（OnAttackStarted 已播放），
+                // 同一动画仅移动——不切换动画、不改 hit 匹配名（与普通攻击一致）
+                if (ShouldSkipDirectionalAnimation())
+                    return;
+
                 string target = ResolveDirectionalAnimation();
                 if (target == _lastDirectionalAnimation) return; // 动画名未变：不重播
                 PlayDirectional(target);
@@ -940,6 +945,11 @@ namespace Kuros.Actors.Heroes.Attacks
             Player.Velocity = Vector2.Zero;
         }
 
+        /// <summary>前后移动动画未配置时跳过方向动画切换（回退默认攻击动画——OnAttackStarted 已播放，同一动画仅移动）。
+        /// 注意：移动接管（UpdateDirectionalMoveVelocity）仍生效，只跳过动画切换。</summary>
+        private bool ShouldSkipDirectionalAnimation()
+            => string.IsNullOrWhiteSpace(ForwardAnimationName) && string.IsNullOrWhiteSpace(BackwardAnimationName);
+
         protected virtual void OnActivePhase()
         {
             if (EnableDashMovement && !ShouldStartDashInWarmup)
@@ -952,7 +962,10 @@ namespace Kuros.Actors.Heroes.Attacks
                 // 方向移动：Active 开始接管方向动画 + 位移
                 _directionalActive = true;
                 _lastDirectionalAnimation = string.Empty;
-                PlayDirectional(ResolveDirectionalAnimation());
+                // fwd/bwd 为空时不能调用 PlayDirectional：空动画名 set_animation 会破坏攻击动画 track，
+                // 后续 hit 帧（时间轴后段）永久丢失——只保留移动接管
+                if (!ShouldSkipDirectionalAnimation())
+                    PlayDirectional(ResolveDirectionalAnimation());
             }
 
             if (ShouldUseSpineHitEvents())
