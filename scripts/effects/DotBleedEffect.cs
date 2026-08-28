@@ -97,7 +97,8 @@ namespace Kuros.Effects
                 if (visual != null)
                 {
                     visual.Visible = true;
-                    visual.Position = GetHitCenterLocal(target) + VisualOffset;
+                    // 视觉锚点：VisualEffectArea 优先（高个子敌人血滴不落在脚底），回退 HitArea/原点
+                    visual.Position = target.ToLocal(target.GetVisualAnchorWorld()) + VisualOffset;
                     if (visual is GpuParticles2D particles)
                         particles.Emitting = true;
                     target.AddChild(visual);
@@ -172,17 +173,6 @@ namespace Kuros.Effects
             if (!IsInstanceValid(visual)) return;
             ClearAllParticles(visual);
             visual.QueueFree();
-        }
-
-        private static Vector2 GetHitCenterLocal(GameActor target)
-        {
-            var hitArea = target.GetNodeOrNull<Area2D>("HitArea")
-                ?? target.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-            var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-            var globalCenter = hitShape?.GlobalPosition
-                ?? hitArea?.GlobalPosition
-                ?? target.GlobalPosition;
-            return target.ToLocal(globalCenter);
         }
 
         private static void ClearAllParticles(Node node)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://cpcvmvf2n5ahe"]
+[gd_scene load_steps=38 format=3 uid="uid://cpcvmvf2n5ahe"]
 
 [ext_resource type="Script" uid="uid://c27ux0mic6wyu" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
@@ -53,6 +53,9 @@ radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
 size = Vector2(650, 300)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_v1b7h"]
+radius = 900.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_v1b7h"]
 radius = 150.0
@@ -197,6 +200,19 @@ z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_hit")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("5_sm6sb")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -550)
+shape = SubResource("CircleShape2D_v1b7h")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964

@@ -45,6 +45,12 @@ namespace Kuros.Fx
         [Export] public Color GlowColor = new Color(1f, 0.23f, 0f, 0.52f);
         [Export(PropertyHint.Range, "1,50,1")]  public float BeamWidth = 8f;
         [Export(PropertyHint.Range, "1,100,1")] public float GlowWidth = 24f;
+        /// <summary>拖尾尾部渐隐：头部（飞弹处）原色，向尾部平滑淡出到透明。</summary>
+        [Export] public bool TrailFadeOut = true;
+        /// <summary>拖尾淡出曲线中段位置（0~1）：越小尾部淡出越快，越大尾部保留越久。</summary>
+        [Export(PropertyHint.Range, "0.1,1,0.05")] public float TrailFadeMidpoint = 0.7f;
+        /// <summary>拖尾淡出中段透明度（原色的比例，0~1）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.05")] public float TrailFadeMidAlpha = 0.3f;
 
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -109,7 +115,36 @@ namespace Kuros.Fx
                 _glowLine.Points       = System.Array.Empty<Vector2>();
             }
 
+            SetupTrailGradients();
+
             ResolveAttacker();
+        }
+
+        /// <summary>
+        /// 拖尾渐隐：Line2D 设置 Gradient 后每点颜色按点索引比例采样——
+        /// 队头（最旧=尾部）透明 → 队尾（最新=飞弹处）原色，实现尾部淡出。
+        /// </summary>
+        private void SetupTrailGradients()
+        {
+            if (!TrailFadeOut) return;
+            if (_beamLine != null)
+                _beamLine.Gradient = BuildFadeGradient(BeamColor);
+            if (_glowLine != null)
+                _glowLine.Gradient = BuildFadeGradient(GlowColor);
+        }
+
+        private Gradient BuildFadeGradient(Color color)
+        {
+            var g = new Gradient();
+            float mid = Mathf.Clamp(TrailFadeMidpoint, 0.01f, 0.99f);
+            g.SetOffsets(new float[] { 0f, mid, 1f });
+            g.SetColors(new Color[]
+            {
+                new Color(color.R, color.G, color.B, 0f),
+                new Color(color.R, color.G, color.B, color.A * Mathf.Clamp(TrailFadeMidAlpha, 0f, 1f)),
+                color,
+            });
+            return g;
         }
 
         private void ResolveAttacker()

@@ -297,3 +297,27 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 - [ ] 效果内部不判断目标阵营/身份
 - [ ] 世界效果（区域/爆炸/落点）：根节点 `Node2D`，继承 `Node2D` + `IAttackerProvider`（不继承 `ActorEffect`），`Duration` 自管理、`_ExitTree` 兜底清理
 - [ ] 阵营过滤：配置 `TargetableFactions` + `AllowSelfDamage`，不写死目标
+- [ ] 生成在目标身上的视觉：`target.GetVisualAnchorWorld()`，不用 `target.GlobalPosition` / 写死 y 偏移
+
+---
+
+## 十、目标视觉锚点（VisualEffectArea）
+
+生成在目标**身上**的视觉（dot 特效、buff 视觉等）不能直接使用目标原点（`GameActor.GlobalPosition` = 脚底/几何中心）——高个子敌人（如 b1_fat）的视觉中心在身体中上部，原点定位会让特效出现在脚底。
+
+### 规则
+
+- **视觉定位一律走 `GameActor.GetVisualAnchorWorld()`**，优先级：
+  1. 目标身上的 `VisualEffectArea`（Area2D，挂 `Sprite2D/VisualEffectArea`，其 `CollisionShape2D.GlobalPosition` 即视觉中心）
+  2. 回退 `HitArea` 中心
+  3. 回退目标原点
+- **敌人场景**：体型使视觉中心偏离原点的敌人，需配置 `Sprite2D/VisualEffectArea` + `CollisionShape2D`（先例：`Enemy_B1_fat`，视觉中心 offset 配在 shape 的 position）
+- **不适用**：
+  - 死亡特效——留在目标原点（倒地位置，见 `EnemyDyingState`）
+  - 瞄准类打击点（光束/投掷瞄准 `HitArea` 中心）——与伤害判定一致，不随视觉锚点
+
+### 已迁移
+
+- `DotBurnEffect`（灼烧火焰跟随视觉锚点）
+- `DotBleedEffect`（流血视觉挂视觉锚点）
+- `P2CompanionController.SpawnActionEffect`（P2 护盾/治疗特效——原挂 GrabArea 中心（脚下，俯视角拾取判定），改视觉锚点）

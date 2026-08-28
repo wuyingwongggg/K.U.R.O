@@ -1,5 +1,7 @@
 using Godot;
 using System.Collections.Generic;
+using Kuros.Core;
+using Kuros.Core.Events;
 using Kuros.Managers;
 
 namespace Kuros.Actors.Enemies.States
@@ -72,6 +74,12 @@ namespace Kuros.Actors.Enemies.States
         /// <summary>受伤眩晕时长（秒）。</summary>
         [Export(PropertyHint.Range, "0.1,10,0.1")]
         public float DamageTakenFrozenDuration = 1.5f;
+        /// <summary>
+        /// 触发眩晕打断的伤害类型过滤（Flags）：默认 All（任何伤害都触发，原行为）；
+        /// 选中特定类型后，仅该伤害类型命中才中断治疗进入眩晕。
+        /// </summary>
+        [Export(PropertyHint.Flags, "直接攻击,投掷类,区域效果,暴击追加,效果追加")]
+        public DamageSourceFilter InterruptDamageSources { get; set; } = DamageSourceFilter.All;
 
         // 当前在扫描范围内的友方集合（不含自身）
         private readonly HashSet<SampleEnemy> _nearbyAllies = new();
@@ -504,20 +512,24 @@ namespace Kuros.Actors.Enemies.States
         private void SubscribeDamageInterrupt()
         {
             if (!StunInterruptOnDamage || Enemy == null || _damageInterruptSubscribed) return;
-            Enemy.DamageTaken += OnDamageTaken;
+            DamageEventBus.SubscribeWithSource(OnDamageTaken);
             _damageInterruptSubscribed = true;
         }
 
         private void UnsubscribeDamageInterrupt()
         {
             if (Enemy == null || !_damageInterruptSubscribed) return;
-            Enemy.DamageTaken -= OnDamageTaken;
+            DamageEventBus.UnsubscribeWithSource(OnDamageTaken);
             _damageInterruptSubscribed = false;
         }
 
-        private void OnDamageTaken(int _)
+        private void OnDamageTaken(GameActor attacker, GameActor target, int damage, DamageSource source)
         {
+            if (target != Enemy) return;
             if (Enemy == null) return;
+
+            // 伤害类型过滤（InterruptDamageSources）：默认 All 全放行（原行为）
+            if (!InterruptDamageSources.Matches(source)) return;
 
             // 中断治疗并切入眩晕（该状态无 Warmup/Active/Recovery 阶段，受伤即眩晕）
             UnsubscribeDamageInterrupt();

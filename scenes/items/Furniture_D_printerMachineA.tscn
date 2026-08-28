@@ -1,13 +1,13 @@
 [gd_scene load_steps=15 format=3 uid="uid://dixwca6u7ayek"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_jpdnd"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_jpdnd"]
 [ext_resource type="Resource" uid="uid://u16qxn0w84mh" path="res://resources/items/Furniture_D_PrinterMachineA.tres" id="2_jpdnd"]
-[ext_resource type="Script" uid="uid://bfppxqqh7m7dp" path="res://scripts/controllers/EnemyDelayedSpawner.cs" id="3_3rrea"]
+[ext_resource type="Script" uid="uid://diphg7447eqi" path="res://scripts/controllers/EnemyDelayedSpawner.cs" id="3_3rrea"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_u3qi6"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_3rrea"]
 [ext_resource type="PackedScene" uid="uid://co3v8arpy4d2" path="res://scenes/objects/Transforming_PrinterMachine.tscn" id="4_h03tv"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_h03tv"]
-[ext_resource type="Texture2D" uid="uid://cgx682x6mj2sp" path="res://assets/furnitures/hotel_scene4/PrinterMachineA.png" id="6_jpdnd"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_h03tv"]
+[ext_resource type="Texture2D" uid="uid://ciqgfdqwxs36h" path="res://assets/furnitures/hotel_scene4/PrinterMachineA.png" id="6_jpdnd"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ukya5"]
 shader = ExtResource("3_u3qi6")
@@ -26,7 +26,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(510, 70)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ec4n8"]
-size = Vector2(670, 230)
+size = Vector2(360, 230)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(660, 220)
@@ -45,7 +45,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 6.0
 MinDamageVelocity = 0.0
 KnockbackForce = 600.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

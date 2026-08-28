@@ -368,7 +368,8 @@ namespace Kuros.UI
 
                 if (enemyNode is Kuros.Core.GameActor gameActor)
                 {
-                    gameActor.TakeDamage(9999, gameActor.GlobalPosition, null);
+                    // 统一走 KillForced()——免疫解除策略由敌人自身实现（如 netAdmin 先眩晕再伤害）
+                    gameActor.KillForced();
                     killCount++;
                 }
                 else if (enemyNode is Node2D node2D)

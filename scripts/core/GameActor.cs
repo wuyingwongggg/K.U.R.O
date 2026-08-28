@@ -315,6 +315,28 @@ namespace Kuros.Core
 			// StateMachine._PhysicsProcess is called automatically by Godot if it's in the tree
 		}
 
+		/// <summary>
+		/// 目标的视觉锚点（世界坐标）：优先 VisualEffectArea（模拟视觉身高的锚点——高个子敌人如 b1_fat
+		/// 在 Sprite2D/VisualEffectArea 下配 CollisionShape2D 标记视觉中心），回退 HitArea 中心，再回退目标原点。
+		/// 供生成在目标身上的视觉使用（dot 特效/死亡特效等）——避免高个子敌人特效出现在脚底。
+		/// </summary>
+		public Vector2 GetVisualAnchorWorld()
+		{
+			var visualArea = GetNodeOrNull<Area2D>("VisualEffectArea")
+				?? GetNodeOrNull<Area2D>("Sprite2D/VisualEffectArea")
+				?? FindChild("VisualEffectArea", recursive: true, owned: false) as Area2D;
+			var visualShape = visualArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (visualShape != null)
+				return visualShape.GlobalPosition;
+
+			var hitArea = ResolvePreferredHitArea();
+			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (hitShape != null)
+				return hitShape.GlobalPosition;
+
+			return GlobalPosition;
+		}
+
 		protected virtual Area2D? ResolvePreferredHitArea()
 		{
 			if (_cachedHitArea != null && GodotObject.IsInstanceValid(_cachedHitArea) && _cachedHitArea.IsInsideTree())
@@ -357,6 +379,20 @@ namespace Kuros.Core
 		/// bypassMergeWindow = true 时跳过伤害合并窗口立即结算（用于暴击追加等与基础伤害同源、
 		/// 需要同帧结算以便飘字合并显示的伤害）。
 		/// </summary>
+		/// <summary>
+		/// 环境强制击杀（测试控制台清场用）：优先走正常伤害死亡流程（伤害飘字 + 死亡动画）。
+		/// 伤害被免疫拒绝时回退直接销毁。免疫解除策略由子类重写（如 netAdmin 需先眩晕）。
+		/// </summary>
+		public virtual void KillForced()
+		{
+			if (!DeliverKillDamage() && GodotObject.IsInstanceValid(this))
+				QueueFree();
+		}
+
+		/// <summary>尝试用巨额伤害击杀；被免疫/拦截返回 false。</summary>
+		protected bool DeliverKillDamage()
+			=> TakeDamage(9999, GlobalPosition, null);
+
 		public virtual bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 		{
 			if (!CanBeAffected(null)) return false;

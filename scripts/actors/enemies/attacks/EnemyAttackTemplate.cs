@@ -1,6 +1,7 @@
 using Godot;
 using Kuros.Actors.Enemies.States;
 using Kuros.Core;
+using Kuros.Core.Events;
 using Kuros.Fx;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -81,6 +82,12 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool StunDuringRecovery = true;
         /// <summary>受伤眩晕时长（秒）。</summary>
         [Export(PropertyHint.Range, "0.1,10,0.1")] public float DamageTakenFrozenDuration = 1.5f;
+        /// <summary>
+        /// 触发眩晕打断的伤害类型过滤（Flags）：默认 All（任何伤害都触发，原行为）；
+        /// 选中特定类型后，仅该伤害类型命中才进入眩晕（如只吃投掷伤害的敌人）。
+        /// </summary>
+        [Export(PropertyHint.Flags, "直接攻击,投掷类,区域效果,暴击追加,效果追加")]
+        public DamageSourceFilter InterruptDamageSources { get; set; } = DamageSourceFilter.All;
 
         [ExportCategory("Collision Override")]
         [Export] public bool IgnoreEnemyCollisionDuringAttack = false;
@@ -240,20 +247,24 @@ namespace Kuros.Actors.Enemies.Attacks
         private void SubscribeDamageInterrupt()
         {
             if (!StunInterruptOnDamage || Enemy == null || _damageInterruptSubscribed) return;
-            Enemy.DamageTaken += OnDamageTakenDuringAttack;
+            DamageEventBus.SubscribeWithSource(OnDamageTakenDuringAttack);
             _damageInterruptSubscribed = true;
         }
 
         private void UnsubscribeDamageInterrupt()
         {
             if (Enemy == null || !_damageInterruptSubscribed) return;
-            Enemy.DamageTaken -= OnDamageTakenDuringAttack;
+            DamageEventBus.UnsubscribeWithSource(OnDamageTakenDuringAttack);
             _damageInterruptSubscribed = false;
         }
 
-        private void OnDamageTakenDuringAttack(int _)
+        private void OnDamageTakenDuringAttack(GameActor attacker, GameActor target, int damage, DamageSource source)
         {
+            if (target != Enemy) return;
             if (!IsRunning || Enemy == null) return;
+
+            // 伤害类型过滤（InterruptDamageSources）：默认 All 全放行（原行为）
+            if (!InterruptDamageSources.Matches(source)) return;
 
             // 阶段细分开关：当前阶段不允许眩晕则忽略本次受伤
             if (!IsStunEnabledForCurrentPhase()) return;

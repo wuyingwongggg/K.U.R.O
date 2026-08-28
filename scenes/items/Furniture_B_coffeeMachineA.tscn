@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://dmg1hgmpmsc05"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_paiqs"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_paiqs"]
 [ext_resource type="Resource" uid="uid://3otbbdidxw0h" path="res://resources/items/Furniture_B_CoffeeMachineA.tres" id="2_paiqs"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kf2mp"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_hlil7"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_gm4l1"]
-[ext_resource type="Texture2D" uid="uid://bocvowurv11f6" path="res://assets/furnitures/hotel_scene2/CoffeeMachineA.png" id="6_paiqs"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_gm4l1"]
+[ext_resource type="Texture2D" uid="uid://b73hcxi424y4n" path="res://assets/furnitures/hotel_scene2/CoffeeMachineA.png" id="6_paiqs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ukya5"]
 shader = ExtResource("3_kf2mp")
@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(270, 50)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_paiqs"]
-size = Vector2(430, 210)
+size = Vector2(120, 210)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(420, 200)
@@ -40,7 +40,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 6.0
 MinDamageVelocity = 0.0
 KnockbackForce = 600.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

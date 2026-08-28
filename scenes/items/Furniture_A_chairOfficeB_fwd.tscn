@@ -1,10 +1,10 @@
 [gd_scene load_steps=12 format=3 uid="uid://diism2n4xtftt"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_hl1qu"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_hl1qu"]
 [ext_resource type="Resource" uid="uid://3jmtsbw5xh6p" path="res://resources/items/Furniture_A_ChairOfficeB_fwd.tres" id="2_hl1qu"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_eomtn"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_bymlb"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_logl8"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_logl8"]
 [ext_resource type="Texture2D" uid="uid://bs16blbpfo71j" path="res://assets/furnitures/home_scene1/ChairOfficeB_fwd.png" id="6_hl1qu"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
@@ -25,7 +25,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(200, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(360, 260)
+size = Vector2(50, 260)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(350, 250)
@@ -40,7 +40,6 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 2.0
 MinDamageVelocity = 0.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

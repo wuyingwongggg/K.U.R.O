@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://8ce54l6083nt"]
+[gd_scene load_steps=47 format=3 uid="uid://8ce54l6083nt"]
 
 [ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
@@ -53,23 +53,26 @@ shader = ExtResource("2_st2e3")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ek8bd"]
-size = Vector2(4000, 600)
+[sub_resource type="CircleShape2D" id="CircleShape2D_uohhx"]
+radius = 1024.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_t4d47"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_uohhx"]
-radius = 1024.0
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eyt4q"]
 size = Vector2(350, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ek8bd"]
+size = Vector2(4000, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_st2e3"]
 size = Vector2(800, 800)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_m8hjw"]
 size = Vector2(1500, 1400)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jjtbv"]
+radius = 800.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_jjtbv"]
 radius = 100.0
@@ -186,26 +189,9 @@ bone_name = "bone3"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5019608, 1)
 
-[node name="AttackArea" type="Area2D" parent="Sprite2D"]
-collision_layer = 0
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(2000, 0)
-shape = SubResource("RectangleShape2D_ek8bd")
-
-[node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
-collision_layer = 0
-collision_mask = 4
-monitorable = false
-
-[node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-scale = Vector2(10, 10)
-shape = SubResource("CircleShape2D_t4d47")
-
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
 collision_mask = 4
 monitorable = false
@@ -214,12 +200,31 @@ monitorable = false
 scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_uohhx")
 
+[node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
+scale = Vector2(10, 10)
+shape = SubResource("CircleShape2D_t4d47")
+
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
-scale = Vector2(0.9999998, 0.9999998)
+scale = Vector2(0.99999976, 0.99999976)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_eyt4q")
+
+[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
+position = Vector2(2000, 0)
+shape = SubResource("RectangleShape2D_ek8bd")
 
 [node name="DashStopArea" type="Area2D" parent="Sprite2D"]
 
@@ -234,6 +239,18 @@ monitorable = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashSlashArea"]
 position = Vector2(600, 0)
 shape = SubResource("RectangleShape2D_m8hjw")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("8_r5hc0")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -550)
+shape = SubResource("CircleShape2D_jjtbv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964
@@ -325,6 +342,7 @@ AllowMultipleAnimationHits = true
 GrantedImmunities = 383
 StunInterruptOnDamage = true
 DamageTakenFrozenDuration = 3.0
+InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
 Effects = Array[ExtResource("18_r5hc0")]([SubResource("Resource_3au4n")])
 SpawnTiming = 1

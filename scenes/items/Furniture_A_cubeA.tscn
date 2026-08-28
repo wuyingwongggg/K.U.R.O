@@ -1,13 +1,13 @@
 [gd_scene load_steps=16 format=3 uid="uid://bmk5chuwaohte"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_iegjm"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_iegjm"]
 [ext_resource type="Resource" uid="uid://dn6b1dhc2enrf" path="res://resources/items/Furniture_A_CubeA.tres" id="2_iegjm"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_oepov"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_11bag"]
-[ext_resource type="Shader" uid="uid://tova76tr2xfe" path="res://shaders/materials/canvas_cube_faces.gdshader" id="7_0olc5"]
+[ext_resource type="Shader" uid="uid://c6esdptyi4vs3" path="res://shaders/materials/canvas_cube_faces.gdshader" id="7_0olc5"]
 [ext_resource type="Texture2D" uid="uid://bhpdfcmroc241" path="res://nothing.png" id="8_k3458"]
-[ext_resource type="Shader" uid="uid://c0bo2hvq67noq" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="9_y3oxv"]
-[ext_resource type="Shader" uid="uid://dwsnhmnleyb2b" path="res://shaders/materials/canvas_cube_build.gdshader" id="10_xciwy"]
+[ext_resource type="Shader" uid="uid://dpj7cb1n0f80r" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="9_y3oxv"]
+[ext_resource type="Shader" uid="uid://bld8m4k2q7x1w" path="res://shaders/materials/canvas_cube_build.gdshader" id="10_xciwy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_oepov")
@@ -57,7 +57,7 @@ shader_parameter/edge_glow = 0.06
 size = Vector2(100, 10)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(260, 110)
+size = Vector2(10, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(250, 100)
@@ -72,7 +72,6 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 2.0
 MinDamageVelocity = 0.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

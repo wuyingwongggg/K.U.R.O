@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://bj81vpm6lg1b8"]
+[gd_scene load_steps=39 format=3 uid="uid://bj81vpm6lg1b8"]
 
 [ext_resource type="Script" uid="uid://bjut5b8tdxsx2" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
@@ -41,17 +41,20 @@ shader = ExtResource("3_ulog8")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(4000, 600)
+[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
+radius = 1024.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
-radius = 1024.0
+[sub_resource type="RectangleShape2D" id="2"]
+size = Vector2(4000, 600)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofcms"]
 size = Vector2(350, 200)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3kv8y"]
+radius = 600.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3kv8y"]
 radius = 100.0
@@ -159,17 +162,27 @@ position = Vector2(18.661425, -285.7593)
 rotation = -1.5480726
 bone_name = "bone2"
 
+[node name="SpineBoneNode2" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(22.640335, -451.29364)
+rotation = -1.6914204
+scale = Vector2(0.9999999, 1)
+bone_name = "bone3"
+
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 
-[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
+collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(2000, 0)
-shape = SubResource("2")
+[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
+scale = Vector2(20, 20)
+shape = SubResource("CircleShape2D_ooggc")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -181,20 +194,30 @@ monitorable = false
 scale = Vector2(5, 5)
 shape = SubResource("CircleShape2D_gvrrx")
 
-[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
+[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
-collision_mask = 4
 monitorable = false
 
-[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(20, 20)
-shape = SubResource("CircleShape2D_ooggc")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
+position = Vector2(2000, 0)
+shape = SubResource("2")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_ofcms")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("6_06rhn")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode2")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -550)
+shape = SubResource("CircleShape2D_3kv8y")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964

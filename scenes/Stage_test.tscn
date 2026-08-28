@@ -1,83 +1,23 @@
-[gd_scene load_steps=57 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=19 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
-[ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="2_s6mo5"]
+[ext_resource type="Script" uid="uid://b6qifqg0v8c6o" path="res://scripts/managers/CameraZoneManager.cs" id="2_28ted"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="2_v4xrh"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="2_ybuta"]
-[ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_v4xrh"]
+[ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_pja2j"]
 [ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_ve5oi"]
-[ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="4_7yh4q"]
-[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_dhx6f"]
 [ext_resource type="Resource" uid="uid://duea1v557tmn0" path="res://resources/builds/buildcore/ThrowCore.tres" id="4_kwrre"]
-[ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_0ipan"]
+[ext_resource type="Script" uid="uid://l1558pct4220" path="res://scripts/managers/StageGeneratorManager.cs" id="4_w0p8f"]
 [ext_resource type="Resource" uid="uid://b5spe72g4msa6" path="res://resources/builds/buildcore/WaiterCore.tres" id="5_e5fdm"]
-[ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="5_s6mo5"]
+[ext_resource type="PackedScene" uid="uid://dstgcw0tto5oa" path="res://scenes/levels/Test_begin.tscn" id="5_pja2j"]
 [ext_resource type="Resource" uid="uid://orpyd8uc48vo" path="res://resources/builds/buildcore/MachineCore.tres" id="6_5vpwd"]
-[ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_6eerp"]
-[ext_resource type="PackedScene" uid="uid://blwgkboyojmcq" path="res://scenes/weapons/Weapon_Brawl_riotGlove.tscn" id="6_28ted"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="7_4yi35"]
-[ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_bnjvr"]
-[ext_resource type="PackedScene" uid="uid://2pny8f8vuu3j" path="res://scenes/weapons/Weapon_Slash_barrierGate.tscn" id="7_pja2j"]
 [ext_resource type="Resource" uid="uid://bf6fw01kvd61g" path="res://resources/builds/BuildMachine_B_005.tres" id="8_8rv4v"]
-[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_eh1sc"]
-[ext_resource type="PackedScene" uid="uid://csjvahh6hev8k" path="res://scenes/weapons/Weapon_Slash_expandBaton.tscn" id="8_w0p8f"]
-[ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_kwrre"]
-[ext_resource type="PackedScene" uid="uid://cdnitqquebaw6" path="res://scenes/weapons/Weapon_Stab_drill.tscn" id="9_ngl7c"]
 [ext_resource type="Resource" uid="uid://8em5dh01naf" path="res://resources/builds/BuildMachine_B_006.tres" id="9_rf3xq"]
-[ext_resource type="PackedScene" uid="uid://6ghjqyjkk37w" path="res://scenes/weapons/Weapon_Stab_umbrella.tscn" id="10_dxexl"]
 [ext_resource type="Resource" uid="uid://b5gta1na2nfce" path="res://resources/builds/BuildMachine_B_007.tres" id="10_w0sof"]
-[ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="11_0ipan"]
-[ext_resource type="PackedScene" uid="uid://bvvyo3wubh12j" path="res://scenes/weapons/Weapon_Throw_gravityGrenade.tscn" id="11_5dr7i"]
 [ext_resource type="Resource" uid="uid://bdjyvylv0rijc" path="res://resources/builds/BuildMachine_B_008.tres" id="11_ve5oi"]
-[ext_resource type="PackedScene" uid="uid://dfmke56wtqt2x" path="res://scenes/weapons/Weapon_Throw_metalSpike.tscn" id="12_mkebo"]
-[ext_resource type="PackedScene" uid="uid://3d7hnjx31f45" path="res://scenes/weapons/Weapon_Slash_violinBow.tscn" id="12_ngl7c"]
-[ext_resource type="PackedScene" uid="uid://cipwjj7xx121y" path="res://scenes/weapons/Weapon_Throw_smokeGrenade.tscn" id="13_pxy7y"]
-[ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="16_28ted"]
-[ext_resource type="PackedScene" uid="uid://dmqi6co8gtn0l" path="res://scenes/weapons/Weapon_Brawl_discoBall.tscn" id="17_pja2j"]
-[ext_resource type="PackedScene" uid="uid://caapdem6qh6k8" path="res://scenes/weapons/Weapon_Slash_baguette.tscn" id="17_w0p8f"]
-[ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="19_dxexl"]
-[ext_resource type="PackedScene" uid="uid://b81xhi3r08vha" path="res://scenes/weapons/Weapon_Throw_emojiBomb.tscn" id="20_mkebo"]
-[ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="21_5dr7i"]
-[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="30_m86xd"]
-[ext_resource type="PackedScene" uid="uid://daek68pd4nvyr" path="res://scenes/weapons/Weapon_Stab_laserPointer.tscn" id="35_4yi35"]
-[ext_resource type="PackedScene" uid="uid://dbp28lqhfd5dq" path="res://scenes/weapons/Weapon_Throw_boomerang.tscn" id="35_bnjvr"]
-[ext_resource type="PackedScene" uid="uid://dco3a60ge2arj" path="res://scenes/weapons/Weapon_Throw_briefcase.tscn" id="36_eh1sc"]
-[ext_resource type="PackedScene" uid="uid://elnc1v25l2w1" path="res://scenes/weapons/Weapon_Throw_eCore.tscn" id="36_kwrre"]
-[ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="44_w0sof"]
-[ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="45_ve5oi"]
-[ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="46_4yi35"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v4xrh"]
-load_path = "res://.godot/imported/房间2地面.png-ff9fee3befd285be304645f9d222fdff.ctex"
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_m86xd"]
-size = Vector2(5800, 800)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_v4xrh"]
-size = Vector2(5800, 400)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_dhx6f"]
-size = Vector2(300, 2704)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0ipan"]
-size = Vector2(300, 2957)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6eerp"]
-size = Vector2(300, 1000)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bnjvr"]
-size = Vector2(300, 600)
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_6eerp"]
-vertices = PackedVector2Array(2365, 420, 1851, 638, 691, 638, 597, 570, 597, -140, 2365, -240, 2733.4375, -240, 1851, 1098, 2365, 1220, -2835, 1220, 691, 1098, -1131, 1081, -1591, 1081, -1591, 821, -2835, 680, -2094, 123, 2740.1328, 420, -13, 570, -1131, 821, -3118.3594, 680, -3116.1484, 146, -2835, 146, -2835, 123, -2094, -303, -2835, -303, -2835, -870, 2365, -870, -13, -140)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5, 6), PackedInt32Array(7, 8, 9, 10), PackedInt32Array(11, 10, 9, 12), PackedInt32Array(0, 8, 7, 1), PackedInt32Array(13, 12, 9, 14, 15), PackedInt32Array(6, 16, 0), PackedInt32Array(17, 3, 2, 10, 11, 18), PackedInt32Array(14, 19, 20, 21), PackedInt32Array(21, 22, 15), PackedInt32Array(23, 24, 25, 26), PackedInt32Array(23, 26, 5, 4, 27), PackedInt32Array(14, 21, 15), PackedInt32Array(15, 23, 27, 17, 18, 13)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-3189, -1581, 2800, -1567, 2832, 1591, -3202, 1560)])
-source_geometry_mode = 2
-agent_radius = 80.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_eh1sc"]
-size = Vector2(200, 800)
+[ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="18_w0p8f"]
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_s6mo5")
@@ -85,101 +25,30 @@ Player = NodePath("World/MainCharacter")
 LevelName = "404 no found"
 AiLevelDescription = "从内部封闭起来，无法抵达的楼层，提供各种战斗测试。"
 
-[node name="World" type="Node2D" parent="."]
-y_sort_enabled = true
+[node name="CameraZoneManager" type="Node" parent="." node_paths=PackedStringArray("TargetCamera", "Player")]
+script = ExtResource("2_28ted")
+TargetCamera = NodePath("../World/Camera2D")
+Player = NodePath("../World/MainCharacter")
 
-[node name="BuildSelectionManager" parent="World" instance=ExtResource("2_v4xrh")]
+[node name="CutsceneManager" type="Node" parent="."]
+script = ExtResource("3_pja2j")
+SkipActionName = "run"
+CameraPath = NodePath("../World/Camera2D")
+TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
+BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")
+HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
+BattleSceneManagerPath = NodePath("..")
+
+[node name="StageGeneratorManager" type="Node" parent="."]
+script = ExtResource("4_w0p8f")
+BeginPool = Array[PackedScene]([ExtResource("5_pja2j")])
+
+[node name="BuildSelectionManager" parent="." instance=ExtResource("2_v4xrh")]
 CorePool = Array[ExtResource("3_ve5oi")]([ExtResource("4_kwrre"), ExtResource("5_e5fdm"), ExtResource("6_5vpwd")])
 EffectPool = Array[ExtResource("7_4yi35")]([ExtResource("8_8rv4v"), ExtResource("9_rf3xq"), ExtResource("10_w0sof"), ExtResource("11_ve5oi")])
 
-[node name="PlayerSpawnPoint" type="Node2D" parent="World"]
-position = Vector2(-2306, 0)
-
-[node name="Environments" type="Node2D" parent="World"]
-
-[node name="floor" type="Sprite2D" parent="World/Environments"]
-texture = SubResource("CompressedTexture2D_v4xrh")
-
-[node name="wall1" type="Sprite2D" parent="World/Environments"]
-position = Vector2(36, -1499)
-skew = 0.08726646
-texture = ExtResource("3_v4xrh")
-
-[node name="wall1_2" type="Sprite2D" parent="World/Environments"]
-z_index = -1
-position = Vector2(0, -1499)
-texture = ExtResource("3_v4xrh")
-
-[node name="wall2" type="Sprite2D" parent="World/Environments"]
-position = Vector2(2778, -1120)
-texture = ExtResource("4_dhx6f")
-
-[node name="door2_A1" parent="World/Environments" instance=ExtResource("5_0ipan")]
-position = Vector2(2778, 486)
-
-[node name="wall3" type="Sprite2D" parent="World/Environments"]
-position = Vector2(-2823.775, -694.5)
-scale = Vector2(0.65, 1)
-texture = ExtResource("6_6eerp")
-
-[node name="door1_A_begin" parent="World/Environments" instance=ExtResource("7_bnjvr")]
-position = Vector2(-2798.775, 627.5)
-scale = Vector2(0.65, 0.8)
-
-[node name="wall4" type="Sprite2D" parent="World/Environments"]
-position = Vector2(-2798, 782)
-scale = Vector2(0.65, 0.8)
-texture = ExtResource("8_eh1sc")
-
-[node name="wall5" type="Sprite2D" parent="World/Environments"]
-position = Vector2(0, -1439)
-skew = 0.08726646
-texture = ExtResource("9_kwrre")
-
-[node name="AirWall" type="StaticBody2D" parent="World" groups=["navigation_polygon_source_geometry_group"]]
-z_index = 10
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(0, -1550)
-shape = SubResource("RectangleShape2D_m86xd")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(0, 1300)
-shape = SubResource("RectangleShape2D_v4xrh")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(2780, -1872)
-shape = SubResource("RectangleShape2D_dhx6f")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(2780, 1778.5)
-shape = SubResource("RectangleShape2D_0ipan")
-
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(-2880, -634)
-shape = SubResource("RectangleShape2D_6eerp")
-
-[node name="CollisionShape2D6" type="CollisionShape2D" parent="World/AirWall"]
-position = Vector2(-2880, 860)
-shape = SubResource("RectangleShape2D_bnjvr")
-
-[node name="NavigationRegion2D" type="NavigationRegion2D" parent="World" groups=["navigation_polygon_source_geometry_group"]]
-visible = false
-position = Vector2(185, -200)
-navigation_polygon = SubResource("NavigationPolygon_6eerp")
-
-[node name="EnemySpawnConsole" parent="World" instance=ExtResource("2_s6mo5")]
-position = Vector2(-1972, 3)
-SpawnParentPath = NodePath("..")
-PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
-
-[node name="CorePickupZone" type="Area2D" parent="World"]
-collision_mask = 4
-script = ExtResource("11_0ipan")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/CorePickupZone"]
-position = Vector2(-2600, 230)
-shape = SubResource("RectangleShape2D_eh1sc")
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="MainCharacter" parent="World" instance=ExtResource("1_tv6fd")]
 position = Vector2(-1086.9999, -70.99999)
@@ -204,95 +73,4 @@ PlayerAttackHitHitStopDuration = 0.1
 PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
 
-[node name="WeaponBrawlDiscoBall" parent="World" instance=ExtResource("17_pja2j")]
-position = Vector2(-2146, -1380)
-
-[node name="WeaponBrawlDiscoBall2" parent="World" instance=ExtResource("17_pja2j")]
-position = Vector2(-2156, -1036)
-
-[node name="WeaponBrawlMechGlove" parent="World" instance=ExtResource("4_7yh4q")]
-position = Vector2(-2162, -1238)
-
-[node name="WeaponBrawlRiotBracer" parent="World" instance=ExtResource("5_s6mo5")]
-position = Vector2(-1875, -1386)
-
-[node name="WeaponBrawlRiotGlove" parent="World" instance=ExtResource("6_28ted")]
-position = Vector2(-1884, -1241)
-
-[node name="WeaponSlashBaguette" parent="World" instance=ExtResource("17_w0p8f")]
-position = Vector2(-1546, -1225)
-
-[node name="WeaponSlashBarrierGate" parent="World" instance=ExtResource("7_pja2j")]
-position = Vector2(-1374, -1382)
-
-[node name="WeaponSlashBunnySword" parent="World" instance=ExtResource("21_5dr7i")]
-position = Vector2(-927, -1230)
-
-[node name="WeaponSlashExpandBaton" parent="World" instance=ExtResource("8_w0p8f")]
-position = Vector2(-1221, -1220)
-
-[node name="WeaponSlashViolinBow" parent="World" instance=ExtResource("12_ngl7c")]
-position = Vector2(-660, -1224)
-
-[node name="WeaponStabCorkscrew" parent="World" instance=ExtResource("19_dxexl")]
-position = Vector2(-367, -1218)
-
-[node name="WeaponStabDrill" parent="World" instance=ExtResource("9_ngl7c")]
-position = Vector2(-377, -1374)
-
-[node name="WeaponStabUmbrella" parent="World" instance=ExtResource("10_dxexl")]
-position = Vector2(-803, -1358)
-
-[node name="WeaponStabLaserPointer" parent="World" instance=ExtResource("35_4yi35")]
-position = Vector2(-22, -1242)
-
-[node name="WeaponThrowGravityGrenade" parent="World" instance=ExtResource("11_5dr7i")]
-position = Vector2(-27, -1383)
-
-[node name="WeaponThrowMetalSpike" parent="World" instance=ExtResource("12_mkebo")]
-position = Vector2(444, -1320.0001)
-
-[node name="WeaponThrowSmokeGrenade2" parent="World" instance=ExtResource("13_pxy7y")]
-position = Vector2(1068, -1279.0001)
-
-[node name="WeaponThrowEmojiBomb" parent="World" instance=ExtResource("20_mkebo")]
-position = Vector2(789, -1291.0001)
-
-[node name="WeaponThrowBoomerang" parent="World" instance=ExtResource("35_bnjvr")]
-position = Vector2(1480, -1317.0001)
-
-[node name="WeaponThrowBriefcase" parent="World" instance=ExtResource("36_eh1sc")]
-position = Vector2(1924, -1265.0001)
-
-[node name="WeaponThrowBriefcase2" parent="World" instance=ExtResource("36_eh1sc")]
-position = Vector2(1744, -986)
-
-[node name="WeaponThrowECore" parent="World" instance=ExtResource("36_kwrre")]
-position = Vector2(2205, -1284)
-
-[node name="WeaponThrowECore2" parent="World" instance=ExtResource("36_kwrre")]
-position = Vector2(2208, -1049)
-
-[node name="LoadingElevator" type="Node2D" parent="World"]
-position = Vector2(4285, -336)
-script = ExtResource("16_28ted")
-ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://qd5abd4opeob"
-LoadDistance = 2000.0
-
-[node name="FurnitureBedA" parent="World" instance=ExtResource("44_w0sof")]
-position = Vector2(477, -105)
-
-[node name="FurnitureChairOfficeA" parent="World" instance=ExtResource("45_ve5oi")]
-position = Vector2(-1176, 741)
-
-[node name="FurnitureSofaB" parent="World" instance=ExtResource("46_4yi35")]
-position = Vector2(1456, 698)
-
-[node name="WeaponThrowEmojiBomb2" parent="World" instance=ExtResource("20_mkebo")]
-position = Vector2(793, -1033)
-
-[node name="center" type="Sprite2D" parent="."]
-z_index = 10
-scale = Vector2(0.1, 0.1)
-texture = ExtResource("30_m86xd")
+[node name="P2" parent="World" instance=ExtResource("18_w0p8f")]

@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://cbm0exjbphlq5"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_hi1f2"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_hi1f2"]
 [ext_resource type="Resource" uid="uid://d01fj1sl5ti4e" path="res://resources/items/Furniture_A_LampFloorA.tres" id="2_gv44u"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_1q2xq"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_1k0ut"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_4pksp"]
-[ext_resource type="Texture2D" uid="uid://d38p0d0cjstcy" path="res://assets/furnitures/home_scene1/LampFloorA.png" id="6_gv44u"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_4pksp"]
+[ext_resource type="Texture2D" uid="uid://ds7ocaaa1mxul" path="res://assets/furnitures/home_scene1/LampFloorA.png" id="6_gv44u"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_1q2xq")
@@ -25,7 +25,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(10, 10)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(160, 120)
+size = Vector2(10, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(150, 110)
@@ -40,7 +40,6 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 2.0
 MinDamageVelocity = 0.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

@@ -1,23 +1,23 @@
 [gd_scene load_steps=40 format=3 uid="uid://cvdv22giw51s8"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_cu1mk"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_cu1mk"]
 [ext_resource type="Resource" uid="uid://crov3gukwsnca" path="res://resources/items/Furniture_D_Drone.tres" id="2_cu1mk"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_2s53g"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_osm23"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_7qapq"]
-[ext_resource type="Texture2D" uid="uid://caj2mx0jttbql" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="6_m8epj"]
-[ext_resource type="Texture2D" uid="uid://dydfbsogl8y74" path="res://assets/objects/drone/drone_base/时间轴 1_0001.png" id="7_8f74s"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_7qapq"]
+[ext_resource type="Texture2D" uid="uid://bifkxv7ctwotp" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="6_m8epj"]
+[ext_resource type="Texture2D" uid="uid://caku8scp3mglw" path="res://assets/objects/drone/drone_base/时间轴 1_0001.png" id="7_8f74s"]
 [ext_resource type="Script" uid="uid://kcndh0rfyrg4" path="res://scripts/items/world/DroneContactHandler.cs" id="8_handler"]
-[ext_resource type="Texture2D" uid="uid://dx7udapbhdaf8" path="res://assets/objects/drone/drone_base/时间轴 1_0002.png" id="8_y8kar"]
-[ext_resource type="Texture2D" uid="uid://c4joctuvlkdm0" path="res://assets/objects/drone/drone_base/时间轴 1_0003.png" id="9_eocue"]
-[ext_resource type="Texture2D" uid="uid://dqnye6fyuq3gr" path="res://assets/objects/drone/drone_base/时间轴 1_0004.png" id="10_r0fi6"]
-[ext_resource type="Texture2D" uid="uid://hhobqbmk1ye2" path="res://assets/objects/drone/drone_base/时间轴 1_0005.png" id="11_rnxam"]
-[ext_resource type="Texture2D" uid="uid://bturo32gujoax" path="res://assets/objects/drone/drone_base/时间轴 1_0006.png" id="12_83on8"]
-[ext_resource type="Texture2D" uid="uid://bg70662sk3rmt" path="res://assets/objects/drone/drone_base/时间轴 1_0007.png" id="13_yow6b"]
-[ext_resource type="Texture2D" uid="uid://ctggdunpo7fj2" path="res://assets/objects/drone/drone_base/时间轴 1_0008.png" id="14_k3xxi"]
-[ext_resource type="Texture2D" uid="uid://dtnb0y7d3v2cn" path="res://assets/objects/drone/drone_base/时间轴 1_0009.png" id="15_w2cp8"]
-[ext_resource type="Texture2D" uid="uid://bp40w6x2erv6s" path="res://assets/objects/drone/drone_base/时间轴 1_0010.png" id="16_iqj3m"]
-[ext_resource type="Texture2D" uid="uid://biopjsx3uq60m" path="res://assets/objects/drone/drone_base/时间轴 1_0011.png" id="17_r2yxp"]
+[ext_resource type="Texture2D" uid="uid://drirluynqs4b5" path="res://assets/objects/drone/drone_base/时间轴 1_0002.png" id="8_y8kar"]
+[ext_resource type="Texture2D" uid="uid://kuorm43vhtjw" path="res://assets/objects/drone/drone_base/时间轴 1_0003.png" id="9_eocue"]
+[ext_resource type="Texture2D" uid="uid://c1vrg5ca1lclj" path="res://assets/objects/drone/drone_base/时间轴 1_0004.png" id="10_r0fi6"]
+[ext_resource type="Texture2D" uid="uid://bfgctgk2ejuj5" path="res://assets/objects/drone/drone_base/时间轴 1_0005.png" id="11_rnxam"]
+[ext_resource type="Texture2D" uid="uid://gpnni6c15mg0" path="res://assets/objects/drone/drone_base/时间轴 1_0006.png" id="12_83on8"]
+[ext_resource type="Texture2D" uid="uid://j5dguirc6jd1" path="res://assets/objects/drone/drone_base/时间轴 1_0007.png" id="13_yow6b"]
+[ext_resource type="Texture2D" uid="uid://dxea8qiov0jw5" path="res://assets/objects/drone/drone_base/时间轴 1_0008.png" id="14_k3xxi"]
+[ext_resource type="Texture2D" uid="uid://c2g5tv77mdu13" path="res://assets/objects/drone/drone_base/时间轴 1_0009.png" id="15_w2cp8"]
+[ext_resource type="Texture2D" uid="uid://rxr47btji3bu" path="res://assets/objects/drone/drone_base/时间轴 1_0010.png" id="16_iqj3m"]
+[ext_resource type="Texture2D" uid="uid://b63o3ncuuvekb" path="res://assets/objects/drone/drone_base/时间轴 1_0011.png" id="17_r2yxp"]
 [ext_resource type="Texture2D" uid="uid://dpdjme44p27rb" path="res://assets/objects/drone/drone_effect/时间轴 1_0000.png" id="18_l5has"]
 [ext_resource type="Texture2D" uid="uid://dkyfmn8k1bbdq" path="res://assets/objects/drone/drone_effect/时间轴 1_0001.png" id="19_mrk2x"]
 [ext_resource type="Texture2D" uid="uid://cjy6ialtptfeg" path="res://assets/objects/drone/drone_effect/时间轴 1_0002.png" id="20_pwthw"]
@@ -145,7 +145,7 @@ animations = [{
 size = Vector2(100, 10)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(260, 150)
+size = Vector2(10, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vps3s"]
 size = Vector2(250, 120)
@@ -160,7 +160,6 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 2.0
 MinDamageVelocity = 0.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

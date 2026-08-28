@@ -35,6 +35,9 @@ public partial class SampleEnemy : GameActor
 	[ExportCategory("Score")]
 	[Export] public int ScoreValue = 10;
 
+	/// <summary>死亡时是否给玩家加分数。测试控制台（EnemySpawnConsole）生成的敌人置 false——清场/击杀不应获得分数。</summary>
+	public bool GrantsScore { get; set; } = true;
+
 	[ExportCategory("Effects")]
 	[Export] public PackedScene? DeathEffect { get; set; }
 	private SamplePlayer? _player;
@@ -262,7 +265,7 @@ public partial class SampleEnemy : GameActor
 		protected override void OnDeathFinalized()
 		{
 			RefreshPlayerReference();
-			if (!_scoreGranted && _player != null)
+			if (GrantsScore && !_scoreGranted && _player != null)
 			{
 				_player.AddScore(ScoreValue);
 				_scoreGranted = true;

@@ -1,10 +1,10 @@
 [gd_scene load_steps=12 format=3 uid="uid://bajoxcyk7pslj"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_re1h4"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_re1h4"]
 [ext_resource type="Resource" uid="uid://35420j8078ga" path="res://resources/items/Furniture_B_Gate.tres" id="2_re1h4"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_77eqc"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_2txft"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_oj8bo"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_oj8bo"]
 [ext_resource type="Texture2D" uid="uid://cmkskjonm6883" path="res://assets/environments/scene_2_hotel/破损的酒店大门口_侧.png" id="6_re1h4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(1050, 130)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2jhlq"]
-size = Vector2(1210, 290)
+size = Vector2(900, 290)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(1200, 280)
@@ -40,7 +40,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 6.0
 MinDamageVelocity = 0.0
 KnockbackForce = 600.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

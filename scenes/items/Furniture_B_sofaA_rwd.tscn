@@ -1,10 +1,10 @@
 [gd_scene load_steps=12 format=3 uid="uid://d02ytff0caglq"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ja1tk"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ja1tk"]
 [ext_resource type="Resource" uid="uid://b4cfx6ncmpb0g" path="res://resources/items/Furniture_B_SofaA_rwd.tres" id="2_mqp5r"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_xtxr8"]
 [ext_resource type="Texture2D" uid="uid://c3ef1oinnbpsf" path="res://assets/furnitures/hotel_scene2/SofaA_fwd.png" id="4_qakm7"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_rm5i0"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_rm5i0"]
 [ext_resource type="Texture2D" uid="uid://cbiuy0m33mphg" path="res://assets/furnitures/hotel_scene2/SofaA_rwd.png" id="6_mqp5r"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(350, 650)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xtxr8"]
-size = Vector2(510, 810)
+size = Vector2(200, 810)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(500, 800)
@@ -40,7 +40,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 10.0
 MinDamageVelocity = 0.0
 KnockbackForce = 800.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

@@ -1,10 +1,10 @@
 [gd_scene load_steps=12 format=3 uid="uid://bkbhucnxqiys2"]
 
-[ext_resource type="Script" uid="uid://4yny0kpntnm3" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_bqitj"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_bqitj"]
 [ext_resource type="Resource" uid="uid://cbb56n2xt45k6" path="res://resources/items/Furniture_B_CounterB.tres" id="2_k7rl8"]
-[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_l7n3o"]
+[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_l7n3o"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="6_2if1i"]
-[ext_resource type="Texture2D" uid="uid://dxndkqf0sbuy0" path="res://assets/furnitures/hotel_scene2/CounterB.png" id="6_l3q27"]
+[ext_resource type="Texture2D" uid="uid://c0ao8pdrenk5f" path="res://assets/furnitures/hotel_scene2/CounterB.png" id="6_l3q27"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="7_uemcc"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k7rl8"]
@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(1350, 10)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k7rl8"]
-size = Vector2(1510, 170)
+size = Vector2(1200, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(1500, 160)
@@ -40,7 +40,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 10.0
 MinDamageVelocity = 0.0
 KnockbackForce = 800.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

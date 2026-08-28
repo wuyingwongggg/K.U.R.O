@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://wqcdwpyo1nji"]
+[gd_scene load_steps=52 format=3 uid="uid://wqcdwpyo1nji"]
 
 [ext_resource type="Script" uid="uid://byhv4hxerfcr8" path="res://scripts/actors/enemies/EnemyB1Thin.cs" id="1_grl5w"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -69,6 +69,9 @@ size = Vector2(1000, 400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h8apo"]
 size = Vector2(650, 600)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nb4oj"]
+radius = 500.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_nb4oj"]
 radius = 100.0
@@ -236,6 +239,19 @@ shape = SubResource("2")
 position = Vector2(325, 0)
 shape = SubResource("RectangleShape2D_h8apo")
 
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("8_iwwej")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+scale = Vector2(1.0000001, 1.0000001)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -500)
+shape = SubResource("CircleShape2D_nb4oj")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_nb4oj")
@@ -283,6 +299,7 @@ AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 StunInterruptOnDamage = true
 StunDuringWarmup = false
+InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
