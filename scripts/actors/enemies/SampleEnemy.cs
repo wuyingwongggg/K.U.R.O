@@ -100,7 +100,15 @@ public partial class SampleEnemy : GameActor
 		var font = ThemeDB.FallbackFont;
 		if (font == null) return;
 
-		DrawString(font, DebugOverlayOffset, _debugOverlayText, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
+		// 多行绘制（按 \n 分段，归类显示状态/攻击/排队/权重）
+		string[] lines = _debugOverlayText.Split('\n');
+		Vector2 pos = DebugOverlayOffset;
+		float lineHeight = DebugOverlayFontSize + 4f;
+		foreach (string line in lines)
+		{
+			DrawString(font, pos, line, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
+			pos.Y += lineHeight;
+		}
 	}
 
 	public SamplePlayer? PlayerTarget => _player;
@@ -293,29 +301,18 @@ public partial class SampleEnemy : GameActor
 	private void UpdateDebugOverlayText()
 	{
 		string stateName = StateMachine?.CurrentState?.Name ?? "None";
-		string frozenInfo = "";
-		string attackInfo = "";
-		string cooldownInfo = "";
+		var lines = new System.Collections.Generic.List<string>();
 
-		// 如果在Frozen状态，显示倒计时
+		// 行1：状态 + HP
+		string statusLine = $"{Name} | State: {stateName} | HP: {CurrentHealth}/{MaxHealth}";
 		if (stateName == "Frozen")
 		{
 			float remainingTime = GetFrozenRemainingTime();
 			if (remainingTime > 0f)
-				frozenInfo = $" | Frozen: {remainingTime:F2}s";
+				statusLine += $" | Frozen: {remainingTime:F2}s";
 		}
+		lines.Add(statusLine);
 
-		// 如果在Attack状态，显示当前攻击模式
-		if (stateName == "Attack")
-		{
-			string currentAttackName = GetCurrentAttackName();
-			if (!string.IsNullOrEmpty(currentAttackName))
-			{
-				attackInfo = $" | Attack: {currentAttackName}";
-			}
-		}
-
-		// 显示排队攻击的冷却倒计时
 		if (_cachedAttackController == null || !IsInstanceValid(_cachedAttackController))
 		{
 			var attackState = StateMachine?.GetNodeOrNull("Attack");
@@ -323,15 +320,43 @@ public partial class SampleEnemy : GameActor
 		}
 		if (_cachedAttackController != null && IsInstanceValid(_cachedAttackController))
 		{
+			// 行2：当前攻击 + 冷却
+			string attackInfo = "";
+			if (stateName == "Attack")
+			{
+				string currentAttackName = GetCurrentAttackName();
+				if (!string.IsNullOrEmpty(currentAttackName))
+					attackInfo = $" | Attack: {currentAttackName}";
+			}
 			var (cdRemaining, cdDuration, cdName) = _cachedAttackController.GetShortestCooldownInfo();
+			string cooldownInfo = "";
 			if (cdRemaining > 0f)
 			{
 				string nameHint = string.IsNullOrEmpty(cdName) ? "" : $"({cdName})";
 				cooldownInfo = $" | CD: {cdRemaining:F2}s/{cdDuration:F1}s {nameHint}";
 			}
+			lines.Add($"Attack:{attackInfo}{cooldownInfo}");
+
+			// 行3：排队攻击等待超时（queued 攻击名 / 已计时间 / 是否可启动）
+			if (_cachedAttackController.QueuedAttackTimeout > 0f && !string.IsNullOrEmpty(_cachedAttackController.QueuedAttackName))
+			{
+				lines.Add($"Queued: {_cachedAttackController.QueuedAttackName} "
+					+ $"{_cachedAttackController.QueuedElapsed:F1}s/{_cachedAttackController.QueuedAttackTimeout:F1}s "
+					+ $"canStart={_cachedAttackController.QueuedCanStart}");
+			}
+
+			// 行4：各攻击当前权重
+			var weights = _cachedAttackController.GetAttackWeights();
+			if (weights.Count > 0)
+			{
+				var parts = new System.Collections.Generic.List<string>();
+				foreach (var kvp in weights)
+					parts.Add($"{kvp.Key}={kvp.Value:F0}");
+				lines.Add($"Weights: {string.Join(" ", parts)}");
+			}
 		}
 
-		_debugOverlayText = $"{Name} | State: {stateName}{attackInfo} | HP: {CurrentHealth}/{MaxHealth}{frozenInfo}{cooldownInfo}";
+		_debugOverlayText = string.Join("\n", lines);
 	}
 
 	private string GetCurrentAttackName()

@@ -22,7 +22,34 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>两次攻击之间的最小全局间隔。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制。</summary>
         private float _interAttackDelay = 0f;
 
-	        [Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0.1f;
+	    [Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0f;
+
+        /// <summary>
+        /// 排队攻击等待超时（秒）：选中的攻击因距离/角度一直无法启动（CanStart 不满足）时，
+        /// 超时后放弃当前排队并重新加权选择——防止"选中近战但玩家保持远距离，突刺等可达攻击永远轮不到"。
+        /// 0 = 不限（默认）。
+        /// </summary>
+        [Export(PropertyHint.Range, "0,10,0.5")] public float QueuedAttackTimeout = 0f;
+        private float _queuedElapsed;
+
+        /// <summary>调试：当前排队攻击名（空 = 未排队）。</summary>
+        public string QueuedAttackName => _queuedAttack?.Name ?? "";
+        /// <summary>调试：排队等待已计时间（超时判定用）。</summary>
+        public float QueuedElapsed => _queuedElapsed;
+        /// <summary>调试：排队攻击当前是否可启动（CanStart 检查）。</summary>
+        public bool QueuedCanStart => _queuedAttack?.CanStart() == true;
+
+        /// <summary>调试：所有攻击的当前权重（攻击名 → 权重，疲劳降权后）。</summary>
+        public Dictionary<string, float> GetAttackWeights()
+        {
+            var result = new Dictionary<string, float>();
+            foreach (var entry in _entries)
+            {
+                if (entry.Template != null)
+                    result[entry.Template.Name] = entry.Weight;
+            }
+            return result;
+        }
 
         public EnemyAttackController()
         {
@@ -188,6 +215,22 @@ namespace Kuros.Actors.Enemies.Attacks
                 entry.Template.Tick(delta);
             }
 
+            // 排队攻击等待超时：间隔已过但选中的攻击仍无法启动（玩家距离/角度不符，CanStart 不满足）——
+            // 超时视为"使用一次"对该攻击降权（子类覆写 OnQueuedAttackTimeout），
+            // 其概率降低后，突刺等可达攻击有更高机会被选中
+            if (!IsRunning && _queuedAttack != null && QueuedAttackTimeout > 0f && _interAttackDelay <= 0f)
+            {
+                _queuedElapsed += (float)delta;
+                if (_queuedElapsed >= QueuedAttackTimeout && !_queuedAttack.CanStart())
+                {
+                    DebugLog($"Queued attack {_queuedAttack.Name} timed out waiting to start, applying fatigue.");
+                    OnQueuedAttackTimeout(_queuedAttack);
+                    _queuedAttack = null;
+                    _queuedElapsed = 0f;
+                    // 下一帧空闲循环按降权后的权重重新加权选择（本帧不再重复进入）
+                }
+            }
+
             // 控制器空闲时，等待 _interAttackDelay 到期后再做加权随机选择，
             // 确保此时所有攻击的独立 CD 也已到期，权重真正生效
             if (!IsRunning && _interAttackDelay <= 0f
@@ -197,6 +240,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 if (candidate != null)
                 {
                     _queuedAttack = candidate;
+                    _queuedElapsed = 0f; // 新排队重新计时
                     DebugLog($"CD expired, re-queued: {_queuedAttack.Name}");
                     if (ShouldForceAttackState())
                     {
@@ -228,6 +272,13 @@ namespace Kuros.Actors.Enemies.Attacks
                 FinishControllerAttack("ChildFinished");
             }
         }
+
+        /// <summary>
+        /// 排队攻击超时回调（选中后 QueuedAttackTimeout 秒内未能启动，CanStart 不满足）。
+        /// 子类可覆写：将该攻击视为"使用一次"降权（疲劳），降低其后续被选中的概率，
+        /// 让突刺等可达攻击有机会被选中。默认空。
+        /// </summary>
+        protected virtual void OnQueuedAttackTimeout(EnemyAttackTemplate attack) { }
 
         private EnemyAttackTemplate? PickAttack()
         {
@@ -269,22 +320,33 @@ namespace Kuros.Actors.Enemies.Attacks
             return !IsFxBlockedByOwnEffects(entry.Template);
         }
 
-        /// <summary>特效阻塞判定（对所有攻击自动生效）：显式 BlockedByFxGroup 优先；
-        /// 未配置时自动收集 Effects 中所有带 UniqueGroup 的条目组——任何一组有存活实例即阻塞。</summary>
+        /// <summary>特效阻塞判定（对所有攻击自动生效）：每个 entry 的显式 BlockedByFxGroup 优先
+        /// （未配置回退模板 BlockedByFxGroup）；另自动收集 entry 的 UniqueGroup——任何一组有存活实例即阻塞。
+        /// Effects 为空时兜底只查模板组。</summary>
         private bool IsFxBlockedByOwnEffects(EnemyAttackTemplate template)
         {
-            if (!string.IsNullOrEmpty(template.BlockedByFxGroup) && IsFxGroupActive(template.BlockedByFxGroup))
-            {
-                return true;
-            }
-
             foreach (var entry in template.Effects)
             {
-                if (entry == null || string.IsNullOrEmpty(entry.UniqueGroup)) continue;
-                if (IsFxGroupActive(entry.UniqueGroup))
+                if (entry == null) continue;
+
+                // entry 显式阻塞组；未配置回退模板 BlockedByFxGroup
+                string group = entry.ResolveBlockedGroup(template.BlockedByFxGroup);
+                if (!string.IsNullOrEmpty(group) && IsFxGroupActive(group))
                 {
                     return true;
                 }
+
+                // 自动收集：entry 的 UniqueGroup（防同特效叠加）
+                if (!string.IsNullOrEmpty(entry.UniqueGroup) && IsFxGroupActive(entry.UniqueGroup))
+                {
+                    return true;
+                }
+            }
+
+            // 兜底：无 entry（或全部未配置）时仍尊重模板级显式组
+            if (!string.IsNullOrEmpty(template.BlockedByFxGroup) && IsFxGroupActive(template.BlockedByFxGroup))
+            {
+                return true;
             }
 
             return false;
@@ -343,6 +405,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 _queuedAttack = PickAttack();
             }
             RefreshPlayerDetectionState();
+            _queuedElapsed = 0f; // 排队计时起点
             if (_queuedAttack != null)
             {
 				DebugLog($"({selectionReason}) queued attack {_queuedAttack.Name}.");
@@ -445,9 +508,12 @@ namespace Kuros.Actors.Enemies.Attacks
                 _queuedAttack = null;
             }
 
-            // 强制清除时同步清除攻击间隔；否则应用子攻击的 CD 作为间隔
+            // 强制清除时同步清除攻击间隔；否则以子攻击的 CD 作为间隔
+            // （防止攻击结束后立即切换另一种攻击连发——各攻击独立 CD 无法覆盖跨攻击间隔）
             if (clearControllerCooldown)
                 _interAttackDelay = 0f;
+            else if (childInterAttackDelay > 0f)
+                _interAttackDelay = childInterAttackDelay;
             else if (MinInterAttackDelay > 0f)
                 _interAttackDelay = MinInterAttackDelay;
         }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://ba8fktvib2e1o"]
+[gd_scene load_steps=38 format=3 uid="uid://ba8fktvib2e1o"]
 
 [ext_resource type="Script" uid="uid://e0dl460gdllx" path="res://scripts/actors/enemies/EnemyC2WaiterA02.cs" id="1_n7wqi"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_4msjm"]
@@ -22,6 +22,7 @@
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="17_8l6xl"]
 [ext_resource type="PackedScene" uid="uid://3cwbpbcapw1o" path="res://resources/effects/GreenHealPuff.tscn" id="17_561kr"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="18_javbh"]
+[ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="19_f45jx"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="19_hbjer"]
 [ext_resource type="Script" uid="uid://dn16hs3duvemc" path="res://scripts/actors/enemies/animation/EnemyC2WaiterA02SpineAnimationController.cs" id="19_n7wqi"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="20_7asme"]
@@ -54,6 +55,26 @@ height = 600.0
 [sub_resource type="Resource" id="Resource_u2rds"]
 script = ExtResource("14_nf2mn")
 Scene = ExtResource("12_kjt0o")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_nh0o4"]
+script = ExtResource("14_nf2mn")
+Scene = ExtResource("17_561kr")
+EffectOffset = Vector2(nan, nan)
+SpawnMarkerPaths = [NodePath("../../Node2D/Marker2D")]
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_futv4"]
+script = ExtResource("14_nf2mn")
+Scene = ExtResource("19_f45jx")
+EffectOffset = Vector2(nan, nan)
+SpawnMarkerPaths = [NodePath("../../Node2D/Marker2D3")]
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 15.0
+})
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_C2_waiterA02" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
@@ -214,6 +235,9 @@ position = Vector2(0, -450)
 [node name="Marker2D2" type="Marker2D" parent="Node2D"]
 position = Vector2(220, -1000)
 
+[node name="Marker2D3" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -1900)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_ugem5")
 InitialState = NodePath("Idle")
@@ -231,7 +255,7 @@ script = ExtResource("9_27i41")
 script = ExtResource("10_bd65j")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="WheelAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="WheelAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("11_kjt0o")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AttackName = "WheelAttack"
@@ -243,9 +267,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 Effects = Array[ExtResource("14_nf2mn")]([SubResource("Resource_u2rds")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
-metadata/attack_weight = 60.0
+metadata/attack_weight = 30.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("13_a0san")
@@ -258,17 +280,15 @@ KnockbackDistance = 200.0
 KnockbackDuration = 0.1
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
-metadata/attack_weight = 40.0
+metadata/attack_weight = 70.0
 
-[node name="Assist" type="Node" parent="StateMachine" node_paths=PackedStringArray("AssistSpawnMarkers")]
+[node name="Assist" type="Node" parent="StateMachine"]
 script = ExtResource("14_0xfei")
 ScanRadius = 3000.0
 ApproachDistance = 400.0
-AssistMoveSpeedMultiplier = 1.1
+AssistMoveSpeedMultiplier = 1.0
 IgnoreEnemyCollisionDuringAssist = true
-AssistEffectScene = ExtResource("17_561kr")
-AssistSpawnMarkers = [NodePath("../../Node2D/Marker2D2")]
-InterruptDamageSources = 2
+Effects = Array[ExtResource("14_nf2mn")]([SubResource("Resource_nh0o4"), SubResource("Resource_futv4")])
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("15_plwgt")

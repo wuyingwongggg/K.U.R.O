@@ -1,18 +1,20 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
     /// <summary>
-    /// Enemy_B1_thin 攻击控制器：疲劳权重法——基于场景配置的 attack_weight 做概率选择，
+    /// 疲劳权重攻击控制器基类：基于场景配置的 attack_weight 做概率选择——
     /// 连续使用同一攻击时每次降低其权重（疲劳），切回其他攻击后恢复原始权重。
     /// 效果：攻击组合多样化，避免连续重复（概率倾斜，非硬计数）。
+    /// 子类继承并保留各自攻击名默认值/特殊逻辑（如血量阈值触发终极技）。
     /// </summary>
-    public partial class EnemyB1ThinAttackController : EnemyAttackController
+    public abstract partial class EnemyFatigueAttackControllerBase : EnemyAttackController
     {
-        [Export] public string SkillAttackName { get; set; } = "KickAttack";
         [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
+
+        /// <summary>技能攻击名（供动画控制器区分"近战/技能"动画；空 = 不区分）。</summary>
+        [Export] public string SkillAttackName { get; set; } = "";
 
         /// <summary>连续使用相同攻击时每次额外降低的权重百分比。</summary>
         [Export(PropertyHint.Range, "0,50,1")]
@@ -22,11 +24,11 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "1,100,1")]
         public int MinWeightPercent = 10;
 
-        public string CurrentAttackName { get; private set; } = string.Empty;
+        public string CurrentAttackName { get; protected set; } = string.Empty;
 
-        private readonly Dictionary<string, float> _originalWeights = new();
-        private string _lastAttackName = string.Empty;
-        private int _consecutiveSameCount;
+        protected readonly Dictionary<string, float> _originalWeights = new();
+        protected string _lastAttackName = string.Empty;
+        protected int _consecutiveSameCount;
 
         public override void Initialize(SampleEnemy enemy)
         {
@@ -80,12 +82,31 @@ namespace Kuros.Actors.Enemies.Attacks
             CurrentAttackName = string.Empty;
         }
 
-        private float GetOriginalWeight(string attackName)
+        /// <summary>
+        /// 排队攻击超时 = 视为一次使用：与该攻击连续使用时的疲劳降权一致——
+        /// 连续超时的攻击权重逐次降低（不低于原权重 × MinWeightPercent%），其他攻击（如突刺）相对更容易被选中。
+        /// </summary>
+        protected override void OnQueuedAttackTimeout(EnemyAttackTemplate attack)
+        {
+            if (attack.Name == _lastAttackName)
+                _consecutiveSameCount++;
+            else
+                _consecutiveSameCount = 1;
+            _lastAttackName = attack.Name;
+
+            int reduction = _consecutiveSameCount * FatiguePercentPerUse;
+            float originalWeight = GetOriginalWeight(attack.Name);
+            float floor = originalWeight * MinWeightPercent / 100f;
+            float newWeight = Mathf.Max(originalWeight * (100 - reduction) / 100f, floor);
+            TrySetAttackWeight(attack.Name, newWeight);
+        }
+
+        protected float GetOriginalWeight(string attackName)
         {
             return _originalWeights.TryGetValue(attackName, out float w) ? w : 0f;
         }
 
-        private void RestoreAttackWeight(string attackName)
+        protected void RestoreAttackWeight(string attackName)
         {
             if (_originalWeights.TryGetValue(attackName, out float original))
                 TrySetAttackWeight(attackName, original);

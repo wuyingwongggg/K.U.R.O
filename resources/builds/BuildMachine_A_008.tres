@@ -9,6 +9,7 @@
 [sub_resource type="Resource" id="BurnEntry_A008"]
 script = ExtResource("1_77l4c")
 Scene = ExtResource("4_burn")
+EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
 "DamagePercentPerSecond": 100.0,
 "Duration": 3.0,
@@ -18,6 +19,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 [sub_resource type="Resource" id="Resource_ya66l"]
 script = ExtResource("1_77l4c")
 Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
 "BurnEffectEntries": [SubResource("BurnEntry_A008")],
 "TierValues": [100.0, 80.0]

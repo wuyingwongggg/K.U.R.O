@@ -81,11 +81,17 @@ height = 300.0
 [sub_resource type="Resource" id="Resource_0r650"]
 script = ExtResource("18_r5hc0")
 Scene = ExtResource("17_eyt4q")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_3au4n"]
 script = ExtResource("18_r5hc0")
 Scene = ExtResource("15_evlou")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D3")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_C1_waiterB" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
@@ -305,9 +311,9 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 28
 IgnoreEnemyCollisionDuringAttack = true
-metadata/attack_weight = 60.0
+metadata/attack_weight = 30.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("16_eyt4q")
 WarmupDuration = 0.4
 ActiveDuration = 1.4
@@ -320,11 +326,9 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 88
 Effects = Array[ExtResource("18_r5hc0")]([SubResource("Resource_0r650")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
-metadata/attack_weight = 40.0
+metadata/attack_weight = 70.0
 
-[node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="UltimateBeamAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("15_ultbeam")
 BeamDuration = 5.0
 MoveNodes = [NodePath("../../../../OutlineLayer"), NodePath("../../../../SpineSprite")]
@@ -345,8 +349,6 @@ DamageTakenFrozenDuration = 3.0
 InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
 Effects = Array[ExtResource("18_r5hc0")]([SubResource("Resource_3au4n")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D3")]
 metadata/attack_weight = 0.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

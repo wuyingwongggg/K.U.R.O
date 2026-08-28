@@ -51,8 +51,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnActivePhase()
         {
-            if (SpawnTiming == EffectSpawnTiming.OnActive)
-                SpawnEffectAtEnemy();
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnActive); // entry 独立时机生效；未配置回退模板 SpawnTiming
             if (RequireAnimationHitTrigger)
             {
                 _animationHitReady = true;
@@ -65,8 +64,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnAnimationHit()
         {
-            if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
-                SpawnEffectAtEnemy();
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnAnimationHit); // entry 独立时机生效
             ApplyAttackAreaMaskOverride(_damageArea);
             DealDamage(_damageArea);
             ApplyKnockbackWithArea(_damageArea);

@@ -92,14 +92,14 @@ namespace Kuros.Actors.Enemies.Attacks
                 return;
             }
 
-            SpawnEffectAtEnemy();
+            // 生成 OnActive 时机的特效（entry 独立时机生效；未配置回退模板 SpawnTiming）
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnActive);
         }
 
         protected override void OnAnimationHit()
         {
             // 仅生成投掷物，不调用 PerformAttackNow（伤害由投掷物自身实现）
-            if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
-                SpawnEffectAtEnemy();
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnAnimationHit);
         }
 
         private void OnDetectionAreaBodyEntered(Node body)

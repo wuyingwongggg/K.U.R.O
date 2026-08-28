@@ -18,6 +18,11 @@ namespace Kuros.Core
 		/// </summary>
 		public event Action<int>? DamageTaken;
 		/// <summary>
+		/// 完整伤害信息（实例级、无条件广播）：伤害值 + 伤害类型 + 攻击者（可为 null）。
+		/// 供按目标订阅的伤害检测系统使用（如受伤打断的伤害类型过滤）——无 attacker 门控，环境伤害同样触发。
+		/// </summary>
+		public event Action<int, Events.DamageSource, GameActor?>? DamageTakenDetailed;
+		/// <summary>
 		/// 任意 GameActor 受到伤害时触发的全局静态事件。
 		/// 参数：victim（受击方）, attacker（攻击方，可为 null）, damage（实际伤害）
 		/// </summary>
@@ -491,6 +496,7 @@ namespace Kuros.Core
 			CurrentHealth = Mathf.Max(CurrentHealth, 0);
 			NotifyHealthChanged();
 			DamageTaken?.Invoke(damage);
+			DamageTakenDetailed?.Invoke(damage, damageSource, attacker);
 			AnyDamageTaken?.Invoke(this, attacker, damage);
 
 			//GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");

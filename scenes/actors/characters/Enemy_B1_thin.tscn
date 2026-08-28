@@ -1,4 +1,4 @@
-[gd_scene load_steps=52 format=3 uid="uid://wqcdwpyo1nji"]
+[gd_scene load_steps=54 format=3 uid="uid://wqcdwpyo1nji"]
 
 [ext_resource type="Script" uid="uid://byhv4hxerfcr8" path="res://scripts/actors/enemies/EnemyB1Thin.cs" id="1_grl5w"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -25,6 +25,7 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18"]
 [ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="18_dknnn"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="18_iwg3l"]
+[ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="19_1teqy"]
 [ext_resource type="Script" uid="uid://dgmp6fiocpyam" path="res://scripts/actors/enemies/states/EnemyDashBackState.cs" id="19_h8apo"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://ctc3e5rj67keh" path="res://animations/spine/Enemy_B1_thin.tres" id="20_5i0uy"]
 [ext_resource type="Script" uid="uid://cj62qyo1gko88" path="res://scripts/actors/enemies/states/EnemySpawnState.cs" id="20_ie6to"]
@@ -43,7 +44,8 @@ script = ExtResource("2_lfvdk")
 MinComfortDistance = 1000.0
 BurstSpeedMultiplier = 2.5
 BurstDuration = 0.5
-BurstCooldown = 1.0
+BurstCooldown = 2.0
+BurstDamageImmuneDuration = 0.5
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="Resource" id="Resource_ie6to"]
@@ -77,19 +79,39 @@ radius = 500.0
 radius = 100.0
 height = 300.0
 
+[sub_resource type="Resource" id="Resource_xo234"]
+script = ExtResource("18_iwg3l")
+Scene = ExtResource("19_1teqy")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 0
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D2")]
+LifecycleBinding = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
 [sub_resource type="Resource" id="Resource_33td2"]
 script = ExtResource("18_iwg3l")
 Scene = ExtResource("18_dknnn")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_7c3of"]
 script = ExtResource("18_iwg3l")
 Scene = ExtResource("17_4488g")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_nb4oj"]
 script = ExtResource("18_iwg3l")
 Scene = ExtResource("21_33td2")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 1.0,
 "ShakeStrength": 15.0
@@ -110,6 +132,7 @@ script = ExtResource("1_grl5w")
 BehaviorConfig = SubResource("Resource_dknnn")
 IsBoss = true
 BossIcon = ExtResource("3_nb4oj")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -262,6 +285,9 @@ scale = Vector2(0.99999994, 0.99999994)
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
 position = Vector2(900, 0)
 
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -1400)
+
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("2")
 InitialState = NodePath("Idle")
@@ -277,7 +303,6 @@ script = ExtResource("5")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("23_1hw8y")
-MeleeCountBeforeCharge = 4
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
 [node name="KickAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -301,9 +326,10 @@ StunInterruptOnDamage = true
 StunDuringWarmup = false
 InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
-metadata/attack_weight = 60.0
+Effects = Array[ExtResource("18_iwg3l")]([SubResource("Resource_xo234")])
+metadata/attack_weight = 30.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("12_4a6st")
 WarmupDuration = 0.5
 RecoveryDuration = 0.28
@@ -314,9 +340,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 Effects = Array[ExtResource("18_iwg3l")]([SubResource("Resource_33td2"), SubResource("Resource_7c3of"), SubResource("Resource_nb4oj")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
-metadata/attack_weight = 40.0
+metadata/attack_weight = 70.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("6")
@@ -339,9 +363,11 @@ script = ExtResource("18")
 
 [node name="DashBack" type="Node" parent="StateMachine"]
 script = ExtResource("19_h8apo")
+DashDistance = 600.0
 DashDuration = 0.6000000000000001
 AnimationName = "animations/Skill3"
 CooldownAfterUses = 3.0
+ShortCooldownAfterDash = 1.0
 
 [node name="EnemySpawn" type="Node" parent="StateMachine"]
 script = ExtResource("20_ie6to")

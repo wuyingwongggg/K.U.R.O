@@ -62,9 +62,6 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 12
-AttackCooldown = 1
 MaxHealth = 150
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用拳套攻击客户，会使用蓄力拳击飞客户"
 StateMachine = NodePath("StateMachine")
@@ -72,6 +69,9 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("2_77ewr")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+Speed = 350
+AttackDamage = 12
+AttackCooldown = 1
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -225,6 +225,7 @@ script = ExtResource("9_h8efu")
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_75dbm")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
+MinInterAttackDelay = 0.0
 
 [node name="OnePunchAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("10_75dbm")
@@ -237,6 +238,7 @@ SnapshotDelaySeconds = 0.9
 WarmupDuration = 1.0
 ActiveDuration = 0.2
 RecoveryDuration = 0.45
+CooldownDurationMultiplier = 10.0
 DamageMultiplier = 1.5
 KnockbackDistance = 200.0
 KnockbackDuration = 0.1
@@ -245,7 +247,7 @@ StunInterruptOnDamage = true
 StunDuringWarmup = false
 InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
-metadata/attack_weight = 60.0
+metadata/attack_weight = 40.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("12_yoq8a")
@@ -258,7 +260,7 @@ KnockbackDistance = 50.0
 KnockbackDuration = 0.05
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
-metadata/attack_weight = 40.0
+metadata/attack_weight = 60.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("13_vr7xr")

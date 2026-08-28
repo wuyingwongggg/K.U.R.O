@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using Kuros.Actors.Enemies.Attacks;
 using Kuros.Core;
 using Kuros.Core.Events;
 using Kuros.Managers;
@@ -60,13 +61,9 @@ namespace Kuros.Actors.Enemies.States
         [Export] public bool IgnoreEnemyCollisionDuringAssist = false;
 
         [ExportCategory("Assist Effect")]
-        /// <summary>治疗状态显示特效：Assist 状态期间生成，退出/中断时销毁（让玩家清晰注意该敌人正在治疗）。</summary>
-        [Export] public PackedScene? AssistEffectScene { get; set; }
-        /// <summary>特效生成锚点（Marker2D 放在敌人根节点下，同 EnemyAttackTemplate.SpawnMarkers 语义）：
-        /// 不为空时按数组顺序轮换使用 Marker2D.GlobalPosition 作为生成位置，否则用敌人原点。</summary>
-        [Export] public Marker2D[] AssistSpawnMarkers = System.Array.Empty<Marker2D>();
-        /// <summary>特效生成位置偏移（叠加在锚点之上，X 按朝向取反）。</summary>
-        [Export] public Vector2 AssistEffectOffset = Vector2.Zero;
+        /// <summary>治疗状态显示特效条目（同 EnemyAttackTemplate.Effects 机制：AttackEffectEntry = 场景 + UniqueGroup + PropertyOverrides 重载）。
+        /// Assist 状态期间全部生成，退出/中断时统一销毁（让玩家清晰注意该敌人正在治疗）。</summary>
+        [Export] public Godot.Collections.Array<AttackEffectEntry> Effects { get; set; } = new();
 
         [ExportCategory("Damage Interrupt")]
         /// <summary>受伤眩晕打断：Assist 状态下自身受伤时中断治疗并切入 Frozen（眩晕）。</summary>
@@ -77,6 +74,7 @@ namespace Kuros.Actors.Enemies.States
         /// <summary>
         /// 触发眩晕打断的伤害类型过滤（Flags）：默认 All（任何伤害都触发，原行为）；
         /// 选中特定类型后，仅该伤害类型命中才中断治疗进入眩晕。
+        /// 走实例信号 DamageTakenDetailed（无条件、带来源），不依赖全局总线。
         /// </summary>
         [Export(PropertyHint.Flags, "直接攻击,投掷类,区域效果,暴击追加,效果追加")]
         public DamageSourceFilter InterruptDamageSources { get; set; } = DamageSourceFilter.All;
@@ -97,10 +95,8 @@ namespace Kuros.Actors.Enemies.States
         private CollisionShape2D? _bodyShape;
         private bool _bodyShapeWasDisabled;
 
-        // 治疗显示特效实例（挂敌人下跟随移动，位置由 AssistSpawnMarkers 锚点 + 朝向镜像决定）
-        private Node2D? _assistEffectInstance;
-        private int _spawnMarkerIndex;
-        private Vector2 _effectBaseLocalPos; // marker 局部位置（未镜像，朝向翻转时镜像重算）
+        // 治疗显示特效实例列表（挂敌人下跟随移动，位置由各特效自身 Meta 中的锚点 + 朝向镜像决定）
+        private readonly List<Node2D> _assistEffectInstances = new();
         private bool _damageInterruptSubscribed;
 
         // ─── 生命周期 ────────────────────────────────────────────────────────────
@@ -110,11 +106,16 @@ namespace Kuros.Actors.Enemies.States
             base._Ready();
             if (Engine.IsEditorHint()) return;
             CallDeferred(MethodName.RegisterAsBlockedState);
+            // 兜底订阅：状态节点就绪后延迟注册（Actor 注入完成后）——即使 Enter 链路异常也保证打断订阅存在
+            CallDeferred(MethodName.SubscribeDamageInterrupt);
         }
 
         public override void _ExitTree()
         {
             UnsubscribeAll();
+            // 关键：退订 DamageEventBus——否则敌人死亡后失效委托残留在全局静态列表，
+            // 后续 Publish 遍历调用已释放对象会中断广播，导致所有打断（Assist/攻击模板）全局失效
+            UnsubscribeDamageInterrupt();
             RestoreEnemyCollisionMask();
             base._ExitTree();
         }
@@ -144,9 +145,16 @@ namespace Kuros.Actors.Enemies.States
         {
             if (Engine.IsEditorHint() || Enemy == null) return;
 
-            // 治疗特效位置跟随朝向（FacingRight 翻转时镜像到另一侧）
-            if (_assistEffectInstance != null && GodotObject.IsInstanceValid(_assistEffectInstance))
-                _assistEffectInstance.Position = ComputeEffectLocalPos();
+            // 治疗特效位置跟随朝向（FacingRight 翻转时镜像到另一侧）——各特效用各自的锚点/偏移
+            foreach (var fx in _assistEffectInstances)
+            {
+                if (GodotObject.IsInstanceValid(fx))
+                {
+                    Vector2 basePos = fx.GetMeta("assist_base_local_pos", Vector2.Zero).AsVector2();
+                    Vector2 offset = fx.GetMeta("assist_offset", Vector2.Zero).AsVector2();
+                    fx.Position = ComputeEffectLocalPos(basePos, offset);
+                }
+            }
 
             // 打断拒绝期倒计时
             if (_interruptRefuseTimer > 0f)
@@ -275,6 +283,9 @@ namespace Kuros.Actors.Enemies.States
 
         public override void Enter()
         {
+            // 最先注册受伤打断订阅：不依赖后续任何逻辑（目标扫描/特效生成异常都不影响订阅）
+            SubscribeDamageInterrupt();
+
             // 立刻做一次完整扫描，不等下一个 ScanInterval
             RefreshNearbyAllies();
             if (_cachedTarget == null)
@@ -289,7 +300,6 @@ namespace Kuros.Actors.Enemies.States
 
             // 治疗显示特效（跟随敌人，状态退出时销毁）
             SpawnAssistEffect();
-            SubscribeDamageInterrupt();
             // Assist 期间忽略敌人碰撞（穿过其他敌人去治疗）
             ApplyEnemyCollisionMaskOverride();
 
@@ -422,30 +432,64 @@ namespace Kuros.Actors.Enemies.States
         /// <summary>
         /// 生成治疗显示特效（挂敌人下跟随移动）：位置 = 锚点（Marker2D 局部位置，朝向镜像）
         /// 或敌人原点 + AssistEffectOffset；朝向翻转时由 _Process 每帧重算位置（跟随镜像）。
+        /// 支持多特效条目（Effects：场景 + PropertyOverrides 重载 + UniqueGroup），旧单特效回退。
         /// </summary>
         private void SpawnAssistEffect()
         {
-            if (AssistEffectScene == null || Enemy == null) return;
-            var node = AssistEffectScene.Instantiate();
+            if (Enemy == null) return;
+
+            for (int i = 0; i < Effects.Count; i++)
+            {
+                var entry = Effects[i];
+                if (entry == null) continue;
+                SpawnSingleEffect(entry.Scene, entry, i);
+            }
+        }
+
+        private void SpawnSingleEffect(PackedScene? scene, AttackEffectEntry? entry, int effectIndex)
+        {
+            if (scene == null || Enemy == null) return;
+            var node = scene.Instantiate();
             if (node is not Node2D node2D)
             {
                 node?.QueueFree();
                 return;
             }
 
-            _effectBaseLocalPos = Vector2.Zero;
-            if (AssistSpawnMarkers.Length > 0)
+            if (entry != null)
             {
-                int idx = _spawnMarkerIndex % AssistSpawnMarkers.Length;
-                var marker = AssistSpawnMarkers[idx];
-                if (marker != null && GodotObject.IsInstanceValid(marker))
-                    _effectBaseLocalPos = marker.Position; // 局部坐标（相对敌人）
-                _spawnMarkerIndex++;
+                entry.ApplyOverrides(node2D);
+                // 唯一性组标记（供外部"场上是否已有该特效"检测）
+                if (!string.IsNullOrEmpty(entry.UniqueGroup))
+                    node2D.AddToGroup(entry.UniqueGroup);
             }
 
+            // 位置走 entry 的 per-entry 配置（Assist 无模板级——fallback 零值）：
+            // 锚点 = entry.SpawnMarkerPaths 解析（先按 Assist 状态节点自身，如 "../../Node2D/Marker2D"，失败按敌人根兜底）；偏移 = entry.EffectOffset
+            Vector2 entryOffset = entry?.ResolveOffset(Vector2.Zero) ?? Vector2.Zero;
+            Marker2D[] markers = entry?.ResolveMarkers(this, Enemy, System.Array.Empty<Marker2D>())
+                ?? System.Array.Empty<Marker2D>();
+
+            // 固定对应：第 N 个特效 → 第 N 个 Marker（数量不足时取模循环）。
+            // 锚点局部坐标挂在特效自身 Meta——_Process 每帧重算镜像位置时各自用各自的锚点
+            Vector2 baseLocalPos = Vector2.Zero;
+            if (markers.Length > 0)
+            {
+                int idx = effectIndex % markers.Length;
+                var marker = markers[idx];
+                if (marker != null && GodotObject.IsInstanceValid(marker))
+                    baseLocalPos = marker.Position; // 局部坐标（相对敌人根）
+            }
+            node2D.SetMeta("assist_base_local_pos", baseLocalPos);
+            node2D.SetMeta("assist_offset", entryOffset);
+
             Enemy.AddChild(node2D);
-            node2D.Position = ComputeEffectLocalPos();
-            _assistEffectInstance = node2D;
+            node2D.Position = ComputeEffectLocalPos(baseLocalPos, entryOffset);
+            // 抵消敌人根缩放（如 waiterA 根 scale 0.33）：Assist 特效挂在敌人下会继承缩放被缩小，
+            // 按世界大小显示（同攻击模板挂世界层的效果）
+            if (Enemy.Scale != Vector2.One)
+                node2D.Scale = new Vector2(node2D.Scale.X / Enemy.Scale.X, node2D.Scale.Y / Enemy.Scale.Y);
+            _assistEffectInstances.Add(node2D);
         }
 
         // ─── 敌人碰撞忽略（Assist 期间禁用 Body 碰撞体，穿过其他敌人；避障保证不穿墙）────────
@@ -490,43 +534,48 @@ namespace Kuros.Actors.Enemies.States
         }
 
         /// <summary>特效局部位置 = 锚点局部坐标（朝向镜像）+ offset（朝向镜像）。</summary>
-        private Vector2 ComputeEffectLocalPos()
+        private Vector2 ComputeEffectLocalPos(Vector2 baseLocalPos, Vector2 offset)
         {
             bool facingRight = Enemy?.FacingRight ?? true;
-            Vector2 p = _effectBaseLocalPos;
+            Vector2 p = baseLocalPos;
             if (!facingRight) p.X = -p.X;
-            Vector2 off = AssistEffectOffset;
+            Vector2 off = offset;
             if (!facingRight) off.X = -off.X;
             return p + off;
         }
 
         private void DestroyAssistEffect()
         {
-            if (_assistEffectInstance != null && GodotObject.IsInstanceValid(_assistEffectInstance))
-                _assistEffectInstance.QueueFree();
-            _assistEffectInstance = null;
+            foreach (var fx in _assistEffectInstances)
+            {
+                if (GodotObject.IsInstanceValid(fx))
+                    fx.QueueFree();
+            }
+            _assistEffectInstances.Clear();
         }
 
-        // ─── 受伤眩晕打断 ──────────────────────────────────────────────────────
+        // ─── 受伤眩晕打断（DamageTakenDetailed 实例信号：无条件 + 带伤害类型）────────
 
         private void SubscribeDamageInterrupt()
         {
             if (!StunInterruptOnDamage || Enemy == null || _damageInterruptSubscribed) return;
-            DamageEventBus.SubscribeWithSource(OnDamageTaken);
+            Enemy.DamageTakenDetailed += OnDamageTakenDetailed;
             _damageInterruptSubscribed = true;
         }
 
         private void UnsubscribeDamageInterrupt()
         {
             if (Enemy == null || !_damageInterruptSubscribed) return;
-            DamageEventBus.UnsubscribeWithSource(OnDamageTaken);
+            Enemy.DamageTakenDetailed -= OnDamageTakenDetailed;
             _damageInterruptSubscribed = false;
         }
 
-        private void OnDamageTaken(GameActor attacker, GameActor target, int damage, DamageSource source)
+        private void OnDamageTakenDetailed(int damage, DamageSource source, GameActor? attacker)
         {
-            if (target != Enemy) return;
             if (Enemy == null) return;
+
+            // _Ready 兜底订阅使回调可能在其他状态到达——只在 Assist 状态内响应打断
+            if (Enemy.StateMachine?.CurrentState != this) return;
 
             // 伤害类型过滤（InterruptDamageSources）：默认 All 全放行（原行为）
             if (!InterruptDamageSources.Matches(source)) return;

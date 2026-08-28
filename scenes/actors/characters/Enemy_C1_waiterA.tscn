@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://bvps5t0s8owhw"]
+[gd_scene load_steps=41 format=3 uid="uid://bvps5t0s8owhw"]
 
 [ext_resource type="Script" uid="uid://b80phh0fm2xdj" path="res://scripts/actors/enemies/EnemyC1WaiterA.cs" id="1_cc1qw"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_thw4a"]
@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" uid="uid://3cwbpbcapw1o" path="res://resources/effects/GreenHealPuff.tscn" id="18_pu5dh"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="19_4a8hm"]
 [ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="19_gih36"]
+[ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="19_pe6ep"]
 [ext_resource type="Script" uid="uid://chrnn86vxx471" path="res://scripts/actors/enemies/animation/EnemyC1WaiterASpineAnimationController.cs" id="22_k41yo"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="23_spine_controller"]
 
@@ -62,6 +63,26 @@ height = 600.0
 [sub_resource type="Resource" id="Resource_pu5dh"]
 script = ExtResource("14_ikeql")
 Scene = ExtResource("12_sycgy")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D2")]
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_vadag"]
+script = ExtResource("14_ikeql")
+Scene = ExtResource("18_pu5dh")
+EffectOffset = Vector2(nan, nan)
+SpawnMarkerPaths = [NodePath("../../Node2D/Marker2D")]
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_bscut"]
+script = ExtResource("14_ikeql")
+Scene = ExtResource("19_pe6ep")
+EffectOffset = Vector2(nan, nan)
+SpawnMarkerPaths = [NodePath("../../Node2D/Marker2D3")]
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 15.0
+})
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_C1_waiterA" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
@@ -77,6 +98,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+Speed = 200
+AttackDamage = 10
+AttackCooldown = 1
 MaxHealth = 100
 AiDescription = "蓝色机器女仆，普通敌人，似乎已经失控，远距离朝顾客投掷茶壶，会向其他酒店员工提供茶水服务，建议优先击破"
 StateMachine = NodePath("StateMachine")
@@ -84,9 +108,6 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_ikeql")
 DamageFlashColor = Color(18.892, 18.892, 18.892, 1)
 
-Speed = 200
-AttackDamage = 10
-AttackCooldown = 1
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_sycgy")
@@ -147,7 +168,7 @@ skeleton_data_res = ExtResource("7_cc1qw")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 1.33
 script = ExtResource("23_spine_controller")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -218,7 +239,14 @@ shape = SubResource("CapsuleShape2D_ikeql")
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(220, -1000)
+position = Vector2(220, -999.99994)
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -1750)
+
+[node name="Marker2D3" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -1900)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("7_yski7")
@@ -240,15 +268,14 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 [node name="ThrowAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("11_dw0yq")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
-WarmupDuration = 0.5
-ActiveDuration = 0.2
-RecoveryDuration = 0.65
-CooldownDurationMultiplier = 8.0
+WarmupDuration = 0.65
+RecoveryDuration = 0.53
+CooldownDurationMultiplier = 5.0
 DamageMultiplier = 0.0
+RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_ikeql")]([SubResource("Resource_pu5dh")])
-EffectOffset = Vector2(0, -500)
-SpawnTiming = 1
 metadata/attack_weight = 100.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -263,13 +290,13 @@ RequireAnimationHitTrigger = true
 GrantedImmunities = 16
 metadata/attack_weight = 0.0
 
-[node name="Assist" type="Node" parent="StateMachine" node_paths=PackedStringArray("AssistSpawnMarkers")]
+[node name="Assist" type="Node" parent="StateMachine"]
 script = ExtResource("14_cc1qw")
 ScanRadius = 3000.0
 ApproachDistance = 400.0
+AssistMoveSpeedMultiplier = 1.0
 IgnoreEnemyCollisionDuringAssist = true
-AssistEffectScene = ExtResource("18_pu5dh")
-AssistSpawnMarkers = [NodePath("../../Node2D/Marker2D")]
+Effects = Array[ExtResource("14_ikeql")]([SubResource("Resource_vadag"), SubResource("Resource_bscut")])
 InterruptDamageSources = 2
 
 [node name="Hit" type="Node" parent="StateMachine"]

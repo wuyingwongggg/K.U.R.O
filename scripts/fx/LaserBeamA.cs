@@ -33,6 +33,9 @@ namespace Kuros.Fx
 
 		private GameActor? _attacker;
 
+		/// <summary>已伤害目标（跨帧去重）：光束持续阶段每帧检测，每目标每光束最多一次伤害。</summary>
+		private readonly HashSet<ulong> _damaged = new();
+
 		public override void _Ready()
 		{
 			base._Ready();
@@ -87,9 +90,12 @@ namespace Kuros.Fx
 			else Rotation = dir.Angle();
 		}
 
+		/// <summary>
+		/// 伤害检测（Grow 完成瞬间 + Beam 持续阶段每帧）：跨帧去重——每目标每光束最多一次伤害，
+		/// 光束持续期间走进光束的目标也能命中（原只在生长完成瞬间检测一次）。
+		/// </summary>
 		private void TryDamagePlayer()
 		{
-			if (_hasDamaged) return;
 			if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
 			if (_hitArea == null) return;
 
@@ -100,18 +106,23 @@ namespace Kuros.Fx
 			Vector2 beamDir = new(Mathf.Cos(beamAngle), 0f);
 			if (beamDir == Vector2.Zero) beamDir = new Vector2(FacingRight ? 1f : -1f, 0f);
 
-			var damaged = new HashSet<ulong>();
 			// Area 目标：只接受受击判定区（HitArea/TriggerArea），玩家攻击/交互 Area 探入光束不触发
 			foreach (var area in _hitArea.GetOverlappingAreas())
 			{
 				if (area.Name != "HitArea" && area.Name != "TriggerArea") continue;
-				TryDamageReceiver(area, beamDir, damaged);
+				TryDamageReceiver(area, beamDir, _damaged);
 			}
 			// Body 目标（DestructibleObject 等 StaticBody2D）
 			foreach (var body in _hitArea.GetOverlappingBodies())
-				TryDamageReceiver(body, beamDir, damaged);
+				TryDamageReceiver(body, beamDir, _damaged);
+		}
 
-			_hasDamaged = true;
+		public override void _Process(double delta)
+		{
+			base._Process(delta);
+			// Beam 持续阶段（生长完成后、淡出结束前）每帧检测——走进光束的目标也能造成伤害
+			if (_beamPhaseElapsed >= GrowDuration)
+				TryDamagePlayer();
 		}
 
 		private void TryDamageReceiver(Node collider, Vector2 beamDir, HashSet<ulong> damaged)

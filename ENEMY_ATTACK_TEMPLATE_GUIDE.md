@@ -41,8 +41,32 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 | | `AnimationName` | 播放的动画路径 |
 | **Knockback** | `KnockbackDistance` / `KnockbackSpeed` / `KnockbackDuration` | 击退参数 |
 | **Super Armor** | `GrantedImmunities` | 攻击期间赋予的免疫标志 |
-| **Effect** | `EffectScene` | 攻击生成的特效预制 |
-| | `SpawnTiming` | 特效生成时机：OnActive / OnAnimationHit / OnRecovery |
+| **Effect** | `Effects` | 攻击生成的特效条目数组（`AttackEffectEntry`：Scene + UniqueGroup + PropertyOverrides） |
+| | `SpawnTiming` | 特效生成时机：OnWarmup（预热开始）/ OnActive（生效开始）/ OnAnimationHit（动画 hit 帧）/ OnRecovery（恢复开始）（**模板级共用**，重构后变为"未配置 entry 的默认值"，见文末实施计划） |
+| | `EffectOffset` / `SpawnMarkers` / `FlipEffectWithFacing` | 特效生成位置偏移 / 锚点数组 / 朝向翻转（**模板级共用**） |
+| | `BlockedByFxGroup` | 阻塞特效组：场上存在该组存活特效时本攻击不可被选中（详见下方"特效阻塞组"） |
+
+### 特效阻塞组（BlockedByFxGroup / UniqueGroup）
+
+**机制**：攻击选择阶段（`EnemyAttackController.IsAttackEligible`）检查——**场上（全局，含其他同类敌人）存在本攻击的存活特效实例时，本攻击不可被选中**（防多敌人同时放同一特效/防特效叠加）。
+
+**两种配置方式**：
+
+| 方式 | 配置 | 行为 |
+|---|---|---|
+| 显式 | `BlockedByFxGroup = "组名"` | 该组有存活实例 → 本攻击不可选中（常引用其他攻击特效的 `UniqueGroup`——"场上已有 X 特效时本攻击不可选"） |
+| 自动 | 留空 | 自动收集 `Effects` 中所有带 `UniqueGroup` 的条目组——**任何一组活跃即阻塞** |
+
+**与生成时防重复的区别**（容易混淆）：
+
+| 层级 | 检查点 | 行为 |
+|---|---|---|
+| 选择层（Controller） | `IsFxBlockedByOwnEffects` | 特效在场 → **攻击不可选中**（换别的攻击） |
+| 生成层（SpawnSingleEffect） | entry.UniqueGroup | 特效在场 → **本次生成跳过**，但攻击动作/伤害照常 |
+
+**检测实现**：`IsFxGroupActive(group)` = `GetTree().GetNodesInGroup(group)` + `IsInstanceValid` 过滤（销毁的实例自动失效）。
+
+**使用示例**：敌人 A 的"火焰喷吐"特效带 `UniqueGroup = "fx_fire_breath"`；敌人 B 的攻击配置 `BlockedByFxGroup = "fx_fire_breath"`——A 放火期间 B 的对应攻击不可选，避免场上叠加。
 
 ---
 
@@ -744,3 +768,103 @@ if (Enemy.CurrentState == "Hit")
 - **玩家受击**: `scripts/actors/heroes/MainCharacter.cs` → `TakeDamage()`
 - **击退系统**: `EnemyAttackTemplate.TryApplyPlayerKnockback()`
 - **效果系统**: `scripts/core/Effects/` 目录
+
+---
+
+## 特效配置重构：每特效独立配置（实施计划）
+
+> 状态：**第 1-4 步完成**（底层类型 + `AttackEffectEntry` 扩展字段/Resolve 辅助 + 生成逻辑改造 + 阻塞检查改造）。
+> 第 3 步实现要点：`SpawnEffectAtEnemy(EffectSpawnTiming? timing = null)`——null = 全量生成（子类旧调用兼容），
+> 传 timing = 按 `entry.ResolveTiming` 过滤；`SpawnSingleEffect` 改用 entry 解析值（offset/markers/flip）。
+> 第 4 步：`EnemyAttackController.IsFxBlockedByOwnEffects` 改为 entry 显式组优先（回退模板组）+ UniqueGroup 自动收集 + 无 entry 时兜底模板组。
+> `SpawnMarkers` 因 GD0107 改为 `NodePath[]`。
+> 目标：`Effects` 数组内每个特效条目（`AttackEffectEntry`）拥有独立的生成配置，
+> 模板级字段降级为"默认值"（fallback）。核心约束：**现有敌人场景全部零失效**。
+
+### 背景与现状
+
+当前 `Effects`（AttackEffectEntry 数组）的生成配置全部是**模板级共用**：
+
+| 模板级字段 | 用途 | 问题 |
+|---|---|---|
+| `EffectOffset` | 生成位置偏移 | 一个攻击的多个特效只能共用同一偏移 |
+| `SpawnTiming` | 生成时机（OnActive/OnAnimationHit/OnRecovery） | 所有特效同一时机生成 |
+| `SpawnMarkers` | 生成锚点数组（轮换） | 无法按特效指定不同锚点 |
+| `FlipEffectWithFacing` | 朝向翻转 | 无法按特效开关 |
+| `BlockedByFxGroup` | 场上同组特效存在时攻击不可选中 | 只能拦一个组 |
+
+### 实施步骤（从底层逻辑开始）
+
+#### 第 1 步：底层类型——哨兵/三态定义
+
+最小依赖，先定义类型（不触碰任何消费方）：
+
+- **新增枚举** `FacingFlipMode { Inherit = 0, Flip = 1, NoFlip = 2 }`（bool 无法表达"未配置"）
+- **修改枚举** `EffectSpawnTiming`：新增 `Inherit = -1` 成员——Godot 枚举按 int 序列化，**旧场景已存的 0/1/2 值不受影响**
+
+文件：`scripts/actors/enemies/attacks/EnemyAttackTemplate.cs`（枚举定义处）
+
+#### 第 2 步：AttackEffectEntry 扩展字段（Resource 层）
+
+`scripts/actors/enemies/attacks/AttackEffectEntry.cs` 新增（全部默认"继承"哨兵）：
+
+| 字段 | 类型 | 继承哨兵 | 说明 |
+|---|---|---|---|
+| `EffectOffset` | Vector2 | `(NaN, NaN)` | 显式配置时覆盖模板偏移 |
+| `SpawnTiming` | EffectSpawnTiming | `Inherit` | 覆盖模板时机 |
+| `SpawnMarkerPaths` | NodePath[] | 空数组 | 覆盖模板锚点（空=用模板；**Resource 不能 export Node 成员（GD0107），故用 NodePath 相对攻击模板节点解析**，如 `../../../../Node2D/Marker2D`） |
+| `FlipMode` | FacingFlipMode | `Inherit` | 覆盖模板翻转 |
+| `BlockedByFxGroup` | string | 空字符串 | 覆盖模板阻塞组 |
+
+配套解析辅助（供模板消费，统一"entry 优先 → 回退模板"）：
+
+```csharp
+// AttackEffectEntry 内
+public Vector2 ResolveOffset(Vector2 fallback)
+	=> float.IsNaN(EffectOffset.X) ? fallback : EffectOffset;
+public EffectSpawnTiming ResolveTiming(EffectSpawnTiming fallback)
+	=> SpawnTiming == EffectSpawnTiming.Inherit ? fallback : SpawnTiming;
+public Marker2D[] ResolveMarkers(Node relativeTo, Marker2D[] fallback)
+	=> SpawnMarkerPaths.Length == 0 ? fallback : /* 解析 NodePath 为 Marker2D */;
+public bool ResolveFlip(bool fallback)
+	=> FlipMode == FacingFlipMode.Inherit ? fallback : FlipMode == FacingFlipMode.Flip;
+public string ResolveBlockedGroup(string fallback)
+	=> string.IsNullOrEmpty(BlockedByFxGroup) ? fallback : BlockedByFxGroup;
+```
+
+#### 第 3 步：生成逻辑改造（EnemyAttackTemplate 消费层）
+
+- `SpawnEffectAtEnemy()` 拆为 **`SpawnEffectsAtTiming(EffectSpawnTiming timing)`**：
+  - 三个触发点（OnActive / OnAnimationHit / OnRecovery，现有行 325/341/617）各自调用并传对应时机
+  - 遍历 `Effects`，仅生成 `entry.ResolveTiming(SpawnTiming) == timing` 的条目
+  - 旧场景行为：entry 全 Inherit → 全部落在模板 `SpawnTiming` → 与现在一致
+- `SpawnSingleEffect` 内改用解析值：
+  - `offset = entry.ResolveOffset(EffectOffset)`
+  - `markers = entry.ResolveMarkers(SpawnMarkers)`
+  - `flip = entry.ResolveFlip(FlipEffectWithFacing)`
+
+#### 第 4 步：阻塞检查改造（CanStart）
+
+- 现状：只查模板 `BlockedByFxGroup`
+- 改为：遍历 `Effects`，检查模板组 + 每个 entry 的 `ResolveBlockedGroup`（非空且场上活跃即拦截）
+- 旧场景行为：entry 组全空 → 只查模板组 → 与现在一致
+
+#### 第 5 步：兼容性验证与回归
+
+- 所有旧敌人场景的 entry 无新字段 → 加载默认值（全继承）→ 走模板配置 → **零失效**
+- 回归测试清单：
+  - [ ] 抽查 3-5 个挂特效敌人（如 B 系近战、激光、弹幕）：生成位置 / 时机 / 翻转与重构前一致
+  - [ ] 阻塞组敌人：场上同组特效存在时攻击仍不可选中
+  - [ ] 新配置验证：单个 entry 设独立 Offset/Timing/Markers/Flip 生效
+  - [ ] 编辑器序列化往返：保存/重开场景，entry 新字段值不丢失
+
+### 兼容性论证要点
+
+1. **AttackEffectEntry 加字段**：旧 .tres 子资源无新字段 → 用 C# 默认值（全"继承"）→ 回退模板 → 行为不变
+2. **枚举加 Inherit=-1**：枚举按 int 序列化，旧值 0/1/2 不变
+3. **NaN 哨兵**：Godot 序列化支持 `nan` 字面量（`Vector2(nan, nan)` 可解析）；编辑器显示 NaN 稍不友好，仅显式配置过的 entry 可见
+4. **模板级字段全部保留**：语义从"共用配置"变为"默认值"，已设置的 enemy 参数继续生效
+
+### 备选方案（若不用哨兵）
+
+显式覆盖标志位：`OverrideOffset` + `EffectOffset` 成对导出。字段多一倍但编辑器更直观、无 NaN。哨兵方案优先（字段少、零状态冗余）。

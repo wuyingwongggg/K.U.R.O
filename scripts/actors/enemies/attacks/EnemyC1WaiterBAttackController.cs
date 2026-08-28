@@ -4,12 +4,20 @@ using System.Collections.Generic;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
-    public partial class EnemyC1WaiterBAttackController : EnemyAttackController
+    /// <summary>
+    /// Enemy_C1_waiterB 攻击控制器：疲劳权重法（继承基类）——近战/技能连续同攻击降权、切攻击恢复；
+    /// 保留血量阈值触发终极技的强制机制（优先级最高）。
+    /// </summary>
+    public partial class EnemyC1WaiterBAttackController : EnemyFatigueAttackControllerBase
     {
-        [Export] public string Skill1AttackName { get; set; } = "DashSlashAttack";
-        [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
+        /// <summary>兼容旧动画控制器（EnemyC1WaiterBSpineAnimationController）的 Skill1AttackName 引用：同步到基类 SkillAttackName。</summary>
+        [Export] public string Skill1AttackName
+        {
+            get => SkillAttackName;
+            set => SkillAttackName = value;
+        }
+
         [Export] public string UltimateAttackName { get; set; } = "UltimateBeamAttack";
-        [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
 
         [ExportCategory("Ultimate Attack")]
         /// <summary>
@@ -18,66 +26,48 @@ namespace Kuros.Actors.Enemies.Attacks
         /// </summary>
         [Export] public float[] UltimateHealthThresholds = new float[] { 0.5f };
 
-        public string CurrentAttackName { get; private set; } = string.Empty;
         /// <summary>每次子攻击启动时自增，供动画控制器区分连续同类攻击的不同执行次。</summary>
         public int AttackRunId { get; private set; } = 0;
 
-        private int _meleeCountSinceCharge;
         private float[] _sortedUltimateThresholds = Array.Empty<float>();
         private int _triggeredUltimateIndex;
+
+        public EnemyC1WaiterBAttackController()
+        {
+            Skill1AttackName = "DashSlashAttack";
+        }
 
         public override void Initialize(SampleEnemy enemy)
         {
             base.Initialize(enemy);
-            _meleeCountSinceCharge = 0;
             _triggeredUltimateIndex = 0;
             RefreshThresholdCache();
-            ConfigureNextAttack(forceCharge: false);
         }
 
         protected override void OnChildAttackStarted(EnemyAttackTemplate attack)
         {
-            base.OnChildAttackStarted(attack);
+            base.OnChildAttackStarted(attack); // 疲劳逻辑（连续同攻击降权/切攻击恢复）
             AttackRunId++;
-            CurrentAttackName = attack.Name;
 
             if (IsAttack(attack.Name, UltimateAttackName))
             {
                 // 终极技真正开始时才消耗触发器
                 ConsumeUltimateTrigger();
-                // 终极技结束后重置连招计数，恢复普通循环
-                _meleeCountSinceCharge = 0;
-                ConfigureNextAttack(forceCharge: false);
-                return;
             }
 
-            if (IsAttack(attack.Name, MeleeAttackName))
-            {
-                _meleeCountSinceCharge++;
-                int threshold = Mathf.Max(1, MeleeCountBeforeCharge);
-                ConfigureNextAttack(forceCharge: _meleeCountSinceCharge >= threshold);
-                return;
-            }
-
-            if (IsAttack(attack.Name, Skill1AttackName))
-            {
-                _meleeCountSinceCharge = 0;
-                ConfigureNextAttack(forceCharge: false);
-            }
+            // 血量阈值优先：触发时强制终极；否则维持疲劳权重（基类已维护近战/技能权重）
+            ConfigureNextAttack();
         }
 
         protected override void OnAttackFinished()
         {
-            // 在 base 调用 QueueNextAttack 之前重新检查血量，
-            // 捕获本次攻击期间发生的血量变化，确保及时触发终极技。
-            bool forceCharge = _meleeCountSinceCharge >= Mathf.Max(1, MeleeCountBeforeCharge);
-            ConfigureNextAttack(forceCharge);
             base.OnAttackFinished();
+            // 重查血量：攻击期间可能跌破阈值，确保及时触发终极技
+            ConfigureNextAttack();
         }
 
-        private void ConfigureNextAttack(bool forceCharge)
+        private void ConfigureNextAttack()
         {
-            // 血量阈值优先级最高：满足条件时强制排队终极技（不消耗触发器，等 Ultimate 真正启动时再消耗）
             if (ShouldTriggerUltimate())
             {
                 TrySetAttackWeight(UltimateAttackName, 1f);
@@ -86,18 +76,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 return;
             }
 
-            // 普通循环：重置终极技权重后按近战/冲刺切换
+            // 普通循环：终极技权重清零，近战/技能按疲劳权重（基类维护）
             TrySetAttackWeight(UltimateAttackName, 0f);
-
-            if (forceCharge)
-            {
-                TrySetAttackWeight(Skill1AttackName, 1f);
-                TrySetAttackWeight(MeleeAttackName, 0f);
-                return;
-            }
-
-            TrySetAttackWeight(Skill1AttackName, 0f);
-            TrySetAttackWeight(MeleeAttackName, 1f);
         }
 
         private bool ShouldTriggerUltimate()
@@ -146,5 +126,3 @@ namespace Kuros.Actors.Enemies.Attacks
         }
     }
 }
-
-

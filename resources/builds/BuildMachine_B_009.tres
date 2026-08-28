@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="Resource_B009"]
 script = ExtResource("1_k8r7m")
 Scene = ExtResource("2_effect")
+EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0
 })
