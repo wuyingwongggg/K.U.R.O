@@ -31,8 +31,9 @@ shader_parameter/highlight_interval = 1.00000002375
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
 size = Vector2(340, 100)
 
-[sub_resource type="RectangleShape2D" id="TriggerShape_yahcm"]
-size = Vector2(550, 25)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0qmq6"]
+radius = 112.5
+height = 1450.0
 
 [node name="WeaponStabUmbrella" type="CharacterBody2D"]
 z_index = 1
@@ -58,12 +59,15 @@ material = SubResource("ShaderMaterial_ap2ar")
 texture = ExtResource("6_0qmq6")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 shape = SubResource("BodyShape_rr6vl")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("TriggerShape_yahcm")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_0qmq6")

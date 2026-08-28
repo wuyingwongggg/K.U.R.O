@@ -484,27 +484,12 @@ namespace Kuros.Companions
 
             if (instance is Node2D fxNode)
             {
-                var grabArea = FindGrabArea(_player);
-                if (grabArea != null)
-                    fxNode.GlobalPosition = GetGrabAreaCenter(grabArea);
+                // 视觉锚点：VisualEffectArea 优先，回退 HitArea/原点——
+                // 不用 GrabArea（其 offset 在玩家脚下，为俯视角拾取判定设计，护盾出现在脚边不合理）
+                fxNode.GlobalPosition = _player.GetVisualAnchorWorld();
             }
 
             return instance;
-        }
-
-        /// <summary>查找玩家 GrabArea（三级回退：SpineCharacter/GrabArea → GrabArea → 递归查找），与拾取组件一致。</summary>
-        private static Area2D? FindGrabArea(MainCharacter player)
-        {
-            return player.GetNodeOrNull<Area2D>("SpineCharacter/GrabArea")
-                ?? player.GetNodeOrNull<Area2D>("GrabArea")
-                ?? player.FindChild("GrabArea", recursive: true) as Area2D;
-        }
-
-        /// <summary>GrabArea 中心：取碰撞形状中心（形状无偏移时等价于节点原点）。</summary>
-        private static Vector2 GetGrabAreaCenter(Area2D grabArea)
-        {
-            var shape = grabArea.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-            return shape?.GlobalPosition ?? grabArea.GlobalPosition;
         }
 
         /// <summary>跟随模式进入动作范围（≤ FollowRangeMax，即带内）时触发挂起的 action 动画——不贴脸。

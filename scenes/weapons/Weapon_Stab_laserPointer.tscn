@@ -63,8 +63,9 @@ shader_parameter/curve_ci = 0.2000000095
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
 size = Vector2(320, 90)
 
-[sub_resource type="RectangleShape2D" id="TriggerShape_yahcm"]
-size = Vector2(2000, 25)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kv6fx"]
+radius = 125.0
+height = 6600.0
 
 [node name="WeaponStabLaserPointer" type="CharacterBody2D"]
 z_index = 1
@@ -107,13 +108,16 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("9_4pbix")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 position = Vector2(0, 10)
 shape = SubResource("BodyShape_rr6vl")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("TriggerShape_yahcm")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_kv6fx")

@@ -24,19 +24,27 @@ MainCharacter (CharacterBody2D)
 ├── CollisionShape2D
 ├── AttackArea (Area2D)
 ├── StateMachine (Node)
-│   ├── Idle (MainCharacterIdleState) 或 (PlayerIdleState)
-│   ├── Walk (MainCharacterWalkState) 或 (PlayerWalkState)
-│   ├── Run (MainCharacterRunState) 或 (PlayerRunState)
-│   ├── Attack (MainCharacterAttackState) 或 (PlayerAttackState)
-│   │   └── BasicMeleeAttack (MainCharacterBasicMeleeAttack) 或 (PlayerBasicMeleeAttack)
+│   ├── Idle (PlayerIdleState)
+│   ├── Walk (PlayerWalkState)
+│   ├── Run (PlayerRunState)
+│   ├── Attack (PlayerAttackState)
+│   │   ├── BasicMeleeAttack (PlayerBasicMeleeAttack)
+│   │   ├── BrawlRiotGlove / BrawlRiotBracer / BrawlMechGlove / BrawlDiscoBall
+│   │   ├── SlashExpandBaton / SlashBaguette / SlashBunnySword / SlashBarrierGate / SlashViolinBow
+│   │   └── StabUmbrella / StabDrill / StabCorkscrew / StabLaserPointer
 │   ├── Hit (PlayerHitState)
+│   ├── Frozen (PlayerFrozenState)
 │   ├── Dying (PlayerDyingState)
+│   ├── Dead
 │   ├── PickUp (PlayerPickUpState)
-│   └── Throw (PlayerThrowState)
+│   ├── Throw (PlayerThrowState)
+│   ├── IdleHolding / RunHolding
+│   └── Dash (PlayerDashState)
 ├── Inventory (PlayerInventoryComponent)
 ├── WeaponSkillController (PlayerWeaponSkillController)
 ├── ItemInteraction (PlayerItemInteractionComponent)
-└── ItemAttachment (PlayerItemAttachment)
+├── ItemAttachment (PlayerItemAttachment)
+└── ItemHoldingAttachment (PlayerItemAttachment) - 投掷/持物显示附件
 ```
 
 ### 2. 状态机配置
@@ -122,8 +130,9 @@ MainCharacter (CharacterBody2D)
 3. **状态脚本**：推荐使用 `MainCharacter*State` 系列状态，或确保使用 `MainCharacterBasicMeleeAttack`
 4. **组件依赖**：
    - `WeaponSkillController` 需要 `InventoryComponent`
-   - `ItemAttachment` 需要 `InventoryComponent`
+   - `ItemAttachment` / `ItemHoldingAttachment` 需要 `InventoryComponent`
    - `ItemInteraction` 需要 `InventoryComponent`
+   - 背包容器结构（快捷栏/家具槽/特殊装备槽）与拾取/放下/投掷流程见 `SYSTEM_OVERVIEW.md` §2
 
 ## 故障排除
 

@@ -3,25 +3,23 @@ using System;
 using System.Collections.Generic;
 using Kuros.Core;
 using Kuros.Core.Events;
-using Kuros.Core.Effects;
+using Kuros.Fx;
 
 namespace Kuros.Effects
 {
     /// <summary>
-    /// 黑洞效果（ActorEffect）：
+    /// 黑洞效果（世界空间 Node2D 效果，非 ActorEffect）：
     /// Area2D 为伤害区域（从 .tscn 获取），敌人进入后每隔 DamageInterval 秒受到 DamagePerTick 点伤害。
     /// AdsorbRadius 为吸附范围，范围内的敌人被物理吸附和直接位移牵引向黑洞中心。
     /// 支持多个黑洞重叠。
+    ///
+    /// 使用 Node2D 而非 ActorEffect：投掷落点的世界效果，不参与 EffectId 去重与
+    /// Actor 生命周期绑定——多投掷各自独立。
     /// </summary>
     [GlobalClass]
-    public partial class BlackHoleEffect : ActorEffect, Kuros.Core.Effects.IWorldSpawnable
+    public partial class BlackHoleEffect : Node2D, IAttackerProvider
     {
         private const uint EnemiesLayerMask = 2u;
-
-        /// <summary>
-        /// 由 SpawnThrowDestroyEffects 在应用前设置，将 Area2D 定位到抛物落点。
-        /// </summary>
-        public Vector2? WorldSpawnPosition { get; set; }
 
         [ExportGroup("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -34,6 +32,8 @@ namespace Kuros.Effects
         /// <summary>伤害间隔（秒）。</summary>
         [Export(PropertyHint.Range, "0.1,10,0.1")]
         public float DamageInterval { get; set; } = 1.0f;
+
+        [Export(PropertyHint.Range, "0,600,0.1")] public float Duration { get; set; } = 5.0f;
 
         [ExportGroup("Adsorb")]
         /// <summary>吸附范围半径（物理吸附）。</summary>
@@ -68,31 +68,26 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "1,6,0.1")]
         public float PullBurstMultiplier { get; set; } = 3.6f;
 
+        /// <summary>投掷者（由投掷系统 IAttackerProvider 注入）。</summary>
+        public GameActor? Attacker { get; set; }
+
         private Area2D? _damageArea;
         private double _damageTickTimer = 0.0;
         private double _elapsed = 0.0;
         // 区域内的敌人 → 独立计时器
         private readonly Dictionary<GameActor, float> _damageTimers = new();
         private readonly Dictionary<Node, float> _furnitureDamageTimers = new();
-        private bool _isWorldSpawned = false;
         private Vector2 _blackHoleCenter = Vector2.Zero;
 
-        protected override void OnApply()
+        public override void _Ready()
         {
-            base.OnApply();
-
             ProcessPhysicsPriority = 100;
 
-            EffectId = $"black_hole_{Guid.NewGuid()}";
-
-            _isWorldSpawned = WorldSpawnPosition.HasValue;
-            _blackHoleCenter = WorldSpawnPosition ?? Actor?.GlobalPosition ?? Vector2.Zero;
+            // 根已由投掷系统定位到落点
+            _blackHoleCenter = GlobalPosition;
 
             _damageArea = GetNodeOrNull<Area2D>("Area2D");
             if (_damageArea == null) return;
-
-            if (_isWorldSpawned)
-                _damageArea.GlobalPosition = _blackHoleCenter;
 
             _damageArea.CollisionMask = EnemiesLayerMask | 1u;
             _damageArea.Monitoring = true;
@@ -100,16 +95,9 @@ namespace Kuros.Effects
             _damageArea.BodyExited += OnBodyExited;
         }
 
-        protected override void OnTick(double delta)
+        public override void _Process(double delta)
         {
             _elapsed += delta;
-
-            // 非投掷场景：同步伤害区域位置跟随 Actor
-            if (!_isWorldSpawned && _damageArea != null && Actor != null)
-            {
-                _damageArea.GlobalPosition = Actor.GlobalPosition;
-                _blackHoleCenter = Actor.GlobalPosition;
-            }
 
             // 更新伤害计时
             _damageTickTimer += delta;
@@ -129,7 +117,7 @@ namespace Kuros.Effects
                     if (_damageTimers[enemy] >= DamageInterval)
                     {
                         _damageTimers[enemy] = 0f;
-                        enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
+                        enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Attacker, Kuros.Core.Events.DamageSource.AreaEffect);
                     }
                 }
                 foreach (var e in toRemove) RemoveEnemy(e);
@@ -151,29 +139,28 @@ namespace Kuros.Effects
                     if (_furnitureDamageTimers[furn] >= DamageInterval)
                     {
                         _furnitureDamageTimers[furn] = 0f;
-                        DamageDispatcher.DealDamage(furn, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
+                        DamageDispatcher.DealDamage(furn, DamagePerTick, _blackHoleCenter, Attacker, DamageSource.AreaEffect, TargetableFactions);
                     }
                 }
                 foreach (var f in toRemoveF) _furnitureDamageTimers.Remove(f);
+            }
+
+            if (Duration > 0f && _elapsed >= Duration)
+            {
+                Cleanup();
+                QueueFree();
             }
         }
 
         public override void _PhysicsProcess(double delta)
         {
-            if (IsExpired) return;
             AttractNearbyActors(delta);
         }
 
-        protected override void OnExpire()
+        public override void _ExitTree()
         {
             Cleanup();
-            base.OnExpire();
-        }
-
-        public override void OnRemoved()
-        {
-            Cleanup();
-            base.OnRemoved();
+            base._ExitTree();
         }
 
         private void OnBodyEntered(Node2D body)
@@ -185,7 +172,7 @@ namespace Kuros.Effects
                 _damageTimers[enemy] = 0f;
 
                 if (_elapsed >= PullOnlyDuration && !enemy.IsDeadOrDying)
-                    enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Actor, Kuros.Core.Events.DamageSource.AreaEffect);
+                    enemy.TakeDamage(DamagePerTick, _blackHoleCenter, Attacker, Kuros.Core.Events.DamageSource.AreaEffect);
             }
             else if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
             {
@@ -193,7 +180,7 @@ namespace Kuros.Effects
                 _furnitureDamageTimers[body] = 0f;
 
                 if (_elapsed >= PullOnlyDuration)
-                    DamageDispatcher.DealDamage(body, DamagePerTick, _blackHoleCenter, Actor, DamageSource.AreaEffect, TargetableFactions);
+                    DamageDispatcher.DealDamage(body, DamagePerTick, _blackHoleCenter, Attacker, DamageSource.AreaEffect, TargetableFactions);
             }
         }
 
@@ -271,7 +258,7 @@ namespace Kuros.Effects
                 foreach (Node node in tree.GetNodesInGroup("enemies"))
                 {
                     if (node is not GameActor actor) continue;
-                    if (!IsInstanceValid(actor) || actor == Actor || actor.IsDeadOrDying) continue;
+                    if (!IsInstanceValid(actor) || actor == Attacker || actor.IsDeadOrDying) continue;
                     if (_blackHoleCenter.DistanceTo(actor.GlobalPosition) > AdsorbRadius) continue;
                     if (seen.Add(actor.GetInstanceId())) actors.Add(actor);
                 }
@@ -300,7 +287,7 @@ namespace Kuros.Effects
                         Node? cur = n;
                         while (cur != null && actor == null) { actor = cur as GameActor; cur = cur.GetParent(); }
                     }
-                    if (actor == null || !IsInstanceValid(actor) || actor == Actor || actor.IsDeadOrDying) continue;
+                    if (actor == null || !IsInstanceValid(actor) || actor == Attacker || actor.IsDeadOrDying) continue;
                     if (seen.Add(actor.GetInstanceId())) actors.Add(actor);
                 }
             }
@@ -320,4 +307,3 @@ namespace Kuros.Effects
         }
     }
 }
-

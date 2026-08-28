@@ -1,5 +1,4 @@
 using Godot;
-using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
@@ -13,8 +12,6 @@ namespace Kuros.Actors.Enemies.Attacks
     {
         /// <summary>激光束在 Active 阶段持续的时长（秒）。</summary>
         [Export(PropertyHint.Range, "0,60,0.1")] public float BeamDuration = 3.0f;
-
-        [Export(PropertyHint.Range, "0.1,10,0.1")] public float InterruptFrozenDuration = 2.0f;
 
         [ExportCategory("Warmup Node Movement")]
         [Export] public NodePath[] MoveNodes { get; set; } = System.Array.Empty<NodePath>();
@@ -32,7 +29,6 @@ namespace Kuros.Actors.Enemies.Attacks
             base.OnWarmupStarted();
             _beamFinalized = false;
             _isInBeamPhase = false;
-            SubscribeDamageInterrupt();
             SnapshotAndMove(-MoveOffsetPx, WarmupDuration);
         }
 
@@ -42,33 +38,12 @@ namespace Kuros.Actors.Enemies.Attacks
             MoveToOriginal(RecoveryDuration);
         }
 
-        protected override void OnAttackFinished()
+        /// <summary>
+        /// 受伤眩晕打断（基类 StunInterruptOnDamage 开关）：中断攻击时立即恢复节点位置。
+        /// </summary>
+        protected override void OnDamageTakenInterrupt()
         {
-            UnsubscribeDamageInterrupt();
-            base.OnAttackFinished();
-        }
-
-        private void SubscribeDamageInterrupt()
-        {
-            if (Enemy == null) return;
-            Enemy.DamageTaken += OnDamageTakenDuringBeam;
-        }
-
-        private void UnsubscribeDamageInterrupt()
-        {
-            if (Enemy == null) return;
-            Enemy.DamageTaken -= OnDamageTakenDuringBeam;
-        }
-
-        private void OnDamageTakenDuringBeam(int _)
-        {
-            if (!IsRunning || Enemy == null) return;
-            UnsubscribeDamageInterrupt();
             MoveToOriginal(0.1f);
-            var frozenState = Enemy.StateMachine?.GetNodeOrNull<EnemyFrozenState>("Frozen");
-            if (frozenState != null)
-                frozenState.FrozenDuration = InterruptFrozenDuration;
-            Enemy.StateMachine?.ChangeState("Frozen");
         }
 
         protected override void OnActivePhase()

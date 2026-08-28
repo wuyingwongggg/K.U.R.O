@@ -40,7 +40,6 @@ namespace Kuros.Core
             ("item_select_left", "物品栏左选"),
             ("item_select_right", "物品栏右选"),
             ("item_use", "使用物品"),
-            ("open_inventory", "打开背包"),
             (CoreSkill, "核心技能"),
         };
 

@@ -19,7 +19,8 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath MoveAttackAreaPath = new NodePath();
 
         [ExportCategory("Dash")]
-        [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
+        /// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配，无需同步改绝对值）。</summary>
+        [Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 1.1f;
 		[Export(PropertyHint.Range, "0.05,10,0.05")] public float DashDuration = 0.5f; // 冲刺持续时间（秒）
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,5,0.01")] public float MinDashTimeBeforeAttack = 0f; // 允许命中前的最短冲刺时间（秒）
@@ -173,7 +174,7 @@ namespace Kuros.Actors.Enemies.Attacks
         {
 			if (Enemy == null) return;
 			_isDashing = true;
-			Enemy.Velocity = _dashDirection * DashSpeed;
+			Enemy.Velocity = _dashDirection * (Enemy.Speed * DashSpeedMultiplier);
 
 			// 启用动画事件触发时，开放命中窗口供 TriggerAnimationHit 调用
 			if (RequireAnimationHitTrigger)
@@ -213,16 +214,23 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
-			// 快照延迟计时
-			if (_waitingForSnapshot)
+			// 预热阶段（快照等待 / Warmup）：持续静止——防 MoveAndSlide 惯性/外部移动系统重写
+			// （仅 OnWarmupStarted 归零一次不够：后续帧的 Velocity 会被外部移动源重新写入）
+			if (_waitingForSnapshot || CurrentPhase == AttackPhase.Warmup)
 			{
-				_snapshotTimer -= (float)delta;
-				if (_snapshotTimer <= 0f)
+				Enemy.Velocity = Vector2.Zero;
+
+				// 快照延迟计时
+				if (_waitingForSnapshot)
 				{
-					_waitingForSnapshot = false;
-					PrepareDashTowardsPlayer(); // 延迟结束，此时快照玩家位置
+					_snapshotTimer -= (float)delta;
+					if (_snapshotTimer <= 0f)
+					{
+						_waitingForSnapshot = false;
+						PrepareDashTowardsPlayer(); // 延迟结束，此时快照玩家位置
+					}
 				}
-				return; 
+				return;
 			}
 
 			if (_postAttackCooldown > 0f)
@@ -514,7 +522,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			// 持续冲刺，直到 DashDuration 到期由基类切入 Recovery
-			Enemy.Velocity = _dashDirection * DashSpeed;
+			Enemy.Velocity = _dashDirection * (Enemy.Speed * DashSpeedMultiplier);
 		}
 
 		protected override void OnAnimationHit()
@@ -563,6 +571,13 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
+			// 清冲刺状态与残留速度：dash 中被 Cancel 打断会跳过 Recovery（_isDashing 在
+			// OnRecoveryStarted 才置 false）——残留 true 会让 _PhysicsProcess 的
+			// UpdateDashMovement 在后续攻击期间每帧写入 dash 速度（Guard2 近战攻击时移动）
+			_isDashing = false;
+			_canAttemptMoveAttack = false;
+			if (Enemy != null)
+				Enemy.Velocity = Vector2.Zero;
 			_playerInsideDetection = false;
 			if (_pendingSelfFrozenAfterDash)
 			{

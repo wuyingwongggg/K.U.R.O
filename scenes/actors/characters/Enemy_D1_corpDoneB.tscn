@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://b588lubx5fo62"]
+[gd_scene load_steps=40 format=3 uid="uid://b588lubx5fo62"]
 
 [ext_resource type="Script" uid="uid://2xun813bp5ef" path="res://scripts/actors/enemies/EnemyD1CorpDoneB.cs" id="1_3o8by"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_fm7ty"]
@@ -41,20 +41,24 @@ shader = ExtResource("2_snflk")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(3000, 2000)
+[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
+radius = 1024.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
-radius = 1024.0
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
-size = Vector2(300, 600)
+size = Vector2(350, 200)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
-radius = 180.0
+[sub_resource type="RectangleShape2D" id="2"]
+size = Vector2(3000, 2000)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_w5mqq"]
+radius = 600.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_w5mqq"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="Resource" id="Resource_nehjm"]
 script = ExtResource("14_fm7ty")
@@ -88,6 +92,9 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+Speed = 300
+AttackDamage = 10
+AttackCooldown = 1
 MaxHealth = 150
 AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 StateMachine = NodePath("StateMachine")
@@ -167,26 +174,6 @@ bone_name = "bone3"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 z_index = 10
-position = Vector2(0, -600)
-
-[node name="AttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
-collision_layer = 0
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(1500, 0)
-shape = SubResource("2")
-
-[node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
-collision_layer = 0
-collision_mask = 4
-monitorable = false
-
-[node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-scale = Vector2(5, 5)
-shape = SubResource("CircleShape2D_gvrrx")
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -198,21 +185,52 @@ monitorable = false
 scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
-[node name="HitArea" type="Area2D" parent="Sprite2D"]
+[node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
+scale = Vector2(0.99999994, 0.99999994)
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
+scale = Vector2(5, 5)
+shape = SubResource("CircleShape2D_gvrrx")
+
+[node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 130)
 shape = SubResource("RectangleShape2D_k8d2p")
 
+[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+scale = Vector2(0.99999994, 0.99999994)
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
+position = Vector2(1500, 0)
+shape = SubResource("2")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("5_fm7ty")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -550)
+shape = SubResource("CircleShape2D_w5mqq")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_d5sdg")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_w5mqq")
 
 [node name="Node2D" type="Node2D" parent="."]
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(57.575764, -2084.8484)
+position = Vector2(0, -1500)
 
 [node name="Marker2D2" type="Marker2D" parent="Node2D"]
 position = Vector2(1500, -300)

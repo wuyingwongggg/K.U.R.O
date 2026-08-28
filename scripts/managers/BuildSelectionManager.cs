@@ -42,6 +42,38 @@ namespace Kuros.Managers
         [Export(PropertyHint.Range, "2,10,1")]
         public int CardsPerSelection { get; set; } = 3;
 
+        [ExportGroup("Economy")]
+        /// <summary>弃选（跳过）本次升级时获得的金币——局内经济收入源之一（金币局内保存，退出/死亡清除）。</summary>
+        [Export(PropertyHint.Range, "0,999,1")]
+        public int SkipGoldReward { get; set; } = 15;
+
+        /// <summary>弃选（跳过）核心选择时获得的金币——数值独立于效果跳过（跳过核心 = 放弃本局构筑，补偿更高）。</summary>
+        [Export(PropertyHint.Range, "0,999,1")]
+        public int CoreSkipGoldReward { get; set; } = 30;
+
+        [ExportGroup("Reroll")]
+        /// <summary>每个选择窗口的免费刷新次数（基础值；局外养成可用 <see cref="AddFreeRerollCount"/> 增加）。</summary>
+        [Export(PropertyHint.Range, "0,10,1")]
+        public int FreeRerollCount { get; set; } = 1;
+        /// <summary>首次付费刷新的价格。</summary>
+        [Export(PropertyHint.Range, "1,999,1")]
+        public int RerollBaseCost { get; set; } = 10;
+        /// <summary>刷新费用递增倍率：cost = base × growth^已付费次数（窗口内递增，每窗重置）。</summary>
+        [Export(PropertyHint.Range, "1.0,3.0,0.05")]
+        public float RerollCostGrowth { get; set; } = 1.5f;
+
+        private int _bonusFreeRerolls; // 局外养成/其他系统增加的额外免费刷新次数
+
+        /// <summary>局外养成调用：增加后续每个选择窗口的免费刷新次数。</summary>
+        public void AddFreeRerollCount(int amount)
+        {
+            if (amount <= 0) return;
+            _bonusFreeRerolls += amount;
+        }
+
+        /// <summary>当前每个选择窗口可用的免费刷新次数（基础值 + 养成加成）。</summary>
+        public int GetFreeRerollCount() => FreeRerollCount + _bonusFreeRerolls;
+
         /// <summary>未选核心时使用的默认构筑类别。空 = 不选核心不触发三选一。</summary>
         [Export] public string DefaultBuildClass { get; set; } = "";
 
@@ -238,7 +270,16 @@ namespace Kuros.Managers
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                     CheckAndTriggerSelection(_boundPlayer.Score);
-            }, _pickedEffectIds);
+            }, _pickedEffectIds, CoreSkipGoldReward, () =>
+            {
+                // 跳过核心：放弃本局构筑选择，获得核心跳过金币（独立数值）；
+                // _coreSelected 保持 false——若未配置 DefaultBuildClass，后续不再触发效果选择
+                _boundPlayer?.AddGold(CoreSkipGoldReward);
+                _isSelectionActive = false;
+
+                if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
+                    CheckAndTriggerSelection(_boundPlayer.Score);
+            });
         }
 
         private BuildCoreDefinition? FindCoreById(string coreId)
@@ -297,7 +338,17 @@ namespace Kuros.Managers
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
                     CheckAndTriggerSelection(_boundPlayer.Score);
-            }, _pickedEffectIds);
+            }, _pickedEffectIds, SkipGoldReward, () =>
+            {
+                // 弃选：放弃本次升级，获得少量金币（收入源；不消耗额外升级次数）
+                _boundPlayer?.AddGold(SkipGoldReward);
+                _isSelectionActive = false;
+
+                if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
+                    CheckAndTriggerSelection(_boundPlayer.Score);
+            },
+            excluded => PickRandomEffects(CardsPerSelection, excluded),
+            RerollBaseCost, RerollCostGrowth, GetFreeRerollCount());
         }
 
         private void ApplyEffectBonuses(BuildEffectDefinition effect)
@@ -342,7 +393,7 @@ namespace Kuros.Managers
             // 所有效果统一由 EffectEntries 驱动（含 AttackEffectEntry.PropertyOverrides）
         }
 
-        private List<BuildEffectDefinition> PickRandomEffects(int count)
+        private List<BuildEffectDefinition> PickRandomEffects(int count, ICollection<string>? excludeEffectIds = null)
         {
             var result = new List<BuildEffectDefinition>();
 
@@ -360,27 +411,52 @@ namespace Kuros.Managers
             else
                 return result;
 
+            // 排除集：刷新时排除当前显示的卡（避免刷出同批），不足时放回
+            var excluded = excludeEffectIds != null
+                ? new HashSet<string>(excludeEffectIds)
+                : new HashSet<string>();
+
             // 按 BuildClass 过滤 + MaxStacks 排除 + Rarity 加权（统一路径）
             var candidates = new List<(BuildEffectDefinition effect, float cumulativeWeight)>();
             float totalWeight = 0f;
 
-            foreach (var effect in EffectPool)
+            void AddCandidate(BuildEffectDefinition effect)
             {
-                if (effect == null) continue;
-                if (string.IsNullOrWhiteSpace(effect.BuildClass)) continue;
-                if (!allowedSet.Contains(effect.BuildClass)) continue;
-
-                _pickedEffectIds.TryGetValue(effect.EffectId, out int stacks);
-                if (effect.MaxStacks > 0 && stacks >= effect.MaxStacks)
-                    continue;
-
                 float mult = 1.0f;
                 RarityMultiplier?.TryGetValue(effect.Rarity.ToString(), out mult);
                 float w = effect.Weight * mult;
-                if (w <= 0f) continue;
-
+                if (w <= 0f) return;
                 totalWeight += w;
                 candidates.Add((effect, totalWeight));
+            }
+
+            bool IsEligible(BuildEffectDefinition effect)
+            {
+                if (effect == null) return false;
+                if (string.IsNullOrWhiteSpace(effect.BuildClass)) return false;
+                if (!allowedSet.Contains(effect.BuildClass)) return false;
+                _pickedEffectIds.TryGetValue(effect.EffectId, out int stacks);
+                if (effect.MaxStacks > 0 && stacks >= effect.MaxStacks) return false;
+                return true;
+            }
+
+            foreach (var effect in EffectPool)
+            {
+                if (!IsEligible(effect)) continue;
+                if (excluded.Contains(effect.EffectId)) continue;
+                AddCandidate(effect);
+            }
+
+            // 排除当前显示卡后候选不足：放回被排除的卡（优先保证刷新仍出满 count 张）
+            if (candidates.Count < count)
+            {
+                foreach (var effect in EffectPool)
+                {
+                    if (candidates.Count >= count) break;
+                    if (!IsEligible(effect)) continue;
+                    if (!excluded.Contains(effect.EffectId)) continue;
+                    AddCandidate(effect);
+                }
             }
 
             if (candidates.Count == 0) return result;
@@ -417,6 +493,15 @@ namespace Kuros.Managers
                     return core;
             }
             return null;
+        }
+
+        /// <summary>清除构筑选择状态（返回主菜单/退出战斗时调用）——清空已选记录，重进存档后重新选择构筑，避免旧构筑效果跨主菜单残留。</summary>
+        public void ClearBuildState()
+        {
+            _pickedEffectIds.Clear();
+            _selectedCoreId = null;
+            _playerCoreClass = null;
+            PickedEffectsChanged?.Invoke();
         }
 
         /// <summary>跨场景恢复核心效果和所有已选构筑效果。</summary>

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Effects;
 using Kuros.Core.Events;
 
 namespace Kuros.Fx
@@ -15,7 +16,7 @@ namespace Kuros.Fx
     ///   - 伤害逻辑：AttackArea 范围内每 DamageInterval 秒造成一次伤害并使目标速度归零。
     ///   - 基础逻辑和规范严格按照 EFFECT_STANDARD.md
     /// </summary>
-    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional
+    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional, IAttackerProvider
     {
         [ExportCategory("Movement")]
         [Export(PropertyHint.Range, "50,5000,10")] public float Speed = 1800f;
@@ -37,6 +38,14 @@ namespace Kuros.Fx
         [Export] public bool AllowSelfDamage { get; set; } = false;
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
         [Export(PropertyHint.Range, "0.1,5,0.1")] public float DamageInterval = 0.5f;
+
+        [ExportCategory("Slow On Hit")]
+        /// <summary>命中减速开关（同 SlowOnHitEffect 效果：命中时降低目标移动速度）。</summary>
+        [Export] public bool EnableSlowOnHit { get; set; } = false;
+        /// <summary>减速百分比（0~100），50 = 速度降低 50%。</summary>
+        [Export(PropertyHint.Range, "1,100,1")] public float SlowPercent { get; set; } = 50f;
+        /// <summary>减速持续时间（秒）。</summary>
+        [Export(PropertyHint.Range, "0.1,30,0.1")] public float SlowDuration { get; set; } = 2f;
 
         [ExportCategory("Afterimage")]
         [Export] public bool EnableAfterimage = true;
@@ -75,6 +84,7 @@ namespace Kuros.Fx
         private bool _initialized;
         private bool _caught;
         private GameActor? _attacker;
+        private Node2D? _visual;
         private ShaderMaterial? _pseudo3DMaterial;
         private Node2D? _pseudo3DTarget;
         private float _pseudo3DZAccum;
@@ -91,6 +101,7 @@ namespace Kuros.Fx
             _caught = false;
 
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
+            _visual = GetNodeOrNull<Node2D>("Visual");
             if (_attackArea != null)
             {
                 _attackArea.BodyEntered += OnBodyEntered;
@@ -107,8 +118,19 @@ namespace Kuros.Fx
             ResolveAttacker();
         }
 
+        /// <summary>
+        /// 显式攻击来源（由投掷方传入，同 IAttackerProvider 项目模式）。
+        /// 优先于父节点解析：父节点下第一个玩家不一定是投掷者，解析错误会导致 AllowSelfDamage 保护失效。
+        /// </summary>
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
+
         private void ResolveAttacker()
         {
+            if (_attacker != null) return;
             var parent = GetParent();
             if (parent == null) return;
             foreach (var child in parent.GetChildren())
@@ -166,10 +188,14 @@ namespace Kuros.Fx
             _currentVelocity = new Vector2(vx, vy);
             GlobalPosition += _currentVelocity * dt;
 
-            if (RotateWithVelocity && _currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
-            else if (!RotateWithVelocity)
-                Rotation = _currentVelocity.X > 0.1f ? 0f : (_currentVelocity.X < -0.1f ? Mathf.Pi : Rotation);
+            // 旋转只作用于视觉节点：攻击判定（AttackArea）固定不随旋转偏移
+            float targetAngle = RotateWithVelocity
+                ? (_currentVelocity.LengthSquared() > 0.1f ? _currentVelocity.Angle() : Rotation)
+                : (_currentVelocity.X > 0.1f ? 0f : (_currentVelocity.X < -0.1f ? Mathf.Pi : Rotation));
+            if (_visual != null)
+                _visual.Rotation = targetAngle;
+            else
+                Rotation = targetAngle; // 兼容无 Visual 节点的旧结构
 
             if (Pseudo3DZSpeed != 0f && _pseudo3DMaterial != null)
             {
@@ -224,7 +250,52 @@ namespace Kuros.Fx
             bool dealt = DamageDispatcher.DealDamage(actor, Damage, GlobalPosition, _attacker,
                 DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
             if (dealt)
+            {
                 actor.Velocity = Vector2.Zero;
+                if (EnableSlowOnHit && actor.EffectController != null)
+                {
+                    actor.ApplyEffect(new BoomerangSlowDebuff
+                    {
+                        SlowPercent = SlowPercent,
+                        Duration = SlowDuration
+                    });
+                }
+            }
+        }
+
+        // ─── 内部减速 Debuff：命中时降低目标速度，到期/移除时恢复（同 SlowOnHitEffect 逻辑）───
+
+        private sealed partial class BoomerangSlowDebuff : ActorEffect
+        {
+            public float SlowPercent { get; set; }
+
+            private float _originalSpeed;
+
+            public BoomerangSlowDebuff()
+            {
+                EffectId = "boomerang_speed_slow_debuff";
+                DisplayName = "减速";
+                Description = "移动速度降低。";
+                IsBuff = false;
+                MaxStacks = 1;
+            }
+
+            protected override void OnApply()
+            {
+                base.OnApply();
+                _originalSpeed = Actor.Speed;
+                float multiplier = 1f - Mathf.Clamp(SlowPercent / 100f, 0f, 1f);
+                Actor.Speed = _originalSpeed * multiplier;
+            }
+
+            public override void OnRemoved()
+            {
+                if (Actor != null && !Actor.IsDeadOrDying)
+                {
+                    Actor.Speed = _originalSpeed;
+                }
+                base.OnRemoved();
+            }
         }
 
         // ── 碰撞回调 ──────────────────────────────────────────────
@@ -239,7 +310,14 @@ namespace Kuros.Fx
                 return;
             }
 
-            if (body is not GameActor actor) return;
+            if (body is not GameActor actor)
+            {
+                // WorldItem（DestructibleObject 等 TakeDamage 节点）：一次性结算（不计时、无速度概念）
+                if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
+                DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
+                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
+                return;
+            }
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
             AddActorRef(actor);
         }

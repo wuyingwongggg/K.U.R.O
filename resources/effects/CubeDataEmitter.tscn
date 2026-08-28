@@ -17,7 +17,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "Damage": 10.0,
 "DespawnDuration": 0.15,
 "Duration": 1.0,
-"Speed": 500.0
+"Speed": 500.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -77,18 +78,21 @@ DespawnDuration = 0.1
 DestroyEffect = ExtResource("6_boom")
 TargetableFactions = 1
 
-[node name="FaceFill" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
+
+[node name="FaceFill" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_faces")
 scale = Vector2(25, 25)
 texture = ExtResource("5_tex")
 
-[node name="Wireframe" type="Sprite2D" parent="."]
+[node name="Wireframe" type="Sprite2D" parent="Visual"]
 modulate = Color(0.3019608, 0.8, 1, 1)
 material = SubResource("ShaderMaterial_cube")
 scale = Vector2(25, 25)
 texture = ExtResource("5_tex")
 
-[node name="BuildMask" type="Sprite2D" parent="."]
+[node name="BuildMask" type="Sprite2D" parent="Visual"]
 visible = false
 material = SubResource("ShaderMaterial_build")
 scale = Vector2(25, 25)

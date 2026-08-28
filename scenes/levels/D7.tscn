@@ -1,17 +1,17 @@
 [gd_scene load_steps=23 format=3 uid="uid://db6b87al0xo51"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_v51xa"]
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_s2ms1"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_xr702"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_xtjc6"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_v51xa"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="2_s2ms1"]
+[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_xr702"]
+[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_xtjc6"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="5_8mcve"]
 [ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="6_j4yb0"]
 [ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="7_hyruw"]
-[ext_resource type="Texture2D" uid="uid://bd5p3dbno4dai" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_7otwv"]
+[ext_resource type="Texture2D" uid="uid://g8g1uq14i6rc" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_7otwv"]
 [ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="8_h6h5s"]
 [ext_resource type="PackedScene" uid="uid://cpcvmvf2n5ahe" path="res://scenes/actors/characters/Enemy_D1_printerMachine.tscn" id="8_iun68"]
 [ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="9_uulpd"]
-[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_yaib5"]
+[ext_resource type="Script" uid="uid://blrupwolbou73" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_yaib5"]
 [ext_resource type="Texture2D" uid="uid://brk1t88wdisc" path="res://assets/environments/scene_3_hotel/窗户玻璃反射.png" id="11_cl05j"]
 [ext_resource type="Texture2D" uid="uid://beh5ya8u5t3lx" path="res://assets/environments/scene_4_hotel/floor1.png" id="12_q0nsy"]
 [ext_resource type="PackedScene" uid="uid://dwurrf77iaxo2" path="res://scenes/items/Furniture_D_whiteBoardA.tscn" id="16_ndiml"]
@@ -35,17 +35,14 @@ size = Vector2(6000, 750)
 size = Vector2(6000, 700)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(1803, 625, 2249, 1033, 1381, 1033, 1381, 1031, -1840, 625, 510, 1030, -1274, 1027, -2538.211, 1290, -2554.0781, -545, -2278, -545, -2278, -283, 2238, -279, 2238, -545, 2427.2266, -545, 2416.4922, 1290, -1399, -283, -1399, -281, -1840, 215, 352, -281, 352, -277, 1362, -277, 1362, -279, 1803, 215, 2249, 1290, -2284, 1027, 510, 1031, -1274, 1030, -2284, 1290)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5, 6), PackedInt32Array(7, 8, 9, 10), PackedInt32Array(11, 12, 13, 14, 1), PackedInt32Array(10, 15, 16, 17), PackedInt32Array(16, 18, 19, 17), PackedInt32Array(20, 21, 11, 22), PackedInt32Array(14, 23, 1), PackedInt32Array(11, 1, 0, 22), PackedInt32Array(20, 22, 17, 19), PackedInt32Array(7, 10, 17, 24), PackedInt32Array(3, 25, 5), PackedInt32Array(5, 26, 6), PackedInt32Array(4, 6, 24), PackedInt32Array(24, 27, 7), PackedInt32Array(24, 17, 4)])
+vertices = PackedVector2Array(2427.2266, -545, 2416.4922, 1290, 2249, 1158, 1803, 640, 2238, -264, -2538.211, 1290, -2554.0781, -545, -2278, -545, -2278, -268, -1399, -268, -1399, -266, -1840, 340, 352, -266, 352, -262, 1362, -262, 1362, -264, 1803, 340, 2238, -545, -1840, 640, -2284, 1152, 2249, 1290, 1381, 1158, 1381, 1156, 510, 1155, -1274, 1152, 510, 1156, -1274, 1155, -2284, 1290)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(5, 6, 7, 8), PackedInt32Array(8, 9, 10, 11, 5), PackedInt32Array(10, 12, 13, 11), PackedInt32Array(14, 15, 4, 16), PackedInt32Array(4, 17, 0), PackedInt32Array(4, 3, 16), PackedInt32Array(14, 16, 11, 13), PackedInt32Array(5, 11, 18, 19), PackedInt32Array(1, 20, 2), PackedInt32Array(3, 2, 21, 22), PackedInt32Array(18, 3, 22, 23, 24), PackedInt32Array(22, 25, 23), PackedInt32Array(23, 26, 24), PackedInt32Array(18, 24, 19), PackedInt32Array(5, 19, 27)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2641, -1344, 2512, -1360, 2495, 1543, -2616, 1546)])
 source_geometry_mode = 2
 agent_radius = 80.0
 
 [node name="D7" type="Node2D"]
 y_sort_enabled = true
-
-[node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2000, 850)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false

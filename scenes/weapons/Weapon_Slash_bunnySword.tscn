@@ -65,8 +65,9 @@ shader_parameter/curve_ci = 0.2000000095
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o1fls"]
 size = Vector2(180, 60)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_djioy"]
-radius = 250.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_mvfc7"]
+radius = 600.0
+height = 1600.0
 
 [node name="WeaponSlashBunnySword" type="CharacterBody2D"]
 z_index = 1
@@ -111,6 +112,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_mvfc7")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 shape = SubResource("RectangleShape2D_o1fls")
@@ -120,4 +122,5 @@ visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_djioy")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_mvfc7")

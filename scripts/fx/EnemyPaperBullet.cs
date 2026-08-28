@@ -1,7 +1,6 @@
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Events;
-using System.Collections.Generic;
 
 namespace Kuros.Fx
 {
@@ -16,7 +15,7 @@ namespace Kuros.Fx
     ///   - BeamLine / GlowLine 实时渲染飞行拖尾（存储最近 N 个世界坐标）。
     ///   - 超过 Duration 后自动销毁。
     /// </summary>
-    public partial class EnemyPaperBullet : Node2D, IFacingDirectional
+    public partial class EnemyPaperBullet : Node2D, IFacingDirectional, IAttackerProvider
     {
         // ── 导出参数 ──────────────────────────────────────────────
 
@@ -37,14 +36,6 @@ namespace Kuros.Fx
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 4.0f;
-
-        [ExportCategory("Trail")]
-        /// <summary>拖尾保留的历史点数量；点越多拖尾越长。</summary>
-        [Export(PropertyHint.Range, "2,60,1")] public int   TrailPoints = 20;
-        [Export] public Color BeamColor = new Color(1f, 0.85f, 0.2f, 1f);
-        [Export] public Color GlowColor = new Color(1f, 0.23f, 0f, 0.52f);
-        [Export(PropertyHint.Range, "1,500,1")]  public float BeamWidth = 8f;
-        [Export(PropertyHint.Range, "1,1000,1")] public float GlowWidth = 24f;
 
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -74,9 +65,8 @@ namespace Kuros.Fx
 
         // ── 子节点引用 ────────────────────────────────────────────
 
-        private Line2D? _beamLine;
-        private Line2D? _glowLine;
         private Area2D? _attackArea;
+        private Node2D? _visual;
 
         // ── 运行时状态 ────────────────────────────────────────────
 
@@ -91,9 +81,6 @@ namespace Kuros.Fx
         private float _pseudo3DZAccum;
         private Node? _afterimage;
 
-        /// <summary>拖尾历史世界坐标（队列头 = 最旧）。</summary>
-        private readonly Queue<Vector2> _trail = new();
-
         // ── 生命周期 ──────────────────────────────────────────────
 
         public override void _Ready()
@@ -102,26 +89,12 @@ namespace Kuros.Fx
             _initialized = false;
             _hit         = false;
 
-            _beamLine   = GetNodeOrNull<Line2D>("BeamLine");
-            _glowLine   = GetNodeOrNull<Line2D>("GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
+            _visual     = GetNodeOrNull<Node2D>("Visual");
             if (_attackArea != null)
             {
                 _attackArea.BodyEntered += OnAttackAreaBodyEntered;
                 _attackArea.AreaEntered += OnAttackAreaAreaEntered;
-            }
-
-            if (_beamLine != null)
-            {
-                _beamLine.Width        = BeamWidth;
-                _beamLine.DefaultColor = BeamColor;
-                _beamLine.Points       = System.Array.Empty<Vector2>();
-            }
-            if (_glowLine != null)
-            {
-                _glowLine.Width        = GlowWidth;
-                _glowLine.DefaultColor = GlowColor;
-                _glowLine.Points       = System.Array.Empty<Vector2>();
             }
 
             SetupPseudo3D();
@@ -132,8 +105,19 @@ namespace Kuros.Fx
             ResolveAttacker();
         }
 
+        /// <summary>
+        /// 显式攻击来源（由生成方传入，如 EnemyAttackTemplate 生成时设置）。
+        /// 优先于父节点解析：父节点下第一个敌人不一定是发射者，解析错误会导致 AllowSelfDamage 保护失效（打自己）。
+        /// </summary>
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
+
         private void ResolveAttacker()
         {
+            if (_attacker != null) return;
             var parent = GetParent();
             if (parent == null) return;
             foreach (var child in parent.GetChildren())
@@ -196,9 +180,14 @@ namespace Kuros.Fx
             // ─ 移动 ────────────────────────────────────────────────
             GlobalPosition += _currentVelocity * dt;
 
-            // ─ 旋转朝向速度方向 ────────────────────────────────────
+            // ─ 旋转朝向速度方向（只转视觉节点：判定点固定在地面，不随旋转偏移）──
             if (_currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
+            {
+                if (_visual != null)
+                    _visual.Rotation = _currentVelocity.Angle();
+                else
+                    Rotation = _currentVelocity.Angle(); // 兼容无 Visual 节点的旧结构
+            }
 
             // ─ 伪3D Z轴自转 ────────────────────────────────────────
             if (Pseudo3DZSpeed != 0f && _pseudo3DMaterial != null)
@@ -207,12 +196,6 @@ namespace Kuros.Fx
                 _pseudo3DMaterial.SetShaderParameter("zDegrees",
                     _pseudo3DZAccum % 360f);
             }
-
-            // ─ 更新拖尾 ────────────────────────────────────────────
-            _trail.Enqueue(GlobalPosition);
-            while (_trail.Count > TrailPoints)
-                _trail.Dequeue();
-            UpdateTrail();
 
             // ─ 计时销毁 ─────────────────────────────────────────────
             _timer -= dt;
@@ -269,7 +252,7 @@ namespace Kuros.Fx
                     ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
                     : 0f);
             if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
+                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
         }
 
         // ── 私有方法 ──────────────────────────────────────────────
@@ -323,22 +306,6 @@ namespace Kuros.Fx
             tiltAngle = Mathf.Clamp(tiltAngle, -maxTiltRad, maxTiltRad);
 
             return baseAngle + tiltAngle;
-        }
-
-        /// <summary>
-        /// 将历史世界坐标转换到本节点局部空间后赋给 Line2D。
-        /// </summary>
-        private void UpdateTrail()
-        {
-            if (_beamLine == null && _glowLine == null) return;
-
-            var pts = new Vector2[_trail.Count];
-            int i = 0;
-            foreach (var p in _trail)
-                pts[i++] = ToLocal(p);
-
-            if (_beamLine != null) _beamLine.Points = pts;
-            if (_glowLine != null) _glowLine.Points = pts;
         }
 
         /// <summary>取玩家 HitArea CollisionShape2D 的世界坐标作为瞄准中心。</summary>

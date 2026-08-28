@@ -12,9 +12,13 @@ z_as_relative = false
 y_sort_enabled = true
 script = ExtResource("2_script")
 Duration = 1.0
+PeakHeight = 200.0
 Damage = 10
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
 texture = ExtResource("1_eg168")
 
 [node name="Area2D" type="Area2D" parent="."]

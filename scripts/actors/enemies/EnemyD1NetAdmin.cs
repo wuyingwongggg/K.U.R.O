@@ -44,6 +44,26 @@ namespace Kuros.Actors.Enemies
 			return false;
 		}
 
+		/// <summary>
+		/// 环境强制击杀：非眩晕时免疫一切伤害（CanBeAffected 拒绝）——
+		/// 先注入无人机眩晕（drone_stun_ 前缀，CanBeAffected 放行）再伤害，
+		/// 走正常死亡流程（飘字 + 死亡动画）；仍失败才直接销毁。
+		/// </summary>
+		public override void KillForced()
+		{
+			if (DeliverKillDamage()) return;
+
+			ApplyEffect(new FreezeEffect
+			{
+				EffectId = "drone_stun_env_clear",
+				DisplayName = "清场眩晕",
+				Duration = 0.1f,
+			});
+
+			if (!DeliverKillDamage() && GodotObject.IsInstanceValid(this))
+				QueueFree();
+		}
+
 		protected override float GetFrozenRemainingTime()
 		{
 			if (StateMachine?.CurrentState is EnemyNetAdminFrozenState netAdminFrozen)

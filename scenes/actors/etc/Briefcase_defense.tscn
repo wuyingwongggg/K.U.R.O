@@ -91,7 +91,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l0ns3"]
-size = Vector2(450, 600)
+size = Vector2(750, 600)
 
 [node name="BriefcaseDefense" type="Node2D" node_paths=PackedStringArray("SpawnMarkers")]
 z_index = 2
@@ -117,7 +117,7 @@ offset = Vector2(-220, -250)
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(0, 100)
+position = Vector2(-175, 100)
 shape = SubResource("RectangleShape2D_l0ns3")
 
 [node name="Node2D" type="Node2D" parent="."]

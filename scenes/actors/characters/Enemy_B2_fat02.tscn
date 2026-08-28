@@ -1,9 +1,10 @@
-[gd_scene load_steps=34 format=3 uid="uid://wrebd662va23"]
+[gd_scene load_steps=36 format=3 uid="uid://wrebd662va23"]
 
 [ext_resource type="Script" uid="uid://dklt5k3rq7qjb" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_6yc1u"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_xrpf5"]
+[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_3u4qs"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_bb8mk"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="6_5fjrf"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="7_3e6cn"]
@@ -37,16 +38,21 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e04yg"]
-size = Vector2(700, 800)
+size = Vector2(700, 300)
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(1600, 1000)
+size = Vector2(1600, 400)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_6yc1u"]
-radius = 600.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3u4qs"]
+radius = 800.0
+height = 1800.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_xrpf5"]
-radius = 200.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_kl8y6"]
+radius = 1026.4
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_s42mu"]
+radius = 150.0
+height = 600.0
 
 [sub_resource type="Resource" id="Resource_kl8y6"]
 script = ExtResource("13_s42mu")
@@ -74,7 +80,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+Speed = 300
 AttackDamage = 15
+AttackCooldown = 1
 MaxHealth = 180
 AiDescription = "红色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，使用大范围阵地攻击眩晕客户"
 StateMachine = NodePath("StateMachine")
@@ -87,6 +95,8 @@ show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
 scale = Vector2(20, 10)
 texture = ExtResource("5_bb8mk")
+script = ExtResource("5_3u4qs")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -138,15 +148,21 @@ script = ExtResource("20_ooggc")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("19_gvrrx")
 preview_skin = "Default"
-preview_animation = "-- Empty --"
+preview_animation = "skill"
 preview_frame = true
 preview_time = 2.0
 script = ExtResource("20_ooggc")
 
+[node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(-32.206936, -721.34863)
+rotation = -1.5865043
+scale = Vector2(0.9999999, 0.9999998)
+bone_name = "bone2"
+
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -900)
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -171,8 +187,6 @@ shape = SubResource("CircleShape2D_gvrrx")
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 70)
-rotation = 1.5707964
 shape = SubResource("RectangleShape2D_e04yg")
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
@@ -180,19 +194,31 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(500, 0)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(800, 0)
 shape = SubResource("2")
 
 [node name="SmashArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/SmashArea"]
-position = Vector2(900, 900)
-scale = Vector2(1.4, 1.2)
-shape = SubResource("CircleShape2D_6yc1u")
+position = Vector2(900, 0)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_3u4qs")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("5_3u4qs")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -1100)
+shape = SubResource("CircleShape2D_kl8y6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_xrpf5")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_s42mu")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_5fjrf")
@@ -216,19 +242,20 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 script = ExtResource("10_6yc1u")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 SmashAreaPath = NodePath("../../../../Sprite2D/SmashArea")
-DashSpeed = 900.0
 DashDuration = 1.05
 SnapshotDelaySeconds = 0.5
 AppliedStunDuration = 1.0
 AttackName = "SmashAttack"
-WarmupDuration = 0.6
-ActiveDuration = 0.45
-RecoveryDuration = 0.95
-DamageMultiplier = 1.5
+WarmupDuration = 0.7
+ActiveDuration = 0.4
+RecoveryDuration = 0.9
+DamageMultiplier = 1.2
 AttackAreaPath = NodePath("../../../../Sprite2D/SmashArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 26
+StunInterruptOnDamage = true
+InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
 Effects = Array[ExtResource("13_s42mu")]([SubResource("Resource_kl8y6"), SubResource("Resource_y4iv0")])
 EffectOffset = Vector2(250, 0)
@@ -241,6 +268,7 @@ AttackName = "SimpleMeleeAttack"
 WarmupDuration = 1.0
 ActiveDuration = 0.11
 RecoveryDuration = 0.39
+DamageMultiplier = 1.5
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 200.0
 KnockbackDuration = 0.09

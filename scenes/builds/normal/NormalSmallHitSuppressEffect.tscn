@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://8s6kddgs8ja"]
+
+[ext_resource type="Script" path="res://scripts/builds/normal/NormalSmallHitSuppressEffect.cs" id="1"]
+
+[node name="NormalSmallHitSuppressEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "a2d4f6e8-1b3c-4d5e-9f0a-6c8b4a2e5d71"
+Description = "小伤害不打断"

@@ -38,8 +38,9 @@ load_path = "res://.godot/imported/钻头.png-2a47c7fe5d274a9cfe49d5c8ed85d08a.c
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g0q5t"]
 size = Vector2(420, 130)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_t6geh"]
-size = Vector2(550, 25)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ywkyd"]
+radius = 112.5
+height = 1700.0
 
 [node name="WeaponStabDrill" type="CharacterBody2D"]
 z_index = 1
@@ -65,6 +66,7 @@ material = SubResource("ShaderMaterial_t6geh")
 texture = SubResource("CompressedTexture2D_ie112")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 position = Vector2(5, 8)
@@ -74,4 +76,5 @@ shape = SubResource("RectangleShape2D_g0q5t")
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("RectangleShape2D_t6geh")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_ywkyd")

@@ -1,14 +1,12 @@
-[gd_scene load_steps=21 format=3 uid="uid://c88kwpwoxtoev"]
+[gd_scene load_steps=17 format=3 uid="uid://c88kwpwoxtoev"]
 
 [ext_resource type="Script" uid="uid://3vrm8fkuw0da" path="res://scripts/ui/BattleHUD.cs" id="1_battle_hud"]
-[ext_resource type="Texture2D" uid="uid://b6l52tfec8bsb" path="res://assets/ui/item_bar/解锁框.png" id="2_6fofv"]
 [ext_resource type="Texture2D" uid="uid://dygd2n7t2oilt" path="res://assets/ui/hp&exp_bar/HP框底色.png" id="3_2bbve"]
 [ext_resource type="Texture2D" uid="uid://lnnyw36jkbtp" path="res://assets/ui/hp&exp_bar/HP红色.png" id="4_2b2wp"]
 [ext_resource type="Texture2D" uid="uid://c1c2gfwgvedyh" path="res://assets/ui/hp&exp_bar/HP底色.png" id="4_eqcu2"]
 [ext_resource type="Texture2D" uid="uid://de54souqub7j7" path="res://assets/ui/hp&exp_bar/EXP框.png" id="5_eqcu2"]
 [ext_resource type="Texture2D" uid="uid://vmhxliiru256" path="res://assets/ui/hp&exp_bar/HP框.png" id="5_thm3t"]
 [ext_resource type="Texture2D" uid="uid://tx5eyoqgl2ku" path="res://assets/ui/hp&exp_bar/EXP底色.png" id="5_wh53j"]
-[ext_resource type="Texture2D" uid="uid://cx8mvmvrwdlkj" path="res://assets/ui/金币.png" id="6_gold"]
 [ext_resource type="Texture2D" uid="uid://dmmps17mtfoi7" path="res://assets/ui/hp&exp_bar/EXP框底色.png" id="7_thm3t"]
 [ext_resource type="Texture2D" uid="uid://d2bkxepnw5v0s" path="res://assets/ui/hp&exp_bar/EXP绿色.png" id="8_wh53j"]
 [ext_resource type="PackedScene" uid="uid://cx81yiwuaqfyq" path="res://scenes/ui/hud/BuildCoreHUD.tscn" id="9_core_hud"]
@@ -16,12 +14,8 @@
 [ext_resource type="Script" uid="uid://d2bak4x8m7c3" path="res://scripts/ui/DashIconControl.cs" id="10_dash_icon"]
 [ext_resource type="Texture2D" uid="uid://dxuph0ta265n1" path="res://assets/ui/设置.png" id="13_thm3t"]
 [ext_resource type="Texture2D" uid="uid://d1i1q5clrs0fg" path="res://assets/ui/hp&exp_bar/HP青色.png" id="14_7e40p"]
-[ext_resource type="Texture2D" uid="uid://bc2n1t5tcnxeg" path="res://assets/ui/item_bar/选中框.png" id="14_selected"]
 [ext_resource type="Texture2D" uid="uid://b0dvj74kufrt4" path="res://assets/ui/hp&exp_bar/HP白色.png" id="14_wri2h"]
-[ext_resource type="Texture2D" uid="uid://cxw8rt1fp420t" path="res://assets/ui/item_bar/锁图.png" id="15_locked"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_transparent"]
-bg_color = Color(0, 0, 0, 0)
+[ext_resource type="PackedScene" uid="uid://bwk85v37uychr" path="res://scenes/ui/hud/QuickBarPanel.tscn" id="16_quickbar"]
 
 [node name="BattleHUD" type="Control"]
 layout_mode = 3
@@ -31,9 +25,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_battle_hud")
-EmptySlotFrameTexture = ExtResource("2_6fofv")
-SelectedFrameTexture = ExtResource("14_selected")
-LockedFrameTexture = ExtResource("15_locked")
 StatusMessageAnchorNormalized = Vector2(0.5, 0.5)
 
 [node name="CoreHUD" parent="." instance=ExtResource("9_core_hud")]
@@ -285,334 +276,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="ScoreLabel" type="Label" parent="."]
-visible = false
-layout_mode = 1
-offset_left = 424.0
-offset_top = 77.0
-offset_right = 544.0
-offset_bottom = 111.0
-theme_override_font_sizes/font_size = 24
-text = "0"
-
-[node name="Instructions" type="Label" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -300.0
-offset_top = -60.0
-offset_right = 300.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-text = "WASD: Move | Space: Dash | Shift: Run | Left mouse: Attack|Right mouse & hold: Pick Up & Put Down | F: CoreSkill | ESC: Menu"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="QuickBarPanel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.006
-anchor_top = 0.8417408
-anchor_right = 0.319
-anchor_bottom = 0.98100007
-offset_left = -0.52000046
-offset_top = -0.080078125
-offset_right = -1.4799805
-offset_bottom = -0.48010254
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-metadata/_edit_use_anchors_ = true
-
-[node name="QuickBarContainer" type="HBoxContainer" parent="QuickBarPanel"]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.2
-anchor_right = 0.99966663
-anchor_bottom = 0.9736666
-offset_left = 1.0000038
-offset_top = -0.016685486
-offset_right = 1.2000122
-offset_bottom = -0.05001831
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 0
-alignment = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="QuickSlot1" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
-custom_minimum_size = Vector2(120, 60)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-
-[node name="SlotFrame" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot1"]
-modulate = Color(1, 1, 1, 0.9019608)
-self_modulate = Color(1, 1, 1, 0.9019608)
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch_mode = 5
-metadata/_edit_use_anchors_ = true
-
-[node name="QuickSlotIcon1" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-metadata/_edit_use_anchors_ = true
-
-[node name="QuickSlotLabel1" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot1"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="QuickSlot2" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
-custom_minimum_size = Vector2(120, 60)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-
-[node name="SlotFrame" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot2"]
-modulate = Color(1, 1, 1, 0.9019608)
-self_modulate = Color(1, 1, 1, 0.9019608)
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch_mode = 5
-
-[node name="QuickSlotIcon2" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="QuickSlotLabel2" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot2"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="QuickSlot3" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
-custom_minimum_size = Vector2(120, 60)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-
-[node name="SlotFrame" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot3"]
-modulate = Color(1, 1, 1, 0.9019608)
-self_modulate = Color(1, 1, 1, 0.9019608)
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch_mode = 5
-
-[node name="QuickSlotIcon3" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="QuickSlotLabel3" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot3"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="QuickSlot4" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
-custom_minimum_size = Vector2(120, 60)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-
-[node name="SlotFrame" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot4"]
-modulate = Color(1, 1, 1, 0.9019608)
-self_modulate = Color(1, 1, 1, 0.9019608)
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch_mode = 5
-
-[node name="QuickSlotIcon4" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot4"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="QuickSlotLabel4" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot4"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="QuickSlot5" type="Panel" parent="QuickBarPanel/QuickBarContainer"]
-custom_minimum_size = Vector2(120, 60)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
-
-[node name="SlotFrame" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot5"]
-modulate = Color(1, 1, 1, 0.9019608)
-self_modulate = Color(1, 1, 1, 0.9019608)
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch_mode = 5
-
-[node name="QuickSlotIcon5" type="TextureRect" parent="QuickBarPanel/QuickBarContainer/QuickSlot5"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="QuickSlotLabel5" type="Label" parent="QuickBarPanel/QuickBarContainer/QuickSlot5"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="GoldIcon" type="TextureRect" parent="."]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.90125006
-anchor_top = 0.9022223
-anchor_right = 0.9422501
-anchor_bottom = 0.9762223
-offset_left = -0.40014648
-offset_top = -0.40008545
-offset_right = 0.8798828
-offset_bottom = -0.32006836
-size_flags_vertical = 4
-texture = ExtResource("6_gold")
-expand_mode = 1
-stretch_mode = 5
-metadata/_edit_use_anchors_ = true
-
-[node name="GoldContainer" type="HBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.90743756
-anchor_top = 0.8905556
-anchor_right = 1.0204375
-anchor_bottom = 0.9855556
-offset_left = 0.71984863
-offset_top = 0.19995117
-offset_right = -117.339966
-offset_bottom = -58.45752
-grow_horizontal = 0
-scale = Vector2(2.1840193, 2.3212185)
-theme_override_constants/separation = 6
-alignment = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="GoldLabel" type="Label" parent="GoldContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_outline_size = 5
-theme_override_font_sizes/font_size = 25
-text = "0"
-vertical_alignment = 1
-
-[node name="PauseButton" type="Button" parent="."]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.95900005
-anchor_top = 0.014
-anchor_right = 1.0220001
-anchor_bottom = 0.127
-offset_left = -47.28015
-offset_top = -9.120001
-offset_right = -47.240112
-offset_bottom = -9.160004
-grow_horizontal = 0
-icon = ExtResource("13_thm3t")
-
 [node name="DashIcon" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = -1
@@ -625,4 +288,29 @@ offset_bottom = 0.3999939
 mouse_filter = 2
 script = ExtResource("10_dash_icon")
 PointSize = Vector2(32, 32)
+metadata/_edit_use_anchors_ = true
+
+[node name="ScoreLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+offset_left = 424.0
+offset_top = 77.0
+offset_right = 544.0
+offset_bottom = 111.0
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="PauseButton" type="Button" parent="."]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -121.0
+offset_bottom = 122.0
+grow_horizontal = 0
+icon = ExtResource("13_thm3t")
+
+[node name="QuickBarPanel" parent="." instance=ExtResource("16_quickbar")]
+layout_mode = 1
 metadata/_edit_use_anchors_ = true

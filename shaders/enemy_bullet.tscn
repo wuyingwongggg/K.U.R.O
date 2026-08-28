@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://c1c74ekxu24m1"]
 
-[ext_resource type="Script" uid="uid://4gg04ay7xs63" path="res://scripts/fx/EnemyBullet.cs" id="1_sahqo"]
+[ext_resource type="Script" uid="uid://tjd0e0fbhsil" path="res://scripts/fx/EnemyBullet.cs" id="1_sahqo"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hgsvh"]
 radius = 60.0
@@ -9,22 +9,32 @@ radius = 60.0
 z_index = 2
 y_sort_enabled = true
 script = ExtResource("1_sahqo")
-Speed = 6000.0
-MaxVerticalTiltDegrees = 5.0
-Duration = 3.0
-TrailPoints = 2
+Speed = 5500.0
+MaxVerticalTiltDegrees = 7.5
+Duration = 2.0
+BeamWidth = 10.0
+GlowWidth = 30.0
+TrailFadeMidpoint = 0.7999999999999999
+TrailFadeMidAlpha = 0.2
 TargetableFactions = 1
+Damage = 15
+KnockbackSpeed = 0.0
+KnockbackDistance = 25.0
+KnockbackDuration = 0.08
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -190)
 
-[node name="GlowLine" type="Line2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+
+[node name="GlowLine" type="Line2D" parent="Visual"]
 default_color = Color(1, 0.23137255, 0, 0.8392157)
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="BeamLine" type="Line2D" parent="."]
+[node name="BeamLine" type="Line2D" parent="Visual"]
 default_color = Color(1, 0.69803923, 0, 0.50980395)
 joint_mode = 2
 begin_cap_mode = 2
@@ -32,7 +42,6 @@ end_cap_mode = 2
 antialiased = true
 
 [node name="AttackArea" type="Area2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("CircleShape2D_hgsvh")

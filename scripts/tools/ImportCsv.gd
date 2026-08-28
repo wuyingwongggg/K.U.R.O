@@ -56,6 +56,14 @@ func import_skills_from_csv() -> void:
 		_s_float(res, "WarmupAnimationSpeed",    row, hm, "WarmupAnimationSpeed")
 		_s_float(res, "ActiveAnimationSpeed",    row, hm, "ActiveAnimationSpeed")
 		_s_float(res, "RecoveryAnimationSpeed",  row, hm, "RecoveryAnimationSpeed")
+		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
+		_s_str(res, "DashAnimationName",         row, hm, "DashAnimationName")
+		_s_float_neg1(res, "DashWarmupDuration",        row, hm)
+		_s_float_neg1(res, "DashActiveDuration",        row, hm)
+		_s_float_neg1(res, "DashRecoveryDuration",      row, hm)
+		_s_float_neg1(res, "DashWarmupAnimationSpeed",  row, hm)
+		_s_float_neg1(res, "DashActiveAnimationSpeed",  row, hm)
+		_s_float_neg1(res, "DashRecoveryAnimationSpeed", row, hm)
 		if _save(res, path): count += 1
 	_log.info("  → 更新 %d 个" % count)
 
@@ -76,11 +84,13 @@ func import_items_from_csv() -> void:
 		_s_str(res,   "ItemId",      row, hm, "ItemId")
 		_s_str(res,   "DisplayName", row, hm, "DisplayName")
 		_s_str(res,   "Description", row, hm, "Description")
+		_s_str_array(res, "Tags", row, hm)
 		# _s_str(res,   "BuildClass",  row, hm, "BuildClass")  # build 重做后已失效
 		_s_int(res,   "MaxStackSize", row, hm, "MaxStackSize")
 		_s_bool(res,  "IsThrowable",  row, hm, "IsThrowable")
 		_s_bool(res,  "IsThrowWeapon", row, hm, "IsThrowWeapon")
 		_s_bool(res,  "PreventDropDuringCooldown", row, hm, "PreventDropDuringCooldown")
+		_s_bool(res,  "SpawnEffectOnThrow", row, hm, "SpawnEffectOnThrow")
 		_s_vec2(res,  "ThrowStartOffset", row, hm, "ThrowStartOffset")
 		_s_float(res, "ThrowParabolicDuration",      row, hm, "ThrowParabolicDuration")
 		_s_float(res, "ThrowParabolicPeakHeight",    row, hm, "ThrowParabolicPeakHeight")
@@ -212,6 +222,15 @@ func _save(res: Resource, path: String) -> bool:
 func _s_str(res: Resource, prop: String, row: Array, hm: Dictionary, col: String) -> void:
 	var v = _col(row, hm, col)
 	res.set(prop, v)
+
+## 回写 `|` 分隔的字符串数组（对应导出 _arr_str 的 "a|b|c" 格式，如 Tags）
+func _s_str_array(res: Resource, prop: String, row: Array, hm: Dictionary) -> void:
+	var raw := _col(row, hm, prop)
+	if raw == "": return
+	var out: Array = []
+	for t in raw.split("|", false):
+		out.append(t.strip_edges())
+	res.set(prop, out)
 
 func _s_float(res: Resource, prop: String, row: Array, hm: Dictionary, col: String) -> void:
 	var v = _col(row, hm, col)

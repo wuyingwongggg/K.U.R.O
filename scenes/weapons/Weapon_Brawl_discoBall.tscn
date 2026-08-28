@@ -33,8 +33,9 @@ shader_parameter/highlight_interval = 1.00000002375
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3jtwq"]
 size = Vector2(200, 120)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_odbs7"]
-size = Vector2(250, 100)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_v2efu"]
+radius = 150.0
+height = 750.0
 
 [node name="WeaponBrawlDiscoBall" type="CharacterBody2D"]
 z_index = 1
@@ -60,6 +61,7 @@ material = SubResource("ShaderMaterial_1hnml")
 texture = ExtResource("5_v2efu")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 z_index = 1
@@ -71,4 +73,5 @@ visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("RectangleShape2D_odbs7")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_v2efu")

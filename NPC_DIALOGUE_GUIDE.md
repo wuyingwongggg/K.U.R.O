@@ -781,7 +781,13 @@ public void UpdateDialogueForGameState()
 {
     var entry = CurrentDialogueData.GetEntry(0);
     
-    if (PlayerInventory.HasItem("MagicSword"))
+    // 检查背包是否持有某物品（PlayerInventoryComponent 无 HasItem；
+    // 通过 QuickBar/Backpack 容器的标签查找实现，如 tag_weapon）
+    var quickBar = PlayerInventory.QuickBar;
+    bool hasSword = quickBar != null
+        && quickBar.TryFindFirstStackWithTag("tag_weapon", out var _);
+    
+    if (hasSword)
     {
         entry.Text = "哇！那把剑真漂亮！";
     }

@@ -949,15 +949,6 @@ namespace Kuros.UI
                 AcceptEvent(); // 确保事件被接受，防止其他系统处理
                 return;
             }
-
-            // 处理 M 键（open_inventory）关闭物品栏
-            if (@event.IsActionPressed("open_inventory"))
-            {
-                HideWindow();
-                GetViewport().SetInputAsHandled();
-                AcceptEvent(); // 确保事件被接受，防止其他系统处理
-                return;
-            }
         }
 
         public override void _GuiInput(InputEvent @event)

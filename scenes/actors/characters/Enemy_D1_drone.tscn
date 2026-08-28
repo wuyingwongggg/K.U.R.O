@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://6q7k85h5kvvg"]
+[gd_scene load_steps=34 format=3 uid="uid://6q7k85h5kvvg"]
 
 [ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_cdf4i"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_62kop"]
@@ -31,20 +31,24 @@ shader = ExtResource("3_ebj63")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(4000, 2000)
+[sub_resource type="CircleShape2D" id="CircleShape2D_controller_detect"]
+radius = 1024.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_controller_detect"]
-radius = 1024.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(4000, 2000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
-size = Vector2(600, 600)
+size = Vector2(500, 300)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_collision"]
-radius = 200.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_2csbb"]
+radius = 400.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
+radius = 100.0
+height = 300.0
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("14_4nsh5")
@@ -80,13 +84,14 @@ DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 DeathEffect = ExtResource("3_2csbb")
 Speed = 400
-AttackDamage = 0
+AttackDamage = 10
+AttackCooldown = 1
 MaxHealth = 80
+AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
-AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
@@ -147,7 +152,7 @@ skeleton_data_res = ExtResource("6_cdf4i")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.75
 script = ExtResource("7_02rt2")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -160,15 +165,17 @@ bone_name = "bone"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -200)
 
-[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
+collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(2000, 0)
-shape = SubResource("RectangleShape2D_attack")
+[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
+scale = Vector2(10, 10)
+shape = SubResource("CircleShape2D_controller_detect")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -180,30 +187,41 @@ monitorable = false
 scale = Vector2(3, 3)
 shape = SubResource("CircleShape2D_attack_detect")
 
-[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
+[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
-collision_mask = 4
 monitorable = false
 
-[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(10, 10)
-shape = SubResource("CircleShape2D_controller_detect")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
+position = Vector2(2000, 0)
+shape = SubResource("RectangleShape2D_attack")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_hit")
 
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("5_x0tw8")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -300)
+shape = SubResource("CircleShape2D_2csbb")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_collision")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_2csbb")
 
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(620, -145)
+position = Vector2(620, 350)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("8_352fs")
@@ -229,6 +247,7 @@ WarmupDuration = 0.5
 ActiveDuration = 0.3
 RecoveryDuration = 0.53
 CooldownDurationMultiplier = 3.0
+DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true

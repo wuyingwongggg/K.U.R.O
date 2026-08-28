@@ -20,10 +20,10 @@ shader_parameter/edge_softness = 0.12
 shader_parameter/preserve_fill = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(1150, 150)
+size = Vector2(1050, 180)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bjrsg"]
-size = Vector2(1210, 340)
+size = Vector2(900, 340)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(1200, 330)
@@ -39,7 +39,6 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 10.0
 MinDamageVelocity = 0.0
 KnockbackForce = 800.0
-StopOnHit = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
@@ -73,7 +72,7 @@ offset = Vector2(0, 200)
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(-10, -80)
+position = Vector2(-10, 120)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://cofm45kotvgto"]
+[gd_scene load_steps=31 format=3 uid="uid://cofm45kotvgto"]
 
 [ext_resource type="Script" uid="uid://b8q1vhuc5h8vx" path="res://scripts/actors/enemies/EnemyB1Fat.cs" id="1"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="2"]
@@ -35,16 +35,20 @@ radius = 1024.0
 radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vxf5t"]
-size = Vector2(700, 800)
+size = Vector2(700, 300)
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(1600, 1000)
+size = Vector2(1600, 400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_otg7e"]
 size = Vector2(1000, 500)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_b5vhy"]
-radius = 200.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_ao33d"]
+radius = 1026.4
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ao33d"]
+radius = 150.0
+height = 600.0
 
 [node name="Enemy_B1_fat" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -58,7 +62,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+Speed = 300
 AttackDamage = 15
+AttackCooldown = 1
 MaxHealth = 200
 AiDescription = "蓝色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，行动迟缓，使用投机抓取客户"
 StateMachine = NodePath("StateMachine")
@@ -126,7 +132,7 @@ skeleton_data_res = ExtResource("6_2sv5o")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.17
+preview_time = 0.36
 script = ExtResource("20_2sv5o")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -139,7 +145,6 @@ bone_name = "bone2"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
-position = Vector2(0, -900)
 
 [node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -165,8 +170,6 @@ shape = SubResource("CircleShape2D_otg7e")
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, 70)
-rotation = 1.5707964
 shape = SubResource("RectangleShape2D_vxf5t")
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
@@ -174,19 +177,30 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(500, 0)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(800, 0)
 shape = SubResource("2")
 
 [node name="GrabArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/GrabArea"]
-position = Vector2(500, 500)
-scale = Vector2(0.9999999, 0.9999999)
+position = Vector2(500, 0)
 shape = SubResource("RectangleShape2D_otg7e")
 
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+script = ExtResource("5_ao33d")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+FollowBoneY = true
+
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -1100)
+shape = SubResource("CircleShape2D_ao33d")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_b5vhy")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_ao33d")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("2")
@@ -209,7 +223,7 @@ PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 script = ExtResource("11_otg7e")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 GrabAreaPath = NodePath("../../../../Sprite2D/GrabArea")
-DashSpeed = 800.0
+DashDistance = 800.0
 SnapshotDelaySeconds = 0.9
 AppliedFrozenDuration = 3.0
 EscapeWindowSeconds = 3.0
@@ -222,6 +236,9 @@ KnockbackDuration = 0.01
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
+StunInterruptOnDamage = true
+StunDuringWarmup = false
+InterruptDamageSources = 2
 IgnoreEnemyCollisionDuringAttack = true
 metadata/attack_weight = 60.0
 
@@ -232,7 +249,7 @@ ActiveDuration = 0.11
 RecoveryDuration = 0.39
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 200.0
-KnockbackDuration = 0.09999999999999999
+KnockbackDuration = 0.1
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24

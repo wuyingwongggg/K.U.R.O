@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://8s6kdcqs5bi1"]
+
+[ext_resource type="Script" path="res://scripts/builds/normal/NormalDashChargeBoostEffect.cs" id="1"]
+
+[node name="NormalDashChargeBoostEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "e6b8c0d2-5f7a-4b9c-8d4e-2a3b5c7d9e16"
+Description = "闪避充能提升"

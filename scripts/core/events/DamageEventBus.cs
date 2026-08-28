@@ -24,6 +24,45 @@ namespace Kuros.Core.Events
     }
 
     /// <summary>
+    /// 伤害来源过滤（Flags）：按位匹配 <see cref="DamageSource"/> 分类，
+    /// 用于"仅特定伤害类型触发"的开关（如攻击眩晕打断只吃投掷伤害）。
+    /// </summary>
+    [Flags]
+    public enum DamageSourceFilter
+    {
+        None = 0,
+        /// <summary>普通近战（DirectAttack）</summary>
+        DirectAttack = 1 << 0,
+        /// <summary>投掷类（ThrowableDirectAttack + ThrowImpact：投掷武器近战 + 投掷物命中）</summary>
+        Throwable = 1 << 1,
+        /// <summary>区域效果（AreaEffect）</summary>
+        AreaEffect = 1 << 2,
+        /// <summary>暴击追加（CritBonus）</summary>
+        CritBonus = 1 << 3,
+        /// <summary>效果/构筑追加（EffectBonus）</summary>
+        EffectBonus = 1 << 4,
+        All = DirectAttack | Throwable | AreaEffect | CritBonus | EffectBonus,
+    }
+
+    public static class DamageSourceFilterExtensions
+    {
+        /// <summary>判断某伤害来源是否命中过滤开关（All 恒命中，保持默认全放行）。</summary>
+        public static bool Matches(this DamageSourceFilter filter, DamageSource source)
+        {
+            if (filter == DamageSourceFilter.All) return true;
+            return source switch
+            {
+                DamageSource.DirectAttack => filter.HasFlag(DamageSourceFilter.DirectAttack),
+                DamageSource.ThrowableDirectAttack or DamageSource.ThrowImpact => filter.HasFlag(DamageSourceFilter.Throwable),
+                DamageSource.AreaEffect => filter.HasFlag(DamageSourceFilter.AreaEffect),
+                DamageSource.CritBonus => filter.HasFlag(DamageSourceFilter.CritBonus),
+                DamageSource.EffectBonus => filter.HasFlag(DamageSourceFilter.EffectBonus),
+                _ => true,
+            };
+        }
+    }
+
+    /// <summary>
     /// 简单的受击事件总线，用于在 GameActor.TakeDamage 后广播命中结果。
     /// </summary>
     public static class DamageEventBus

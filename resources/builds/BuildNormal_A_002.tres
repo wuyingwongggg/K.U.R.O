@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://bjdvsdmjfnfep"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://8s6kddgs6ja" path="res://scenes/builds/normal/NormalHitInvincibilityBoostEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://bbja2d1pequev" path="res://assets/BuildIcon/Normal_A_002_损伤缓冲.png" id="3_yb5uu"]
+
+[sub_resource type="Resource" id="Resource_A002"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([2.5, 5.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildNormal_A_002"
+DisplayName = "损伤缓冲"
+Description = "受伤后的无敌时间提升至{0}倍/{1}倍"
+BuildClass = "Normal"
+MaxStacks = 2
+Icon = ExtResource("3_yb5uu")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A002")])

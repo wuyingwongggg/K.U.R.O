@@ -426,6 +426,12 @@ namespace Kuros.Scenes
 				{
 					PauseManager.Instance.ClearAllPauses();
 				}
+				// 清除构筑选择状态（已选核心/构筑卡）——返回主菜单 = 退出战斗，重进存档后重新选择构筑，
+				// 否则 RestoreBuildState 会从残留记录把旧构筑效果恢复到玩家身上
+				if (Kuros.Managers.BuildSelectionManager.Instance != null)
+				{
+					Kuros.Managers.BuildSelectionManager.Instance.ClearBuildState();
+				}
 				tree.ChangeSceneToFile("res://scenes/ui/menus/MainMenu.tscn");
 			}
 		}

@@ -54,24 +54,27 @@ z_index = 3
 script = ExtResource("5_script")
 Speed = 2000.0
 MaxVerticalTiltDegrees = 360.0
-Duration = 0.8
+Duration = 1.0
 BuildDuration = 1.0
 DespawnDuration = 0.1
 DestroyEffect = ExtResource("2_uj88d")
 TargetableFactions = 1
 
-[node name="FaceFill" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
+
+[node name="FaceFill" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_faces")
 scale = Vector2(25, 25)
 texture = ExtResource("2_5h3t6")
 
-[node name="Wireframe" type="Sprite2D" parent="."]
+[node name="Wireframe" type="Sprite2D" parent="Visual"]
 modulate = Color(0.3019608, 0.8, 1, 1)
 material = SubResource("ShaderMaterial_cube")
 scale = Vector2(25, 25)
 texture = ExtResource("2_5h3t6")
 
-[node name="BuildMask" type="Sprite2D" parent="."]
+[node name="BuildMask" type="Sprite2D" parent="Visual"]
 visible = false
 material = SubResource("ShaderMaterial_build")
 scale = Vector2(25, 25)

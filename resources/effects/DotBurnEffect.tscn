@@ -121,3 +121,4 @@ IsBuff = false
 z_index = 2
 sprite_frames = SubResource("SpriteFrames_wel1i")
 autoplay = "default"
+offset = Vector2(0, -75)

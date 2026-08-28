@@ -116,7 +116,7 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
 KnockbackForce = 0.0
-StopOnHit = true
+BounceAfterStop = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.25
 RigidBodyPath = NodePath("RigidBody2D")
@@ -171,5 +171,4 @@ shape = SubResource("RectangleShape2D_630y6")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_eecfu")

@@ -63,8 +63,9 @@ shader_parameter/curve_ci = 0.2000000095
 [sub_resource type="RectangleShape2D" id="BodyShape_rr6vl"]
 size = Vector2(180, 120)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_82c6d"]
-size = Vector2(250, 200)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_jlsbm"]
+radius = 300.0
+height = 750.0
 
 [node name="WeaponBrawlRiotBracer" type="CharacterBody2D"]
 z_index = 1
@@ -108,13 +109,16 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("9_jlsbm")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 z_index = 1
 shape = SubResource("BodyShape_rr6vl")
 
 [node name="AttackArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("RectangleShape2D_82c6d")
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="AttackArea"]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_jlsbm")

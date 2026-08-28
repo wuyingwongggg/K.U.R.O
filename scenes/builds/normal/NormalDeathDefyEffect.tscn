@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dd7bwbgahoxnj"]
+
+[ext_resource type="Script" uid="uid://3om3x4nrptsq" path="res://scripts/builds/normal/NormalDeathDefyEffect.cs" id="1"]
+
+[node name="NormalDeathDefyEffect" type="Node"]
+script = ExtResource("1")
+InvincibilityDuration = 3.0
+EffectId = "c4f6a8b0-3d5e-4f7a-9b2c-8e0d6c4a7f93"
+Description = "濒死守护"

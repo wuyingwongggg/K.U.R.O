@@ -29,6 +29,10 @@ namespace Kuros.Core.Effects
 
             if (Actor.StateMachine == null) return;
 
+            // 免疫眩晕（ImmunityFlags.Stun）：直接跳过冻结（效果挂载但无效，
+            // Duration 到期 OnRemoved 因当前状态非 Frozen 自动跳过状态恢复）
+            if (Actor.ActiveImmunities.HasFlag(ImmunityFlags.Stun)) return;
+
             _previousState = Actor.StateMachine.CurrentState?.Name ?? FallbackStateName;
             Actor.StateMachine.ChangeState(FrozenStateName);//？
 

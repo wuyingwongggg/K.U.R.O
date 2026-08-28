@@ -34,7 +34,7 @@ Notes = "激光笔电量"
 PropertyOverrides = Dictionary[String, Variant]({
 "ConsumePerAttack": 15,
 "EffectId": "battery_laser",
-"RecoveryDelaySeconds": 3,
+"RecoveryDelaySeconds": 2,
 "SkillId": "WeaponSkill_LaserPointer"
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
@@ -48,6 +48,6 @@ AnimationName = "Weapon_Stab_LaserPointer"
 DamageMultiplier = 0.5
 ShowHitboxDebug = false
 Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt"), SubResource("Resource_laserbeam"), SubResource("Resource_battery")])
-WarmupDuration = 0.3500000000000001
+WarmupDuration = 0.35
 ActiveDuration = 0.95
-RecoveryDuration = 0.19999999999999996
+RecoveryDuration = 0.2

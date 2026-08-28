@@ -20,7 +20,7 @@ namespace Kuros.Actors.Enemies.Attacks
     ///   y = lerp(startY, targetY, t) - sin(t * π) * PeakHeight
     ///   其中 t = elapsed / Duration ∈ [0, 1]
     /// </summary>
-    public partial class EnemyWaiterAThrowProjectile : Node2D
+    public partial class EnemyWaiterAThrowProjectile : Node2D, Kuros.Fx.IAttackerProvider
     {
         /// <summary>飞行总时长（秒）。</summary>
         [Export] public float Duration { get; set; } = 0.8f;
@@ -125,6 +125,10 @@ namespace Kuros.Actors.Enemies.Attacks
                     Attacker.ApplyEffect(actorEffect);
                     continue;
                 }
+
+                // Attacker 在 AddChild（触发 _Ready）之前注入，保证效果的 _Ready 能读取（如朝向翻转）
+                if (fx is Kuros.Fx.IAttackerProvider attackerProvider)
+                    attackerProvider.Attacker = Attacker;
 
                 GetParent()?.AddChild(fx);
                 if (fx is Node2D fx2d)

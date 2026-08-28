@@ -1,11 +1,9 @@
-[gd_scene load_steps=21 format=3 uid="uid://bwslmpxjkjcu5"]
+[gd_scene load_steps=19 format=3 uid="uid://bwslmpxjkjcu5"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_ss8t0"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_30h37"]
 [ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_ob5nh"]
 [ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_x5kc1"]
-[ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="6_6ewcc"]
-[ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="7_ujict"]
 [ext_resource type="Texture2D" uid="uid://bd5p3dbno4dai" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_qw5cp"]
 [ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="9_857wi"]
 [ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_u4tg5"]
@@ -33,17 +31,14 @@ size = Vector2(6000, 750)
 size = Vector2(6000, 700)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2395, 604, 2427.2266, -545, 2416.4922, 1290, 2387, 1164, 2395, 294, 2372, 12, 2372, -298, 1300, -396, 1300, 14, 1296, -15, 1296, -325, 1319, 759, 1319, 1169, 1318, 1162, 1318, 852, 2387, 854, 1319, 193, 1319, 603, 1304, 579, 1304, 269, -2538.211, 1290, 2139, 1169, 2139, 294, 2139, 193, 2120, 12, 2120, 14, 1045, 170, 2035, 604, 2139, 759, 1045, 269, 225, 170, 225, 261, -20, 261, -20, 158, 214, -10, -840, 158, -840, 246, -1078, 246, -1078, 147, -856, -13, -1078, 557, -1078, 556, -840, 556, -840, 568, -848, 746, -1067, 743, -120, 568, -120, 571, 225, 571, 225, 580, -28, 746, 1049, 747, 1045, 580, 1045, 579, 2035, 603, 2139, 854, 1049, 852, 229, 747, 229, 851, -28, 851, -848, 834, -1067, 834, -1067, 1153, -1067, 1144, -848, 1144, -848, 1156, -113, 1156, -113, 1161, 247, 1161, 247, 1157, 958, 1157, 958, 1162, 2139, 1164, -1887, 1153, -1887, 743, -2554.0781, -545, -1898, 557, 2120, -298, 2120, -396, 1034, -420, 1034, -325, 214, -420, 214, -327, -36, -327, -36, -423, -856, -423, -856, -340, -1088, -340, -1088, -429, -1088, -19, -1088, -30, -856, -30, -36, -13, -36, -17, 214, -17, 1034, -10, 1034, -15, -1898, 147, -1908, -19, -1908, -429)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(1, 0, 4), PackedInt32Array(1, 4, 5, 6), PackedInt32Array(7, 8, 9, 10), PackedInt32Array(11, 12, 13, 14), PackedInt32Array(0, 3, 15), PackedInt32Array(16, 17, 18, 19), PackedInt32Array(3, 2, 20, 21), PackedInt32Array(5, 4, 22, 23), PackedInt32Array(24, 5, 23, 25), PackedInt32Array(8, 25, 23, 16, 26), PackedInt32Array(27, 0, 15, 28), PackedInt32Array(19, 29, 26, 16), PackedInt32Array(30, 31, 32, 33, 34), PackedInt32Array(35, 36, 37, 38, 39), PackedInt32Array(40, 41, 42, 43, 44, 45), PackedInt32Array(43, 46, 47, 44), PackedInt32Array(47, 48, 49, 50, 44), PackedInt32Array(51, 52, 53, 18, 17, 11, 14), PackedInt32Array(17, 54, 27, 11), PackedInt32Array(15, 55, 28), PackedInt32Array(27, 28, 11), PackedInt32Array(14, 56, 51), PackedInt32Array(49, 52, 51, 57, 50), PackedInt32Array(57, 58, 59, 50), PackedInt32Array(44, 60, 61, 45), PackedInt32Array(62, 63, 64, 65), PackedInt32Array(65, 66, 67, 20), PackedInt32Array(68, 69, 70, 71), PackedInt32Array(21, 72, 3), PackedInt32Array(12, 21, 20), PackedInt32Array(13, 12, 20, 71), PackedInt32Array(68, 71, 20, 67), PackedInt32Array(62, 65, 20, 73), PackedInt32Array(74, 73, 20, 75, 76), PackedInt32Array(6, 77, 78, 1), PackedInt32Array(75, 1, 78, 79), PackedInt32Array(10, 80, 79, 7), PackedInt32Array(81, 82, 83, 84), PackedInt32Array(85, 86, 87, 88), PackedInt32Array(89, 90, 91, 39, 38), PackedInt32Array(92, 93, 94, 34, 33), PackedInt32Array(95, 96, 9, 8, 26), PackedInt32Array(40, 45, 74, 76), PackedInt32Array(97, 76, 75, 98), PackedInt32Array(95, 26, 30, 34), PackedInt32Array(92, 33, 35, 39), PackedInt32Array(89, 38, 97, 98), PackedInt32Array(99, 98, 75), PackedInt32Array(88, 99, 75), PackedInt32Array(78, 7, 79), PackedInt32Array(75, 79, 81, 84), PackedInt32Array(88, 75, 84, 85)])
+vertices = PackedVector2Array(2395, 609, 2427.2266, -545, 2416.4922, 1290, 2387, 1169, 2387, 909, 2395, 349, 2372, 17, 2372, -243, -2538.211, 1290, 2139, 1174, 2139, 349, 2139, 228, 2120, 17, 2120, 19, 1300, 19, 1319, 228, 1045, 205, 2035, 609, 2139, 794, 1319, 324, 1045, 324, 225, 205, 225, 316, -20, 316, -20, 193, 214, -5, -840, 193, -840, 301, -1078, 301, -1078, 182, -856, -8, -1078, 562, -1078, 561, -840, 561, -840, 573, -848, 781, -1067, 778, -120, 573, -120, 576, 225, 576, 225, 585, -28, 781, 1045, 585, 1045, 584, 1319, 584, 1319, 608, 1049, 782, 2035, 608, 1319, 794, 2139, 909, 1319, 907, 1049, 907, 229, 782, 229, 906, -28, 906, -848, 889, -1067, 889, -1067, 1158, -1067, 1149, -848, 1149, -848, 1161, -113, 1161, -113, 1166, 247, 1166, 247, 1162, 970, 1162, 970, 1167, 1319, 1167, 1319, 1174, 2139, 1169, -1887, 1158, -1887, 778, -2554.0781, -545, -1898, 562, 2120, -243, 2120, -361, 1034, -385, 1300, -361, 1300, -270, 1034, -270, 214, -385, 214, -272, -36, -272, -36, -388, -856, -388, -856, -285, -1088, -285, -1088, -394, -1088, -14, -1088, -25, -856, -25, -36, -8, -36, -12, 214, -12, 1034, -5, 1034, -10, 1300, -10, -1898, 182, -1908, -14, -1908, -394)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(1, 0, 5), PackedInt32Array(1, 5, 6, 7), PackedInt32Array(3, 2, 8, 9), PackedInt32Array(6, 5, 10, 11), PackedInt32Array(12, 6, 11, 13), PackedInt32Array(14, 13, 11, 15, 16), PackedInt32Array(17, 0, 4, 18), PackedInt32Array(15, 19, 20, 16), PackedInt32Array(21, 22, 23, 24, 25), PackedInt32Array(26, 27, 28, 29, 30), PackedInt32Array(31, 32, 33, 34, 35, 36), PackedInt32Array(34, 37, 38, 35), PackedInt32Array(38, 39, 40, 41, 35), PackedInt32Array(42, 43, 44, 45, 46), PackedInt32Array(45, 47, 17, 48, 46), PackedInt32Array(4, 49, 18), PackedInt32Array(17, 18, 48), PackedInt32Array(48, 50, 51, 46), PackedInt32Array(40, 42, 46, 52, 41), PackedInt32Array(52, 53, 54, 41), PackedInt32Array(35, 55, 56, 36), PackedInt32Array(57, 58, 59, 60), PackedInt32Array(60, 61, 62, 8), PackedInt32Array(63, 64, 65, 66), PackedInt32Array(66, 67, 68, 8), PackedInt32Array(9, 69, 3), PackedInt32Array(68, 9, 8), PackedInt32Array(63, 66, 8, 62), PackedInt32Array(57, 60, 8, 70), PackedInt32Array(71, 70, 8, 72, 73), PackedInt32Array(7, 74, 75, 1), PackedInt32Array(72, 1, 75, 76), PackedInt32Array(77, 78, 79, 76), PackedInt32Array(80, 81, 82, 83), PackedInt32Array(84, 85, 86, 87), PackedInt32Array(88, 89, 90, 30, 29), PackedInt32Array(91, 92, 93, 25, 24), PackedInt32Array(94, 95, 96, 14, 16), PackedInt32Array(94, 16, 21, 25), PackedInt32Array(91, 24, 26, 30), PackedInt32Array(88, 29, 97, 98), PackedInt32Array(31, 36, 71, 73), PackedInt32Array(97, 73, 72, 98), PackedInt32Array(99, 98, 72), PackedInt32Array(87, 99, 72), PackedInt32Array(75, 77, 76), PackedInt32Array(72, 76, 80, 83), PackedInt32Array(87, 72, 83, 84)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2641, -1344, 2512, -1360, 2495, 1543, -2616, 1546)])
 source_geometry_mode = 2
 agent_radius = 80.0
 
 [node name="D9" type="Node2D"]
 y_sort_enabled = true
-
-[node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2000, 850)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false
@@ -86,7 +81,6 @@ shape = SubResource("RectangleShape2D_mxkb7")
 
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
 script = ExtResource("3_ob5nh")
-WavePaths = Array[NodePath]([NodePath("../EnemySpawneManager"), NodePath("../EnemySpawneManager2")])
 WaveClearDelay = 0.0
 PollInterval = 0.30000000000000004
 TriggerArea = NodePath("TriggerArea")
@@ -107,9 +101,6 @@ top_level = true
 z_index = 10
 position = Vector2(0, 356)
 script = ExtResource("4_x5kc1")
-EnemyScenes = Array[PackedScene]([ExtResource("6_6ewcc")])
-MultiEnemySelectionMode = 1
-SpawnCount = 2
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -127,9 +118,7 @@ top_level = true
 z_index = 10
 position = Vector2(0, 356)
 script = ExtResource("4_x5kc1")
-EnemyScenes = Array[PackedScene]([ExtResource("7_ujict")])
 MultiEnemySelectionMode = 1
-SpawnCount = 2
 SpawnInterval = 0.0
 SpawnParentPath = NodePath("..")
 SimultaneousSpawn = true
@@ -235,13 +224,13 @@ position = Vector2(60, 416)
 position = Vector2(67, 1006)
 
 [node name="FurnitureGarbageCanA7" parent="." instance=ExtResource("13_13pey")]
-position = Vector2(1138, 1007)
+position = Vector2(1150, 1007)
 
 [node name="FurnitureGarbageCanA8" parent="." instance=ExtResource("13_13pey")]
-position = Vector2(1124, 424)
+position = Vector2(1147, 424)
 
 [node name="FurnitureGarbageCanA9" parent="." instance=ExtResource("13_13pey")]
-position = Vector2(1116, -170)
+position = Vector2(1141, -170)
 
 [node name="FurnitureGarbageCanA10" parent="." instance=ExtResource("13_13pey")]
 position = Vector2(2192, -143)

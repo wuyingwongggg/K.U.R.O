@@ -8,8 +8,8 @@
 script = ExtResource("1")
 CoreId = "MachineCore"
 DisplayName = "机械协议核心"
-Description = "热量表：攻击和移动时累计热量，按下核心技能键清空当前获取的全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。"
+Description = "热量表：移动时累计热量，按下核心技能键清空当前获取的全部热量，根据消耗的热量提升接下来一段时间的攻击伤害。"
 BuildClass = "Machine"
-AllowedEffectClasses = Array[String](["Machine"])
+AllowedEffectClasses = Array[String](["Machine", "Normal"])
 CoreEffectScene = ExtResource("2")
 Icon = ExtResource("2_bqp2i")

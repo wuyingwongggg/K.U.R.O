@@ -1,18 +1,8 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=7 format=3 uid="uid://bf0i6jxqjqnb5"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=5 format=3 uid="uid://bf0i6jxqjqnb5"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_7jkjn"]
-[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_uybkd"]
 [ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_wr56q"]
 [ext_resource type="PackedScene" uid="uid://c1bk77cs1ipbb" path="res://resources/effects/WeaponBatteryEffect.tscn" id="3_battery"]
-
-[sub_resource type="Resource" id="Resource_a5flt"]
-script = ExtResource("1_7jkjn")
-Trigger = 1
-EffectScene = ExtResource("2_uybkd")
-PropertyOverrides = Dictionary[String, Variant]({
-"KnockbackDistance": 100.0
-})
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_battery"]
 script = ExtResource("1_7jkjn")
@@ -20,9 +10,9 @@ Trigger = 1
 EffectScene = ExtResource("3_battery")
 Notes = "钻头电量"
 PropertyOverrides = Dictionary[String, Variant]({
-"ConsumePerAttack": 15,
+"ConsumePerAttack": 12,
 "EffectId": "battery_drill",
-"RecoveryDelaySeconds": 3,
+"RecoveryDelaySeconds": 2,
 "SkillId": "WeaponSkill_Stab_Drill"
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
@@ -36,8 +26,9 @@ AnimationName = "Weapon_Stab_Drill"
 DamageMultiplier = 0.4
 ShowHitboxDebug = false
 Description = "攻击到敌人时击退该敌人1m并使其速度减少30%持续1秒，长按时持续攻击"
-Effects = Array[ExtResource("1_7jkjn")]([SubResource("Resource_a5flt"), SubResource("Resource_battery")])
+Effects = Array[ExtResource("1_7jkjn")]([SubResource("Resource_battery")])
 WarmupDuration = 0.5
 ActiveDuration = 0.9
 RecoveryDuration = 0.6
+WarmupAnimationSpeed = 1.2
 RecoveryAnimationSpeed = 1.5

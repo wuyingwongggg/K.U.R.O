@@ -29,14 +29,14 @@ namespace Kuros.Core
 		public static event Action<GameActor>? DeathFinalized;
 
 		[ExportCategory("Stats")]
-		[Export] public float Speed = 300.0f;
-		[Export] public float AttackDamage = 5.0f;
+		[Export] public float Speed = 100.0f;
+		[Export] public float AttackDamage = 1.0f;
 		/// <summary>受到的伤害倍率（1 = 正常）。由外部效果设置。</summary>
 		public float IncomingDamageMultiplier { get; set; } = 1f;
 		/// <summary>全局攻速倍率（1 = 正常，2 = 双倍攻速）。由外部效果设置。</summary>
 		public float AttackSpeedMultiplier { get; set; } = 1f;
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
-		[Export] public float AttackCooldown = 1f;
+		[Export] public float AttackCooldown = 0f;
 		[Export] public int MaxHealth = 15;
 		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
 		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
@@ -92,6 +92,7 @@ namespace Kuros.Core
 		private ulong _spriteFlashToken;
 		
 		// GDScript Helper to bypass C# wrapper issues with GDExtension
+		private float _currentMoveSpeed;
 		private Node _spineHelper = null!;
 
 		private bool _deathStarted = false;
@@ -113,11 +114,40 @@ namespace Kuros.Core
 		/// <summary>死亡流程已开始（Dying 或 Dead）：伤害/治疗/特效作用应在此时立即停止，而非等死亡动画结束。</summary>
 		public bool IsDeadOrDying => _deathStarted;
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
+		/// <summary>额外速度加成百分比（加法叠加，供超频/动能增幅等共享——各效果增量写入，移动状态统一消费）。</summary>
+		public float SpeedBonusPercent { get; set; } = 0f;
+		/// <summary>当前实际移动速度（由移动状态写入：Run/Walk/Dash 写各自速度，Idle 写 0）——供攻击模板查询做"移动速度驱动的位移"，与其他状态最小耦合。</summary>
+		public float CurrentMoveSpeed { get => _currentMoveSpeed; set => _currentMoveSpeed = value; }
+		/// <summary>当前移动方向（归一化，由移动状态写入；静止为 Zero）——供攻击模板继承含 Y 轴的移动方向。</summary>
+		public Vector2 CurrentMoveDirection { get; set; } = Vector2.Zero;
+		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>
+		public Func<bool>? IsDashBackWindowActive { get; set; }
+		/// <summary>是否允许在 holding 状态持投掷武器（IsThrowable &amp;&amp; IsThrowWeapon）时闪避——由构筑效果注入。null = 不允许。</summary>
+		public Func<bool>? IsDashFromThrowWeaponHoldingAllowed { get; set; }
+		/// <summary>临时验证开关：允许持投掷武器（IsThrowWeapon）时闪避（构建效果卡完成后由效果注入替代）。</summary>
+		[Export] public bool AllowDashFromThrowWeaponHolding = false;
+		/// <summary>是否允许在 holding 状态持投掷家具（IsThrowable &amp;&amp; !IsThrowWeapon，一次性）时闪避——由构筑效果注入。null = 不允许。</summary>
+		public Func<bool>? IsDashFromThrowFurnitureHoldingAllowed { get; set; }
+		/// <summary>小伤害不打断：受到的伤害 ≤ MaxHealth × SmallDamageHitThresholdRatio 时不进入 Hit 状态（神经稳压）。</summary>
+		public bool SuppressSmallDamageHit { get; set; } = false;
+		/// <summary>小伤害判定阈值（最大生命比例，0.1 = 10%）。</summary>
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float SmallDamageHitThresholdRatio { get; set; } = 0.1f;
 		/// <summary>
 		/// 当前角色持有的免疫标志集合，由 EnemyAttackTemplate 的 GrantedImmunities 字段在攻击期间写入/还原。
 		/// 新增免疫类型只需在 <see cref="ImmunityFlags"/> 枚举中追加值，无需修改此类。
 		/// </summary>
 		public ImmunityFlags ActiveImmunities { get; set; } = ImmunityFlags.None;
+
+		/// <summary>
+		/// 统一击退入口（EFFECT_STANDARD.md 第四条）：ForcedMovement 免疫与生死门检查后写入速度。
+		/// 所有命中击退必须走此方法，禁止直接赋值 Velocity。
+		/// </summary>
+		public virtual void ApplyKnockback(Vector2 direction, float speed)
+		{
+			if (IsDeadOrDying) return;
+			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			Velocity = direction * speed;
+		}
 
 		public float GetSecondsSinceLastDamageTaken()
 		{
@@ -134,6 +164,9 @@ namespace Kuros.Core
 		{
 			CurrentHealth = MaxHealth;
 			CurrentShield = 0;
+
+			// 临时验证：导出开关驱动持物闪避委托（build 效果卡完成后由效果注入替代）
+			IsDashFromThrowWeaponHoldingAllowed = () => AllowDashFromThrowWeaponHolding;
 			
 			
 			
@@ -282,6 +315,28 @@ namespace Kuros.Core
 			// StateMachine._PhysicsProcess is called automatically by Godot if it's in the tree
 		}
 
+		/// <summary>
+		/// 目标的视觉锚点（世界坐标）：优先 VisualEffectArea（模拟视觉身高的锚点——高个子敌人如 b1_fat
+		/// 在 Sprite2D/VisualEffectArea 下配 CollisionShape2D 标记视觉中心），回退 HitArea 中心，再回退目标原点。
+		/// 供生成在目标身上的视觉使用（dot 特效/死亡特效等）——避免高个子敌人特效出现在脚底。
+		/// </summary>
+		public Vector2 GetVisualAnchorWorld()
+		{
+			var visualArea = GetNodeOrNull<Area2D>("VisualEffectArea")
+				?? GetNodeOrNull<Area2D>("Sprite2D/VisualEffectArea")
+				?? FindChild("VisualEffectArea", recursive: true, owned: false) as Area2D;
+			var visualShape = visualArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (visualShape != null)
+				return visualShape.GlobalPosition;
+
+			var hitArea = ResolvePreferredHitArea();
+			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (hitShape != null)
+				return hitShape.GlobalPosition;
+
+			return GlobalPosition;
+		}
+
 		protected virtual Area2D? ResolvePreferredHitArea()
 		{
 			if (_cachedHitArea != null && GodotObject.IsInstanceValid(_cachedHitArea) && _cachedHitArea.IsInsideTree())
@@ -324,6 +379,20 @@ namespace Kuros.Core
 		/// bypassMergeWindow = true 时跳过伤害合并窗口立即结算（用于暴击追加等与基础伤害同源、
 		/// 需要同帧结算以便飘字合并显示的伤害）。
 		/// </summary>
+		/// <summary>
+		/// 环境强制击杀（测试控制台清场用）：优先走正常伤害死亡流程（伤害飘字 + 死亡动画）。
+		/// 伤害被免疫拒绝时回退直接销毁。免疫解除策略由子类重写（如 netAdmin 需先眩晕）。
+		/// </summary>
+		public virtual void KillForced()
+		{
+			if (!DeliverKillDamage() && GodotObject.IsInstanceValid(this))
+				QueueFree();
+		}
+
+		/// <summary>尝试用巨额伤害击杀；被免疫/拦截返回 false。</summary>
+		protected bool DeliverKillDamage()
+			=> TakeDamage(9999, GlobalPosition, null);
+
 		public virtual bool TakeDamage(int damage, Vector2? attackOrigin = null, GameActor? attacker = null, Events.DamageSource damageSource = Events.DamageSource.DirectAttack, bool bypassMergeWindow = false)
 		{
 			if (!CanBeAffected(null)) return false;
@@ -435,7 +504,9 @@ namespace Kuros.Core
 			else
 			{
 				// Force state change to Hit unless this actor is in super-armor phase.
-				if (!IgnoreHitStateOnDamage && StateMachine != null)
+				bool smallHitSuppressed = SuppressSmallDamageHit
+					&& damage <= Mathf.RoundToInt(MaxHealth * SmallDamageHitThresholdRatio);
+				if (!IgnoreHitStateOnDamage && !smallHitSuppressed && StateMachine != null)
 				{
 					if (StateMachine.CurrentState?.Name == "Hit")
 					{

@@ -1,0 +1,330 @@
+[gd_scene load_steps=8 format=3 uid="uid://bwk85v37uychr"]
+
+[ext_resource type="Script" uid="uid://ba63qrjqk61ii" path="res://scripts/ui/QuickBarPanel.cs" id="1_qbp"]
+[ext_resource type="Texture2D" uid="uid://b6l52tfec8bsb" path="res://assets/ui/item_bar/解锁框.png" id="2_qbp"]
+[ext_resource type="Texture2D" uid="uid://bc2n1t5tcnxeg" path="res://assets/ui/item_bar/选中框.png" id="3_qbp"]
+[ext_resource type="Texture2D" uid="uid://cxw8rt1fp420t" path="res://assets/ui/item_bar/锁图.png" id="4_qbp"]
+[ext_resource type="Texture2D" uid="uid://cx8mvmvrwdlkj" path="res://assets/ui/金币.png" id="5_qbp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_transparent"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="TrashNormal"]
+bg_color = Color(0.5, 0.2, 0.2, 0.8)
+
+[node name="QuickBarPanel" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+script = ExtResource("1_qbp")
+EmptySlotFrameTexture = ExtResource("2_qbp")
+SelectedFrameTexture = ExtResource("3_qbp")
+LockedFrameTexture = ExtResource("4_qbp")
+
+[node name="QuickBarContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.006
+anchor_top = 0.8696
+anchor_right = 0.319
+anchor_bottom = 0.9773
+offset_left = 1.0000038
+offset_top = -0.016685486
+offset_right = 1.2000122
+offset_bottom = -0.05001831
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="QuickSlot1" type="Panel" parent="QuickBarContainer"]
+custom_minimum_size = Vector2(120, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="SlotFrame" type="TextureRect" parent="QuickBarContainer/QuickSlot1"]
+modulate = Color(1, 1, 1, 0.9019608)
+self_modulate = Color(1, 1, 1, 0.9019608)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5
+metadata/_edit_use_anchors_ = true
+
+[node name="QuickSlotIcon1" type="TextureRect" parent="QuickBarContainer/QuickSlot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+metadata/_edit_use_anchors_ = true
+
+[node name="QuickSlotLabel1" type="Label" parent="QuickBarContainer/QuickSlot1"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot2" type="Panel" parent="QuickBarContainer"]
+custom_minimum_size = Vector2(120, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="SlotFrame" type="TextureRect" parent="QuickBarContainer/QuickSlot2"]
+modulate = Color(1, 1, 1, 0.9019608)
+self_modulate = Color(1, 1, 1, 0.9019608)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5
+
+[node name="QuickSlotIcon2" type="TextureRect" parent="QuickBarContainer/QuickSlot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel2" type="Label" parent="QuickBarContainer/QuickSlot2"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot3" type="Panel" parent="QuickBarContainer"]
+custom_minimum_size = Vector2(120, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="SlotFrame" type="TextureRect" parent="QuickBarContainer/QuickSlot3"]
+modulate = Color(1, 1, 1, 0.9019608)
+self_modulate = Color(1, 1, 1, 0.9019608)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5
+
+[node name="QuickSlotIcon3" type="TextureRect" parent="QuickBarContainer/QuickSlot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel3" type="Label" parent="QuickBarContainer/QuickSlot3"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot4" type="Panel" parent="QuickBarContainer"]
+custom_minimum_size = Vector2(120, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="SlotFrame" type="TextureRect" parent="QuickBarContainer/QuickSlot4"]
+modulate = Color(1, 1, 1, 0.9019608)
+self_modulate = Color(1, 1, 1, 0.9019608)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5
+
+[node name="QuickSlotIcon4" type="TextureRect" parent="QuickBarContainer/QuickSlot4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel4" type="Label" parent="QuickBarContainer/QuickSlot4"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="QuickSlot5" type="Panel" parent="QuickBarContainer"]
+custom_minimum_size = Vector2(120, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="SlotFrame" type="TextureRect" parent="QuickBarContainer/QuickSlot5"]
+modulate = Color(1, 1, 1, 0.9019608)
+self_modulate = Color(1, 1, 1, 0.9019608)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5
+
+[node name="QuickSlotIcon5" type="TextureRect" parent="QuickBarContainer/QuickSlot5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuickSlotLabel5" type="Label" parent="QuickBarContainer/QuickSlot5"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GoldSection" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.9342865
+anchor_top = 0.93057024
+anchor_right = 0.9822865
+anchor_bottom = 0.97357017
+offset_left = 0.16992188
+offset_top = -0.01586914
+offset_right = 0.039916992
+offset_bottom = -0.45587158
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 13
+alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="GoldIcon" type="TextureRect" parent="GoldSection"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+texture = ExtResource("5_qbp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="GoldSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 11
+theme_override_font_sizes/font_size = 33
+text = "0"
+vertical_alignment = 1
+
+[node name="TrashBin" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.325
+anchor_top = 0.88
+anchor_right = 0.375
+anchor_bottom = 0.95
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("TrashNormal")
+metadata/_edit_use_anchors_ = true
+
+[node name="TrashLabel" type="Label" parent="TrashBin"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "分解"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogDim" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="DeleteConfirmDialog" type="ConfirmationDialog" parent="."]
+oversampling_override = 1.0
+title = "确认分解"
+initial_position = 2
+size = Vector2i(320, 120)
+ok_button_text = "确认分解"
+dialog_text = "确定要分解这个物品吗？此操作无法撤销。"
+cancel_button_text = "取消"

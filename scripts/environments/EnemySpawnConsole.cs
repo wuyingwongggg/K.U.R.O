@@ -307,7 +307,8 @@ namespace Kuros.Environments
             KillAllEnemies();
         }
 
-        /// <summary>消灭场景内所有敌人（与 EnemySpawnConsoleWindow.OnKillAllEnemiesPressed 逻辑一致）。</summary>
+        /// <summary>消灭场景内所有敌人（与 EnemySpawnConsoleWindow.OnKillAllEnemiesPressed 逻辑一致）。
+        /// 统一走 GameActor.KillForced()——免疫解除策略由敌人自身实现（如 netAdmin 先眩晕再伤害）。</summary>
         private void KillAllEnemies()
         {
             var enemies = GetTree().GetNodesInGroup("enemies");
@@ -315,7 +316,7 @@ namespace Kuros.Environments
             {
                 if (!GodotObject.IsInstanceValid(enemyNode)) continue;
                 if (enemyNode is GameActor actor)
-                    actor.TakeDamage(9999, actor.GlobalPosition, null);
+                    actor.KillForced();
                 else if (enemyNode is Node2D node2D)
                     node2D.QueueFree();
             }
@@ -443,8 +444,9 @@ namespace Kuros.Environments
             var scenes = GetConfiguredEnemyScenes();
             if (scenes.Count == 0)
             {
+                // 不拦截开窗：窗口内有"未配置敌人"空状态占位（EnemySpawnConsoleWindow.PopulateEnemyList），
+                // 且"消灭全部敌人"按钮在没有敌人列表时依然可用，窗口仍有一定用途。
                 GD.PushWarning("[EnemySpawnConsole] No enemy scenes configured in EnemyScenes!");
-                return;
             }
 
             EnsureSpawnWindow();
@@ -1031,6 +1033,10 @@ namespace Kuros.Environments
             {
                 actor.FlipFacing(false);
             }
+
+            // 测试控制台生成的敌人不授予分数（死亡/清场均不加分）
+            if (instance is SampleEnemy sampleEnemy)
+                sampleEnemy.GrantsScore = false;
 
             if (instance is Node node)
             {

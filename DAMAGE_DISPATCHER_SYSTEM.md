@@ -95,6 +95,20 @@ public enum TargetableFactions
 | `"enemies"` | Enemy |
 | `"world_items"` | WorldItem |
 
+### WorldItem 阵营的实际可伤害对象
+
+`world_items` 组包含两类，但**只有 DestructibleObject 可被伤害**：
+
+| 对象 | 结构 | 伤害接口 | 可被伤害 |
+|------|------|---------|---------|
+| `DestructibleObject`（可破坏物/屏障） | Node2D + StaticBody2D 子节点（层 1）+ `world_items` 组 | `TakeDamage(float)`（HP/摧毁） | ✓ |
+| `WorldItemEntity`（武器/物品掉落） | CharacterBody2D（body 层 0）+ TriggerArea（层 2）+ `world_items` 组 | 无 | ✗ 免疫 |
+| `RigidBodyWorldItemEntity`（投掷武器掉落） | Node2D + GrabArea（层 2）+ `world_items` 组 | 无 | ✗ 免疫 |
+
+判定差异：
+- DestructibleObject 走 **Body** 路径（StaticBody2D 层 1，`GetOverlappingBodies`/`BodyEntered`）
+- 掉落物走 **Area** 路径（层 2）——即使被物理检测到，`ResolveDamageReceiver` 因无 `TakeDamage` 返回 null
+
 ---
 
 ## 自伤保护

@@ -61,7 +61,7 @@ namespace Kuros.Systems
         /// 根据当前总分，计算下一次触发所需的累计总分。
         /// 返回 -1 表示超过最大触发次数。
         /// </summary>
-        public int GetNextThreshold(int currentScore, int maxTriggers = 20)
+        public int GetNextThreshold(int currentScore, int maxTriggers = 98)
         {
             for (int lv = 1; lv <= maxTriggers; lv++)
             {
@@ -75,7 +75,7 @@ namespace Kuros.Systems
         /// <summary>
         /// 根据当前总分，计算已触发的次数。
         /// </summary>
-        public int GetTriggerCount(int currentScore, int maxTriggers = 20)
+        public int GetTriggerCount(int currentScore, int maxTriggers = 98)
         {
             int count = 0;
             for (int lv = 1; lv <= maxTriggers; lv++)

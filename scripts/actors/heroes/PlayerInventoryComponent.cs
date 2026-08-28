@@ -329,11 +329,12 @@ namespace Kuros.Actors.Heroes
                 }
             }
 
-            // 步驟4：剩余物品放入物品栏（会自动替换空白道具）
+            // 步驟4：背包（Backpack）当前无 UI 界面，放入后玩家不可见——
+            // 快捷栏放不下的剩余物品直接拒绝并提示（不再溢出到 Backpack）
             if (remaining > 0)
             {
-                int addedToBackpack = Backpack.AddItem(item, remaining);
-                remaining -= addedToBackpack;
+                GameLogger.Warn(nameof(PlayerInventoryComponent), $"快捷栏已满，拒绝拾取 '{item.DisplayName}' x{remaining}（背包无 UI，避免物品不可见）");
+                ShowInventoryFullMessage(item, remaining);
             }
 
             int totalAdded = requestedAmount - remaining;
@@ -424,6 +425,15 @@ namespace Kuros.Actors.Heroes
             FurnitureSlotStack = null;
             FurnitureSlotChanged?.Invoke();
         }
+        /// <summary>
+        /// 快捷栏/背包已满提示（轻量状态消息，避免物品静默丢失）。
+        /// </summary>
+        private void ShowInventoryFullMessage(ItemDefinition item, int amount)
+        {
+            var battleHUD = Kuros.Managers.UIManager.Instance?.GetUI<Kuros.UI.BattleHUD>("BattleHUD");
+            battleHUD?.ShowStatusMessage($"背包已满，无法拾取 {item.DisplayName}" + (amount > 1 ? $" x{amount}" : ""));
+        }
+
         private void ShowItemObtainedPopup(ItemDefinition item)
         {
             // 全局开关：关闭后跳过弹窗（不打断游戏流程）

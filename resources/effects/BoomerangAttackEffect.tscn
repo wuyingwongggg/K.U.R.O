@@ -19,22 +19,28 @@ Duration = 15.0
 HitPlayerDelay = 0.1
 Damage = 20
 DamageInterval = 0.30000000000000004
-Pseudo3DTargetPath = NodePath("Sprite2D")
+EnableSlowOnHit = true
+SlowPercent = 100.0
+SlowDuration = 0.5
+Pseudo3DTargetPath = NodePath("Visual/Sprite2D")
 Pseudo3DXAngle = 55.0
 Pseudo3DZSpeed = 2000.0
 
-[node name="AfterimageController" type="Node" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -200)
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+scale = Vector2(0.33, 0.33)
+texture = ExtResource("3_yeyl0")
+offset = Vector2(0, 150)
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="AfterimageController" type="Node" parent="Visual"]
 script = ExtResource("2_6aiag")
 sprite_path = NodePath("../Sprite2D")
 is_spine = false
 interval = 0.01
 lifetime = 0.1
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.33, 0.33)
-texture = ExtResource("3_yeyl0")
-offset = Vector2(0, 150)
-region_rect = Rect2(0, 0, 128, 128)
 
 [node name="AttackArea" type="Area2D" parent="."]
 

@@ -143,12 +143,17 @@ namespace Kuros.Actors.Heroes.States
                 return;
             }
             
-            // Run Logic (2x Speed)
+            // Run Logic：读取 MainCharacter.RunSpeedMultiplier（与 MainCharacterRunState 一致，
+            // 供构筑效果重载；非 MainCharacter 回退默认 2x）+ SpeedBonusPercent 加法加成
+            float runMultiplier = (Actor as MainCharacter)?.RunSpeedMultiplier ?? 2.0f;
+            float speed = Actor.Speed * runMultiplier * (1f + Actor.SpeedBonusPercent / 100f);
             Vector2 velocity = Actor.Velocity;
-            velocity.X = input.X * (Actor.Speed * 2.0f);
-            velocity.Y = input.Y * (Actor.Speed * 2.0f);
-            
+            velocity.X = input.X * speed;
+            velocity.Y = input.Y * speed;
+
             Actor.Velocity = velocity;
+            Actor.CurrentMoveSpeed = speed;
+            Actor.CurrentMoveDirection = input.Normalized();
             
             if (input.X != 0)
             {

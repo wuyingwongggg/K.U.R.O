@@ -274,7 +274,20 @@ namespace Kuros.Actors.Heroes
 
         public bool TryTriggerThrowAfterAnimation()
         {
-            return TryHandleDrop(DropDisposition.Throw, skipAnimation: true);
+            bool result = TryHandleDrop(DropDisposition.Throw, skipAnimation: true);
+            if (result && _actor is SamplePlayer player)
+            {
+                // 投掷物已出手：置 ThrowInProgress=false（每帧 UpdateAttachmentIcon 持续抑制显示——投掷后摇不显示任何投掷物/武器）
+                // 并立即清空手上视觉。投掷武器另有 IsThrowOnCooldown 双保险；投掷家具（一次性，无 cooldown）靠此抑制，
+                // 否则家具投出后 activeItem 回落到背包选中投掷武器会在 Throw 状态被举起显示
+                var holding = player.GetNodeOrNull<PlayerItemAttachment>("ItemHoldingAttachment");
+                if (holding != null)
+                {
+                    holding.SetThrowInProgress(false);
+                    holding.ClearHeldVisual();
+                }
+            }
+            return result;
         }
 
         private bool TryHandleDrop(DropDisposition disposition)

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://dpykuqeiecb5d"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="Texture2D" uid="uid://dq3fb1iccohuo" path="res://assets/BuildIcon/Normal_A_005_损伤回收.png" id="3_316mr"]
+[ext_resource type="PackedScene" uid="uid://yuus4ecgba6a" path="res://scenes/builds/normal/NormalDamageRecoveryEffect.tscn" id="3_scene"]
+
+[sub_resource type="Resource" id="Resource_A005"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([50.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildNormal_A_005"
+DisplayName = "损伤回收"
+Description = "受到伤害后一定时间内对敌人造成伤害，恢复其损失生命的{0}%"
+BuildClass = "Normal"
+Rarity = 1
+Icon = ExtResource("3_316mr")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A005")])

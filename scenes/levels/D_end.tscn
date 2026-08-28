@@ -1,15 +1,15 @@
 [gd_scene load_steps=30 format=3 uid="uid://5pavro7ckavp"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_qabdi"]
-[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bbiyg"]
-[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="3_jogmq"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_qabdi"]
+[ext_resource type="Script" uid="uid://dihr45ld5purc" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_bbiyg"]
+[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="3_jogmq"]
 [ext_resource type="Resource" uid="uid://bhqmvtwinno80" path="res://resources/cutscene/D_end_intro.tres" id="3_pspbi"]
-[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="4_6uib4"]
-[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="5_ksden"]
+[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="4_6uib4"]
+[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="5_ksden"]
 [ext_resource type="PackedScene" uid="uid://bpjv2iuy8x0hw" path="res://scenes/actors/characters/Enemy_D1_netAdmin.tscn" id="6_af2qn"]
 [ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="7_ywdm1"]
 [ext_resource type="Texture2D" uid="uid://cgw7csa67dgn4" path="res://assets/environments/scene_4_hotel/floor2.png" id="8_qabdi"]
-[ext_resource type="Texture2D" uid="uid://bmoau1a7flcvs" path="res://assets/environments/scene_4_hotel/wall5.png" id="9_bbiyg"]
+[ext_resource type="Texture2D" uid="uid://b68me1omew0t6" path="res://assets/environments/scene_4_hotel/wall5.png" id="9_bbiyg"]
 [ext_resource type="PackedScene" uid="uid://cn3woqsyy4see" path="res://scenes/environments/elevatorGate_D.tscn" id="10_jogmq"]
 [ext_resource type="PackedScene" uid="uid://bah3sya2wxtwv" path="res://scenes/items/Furniture_D_tableOfficeB.tscn" id="13_wglre"]
 [ext_resource type="PackedScene" uid="uid://o7ewxdu8bt76" path="res://scenes/items/Furniture_D_tableOfficeB_bwd.tscn" id="14_ms071"]
@@ -49,11 +49,11 @@ size = Vector2(700, 1500)
 size = Vector2(700, 700)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wfnu5"]
-size = Vector2(300, 200)
+size = Vector2(375.95404, 239.12387)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2298, 1016, 2405.25, 1016, 2405.2031, 1146, 2298, 1146, -2240, 901, -2117, 63, -1393, 63, -1393, 298, -1730, 901, -933, 298, -933, 59, -386, 59, -386, 295, -621, 941, -818, 1246, 74, 295, 74, 59, 283, 59, 283, 62, 568, 62, 568, 329, -111, 941, 1078, 329, 1078, 62, 1089, 62, 1089, 63, 1999, 63, 1999, -349, 2298, -349, 2298, 1513, 1957, 1513, 1957, 1285, 1662, 1285, 1662, 1248, 1344, 1248, 1344, 939, 834, 939, 834, 1248, 752, 1248, 92, 1246, 752, 1252, 92, 1252, -111, 1246, -621, 1246, -818, 1253, -1470, 1253, -1470, 1247, -1730, 1247, -2240, 1247, -2380, 1247, -2594, -349, -2380, 1513, -2594, 1513, -2117, -349)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8), PackedInt32Array(9, 10, 11, 12, 13, 14), PackedInt32Array(15, 16, 17, 18), PackedInt32Array(15, 18, 19, 20, 21), PackedInt32Array(22, 23, 24, 25), PackedInt32Array(26, 27, 28, 0), PackedInt32Array(3, 29, 30, 31), PackedInt32Array(31, 32, 33), PackedInt32Array(33, 34, 35), PackedInt32Array(36, 37, 38, 39, 21, 20), PackedInt32Array(38, 40, 41, 39), PackedInt32Array(39, 42, 21), PackedInt32Array(13, 43, 14), PackedInt32Array(14, 44, 45, 46, 7, 9), PackedInt32Array(46, 47, 8, 7), PackedInt32Array(4, 48, 49, 50), PackedInt32Array(49, 51, 52, 50), PackedInt32Array(4, 50, 53, 5), PackedInt32Array(22, 25, 26, 0, 3, 31, 33, 35), PackedInt32Array(22, 35, 36, 20), PackedInt32Array(12, 15, 21, 13)])
+vertices = PackedVector2Array(2298, 1016, 2405.25, 1016, 2405.2031, 1146, 2298, 1146, -2240, 911, -2117, 63, -1393, 63, -1393, 303, -1730, 911, -933, 303, -933, 59, -386, 59, -386, 300, -621, 951, -818, 1246, 74, 300, 74, 59, 283, 59, 283, 62, 568, 62, 568, 339, 1078, 339, 1078, 62, 1089, 62, 1089, 63, 1999, 63, 1999, -349, 2298, -349, 2298, 1513, 1957, 1513, 1957, 1315, 1662, 1315, 1662, 1248, 1344, 1248, 1344, 949, 834, 949, 834, 1248, 752, 1248, 92, 1246, -111, 951, 752, 1252, 92, 1252, -111, 1246, -621, 1246, -818, 1253, -1470, 1253, -1470, 1247, -1730, 1247, -2240, 1247, -2380, 1247, -2594, -349, -2380, 1513, -2594, 1513, -2117, -349)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8), PackedInt32Array(9, 10, 11, 12, 13, 14), PackedInt32Array(15, 16, 17, 18), PackedInt32Array(18, 19, 20, 15), PackedInt32Array(21, 22, 23, 24), PackedInt32Array(25, 26, 27, 0), PackedInt32Array(3, 28, 29, 30), PackedInt32Array(30, 31, 32, 0, 3), PackedInt32Array(32, 33, 34, 0), PackedInt32Array(35, 36, 37, 38, 39, 12, 15, 20), PackedInt32Array(37, 40, 41, 38), PackedInt32Array(38, 42, 39), PackedInt32Array(13, 43, 14), PackedInt32Array(14, 44, 45, 46, 7, 9), PackedInt32Array(46, 47, 8, 7), PackedInt32Array(4, 48, 49, 50), PackedInt32Array(49, 51, 52, 50), PackedInt32Array(4, 50, 53, 5), PackedInt32Array(21, 24, 25, 0, 34), PackedInt32Array(39, 13, 12), PackedInt32Array(35, 20, 21, 34)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2674, -1241, 2486, -1224, 2485, 1762, -2674, 1754)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -62,7 +62,7 @@ agent_radius = 80.0
 y_sort_enabled = true
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2000, 750)
+position = Vector2(-2252, 571)
 
 [node name="BossSpawnPoint" type="Node2D" parent="."]
 position = Vector2(1500, -300)
@@ -226,13 +226,12 @@ shape = SubResource("RectangleShape2D_tl38j")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(2995, 742.00006)
+position = Vector2(2977.1685, 737.8858)
 rotation = 0.56548667
 shape = SubResource("RectangleShape2D_wfnu5")
 debug_color = Color(0, 0, 0, 0.19607843)
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 

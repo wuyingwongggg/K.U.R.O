@@ -38,8 +38,9 @@ load_path = "res://.godot/imported/闸门刀.png-62da3b15c6dbcdb7dc0259889e21b21
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofv0e"]
 size = Vector2(620, 60)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ofv0e"]
-radius = 360.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_waoek"]
+radius = 900.0
+height = 1900.0
 
 [node name="WeaponSlashBarrierGate" type="CharacterBody2D"]
 z_index = 1
@@ -67,6 +68,7 @@ material = SubResource("ShaderMaterial_lo6ct")
 texture = SubResource("CompressedTexture2D_ofv0e")
 
 [node name="CollisionArea" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionArea"]
 position = Vector2(0, 12)
@@ -77,4 +79,5 @@ visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
-shape = SubResource("CircleShape2D_ofv0e")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_waoek")

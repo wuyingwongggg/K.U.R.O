@@ -14,6 +14,8 @@ namespace Kuros.Items.Weapons
         [Export] public WeaponSkillType SkillType { get; set; } = WeaponSkillType.Passive;
         [Export] public string AnimationName { get; set; } = string.Empty;
         [Export(PropertyHint.Range, "0,5,0.1")] public float DamageMultiplier { get; set; } = 1f;
+        /// <summary>冲刺攻击伤害倍率。-1 = 用普通 DamageMultiplier。</summary>
+        [Export(PropertyHint.Range, "-1,5,0.1")] public float DashDamageMultiplier { get; set; } = -1f;
         [Export(PropertyHint.Range, "0,30,0.1")] public float CooldownSeconds { get; set; } = 0.5f;
         [ExportGroup("Hitbox Debug")]
         [Export] public bool ShowHitboxDebug { get; set; } = true;
@@ -41,6 +43,19 @@ namespace Kuros.Items.Weapons
 
         [Export(PropertyHint.Range, "0.1,3,0.1")]
         public float RecoveryAnimationSpeed { get; set; } = 1.0f;
+
+        [ExportGroup("Dash Attack Override")]
+        [Export(PropertyHint.MultilineText)] public string DashAttackTimingNote { get; set; } = "冲刺攻击（EnableDashMovement）专属配置；负数/空 = 使用普通攻击配置";
+        /// <summary>冲刺攻击动画名（Spine）。空 = 用普通攻击动画（AnimationName）。</summary>
+        [Export] public string DashAnimationName { get; set; } = string.Empty;
+        /// <summary>冲刺动画阶段时长（秒）。-1 = 用普通阶段（WarmupDuration 或模板默认）。</summary>
+        [Export(PropertyHint.Range, "-1,5,0.01")] public float DashWarmupDuration { get; set; } = -1f;
+        [Export(PropertyHint.Range, "-1,5,0.01")] public float DashActiveDuration { get; set; } = -1f;
+        [Export(PropertyHint.Range, "-1,5,0.01")] public float DashRecoveryDuration { get; set; } = -1f;
+        /// <summary>冲刺动画各阶段播放速度。-1 = 用普通动画速度。</summary>
+        [Export(PropertyHint.Range, "-1,3,0.1")] public float DashWarmupAnimationSpeed { get; set; } = -1f;
+        [Export(PropertyHint.Range, "-1,3,0.1")] public float DashActiveAnimationSpeed { get; set; } = -1f;
+        [Export(PropertyHint.Range, "-1,3,0.1")] public float DashRecoveryAnimationSpeed { get; set; } = -1f;
 
         public bool IsUsableInState(string stateName)
         {

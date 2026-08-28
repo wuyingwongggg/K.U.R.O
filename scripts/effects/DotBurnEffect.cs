@@ -61,11 +61,11 @@ namespace Kuros.Effects
             // 统一判空：Actor 由 Initialize 赋值，防御未来应用路径变更
             if (Actor == null) return;
 
-            // 火焰特效跟随目标 HitArea 中心
+            // 火焰特效跟随目标视觉锚点（VisualEffectArea 优先，回退 HitArea/原点——高个子敌人火焰不落在脚底）
             if (_burnVisual != null)
             {
                 _burnVisual.Visible = true;
-                _burnVisual.GlobalPosition = GetHitCenterWorld(Actor);
+                _burnVisual.GlobalPosition = Actor.GetVisualAnchorWorld();
             }
 
             _tickAccum += (float)delta;
@@ -97,14 +97,5 @@ namespace Kuros.Effects
             _burnVisual.Visible = false;
         }
 
-        private static Vector2 GetHitCenterWorld(GameActor target)
-        {
-            var hitArea = target.GetNodeOrNull<Area2D>("HitArea")
-                ?? target.FindChild("HitArea", recursive: true, owned: false) as Area2D;
-            var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-            return hitShape?.GlobalPosition
-                ?? hitArea?.GlobalPosition
-                ?? target.GlobalPosition;
-        }
     }
 }

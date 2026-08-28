@@ -403,13 +403,6 @@ namespace Kuros.UI
 				return true;
 			}
 
-			// 检查物品栏是否打开
-			var inventoryWindow = Kuros.Managers.UIManager.Instance?.GetUI<InventoryWindow>("InventoryWindow");
-			if (inventoryWindow != null && inventoryWindow.Visible)
-			{
-				return true;
-			}
-
 			// 检查对话是否激活
 			if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive)
 			{

@@ -6,14 +6,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8esxr"]
 size = Vector2(342, 198)
 
-[node name="SpikeAttackEffect" type="Node"]
+[node name="SpikeAttackEffect" type="Node2D"]
 script = ExtResource("1_dmpqe")
 DamagePerTick = 10
-SpeedSlowPercent = 50.0
+SpeedSlowPercent = 75.0
 FadeOutDuration = 0.5
-EffectId = "f0f1b62e-cf75-4e12-b3ce-5758c772584f"
-DisplayName = "伤害减速"
-Description = "对象进入该范围后持续收到伤害并减速"
 Duration = 20.0
 
 [node name="Area2D" type="Area2D" parent="."]

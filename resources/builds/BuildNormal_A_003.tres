@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://c4bch6lqamjy"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://8s6kddgs7ja" path="res://scenes/builds/normal/NormalEmergencyRepairEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://wiykieo2i0di" path="res://assets/BuildIcon/Normal_A_003_应急修复.png" id="3_w2i77"]
+
+[sub_resource type="Resource" id="Resource_A003"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+PropertyOverrides = Dictionary[String, Variant]({
+"CooldownSeconds": 20.0,
+"Duration": 0.0,
+"TierValues": Array[float]([15.0, 30.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildNormal_A_003"
+DisplayName = "应急修复"
+Description = "受到伤害后若生命值低于{0}%/{1}%，则在5秒内恢复最大生命的20%"
+BuildClass = "Normal"
+MaxStacks = 2
+Icon = ExtResource("3_w2i77")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A003")])

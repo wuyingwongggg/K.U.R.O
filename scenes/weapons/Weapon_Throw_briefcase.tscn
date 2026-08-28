@@ -32,7 +32,7 @@ shader_parameter/highlight_interval = 1.00000002375
 size = Vector2(400, 250)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ec1yi"]
-size = Vector2(300, 250)
+size = Vector2(200, 250)
 
 [node name="WeaponThrowBriefcase" type="Node2D"]
 z_index = 1
@@ -44,6 +44,7 @@ DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
 KnockbackForce = 0.0
+BounceAfterStop = true
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
@@ -86,5 +87,4 @@ shape = SubResource("RectangleShape2D_0wnlg")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_ec1yi")

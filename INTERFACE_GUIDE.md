@@ -8,6 +8,7 @@
 |---|---|---|---|
 | `IFacingDirectional` | `Kuros.Fx` | [scripts/fx/IFacingDirectional.cs](../scripts/fx/IFacingDirectional.cs) | 传递朝向信息 |
 | `IDamageable` | `Kuros.Core` | [scripts/core/IDamageable.cs](../scripts/core/IDamageable.cs) | 接收伤害 |
+| `IAttackerProvider` | `Kuros.Fx` | [scripts/fx/IAttackerProvider.cs](../scripts/fx/IAttackerProvider.cs) | 传递攻击者 |
 
 ---
 
@@ -139,7 +140,83 @@ public partial class MyBreakableObject : Node, IDamageable
 
 ---
 
-## 三、设计原则
+## 三、IAttackerProvider
+
+### 定义
+
+```csharp
+namespace Kuros.Fx
+{
+	public interface IAttackerProvider
+	{
+		GameActor? Attacker { get; set; }
+	}
+}
+```
+
+### 用途
+
+攻击特效/投射物造成伤害时需要知道攻击者（`AllowSelfDamage` 自伤保护、阵营过滤、击退来源）。通过接口显式传递，避免从父节点猜测——父节点下第一个敌人不一定是发射者，解析错误会导致自伤保护失效（打自己）。
+
+### 调用方
+
+**EnemyAttackTemplate.SpawnEffectAtEnemy()**（敌人攻击特效）：
+
+```csharp
+// scripts/actors/enemies/attacks/EnemyAttackTemplate.cs
+if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+{
+	attackerProvider.Attacker = Enemy;
+}
+```
+
+**RigidBodyWorldItemEntity 投掷系统**（投掷武器特效，如回旋镖）：
+
+```csharp
+// scripts/items/world/RigidBodyWorldItemEntity.cs（SpawnThrowDestroyEffects / Destroy）
+if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+{
+	attackerProvider.Attacker = LastDroppedBy;
+}
+```
+
+### 实现方
+
+| 类 | 文件 |
+|---|---|
+| `LaserBeamA` | [scripts/fx/LaserBeamA.cs](../scripts/fx/LaserBeamA.cs) |
+| `LaserBeamUltimate` | [scripts/fx/LaserBeamUltimate.cs](../scripts/fx/LaserBeamUltimate.cs) |
+| `EnemyPaperBullet` | [scripts/fx/EnemyPaperBullet.cs](../scripts/fx/EnemyPaperBullet.cs) |
+| `RotatingCube` | [scripts/fx/RotatingCube.cs](../scripts/fx/RotatingCube.cs) |
+| `EnemyWaiterAThrowProjectile` | [scripts/actors/enemies/attacks/EnemyWaiterAThrowProjectile.cs](../scripts/actors/enemies/attacks/EnemyWaiterAThrowProjectile.cs) |
+| `BoomerangAttackEffect` | [scripts/effects/BoomerangAttackEffect.cs](../scripts/effects/BoomerangAttackEffect.cs) |
+| `ECoreAttackEffect` | [scripts/effects/ECoreAttackEffect.cs](../scripts/effects/ECoreAttackEffect.cs) |
+
+### 新增实现步骤
+
+1. 类声明加 `, IAttackerProvider`
+2. 提供 `GameActor? Attacker { get; set; }` 属性（可以是显式属性，或委托给已有 `_attacker` 字段的访问器）
+
+```csharp
+public partial class MyNewFx : Node2D, IAttackerProvider
+{
+	public GameActor? Attacker
+	{
+		get => _attacker;
+		set => _attacker = value;
+	}
+}
+```
+
+> **注意**：C# 字段不能实现接口属性。必须用 `{ get; set; }` 属性，否则编译报错 CS0535（同 IFacingDirectional）。
+
+### 与 ResolveAttacker 的关系
+
+`ResolveAttacker()`（父节点猜测）保留为**兜底**：生成方已显式设置 `Attacker` 时优先使用显式值，未设置时退回父节点解析。
+
+---
+
+## 四、设计原则
 
 ```
 调用方                          接口                           实现方
@@ -150,6 +227,14 @@ EnemyAttackTemplate  ──→  IFacingDirectional  ←──  EnemyBullet
 
 SamplePlayer         ──→  IDamageable          ←──  DestructibleWorldItem
 												   (未来：BreakableWall, ExplosiveBarrel...)
+
+EnemyAttackTemplate  ──→  IAttackerProvider    ←──  LaserBeamA
+RigidBodyWorldItem   ──→                       ←──  LaserBeamUltimate
+(投掷系统)                                       ←──  EnemyPaperBullet
+													   RotatingCube
+													   EnemyWaiterAThrowProjectile
+													   BoomerangAttackEffect
+													   ECoreAttackEffect
 ```
 
 - **调用方只依赖接口**，不 import 实现类的命名空间

@@ -31,7 +31,6 @@ namespace Kuros.UI
         private PackedScene? _compendiumScene;
 
         // 缓存的窗口引用，避免每次ESC都遍历场景树
-        private InventoryWindow? _cachedInventoryWindow;
         private CompendiumWindow? _cachedCompendiumWindow;
         private SkillDetailWindow? _cachedSkillDetailWindow;
         private EnemySpawnConsoleWindow? _cachedEnemySpawnConsoleWindow;
@@ -132,16 +131,6 @@ namespace Kuros.UI
                     return;
                 }
                 
-                // 检查物品栏是否打开
-                bool inventoryOpen = IsInventoryWindowOpen();
-                
-                if (inventoryOpen)
-                {
-                    // 物品栏打开时，ESC键会被物品栏处理（关闭物品栏），这里不处理
-                    GD.Print("BattleMenu._Input: 物品栏打开，ESC键由物品栏处理，不拦截");
-                    return; // 不处理，也不调用SetInputAsHandled，让物品栏处理
-                }
-                
                 // 检查图鉴窗口是否打开
                 bool compendiumOpen = IsCompendiumWindowOpen();
                 
@@ -188,15 +177,6 @@ namespace Kuros.UI
         {
             var root = GetTree().Root;
             if (root == null) return;
-
-            // 尝试从 UIManager 获取 InventoryWindow
-            _cachedInventoryWindow = UIManager.Instance?.GetUI<InventoryWindow>("InventoryWindow");
-            if (_cachedInventoryWindow == null)
-            {
-                // 如果 UIManager 中没有，则从场景树中查找
-                var inventoryWindows = FindAllNodesOfType<InventoryWindow>(root);
-                _cachedInventoryWindow = inventoryWindows.Count > 0 ? inventoryWindows[0] : null;
-            }
 
             // CompendiumWindow 已经在 _compendiumWindow 中缓存了
             _cachedCompendiumWindow = _compendiumWindow;
@@ -265,31 +245,6 @@ namespace Kuros.UI
         }
 
         /// <summary>
-        /// 检查物品栏窗口是否打开（使用缓存）
-        /// </summary>
-        private bool IsInventoryWindowOpen()
-        {
-            // 如果缓存无效，尝试重新查找
-            if (_cachedInventoryWindow == null || !IsInstanceValid(_cachedInventoryWindow))
-            {
-                var root = GetTree().Root;
-                if (root != null)
-                {
-                    var inventoryWindows = FindAllNodesOfType<InventoryWindow>(root);
-                    _cachedInventoryWindow = inventoryWindows.Count > 0 ? inventoryWindows[0] : null;
-                }
-            }
-
-            if (_cachedInventoryWindow != null && _cachedInventoryWindow.Visible)
-            {
-                GD.Print($"BattleMenu.IsInventoryWindowOpen: 找到打开的物品栏，Visible={_cachedInventoryWindow.Visible}");
-                return true;
-            }
-            
-            GD.Print("BattleMenu.IsInventoryWindowOpen: 未找到打开的物品栏");
-            return false;
-        }
-
         /// <summary>
         /// 检查图鉴窗口是否打开（使用缓存）
         /// </summary>
@@ -364,13 +319,6 @@ namespace Kuros.UI
         {
             if (_isOpen) return;
 
-            // 如果物品栏打开，阻止打开菜单
-            if (IsInventoryWindowOpen())
-            {
-                GD.Print("BattleMenu.OpenMenu: 物品栏打开，无法打开菜单");
-                return;
-            }
-
             Visible = true;
             _isOpen = true;
             
@@ -425,13 +373,6 @@ namespace Kuros.UI
 
         public void ToggleMenu()
         {
-            // 如果物品栏打开，阻止切换菜单
-            if (IsInventoryWindowOpen())
-            {
-                GD.Print("BattleMenu.ToggleMenu: 物品栏打开，无法切换菜单");
-                return;
-            }
-
             if (_isOpen)
                 CloseMenu();
             else

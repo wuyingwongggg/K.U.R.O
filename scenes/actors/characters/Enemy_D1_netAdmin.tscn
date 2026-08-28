@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://bpjv2iuy8x0hw"]
+[gd_scene load_steps=52 format=3 uid="uid://bpjv2iuy8x0hw"]
 
 [ext_resource type="Script" uid="uid://gdrtj0ygftu2" path="res://scripts/actors/enemies/EnemyD1NetAdmin.cs" id="1_1rlfu"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_keki5"]
@@ -58,26 +58,30 @@ shader_parameter/line_color = Color(0, 0.8235294, 1, 0.8509804)
 shader_parameter/trail_color = Color(0, 1, 1, 0.2)
 shader_parameter/trail_length = 0.1
 
-[sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(2400, 1000)
+[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
+radius = 1024.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
 radius = 1024.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
-radius = 1024.0
+[sub_resource type="RectangleShape2D" id="2"]
+size = Vector2(2400, 1000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
+size = Vector2(600, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s0414"]
 size = Vector2(1600, 900)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
-size = Vector2(600, 1000)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_brvl7"]
-size = Vector2(500, 1200)
+size = Vector2(500, 500)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_d5sdg"]
-radius = 180.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_mblfy"]
+radius = 600.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_mblfy"]
+radius = 150.0
+height = 450.0
 
 [sub_resource type="Resource" id="Resource_keki5"]
 script = ExtResource("16_g3n2r")
@@ -121,8 +125,7 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 350
-AttackDamage = 40
+ScoreValue = 100
 MaxHealth = 1250
 AiDescription = "网络管理员仿生人，精英敌人，召唤无人机追杀客户，注意常态无法攻击到，只有使用无人机核心才能使其受到伤害"
 StateMachine = NodePath("StateMachine")
@@ -130,6 +133,9 @@ EffectController = NodePath("EffectController")
 LootTable = ExtResource("3_geb57")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 
+Speed = 350
+AttackDamage = 40
+AttackCooldown = 1
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_b5vhy")
@@ -205,23 +211,31 @@ script = ExtResource("6_g3n2r")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(250.96452, -1666.0576)
-rotation = 1.4601392
-scale = Vector2(0.99999994, 0.99999994)
-bone_name = "bone66"
+position = Vector2(-470.94443, -1451.2168)
+rotation = 0.07130751
+scale = Vector2(1, 0.9999998)
+bone_name = "bone8"
+
+[node name="SpineBoneNode2" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(52.782864, -1509.9454)
+rotation = -1.6840811
+scale = Vector2(0.9999999, 0.9999999)
+bone_name = "bone12"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 z_index = 10
-position = Vector2(0, -600)
 
-[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
+collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(1200, 500)
-scale = Vector2(0.99999964, 0.99999964)
-shape = SubResource("2")
+[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
+scale = Vector2(20, 20)
+shape = SubResource("CircleShape2D_ooggc")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
 visible = false
@@ -233,48 +247,51 @@ monitorable = false
 scale = Vector2(5, 5)
 shape = SubResource("CircleShape2D_gvrrx")
 
-[node name="ControllerDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
+[node name="AttackArea" type="Area2D" parent="Sprite2D"]
+scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
-collision_mask = 4
 monitorable = false
 
-[node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(20, 20)
-shape = SubResource("CircleShape2D_ooggc")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
+position = Vector2(1200, 0)
+shape = SubResource("2")
+
+[node name="HitArea" type="Area2D" parent="Sprite2D"]
+show_behind_parent = true
+scale = Vector2(0.9999998, 0.9999998)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
+shape = SubResource("RectangleShape2D_k8d2p")
 
 [node name="SmashArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/SmashArea"]
-position = Vector2(1900, 150)
-scale = Vector2(0.9999998, 0.9999998)
+position = Vector2(1900, 0)
 shape = SubResource("RectangleShape2D_s0414")
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
-scale = Vector2(0.99999994, 0.99999994)
 script = ExtResource("26_sf01")
-TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode2")
 FollowBoneY = true
 
-[node name="HitArea" type="Area2D" parent="Sprite2D2"]
-show_behind_parent = true
-position = Vector2(0, -600.00006)
-scale = Vector2(1.0000001, 1.0000001)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/HitArea"]
-position = Vector2(0, -100)
-shape = SubResource("RectangleShape2D_k8d2p")
-
 [node name="StunArea" type="Area2D" parent="Sprite2D2"]
+modulate = Color(1, 1, 0.3647059, 1)
 z_index = 10
-position = Vector2(0, -600.00006)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/StunArea"]
-position = Vector2(0, -300)
 shape = SubResource("RectangleShape2D_brvl7")
 
+[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
+visible = false
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+position = Vector2(0, -1500)
+shape = SubResource("CircleShape2D_mblfy")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_d5sdg")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_mblfy")
 
 [node name="Node2D2" type="Node2D" parent="."]
 scale = Vector2(0.99999994, 0.99999994)

@@ -38,8 +38,11 @@ public ImmunityFlags ActiveImmunities { get; set; }
 | `Stun` | FreezeEffect 施加 |
 | `ForcedMovement` | 所有击退/位移 |
 | `SpeedSlow` | 减速效果 |
-| `ThrowableDamage` | 投掷物直接伤害 |
-| `NonThrowableDamage` | 非投掷物伤害 |
+| `WarmupSuperArmor` | 预热阶段霸体：Warmup 期间受伤害不进入受击硬直 |
+| `ActiveSuperArmor` | 生效阶段霸体：Active 期间受伤害不进入受击硬直 |
+| `RecoverySuperArmor` | 恢复阶段霸体：Recovery 期间受伤害不进入受击硬直 |
+| `ThrowableDamage` | 免疫投掷武器伤害（ThrowableDirectAttack + ThrowImpact） |
+| `NonThrowableDamage` | 免疫所有非投掷伤害（仅 Throwable 来源可穿透） |
 
 在效果入口统一检查，不依赖效果内部自行判断。
 
@@ -116,6 +119,14 @@ area.BodyEntered += OnBodyEntered;
 
 **待解决**：是否接受"用 `GetNodesInGroup("world_items")` 处理 WorldItem，其余阵营走 `IntersectShape`"的混合方案，还是为 WorldItem 统一碰撞层后全部迁移。
 
+### WorldItem 阵营的现状（2026-08 定稿）
+
+`TargetableFactions.WorldItem` 的实际语义 = **只对 DestructibleObject（可破坏物）生效**：
+- `DestructibleObject`：有 `TakeDamage(float)` 接口（HP/摧毁），StaticBody2D 在层 1 → 可被伤害
+- `WorldItemEntity` / `RigidBodyWorldItemEntity`（掉落物）：无 `TakeDamage` → `ResolveDamageReceiver` 解析不出伤害接收者，**免疫伤害**（掉落物不该被打碎）
+
+因此配置 `WorldItem` flag 时实际命中目标只有可破坏物；掉落物即使物理层被检测到也会被伤害结算拒绝。
+
 ---
 
 ### 场景根节点类型规范
@@ -129,18 +140,31 @@ area.BodyEntered += OnBodyEntered;
 - `Node2D` 根的效果需要 `GlobalPosition` 定位，走 `SpawnSingleEffect` 的世界生成路径
 - **禁止混用**：`ActorEffect` 子类用 `Node2D` 根会导致坐标失效，`Node2D` 脚本用 `Node` 根会导致 Godot 类型错误
 
-### 已知设计债务：WorldActorEffect
+### 世界效果规范（2026-08 已实施，取代原 WorldActorEffect 规划）
 
-`ActorEffect` 继承 `Node`，导致需要世界坐标的效果（如 `SlowHitAreaEffect`）无法同时拥有 `ActorEffect` 的生命周期管理和 `Node2D` 的位置能力。当前通过 `IWorldSpawnable` 接口手动管理位置——这是绕过 C# 单继承限制的临时方案。
+`ActorEffect` 继承 `Node`，需要世界坐标的效果曾通过 `IWorldSpawnable` 接口手动管理位置（绕过 C# 单继承限制的临时方案）。**已彻底解决**：世界效果直接继承 `Node2D`（不经过 ActorEffect 体系），统一模式：
 
-**待实施**：新增 `WorldActorEffect : Node2D` 基类，继承 `ActorEffect` 的核心逻辑（`EffectController` 交互、`Duration`、`OnTick`），但根类型为 `Node2D`。实施后：
+| 基类 | 根节点 | 生命周期 | 用途 |
+|---|---|---|---|
+| `ActorEffect` | `Node` | `EffectController`（EffectId 去重、Tick、Actor 绑定） | 纯逻辑 Buff/Debuff：眩晕/减速/DOT/属性修改 |
+| `Node2D` + `IAttackerProvider` | `Node2D` | 自管理（`_Ready`/`_Process` Duration 到期销毁 + `_ExitTree` 兜底清理） | 世界效果：区域伤害/爆炸/落点效果 |
 
-| 基类 | 根节点 | 用途 |
-|---|---|---|
-| `ActorEffect` | `Node` | 纯逻辑：眩晕/减速/DOT/Buff |
-| `WorldActorEffect` | `Node2D` | 世界效果：区域伤害/投射物/爆炸 |
+**已改造效果**（从 `ActorEffect + IWorldSpawnable` → `Node2D`）：
 
-`SlowHitAreaEffect` 从 `ActorEffect + IWorldSpawnable` 改为继承 `WorldActorEffect`，删除接口 hack。
+| 效果 | 说明 |
+|---|---|
+| BriefcaseOpenEffect | 公文包落点生成护盾/攻击模块 |
+| EmojiBoomEffect | 表情炸弹落点爆炸 |
+| StunEnemiesEffect | 区域眩晕（烟雾弹） |
+| BlackHoleEffect | 重力手雷黑洞 |
+| SlowHitAreaEffect | 地面减速/伤害区域（茶壶/尖刺） |
+
+**改造收益**：
+- 脱离 `EffectController.AddEffect` 的 EffectId 去重——多投掷各自独立生成（此前固定 EffectId 的烟雾弹眩晕区只生成一个）
+- 脱离 Actor 生命周期绑定——玩家死亡/场景切换不再连带销毁已生成的世界效果
+- 不再需要 `IWorldSpawnable` 接口 hack（Node2D 分支用 `GlobalPosition = 落点` 定位）
+
+**应用路径**：投掷效果走 `SpawnThrowDestroyEffects` / `EnemyWaiterAThrowProjectile` 的 Node2D 分支（`is ActorEffect` 判断失败自动落入），`IAttackerProvider.Attacker` 注入投掷者。
 
 ---
 
@@ -229,18 +253,36 @@ public void ApplyEffect(ActorEffect effect)
 
 ---
 
-## 八、阵营系统（暂不实施）
+## 八、阵营过滤（已实施：TargetableFactions Flags 模式）
 
-当前项目没有 PvP / 友伤 / 队友 NPC，不需要阵营系统。未来如有需要，加 `Faction` 枚举到 `GameActor`：
+项目的"可命中谁"需求已通过 `TargetableFactions`（Flags 枚举，[DamageDispatcher.cs](scripts/core/DamageDispatcher.cs)）实现，而非 `FactionType` 枚举：
 
 ```csharp
-public enum FactionType { Neutral, Player, Enemy }
-[Export] public FactionType Faction { get; set; }
+public enum TargetableFactions
+{
+	None = 0,
+	Player = 1 << 0,
+	Enemy = 1 << 1,
+	WorldItem = 1 << 2,
+	All = Player | Enemy | WorldItem
+}
 ```
 
-过滤一行：`if (target.Faction == Actor.Faction) return;`
+每个造成伤害的效果必须配置目标阵营与自伤开关：
 
-**不要提前添加。**
+```csharp
+[Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
+public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
+[Export] public bool AllowSelfDamage { get; set; } = false;   // 自伤保护（投掷物不打投掷者）
+```
+
+**统一过滤入口**：伤害一律走 `DamageDispatcher.DealDamage(target, damage, origin, attacker, source, TargetableFactions, AllowSelfDamage)`——不要在效果内部自写阵营判断。
+
+- 效果示例：`ECoreAttackEffect` / `BoomerangAttackEffect`（Enemy）、敌人投掷物（Player | WorldItem）
+- 自伤保护：`DamageDispatcher.BelongsToActor(target, attacker)`
+- 状态免疫：`ImmunityFlags`（Stun / ForcedMovement / SpeedSlow 等）按类型过滤状态施加，与阵营正交
+
+**不采用 `FactionType` 枚举方案**：项目无 PvP / 友伤 / 队友 NPC，`TargetableFactions` Flags 已覆盖"可命中谁"的全部需求；若未来需要玩家打玩家/队友，在现有 Flags 上扩展即可，无需引入新枚举。
 
 ---
 
@@ -253,3 +295,29 @@ public enum FactionType { Neutral, Player, Enemy }
 - [ ] `TargetCollisionMask` 导出配置，不写死组名/层号
 - [ ] 变量名用 `target`/`actor`，不硬编码 `enemy`/`player`
 - [ ] 效果内部不判断目标阵营/身份
+- [ ] 世界效果（区域/爆炸/落点）：根节点 `Node2D`，继承 `Node2D` + `IAttackerProvider`（不继承 `ActorEffect`），`Duration` 自管理、`_ExitTree` 兜底清理
+- [ ] 阵营过滤：配置 `TargetableFactions` + `AllowSelfDamage`，不写死目标
+- [ ] 生成在目标身上的视觉：`target.GetVisualAnchorWorld()`，不用 `target.GlobalPosition` / 写死 y 偏移
+
+---
+
+## 十、目标视觉锚点（VisualEffectArea）
+
+生成在目标**身上**的视觉（dot 特效、buff 视觉等）不能直接使用目标原点（`GameActor.GlobalPosition` = 脚底/几何中心）——高个子敌人（如 b1_fat）的视觉中心在身体中上部，原点定位会让特效出现在脚底。
+
+### 规则
+
+- **视觉定位一律走 `GameActor.GetVisualAnchorWorld()`**，优先级：
+  1. 目标身上的 `VisualEffectArea`（Area2D，挂 `Sprite2D/VisualEffectArea`，其 `CollisionShape2D.GlobalPosition` 即视觉中心）
+  2. 回退 `HitArea` 中心
+  3. 回退目标原点
+- **敌人场景**：体型使视觉中心偏离原点的敌人，需配置 `Sprite2D/VisualEffectArea` + `CollisionShape2D`（先例：`Enemy_B1_fat`，视觉中心 offset 配在 shape 的 position）
+- **不适用**：
+  - 死亡特效——留在目标原点（倒地位置，见 `EnemyDyingState`）
+  - 瞄准类打击点（光束/投掷瞄准 `HitArea` 中心）——与伤害判定一致，不随视觉锚点
+
+### 已迁移
+
+- `DotBurnEffect`（灼烧火焰跟随视觉锚点）
+- `DotBleedEffect`（流血视觉挂视觉锚点）
+- `P2CompanionController.SpawnActionEffect`（P2 护盾/治疗特效——原挂 GrabArea 中心（脚下，俯视角拾取判定），改视觉锚点）

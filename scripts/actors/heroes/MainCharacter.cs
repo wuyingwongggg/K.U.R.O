@@ -44,13 +44,10 @@ namespace Kuros.Actors.Heroes
 
 	[ExportCategory("Combat/Invincible Frames")]
 	[Export] public bool EnableHitInvincibility { get; set; } = true;
-	[Export(PropertyHint.Range, "0,5,0.01,or_greater")]
-	public float HitInvincibilityDuration { get; set; } = 1.0f;
+	[Export(PropertyHint.Range, "0,5,0.01,or_greater")] public float HitInvincibilityDuration { get; set; } = 1.0f;
 	[Export] public bool EnableInvincibleFlash { get; set; } = true;
-	[Export(PropertyHint.Range, "0,1,0.01")]
-	public float InvincibleFlashMinAlpha { get; set; } = 0.35f;
-	[Export(PropertyHint.Range, "0,60,0.1,or_greater")]
-	public float InvincibleFlashSpeed { get; set; } = 18.0f;
+	[Export(PropertyHint.Range, "0,1,0.01")] public float InvincibleFlashMinAlpha { get; set; } = 0.35f;
+	[Export(PropertyHint.Range, "0,60,0.1,or_greater")] public float InvincibleFlashSpeed { get; set; } = 18.0f;
 
 	// Spine 相关（使用 Node 引用，通过 Call 调用 GDScript 方法）
 	private Node? _spineController;
@@ -60,6 +57,16 @@ namespace Kuros.Actors.Heroes
 	private string _currentAnimation = string.Empty;
 	/// <summary>当前正在播放的 Spine 动画名（供外部判断是否已在该动画，避免重复重播）。</summary>
 	public string CurrentAnimationName => _currentAnimation;
+	/// <summary>当前 Spine 动画的播放时间（秒）——供切换动画时保持时间轴位置（hit 帧不因切换丢失）。</summary>
+	public float CurrentAnimationTime
+	{
+		get
+		{
+			if (_spineController == null) return 0f;
+			var result = _spineController.Call("get_track_time");
+			return result.AsSingle();
+		}
+	}
 	private float _hitInvincibilityRemaining = 0.0f;
 	private float _invincibleFlashElapsed = 0.0f;
 	private float _defaultSpineAlpha = 1.0f;

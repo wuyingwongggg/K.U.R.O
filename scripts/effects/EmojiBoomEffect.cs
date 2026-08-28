@@ -1,55 +1,50 @@
 using Godot;
 using Kuros.Core;
-using Kuros.Core.Effects;
 using Kuros.Fx;
 
 namespace Kuros.Effects
 {
     /// <summary>
-    /// Emoji 炸弹效果（ActorEffect + IWorldSpawnable）。
-    /// 自动通过 ActorEffect.Actor 追踪攻击者，投掷落点通过 IWorldSpawnable 传递。
+    /// Emoji 炸弹效果（世界空间 Node2D 效果，非 ActorEffect）。
+    /// 到达落点后延迟 Duration 秒（或提前被销毁时）在世界落点生成 Boom/BoomDmg 场景。
     ///
-    /// 玩家路径：SpawnThrowDestroyEffects → set WorldSpawnPosition → LastDroppedBy.ApplyEffect → Actor=玩家
-    /// 敌人路径：同样通过 ApplyEffect 绑定
+    /// 玩家路径：SpawnThrowDestroyEffects → AddChild + GlobalPosition=落点 + Attacker=投掷者
+    /// 敌人路径：EnemyWaiterAThrowProjectile 同 Node2D 分支
+    ///
+    /// 使用 Node2D 而非 ActorEffect：不参与 EffectController 的 EffectId 去重与 Actor 生命周期
+    /// 绑定——多投掷各自独立爆炸。
     /// </summary>
-    public partial class EmojiBoomEffect : ActorEffect, IWorldSpawnable
+    [GlobalClass]
+    public partial class EmojiBoomEffect : Node2D, IAttackerProvider
     {
         [Export] public PackedScene? BoomScene { get; set; }
         [Export] public PackedScene? BoomDmgScene { get; set; }
+        [Export] public Godot.Collections.Dictionary<string, Variant> BoomSceneOverrides { get; set; } = new();
+        [Export] public Godot.Collections.Dictionary<string, Variant> BoomDmgOverrides { get; set; } = new();
+        [Export(PropertyHint.Range, "0,600,0.1")] public float Duration { get; set; } = 5.0f;
 
-        [Export]
-        public Godot.Collections.Dictionary<string, Variant> BoomSceneOverrides { get; set; } = new();
-        [Export]
-        public Godot.Collections.Dictionary<string, Variant> BoomDmgOverrides { get; set; } = new();
-
-        public Vector2? WorldSpawnPosition { get; set; }
+        /// <summary>投掷者（由投掷系统 IAttackerProvider 注入）。</summary>
+        public GameActor? Attacker { get; set; }
 
         private bool _spawned;
+        private float _elapsed;
 
-        protected override void OnApply()
+        public override void _Process(double delta)
         {
-            // 投掷落点定位：从 EffectController 下 reparent 到世界层，放到投掷落点
-            if (WorldSpawnPosition.HasValue)
+            _elapsed += (float)delta;
+            if (Duration > 0f && _elapsed >= Duration)
             {
-                var world = Actor?.GetParent();
-                if (world != null)
-                {
-                    Reparent(world);
-                    Set("global_position", WorldSpawnPosition.Value);
-                }
+                SpawnChildEffects();
+                QueueFree();
             }
         }
 
-        protected override void OnExpire()
+        public override void _ExitTree()
         {
-            SpawnChildEffects();
-            base.OnExpire();
-        }
-
-        public override void OnRemoved()
-        {
-            SpawnChildEffects();
-            base.OnRemoved();
+            // 兜底：被外部销毁但尚未生成时补生成（时长未到即被移除的场景）
+            if (!_spawned)
+                SpawnChildEffects();
+            base._ExitTree();
         }
 
         private void SpawnChildEffects()
@@ -60,10 +55,8 @@ namespace Kuros.Effects
             var world = GetParent();
             if (world == null) return;
 
-            var pos = GetGlobalPosition(this);
-
-            SpawnScene(BoomScene, world, pos, BoomSceneOverrides);
-            SpawnScene(BoomDmgScene, world, pos, BoomDmgOverrides);
+            SpawnScene(BoomScene, world, GlobalPosition, BoomSceneOverrides);
+            SpawnScene(BoomDmgScene, world, GlobalPosition, BoomDmgOverrides);
         }
 
         private void SpawnScene(PackedScene? scene, Node world, Vector2 pos, Godot.Collections.Dictionary<string, Variant> overrides)
@@ -84,7 +77,7 @@ namespace Kuros.Effects
                 }
 
                 if (node2D is BoomDmgEffect boom)
-                    boom.Attacker = Actor;
+                    boom.Attacker = Attacker;
 
                 world.AddChild(node2D);
                 node2D.GlobalPosition = pos;
@@ -93,11 +86,6 @@ namespace Kuros.Effects
             {
                 node?.QueueFree();
             }
-        }
-
-        private static Vector2 GetGlobalPosition(Node node)
-        {
-            return node.Get("global_position").AsVector2();
         }
     }
 }

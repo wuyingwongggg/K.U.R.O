@@ -49,7 +49,21 @@ namespace Kuros.Items.World
 		[Export] public float ThrowDamage {get; set;} = 4f;
 		[Export] public float MinDamageVelocity { get; set; } = 300f; // 造成伤害的最小速度阈值
         [Export] public float KnockbackForce { get; set; } = 200f; // 击退力度
-		[Export] public bool StopOnHit { get; set; } = false; // 命中敌人后是否停止（false = 穿过敌人）
+		[Export] public bool StopOnHit { get; set; } = true; // 命中敌人后是否停止（false = 穿过敌人）
+
+		[ExportGroup("Physics Mode")]
+		/// <summary>停止后是否回弹（与 StopOnHit 解耦：false = 停止后直接走 LandingHideDelay 销毁流程）。</summary>
+		[Export] public bool BounceAfterStop { get; set; } = false;
+		/// <summary>停止后回弹的向上初速度（像素/秒）。</summary>
+		[Export] public float BounceSpeed { get; set; } = 650f;
+		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0.2f;
+		/// <summary>落地反弹弹性（判定层边界反弹衰减系数，0 = 落地即停，1 = 完全弹性）。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.25f;
+		/// <summary>回弹下落的重力倍率（脚本模拟，仅用于回弹上升/回落）。</summary>
+		[Export] public float PhysicsModeGravityScale { get; set; } = 8.0f;
+		/// <summary>回弹水平速度的衰减系数（指数衰减 ≈ 物理阻尼，越大弹开后越快停住）。</summary>
+		[Export] public float PhysicsModeLinearDamp { get; set; } = 8.0f;
 
 		[ExportGroup("Durability")]
 		/// <summary>
@@ -108,7 +122,12 @@ namespace Kuros.Items.World
 		private bool _inFlight = false;
 		private double _flightTimer = 0.0;
 		private float _throwStartY = 0f; // 投掷起始的Y坐标
+		private float _throwJudgmentY = 0f; // 判定层的Y坐标（投掷者地面层——玩家/敌人站立的世界Y，非场景原点 0）
 		private float _throwHorizontalVelocity = 0f; // 投掷的水平速度
+		private bool _bouncing = false; // 停止后脚本回弹中（重力积分 + 判定层反弹）
+		private float _bounceVelX = 0f; // 回弹水平速度（指数衰减）
+		private float _bounceVelY = 0f; // 回弹垂直速度（重力积分）
+		private const float BounceGravity = 980f; // 模拟重力加速度（Godot 默认值）
 		private bool _isDropping = false;
 		private float _dropStartY = 0f;
 		private bool _initialMonitoring;
@@ -443,10 +462,10 @@ namespace Kuros.Items.World
 		}
 
 		/// <summary>
-		/// 检查该实例是否处于投掷生命周期中（飞行、落地隐藏、等待归还阶段均视为投掷中）
+		/// 检查该实例是否处于投掷生命周期中（飞行、回弹、落地隐藏、等待归还阶段均视为投掷中）
 		/// </summary>
 		private bool IsInThrowLifecycle =>
-			_isThrown || _inFlight || _landingHideTimer > 0.0 || _inventoryReturnTimer > 0.0;
+			_isThrown || _inFlight || _bouncing || _landingHideTimer > 0.0 || _inventoryReturnTimer > 0.0;
 
 		/// <summary>
 		/// 判断此实例是否有资格参与高亮候选（供 PlayerItemInteractionComponent 调用）
@@ -499,6 +518,13 @@ namespace Kuros.Items.World
 
 		public virtual void ApplyThrowImpulse(Vector2 velocity)
 		{
+			// 投掷即效果：不进入飞行，投掷瞬间销毁武器本体并生成 OnThrowDestroy 效果（回旋镖等）
+			if (ItemDefinition?.SpawnEffectOnThrow == true)
+			{
+				ImmediateEffectThrow();
+				return;
+			}
+
 			if (_rigidBody == null)
 			{
 				// Try to resolve rigidbody if it wasn't found earlier
@@ -526,8 +552,9 @@ namespace Kuros.Items.World
 					// ignore if property not available on this build
 				}
 				// Ensure the physics body position lines up with the Node2D root
-				// 应用投掷起点偏移（优先使用 ItemDefinition 参数）
-				_rigidBody.GlobalPosition = GlobalPosition + GetEffectiveThrowStartOffset();
+				// 投掷起点归到玩家原点（根节点可能带 ThrowOffset 偏移），视觉从玩家原点+视觉偏移抛出
+				Vector2 origin = LastDroppedBy?.GlobalPosition ?? GlobalPosition;
+				_rigidBody.GlobalPosition = origin + GetEffectiveThrowStartOffset();
 				// Set linear velocity and apply impulse to simulate a throw
 				_rigidBody.LinearVelocity = velocity;
 				// ApplyImpulse may be available; call defensively
@@ -548,7 +575,9 @@ namespace Kuros.Items.World
 			_throwHorizontalVelocity = velocity.X > 0 ? horizontalVelocity : -horizontalVelocity;
 			// 记录抛物线飞行相关数据
 			_throwStartY = _rigidBody.GlobalPosition.Y;
-				
+			// 判定层：投掷者站立的地面世界 Y（敌人 HitArea 同层）——不是场景原点 0
+			_throwJudgmentY = origin.Y;
+
 				// 激活伤害检测并应用投掷时的碰撞设置
 				if (velocity.LengthSquared() > 0.01f)
 				{
@@ -726,16 +755,18 @@ namespace Kuros.Items.World
 				_rigidBody.LinearVelocity = Vector2.Zero;
 				try { _rigidBody.Set("freeze", true); } catch { }
 				RestoreRigidBodyCollision();
-				if (!_isDestroying)
-				{
-					_landingHideTimer = LandingHideDelay;
-					if (!IsDisposableCopy && IsThrowWeapon)
-						_inventoryReturnTimer = ThrowWeaponCooldown;
-				}
+				HandleStopAfterFlight(); // 回弹或直接销毁（由 BounceAfterStop 决定）
 				return;
 			}
 
 			_rigidBody.GlobalPosition = new Vector2(newX, newY);
+
+			// 视觉/判定分离：判定 Hitbox 投影在投掷者地面层（_throwJudgmentY），X 每帧跟随视觉——
+			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层
+			if (_hitboxArea != null)
+			{
+				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, _throwJudgmentY);
+			}
 
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
 			Vector2 simulatedVelocity = new Vector2(
@@ -781,6 +812,45 @@ namespace Kuros.Items.World
 				}
 			}
 
+			// 脚本回弹模拟（俯视角"地面"= 判定层）：重力积分下落，接触判定层反弹衰减，水平指数衰减
+			if (_bouncing)
+			{
+				float dt = (float)delta;
+				_bounceVelY += BounceGravity * PhysicsModeGravityScale * dt;
+				_bounceVelX *= Mathf.Exp(-PhysicsModeLinearDamp * dt);
+
+				// 撞 AirWall：水平弹回（复用飞行阶段射线检测）
+				if (_bounceVelX != 0f && CheckWallHit(_rigidBody.GlobalPosition, _bounceVelX))
+					_bounceVelX *= -0.5f;
+
+				Vector2 pos = _rigidBody.GlobalPosition + new Vector2(_bounceVelX, _bounceVelY) * dt;
+				bool grounded = false;
+				if (pos.Y >= _throwJudgmentY)
+				{
+					pos.Y = _throwJudgmentY;
+					grounded = true;
+					if (_bounceVelY > 0f)
+					{
+						float bounce = -_bounceVelY * BounceElasticity;
+						_bounceVelY = Mathf.Abs(bounce) < 60f ? 0f : bounce;
+					}
+				}
+				_rigidBody.GlobalPosition = pos;
+
+				// 静止：已接触判定层、反弹已完全吸收（无上升速度）、水平速度衰减到位
+				if (grounded && _bounceVelY >= 0f && Mathf.Abs(_bounceVelX) < 40f)
+				{
+					_bouncing = false;
+					_bounceVelX = 0f;
+					_bounceVelY = 0f;
+					_rigidBody.LinearVelocity = Vector2.Zero;
+					_landingHideTimer = LandingHideDelay;
+					if (!IsDisposableCopy && IsThrowWeapon)
+						_inventoryReturnTimer = ThrowWeaponCooldown;
+				}
+				return;
+			}
+
 			// 传统的物理冻结处理（用于非飞行中的状态）
 			if (_refreezePending && !_isPicked && !_inFlight)
 			{
@@ -816,8 +886,8 @@ namespace Kuros.Items.World
 				return false;
 			}
 
-			// 禁止在投掷到归还/销毁的全程拾取（飞行中、落地隐藏期间、冷却归还期间均不可拾取）
-			if (_isThrown || _inFlight || _landingHideTimer > 0.0 || _inventoryReturnTimer > 0.0)
+			// 禁止在投掷到归还/销毁的全程拾取（飞行中、回弹、落地隐藏期间、冷却归还期间均不可拾取）
+			if (_isThrown || _inFlight || _bouncing || _landingHideTimer > 0.0 || _inventoryReturnTimer > 0.0)
 			{
 				return false;
 			}
@@ -1209,16 +1279,7 @@ namespace Kuros.Items.World
 						try { _rigidBody.Set("freeze", true); } catch { }
 					}
 					RestoreRigidBodyCollision();
-					if (!_isDestroying)
-					{
-						_landingHideTimer = LandingHideDelay;
-
-						if (!IsDisposableCopy && IsThrowWeapon)
-						{
-							_inventoryReturnTimer = ThrowWeaponCooldown;
-						}
-						// 非投掷武器：LandingHideDelay 后直接销毁
-					}
+					HandleStopAfterFlight(); // 回弹或直接销毁（由 BounceAfterStop 决定）
 				}
 				// StopOnHit=false：穿透敌人，飞行轨迹不受影响，继续按抛物线运动
 				return true;
@@ -1261,6 +1322,69 @@ namespace Kuros.Items.World
 			if (body is Node node && !string.Equals((string)node.Name, "AirWall", System.StringComparison.OrdinalIgnoreCase))
 				return false;
 			return true;
+		}
+
+		/// <summary>
+		/// 投掷即效果（SpawnEffectOnThrow）：投掷瞬间销毁武器本体并触发 OnThrowDestroy 效果。
+		/// 不进入飞行、不做槽位预占（投掷武器为背包副本，原 stack 保留带 CD），伤害由效果自带的判定负责。
+		/// </summary>
+		private void ImmediateEffectThrow()
+		{
+			if (_isDestroying) return;
+			_isDestroying = true;
+			Visible = false; // 不闪一帧
+
+			if (_grabArea != null)
+			{
+				DisableGrabArea();
+			}
+			if (_hitboxArea != null)
+			{
+				_hitboxArea.SetDeferred(Area2D.PropertyName.Monitoring, false);
+			}
+
+			// 生成 OnThrowDestroy 效果（BoomerangAttackEffect，Attacker 由 SpawnThrowDestroyEffects 设置）
+			SpawnThrowDestroyEffects();
+			QueueFree();
+		}
+
+		/// <summary>
+		/// 飞行停止后的收尾：由 BounceAfterStop 决定进入脚本回弹模拟（静止后销毁）还是直接走 LandingHideDelay 销毁流程。
+		/// </summary>
+		private void HandleStopAfterFlight()
+		{
+			if (BounceAfterStop)
+			{
+				StartBounce();
+				return;
+			}
+
+			// 直接销毁：走 LandingHideDelay 计时（隐藏/归还由 _PhysicsProcess 处理）
+			if (!_isDestroying)
+			{
+				_landingHideTimer = LandingHideDelay;
+				if (!IsDisposableCopy && IsThrowWeapon)
+					_inventoryReturnTimer = ThrowWeaponCooldown;
+			}
+		}
+
+		/// <summary>
+		/// 进入脚本回弹模拟：向后上方初速度 + 重力积分回落 + 判定层反弹衰减。
+		/// 与真实物理相比完全可控（无物理引擎状态/碰撞副作用），俯视角"地面"= 判定层。
+		/// </summary>
+		private void StartBounce()
+		{
+			if (_rigidBody == null || _bouncing) return;
+			_bouncing = true;
+			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * BounceHorizontalRatio;
+			_bounceVelY = -BounceSpeed;
+
+			// 回弹阶段视觉在地面附近，恢复阴影
+			SetShadowVisible(true);
+
+			// 回弹期间不隐藏/不归还；静止后再设计时
+			_landingHideTimer = 0.0;
+			_inventoryReturnTimer = 0.0;
 		}
 
 		/// <summary>
@@ -1962,6 +2086,10 @@ namespace Kuros.Items.World
 					else if (node is Node2D node2D)
 					{
 						entry.ApplyOverrides(node2D);
+						// Attacker 必须在 AddChild（触发 _Ready）之前注入——否则效果的 _Ready
+						// 读到的 Attacker 为 null（如 BriefcaseOpenEffect 的朝向翻转）
+						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+							attackerProvider.Attacker = LastDroppedBy;
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
@@ -2023,6 +2151,9 @@ namespace Kuros.Items.World
 						if (node is Node2D node2D)
 						{
 							entry.ApplyOverrides(node2D);
+								// Attacker 在 AddChild（触发 _Ready）之前注入
+								if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
+									attackerProvider.Attacker = LastDroppedBy;
 								var worldNode = GetTree().CurrentScene?.GetNodeOrNull<Node>("World")
 								?? GetTree().CurrentScene;
 							worldNode?.AddChild(node2D);

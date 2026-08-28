@@ -49,7 +49,7 @@ namespace Kuros.Actors.Heroes.Attacks
 
             if (_weaponSkillController != null)
             {
-                DamageOverride = _weaponSkillController.ModifyAttackDamage(DamageOverride);
+                DamageOverride = _weaponSkillController.ModifyAttackDamage(DamageOverride, ShouldUseDashMovement());
                 _weaponSkillController.TriggerDefaultSkill();
             }
 
@@ -63,9 +63,11 @@ namespace Kuros.Actors.Heroes.Attacks
                 ? Player.LastMovementStateName
                 : TriggerSourceState;
 
+            // "Dash"：冲刺中攻击打断（Dash → Attack）——否则 TryStart 失败回 Idle，冲刺速度丢失
             return source == "Idle" ||
                    source == "Walk" ||
-                   source == "Run";
+                   source == "Run" ||
+                   source == "Dash";
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Kuros.Fx
         /// </summary>
         [Export] public bool FacingRight { get; set; } = true;
         /// <summary>垂直倾斜最大角度（度）。水平基础方向固定，此值限制上下偏转幅度。</summary>
-        [Export(PropertyHint.Range, "0,45,0.5")] public float MaxVerticalTiltDegrees = 15f;
+        [Export(PropertyHint.Range, "0,180,0.5")] public float MaxVerticalTiltDegrees = 15f;
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 4.0f;
@@ -45,6 +45,12 @@ namespace Kuros.Fx
         [Export] public Color GlowColor = new Color(1f, 0.23f, 0f, 0.52f);
         [Export(PropertyHint.Range, "1,50,1")]  public float BeamWidth = 8f;
         [Export(PropertyHint.Range, "1,100,1")] public float GlowWidth = 24f;
+        /// <summary>拖尾尾部渐隐：头部（飞弹处）原色，向尾部平滑淡出到透明。</summary>
+        [Export] public bool TrailFadeOut = true;
+        /// <summary>拖尾淡出曲线中段位置（0~1）：越小尾部淡出越快，越大尾部保留越久。</summary>
+        [Export(PropertyHint.Range, "0.1,1,0.05")] public float TrailFadeMidpoint = 0.7f;
+        /// <summary>拖尾淡出中段透明度（原色的比例，0~1）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.05")] public float TrailFadeMidAlpha = 0.3f;
 
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -60,6 +66,7 @@ namespace Kuros.Fx
 
         // ── 子节点引用 ────────────────────────────────────────────
 
+        private Node2D? _visual;
         private Line2D? _beamLine;
         private Line2D? _glowLine;
         private Area2D? _attackArea;
@@ -84,8 +91,9 @@ namespace Kuros.Fx
             _initialized = false;
             _hit         = false;
 
-            _beamLine   = GetNodeOrNull<Line2D>("BeamLine");
-            _glowLine   = GetNodeOrNull<Line2D>("GlowLine");
+            _visual     = GetNodeOrNull<Node2D>("Visual");
+            _beamLine   = GetNodeOrNull<Line2D>("Visual/BeamLine");
+            _glowLine   = GetNodeOrNull<Line2D>("Visual/GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
 
             if (_attackArea != null)
@@ -107,7 +115,36 @@ namespace Kuros.Fx
                 _glowLine.Points       = System.Array.Empty<Vector2>();
             }
 
+            SetupTrailGradients();
+
             ResolveAttacker();
+        }
+
+        /// <summary>
+        /// 拖尾渐隐：Line2D 设置 Gradient 后每点颜色按点索引比例采样——
+        /// 队头（最旧=尾部）透明 → 队尾（最新=飞弹处）原色，实现尾部淡出。
+        /// </summary>
+        private void SetupTrailGradients()
+        {
+            if (!TrailFadeOut) return;
+            if (_beamLine != null)
+                _beamLine.Gradient = BuildFadeGradient(BeamColor);
+            if (_glowLine != null)
+                _glowLine.Gradient = BuildFadeGradient(GlowColor);
+        }
+
+        private Gradient BuildFadeGradient(Color color)
+        {
+            var g = new Gradient();
+            float mid = Mathf.Clamp(TrailFadeMidpoint, 0.01f, 0.99f);
+            g.SetOffsets(new float[] { 0f, mid, 1f });
+            g.SetColors(new Color[]
+            {
+                new Color(color.R, color.G, color.B, 0f),
+                new Color(color.R, color.G, color.B, color.A * Mathf.Clamp(TrailFadeMidAlpha, 0f, 1f)),
+                color,
+            });
+            return g;
         }
 
         private void ResolveAttacker()
@@ -162,12 +199,17 @@ namespace Kuros.Fx
             // ─ 移动 ────────────────────────────────────────────────
             GlobalPosition += _currentVelocity * dt;
 
-            // ─ 旋转朝向速度方向 ────────────────────────────────────
+            // ─ 旋转朝向速度方向（只转视觉节点：判定点固定在地面投影，不随旋转偏移）──
             if (_currentVelocity.LengthSquared() > 0.1f)
-                Rotation = _currentVelocity.Angle();
+            {
+                if (_visual != null)
+                    _visual.Rotation = _currentVelocity.Angle();
+                else
+                    Rotation = _currentVelocity.Angle(); // 兼容无 Visual 节点的旧结构
+            }
 
-            // ─ 更新拖尾 ────────────────────────────────────────────
-            _trail.Enqueue(GlobalPosition);
+            // ─ 更新拖尾（记录视觉轨迹：视觉节点位置而非根/判定点位置）──
+            _trail.Enqueue(_visual != null ? _visual.GlobalPosition : GlobalPosition);
             while (_trail.Count > TrailPoints)
                 _trail.Dequeue();
             UpdateTrail();
@@ -235,7 +277,7 @@ namespace Kuros.Fx
                     ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
                     : 0f);
             if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                actor.Velocity = _currentVelocity.Normalized() * knockSpeed;
+                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
         }
 
         // ── 私有方法 ──────────────────────────────────────────────
@@ -277,7 +319,10 @@ namespace Kuros.Fx
             var pts = new Vector2[_trail.Count];
             int i = 0;
             foreach (var p in _trail)
-                pts[i++] = ToLocal(p);
+            {
+                // 拖尾属于视觉层：相对 Visual 局部空间（Visual 旋转时拖尾跟随视觉）
+                pts[i++] = _visual != null ? _visual.ToLocal(p) : ToLocal(p);
+            }
 
             if (_beamLine != null) _beamLine.Points = pts;
             if (_glowLine != null) _glowLine.Points = pts;

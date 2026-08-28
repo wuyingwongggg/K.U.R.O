@@ -17,7 +17,9 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public NodePath OnePunchAttackAreaPath = new NodePath();
 
         [ExportCategory("Dash")]
-        [Export(PropertyHint.Range, "10,2000,10")] public float DashSpeed = 600f;
+		/// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配）。</summary>
+		[Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 2f;
+		private float DashSpeed => Enemy?.Speed * DashSpeedMultiplier ?? 0f;
 		[Export(PropertyHint.Range, "0,2000,10")] public float DashDistance = 0f;
         [Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeSmash = 24f;
@@ -551,6 +553,13 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override void OnAttackFinished()
 		{
 			base.OnAttackFinished();
+			// 清冲刺状态与残留速度：dash 中被 Cancel 打断会跳过 FinishDash/Recovery
+			// （_isDashing 残留 true）——_PhysicsProcess 的 UpdateDashMovement 会在后续
+			// 攻击期间每帧写入 dash 速度（如 Guard1 近战攻击时移动）
+			_isDashing = false;
+			_canAttemptOnePunch = false;
+			if (Enemy != null)
+				Enemy.Velocity = Vector2.Zero;
 			_playerInsideDetection = false;
 			if (_postAttackCooldown <= 0f)
 			{

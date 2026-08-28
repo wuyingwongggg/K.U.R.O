@@ -34,6 +34,7 @@ SpotlightDuration = 0.30000000000000004
 EffectId = "a64077ab-c175-4af9-8bb5-b45d0a8e9727"
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
+visible = false
 target_position = Vector2(3000, 0)
 collision_mask = 4
 

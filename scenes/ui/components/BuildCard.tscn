@@ -1,21 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://c8ft7n6uj1fja"]
+[gd_scene load_steps=8 format=3 uid="uid://c8ft7n6uj1fja"]
 
-[ext_resource type="Script" uid="uid://bywpa2ie6e68b" path="res://scripts/ui/BuildCard.cs" id="1_script"]
-[ext_resource type="Shader" uid="uid://dhxr3knmtcbxu" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://bjtrudhstigq5" path="res://assets/ui/card/蓝卡.png" id="2_xkq11"]
-[ext_resource type="Texture2D" uid="uid://c86la2ltr5igv" path="res://assets/ui/card/紫卡.png" id="3_ea2q4"]
-[ext_resource type="Texture2D" uid="uid://cgdwpae02eg1a" path="res://assets/ui/card/金卡.png" id="4_o7hem"]
-[ext_resource type="Texture2D" uid="uid://cthba3uhs2m0r" path="res://assets/ui/card/红卡.png" id="5_owxyx"]
-[ext_resource type="Shader" uid="uid://b3tcx72oqdlm2" path="res://shaders/materials/card_glow.gdshader" id="7_glow_shader"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ea2q4"]
-shader = ExtResource("7_glow_shader")
-shader_parameter/max_line_width = 10.0
-shader_parameter/min_line_width = 5.0
-shader_parameter/freq = 1.0
-shader_parameter/block_size = 20.0
-shader_parameter/starting_colour = Vector4(0, 0, 0, 1)
-shader_parameter/ending_colour = Vector4(1, 1, 1, 1)
+[ext_resource type="Script" uid="uid://dm6j0sg78twg8" path="res://scripts/ui/BuildCard.cs" id="1_script"]
+[ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://5800lr7nn0st" path="res://assets/ui/card/蓝卡.png" id="2_xkq11"]
+[ext_resource type="Texture2D" uid="uid://vjqxn41e0iee" path="res://assets/ui/card/紫卡.png" id="3_ea2q4"]
+[ext_resource type="Texture2D" uid="uid://yaubnv6qemo8" path="res://assets/ui/card/金卡.png" id="4_o7hem"]
+[ext_resource type="Texture2D" uid="uid://r0m2rdrcnwux" path="res://assets/ui/card/红卡.png" id="5_owxyx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_card"]
 resource_local_to_scene = true
@@ -63,11 +53,12 @@ mouse_filter = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="RarityGlow" type="TextureRect" parent="CardInner"]
-material = SubResource("ShaderMaterial_ea2q4")
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.9899126
-anchor_bottom = 1.0
+anchor_right = 0.99700004
+anchor_bottom = 0.94900006
+offset_right = -0.2003479
+offset_bottom = 0.047973633
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -81,7 +72,7 @@ layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 0.9490741
-offset_right = -1.0
+offset_right = -1.5549927
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -174,6 +165,11 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 theme_override_colors/default_color = Color(0.8862616, 0.88626146, 0.8862615, 1)
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 13
+theme_override_font_sizes/bold_italics_font_size = 13
+theme_override_font_sizes/italics_font_size = 13
+theme_override_font_sizes/mono_font_size = 13
 bbcode_enabled = true
 scroll_active = false
 autowrap_mode = 2

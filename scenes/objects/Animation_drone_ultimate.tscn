@@ -1,9 +1,9 @@
 [gd_scene load_steps=160 format=3 uid="uid://domkhiw1qy7dh"]
 
 [ext_resource type="SpineSkeletonDataResource" uid="uid://didg4j2bh0iqe" path="res://animations/spine/Enemy_D1_drone.tres" id="1_eni2r"]
-[ext_resource type="Script" uid="uid://cnm33l1nmqohv" path="res://scripts/fx/DirectionalSceneEffect.cs" id="1_epgr5"]
+[ext_resource type="Script" uid="uid://ce8p8uk0evqpw" path="res://scripts/fx/DirectionalSceneEffect.cs" id="1_epgr5"]
 [ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="2_t4v50"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="3_u6hho"]
+[ext_resource type="Script" uid="uid://wae1ee3orphl" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="3_u6hho"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_kuwu1"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_ceea7"]
 
@@ -11,7 +11,6 @@
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(1, 1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -22,7 +21,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -30,7 +30,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(-1, 1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -41,7 +40,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -49,7 +49,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(1, -1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -60,7 +59,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -68,7 +68,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(-1, -1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -79,7 +78,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -87,7 +87,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(1, 0),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -98,7 +97,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -106,7 +106,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(0, 1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -117,7 +116,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -125,7 +125,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(-1, 0),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -136,7 +135,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -144,7 +144,6 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("3_u6hho")
 Scene = ExtResource("2_t4v50")
 PropertyOverrides = Dictionary[String, Variant]({
-"TargetableFactions": 1,
 "BaseDirection": Vector2(0, -1),
 "Damage": 20,
 "EnableCenterEffect": false,
@@ -155,7 +154,8 @@ PropertyOverrides = Dictionary[String, Variant]({
 "ScaleMax": 1.0,
 "ScaleMin": 1.0,
 "SpawnCount": 6,
-"SpreadAngle": 45.0
+"SpreadAngle": 45.0,
+"TargetableFactions": 1
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -3834,7 +3834,7 @@ SpawnEntries = Array[ExtResource("3_u6hho")]([SubResource("Resource_t4v50"), Sub
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DA" type="Marker2D" parent="DroneVisual"]
-position = Vector2(399.99997, -150)
+position = Vector2(400, 350)
 scale = Vector2(0.9999999, 0.9999999)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual"]
@@ -3873,7 +3873,7 @@ shape = SubResource("RectangleShape2D_kuwu1")
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DB" type="Marker2D" parent="DroneVisual2"]
-position = Vector2(-400, -150)
+position = Vector2(-400, 350)
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual2"]
@@ -3913,7 +3913,7 @@ shape = SubResource("RectangleShape2D_ceea7")
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DC" type="Marker2D" parent="DroneVisual3"]
-position = Vector2(-400, -150)
+position = Vector2(-400, 350)
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual3"]
@@ -3953,7 +3953,7 @@ shape = SubResource("RectangleShape2D_6s5xm")
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DD" type="Marker2D" parent="DroneVisual4"]
-position = Vector2(400, -150)
+position = Vector2(400, 350)
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual4"]
@@ -3992,7 +3992,7 @@ shape = SubResource("RectangleShape2D_t20ns")
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DE" type="Marker2D" parent="DroneVisual5"]
-position = Vector2(400, -150)
+position = Vector2(400, 350)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual5"]
 material = SubResource("ShaderMaterial_6s5xm")
@@ -4068,6 +4068,7 @@ shape = SubResource("RectangleShape2D_jmp4w")
 scale = Vector2(0.33, 0.33)
 
 [node name="Marker2DG" type="Marker2D" parent="DroneVisual7"]
+position = Vector2(0, 350)
 
 [node name="Sprite2D" type="Sprite2D" parent="DroneVisual7"]
 material = SubResource("ShaderMaterial_6s5xm")
