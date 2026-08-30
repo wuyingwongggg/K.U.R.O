@@ -82,7 +82,6 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        [Export]
-        public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
+        [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
     }
 }

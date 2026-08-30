@@ -13,7 +13,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		[ExportCategory("Dash")]
 		/// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配）。</summary>
 		[Export(PropertyHint.Range, "0.1,10,0.1")] public float DashSpeedMultiplier = 2f;
-		private float DashSpeed => Enemy?.Speed * DashSpeedMultiplier ?? 0f;
+		protected float DashSpeed => Enemy?.Speed * DashSpeedMultiplier ?? 0f;
 		[Export] public bool LockFacingDuringDash = true;
 		[Export(PropertyHint.Range, "0,5,0.1")] public float MinDashTimeBeforeAttack = 0f;
 		[Export(PropertyHint.Range, "0,10,0.1")] public float DashMaxDuration = 0f;
@@ -224,7 +224,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		protected override bool ShouldHoldWarmupPhase() => _isDashing;
 		protected override bool ShouldHoldRecoveryPhase() => false;
 
-		private void UpdateDashMovement(double delta)
+		protected virtual void UpdateDashMovement(double delta)
 		{
 			if (!_isDashing || Enemy == null || Enemy.IsDeathSequenceActive || Enemy.IsDead) return;
 
@@ -323,7 +323,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				direction = _dashDirection;
 		}
 
-		private bool IsPlayerInsideDashStopArea(SamplePlayer player)
+		protected bool IsPlayerInsideDashStopArea(SamplePlayer player)
 		{
 			if (_dashStopArea != null)
 				return player.IsHitByArea(_dashStopArea);
@@ -372,7 +372,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				Enemy.StateMachine?.ChangeState("Attack");
 		}
 
-		private void FinishDash()
+		protected void FinishDash()
 		{
 			if (Enemy == null) return;
 			_isDashing = false;

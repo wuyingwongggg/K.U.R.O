@@ -50,7 +50,7 @@ namespace Kuros.Actors.Heroes.Attacks
             if (_weaponSkillController != null)
             {
                 DamageOverride = _weaponSkillController.ModifyAttackDamage(DamageOverride, ShouldUseDashMovement());
-                _weaponSkillController.TriggerDefaultSkill();
+                _weaponSkillController.TriggerDefaultSkill(isDashAttack: ShouldUseDashMovement());
             }
 
             // 调用基类方法，基类会自动检测 MainCharacter 并播放 Spine 动画

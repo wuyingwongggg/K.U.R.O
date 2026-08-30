@@ -19,10 +19,13 @@ namespace Kuros.Actors.Enemies.Attacks
         private Area2D? _playerDetectionArea;
         private string? _pendingQueueReason;
         private bool _playerInside;
-        /// <summary>两次攻击之间的最小全局间隔。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制。</summary>
+        /// <summary>两次攻击之间的全局呼吸窗（= MinInterAttackDelay）。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制（只锁自己）。</summary>
         private float _interAttackDelay = 0f;
 
-	    [Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0f;
+	    /// <summary>两次攻击之间的全局最小间隔（呼吸窗）：攻击结束后必须经过此间隔才能选下一招。
+/// 各技能仍由自身的 CooldownDurationMultiplier 独立 CD（只锁自己，不锁其他技能）。
+/// 0 = 无间隔（旧行为：纯独立 CD，可能出现 A 结束 B 零间隔连发）。</summary>
+[Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0f;
 
         /// <summary>
         /// 排队攻击等待超时（秒）：选中的攻击因距离/角度一直无法启动（CanStart 不满足）时，
@@ -110,7 +113,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (_entries.Count == 0) return false;
             if (!base.CanStart()) return false;
 
-            // 攻击间隔（上次子攻击的CD）尚未结束，禁止立即发起下一次攻击
+            // 全局呼吸窗（MinInterAttackDelay）尚未结束，禁止立即发起下一次攻击
             if (_interAttackDelay > 0f) return false;
 
             var player = Enemy.PlayerTarget;
@@ -231,8 +234,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
-            // 控制器空闲时，等待 _interAttackDelay 到期后再做加权随机选择，
-            // 确保此时所有攻击的独立 CD 也已到期，权重真正生效
+            // 控制器空闲时，等待呼吸窗到期后再做加权随机选择；
+            // 各攻击的独立 CD 由 IsAttackEligible 过滤，权重真正生效
             if (!IsRunning && _interAttackDelay <= 0f
                 && (_queuedAttack == null || _queuedAttack.IsOnCooldown))
             {
@@ -487,12 +490,9 @@ namespace Kuros.Actors.Enemies.Attacks
 
         private void FinishControllerAttack(string reason, bool clearControllerCooldown = false)
         {
-            // 子攻击正常完成时，将其 CooldownDuration 保存为攻击间隔，
-            // 确保结束后不会立即切换到另一种攻击（与旧 Enemy.AttackTimer 语义一致）
-            float childInterAttackDelay = 0f;
-            if (reason == "ChildFinished" && _currentAttack != null)
-                childInterAttackDelay = _currentAttack.GetCooldown();
-
+            // 攻击结束后统一进入 MinInterAttackDelay 全局呼吸窗（默认 0 = 无间隔）。
+            // 各技能由自身 CooldownDurationMultiplier 独立 CD（只锁自己），
+            // 呼吸窗仅填补"A 刚结束 B 零间隔连发"这个独立 CD 覆盖不到的缺口。
             CleanupChildAttack(clearCooldown: false);
             _pendingQueueReason = reason;
 			DebugLog($"Controller finishing because '{reason}'.");
@@ -508,14 +508,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 _queuedAttack = null;
             }
 
-            // 强制清除时同步清除攻击间隔；否则以子攻击的 CD 作为间隔
-            // （防止攻击结束后立即切换另一种攻击连发——各攻击独立 CD 无法覆盖跨攻击间隔）
-            if (clearControllerCooldown)
-                _interAttackDelay = 0f;
-            else if (childInterAttackDelay > 0f)
-                _interAttackDelay = childInterAttackDelay;
-            else if (MinInterAttackDelay > 0f)
-                _interAttackDelay = MinInterAttackDelay;
+            // 强制清除时同步清除呼吸窗；否则固定用 MinInterAttackDelay 作为全局最小间隔
+            _interAttackDelay = clearControllerCooldown ? 0f : MinInterAttackDelay;
         }
 
 		private void DebugLogPendingAttackIfPlayerInside()

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=6 format=3 uid="uid://d3vtrx2uv3fdy"]
+
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_pbs6n"]
+[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="1_weapon_skill"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_j53ud"]
+[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="3_kv0gt"]
+
+[sub_resource type="Resource" id="Resource_6gfsk"]
+script = ExtResource("2_j53ud")
+Trigger = 1
+EffectScene = ExtResource("3_kv0gt")
+PropertyOverrides = Dictionary[String, Variant]({
+"EnableKnockbackY": false,
+"KnockbackDistance": 150.0,
+"KnockbackDuration": 0.15
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("1_weapon_skill")
+SkillId = "WeaponSkill_Unarmed"
+DisplayName = "空手攻击"
+AnimationName = "attack"
+DashDamageMultiplier = 1.2000000000000002
+ShowHitboxDebug = false
+Description = "空手近战攻击（默认武器技能）：普通攻击用 attack，冲刺攻击用专属动画 attack_runAttack。阶段时长/速度未配置（-1）时回退攻击模板默认值"
+DashEffects = Array[ExtResource("2_j53ud")]([SubResource("Resource_6gfsk")])
+WarmupDuration = 0.18999999999999995
+ActiveDuration = 0.30000000000000004
+RecoveryDuration = 0.17999999999999994
+DashAnimationName = "attack_runAttack"
+DashWarmupDuration = 0.1499999999999999
+DashActiveDuration = 0.1499999999999999
+DashRecoveryDuration = 0.3700000000000001
+DashWarmupAnimationSpeed = 0.7
+DashActiveAnimationSpeed = 1.0
+DashRecoveryAnimationSpeed = 1.0
+DashAttackDecayWindow = 3

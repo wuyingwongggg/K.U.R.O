@@ -112,9 +112,10 @@ namespace Kuros.Actors.Enemies.Animation
 				if (controller == null)
 					return false;
 
-				// DashSlash 攻击：冲刺 + slash 全程播放残影
+				// DashSlash / DashSlashAttackPro 攻击：冲刺 + slash 全程播放残影
 				string attackName = controller.CurrentAttackName;
-				if (attackName.Equals(controller.Skill1AttackName, _comparison))
+				if (attackName.Equals(controller.Skill1AttackName, _comparison)
+					|| attackName.Equals(controller.DashSlashAttackProName, _comparison))
 					return true;
 			}
 
@@ -181,12 +182,13 @@ namespace Kuros.Actors.Enemies.Animation
 					return;
 				}
 
-				if (attackName.Equals(controller.Skill1AttackName, _comparison))
+				if (attackName.Equals(controller.Skill1AttackName, _comparison)
+					|| attackName.Equals(controller.DashSlashAttackProName, _comparison))
 				{
-					// 从 AttackController 节点下按名称查找 DashSlashAttack
-					var skill1Attack = _attackController?.GetNodeOrNull<EnemyDashSlashAttack>(controller.Skill1AttackName);
+					// 按当前攻击名查找冲刺攻击节点（DashSlashAttack / DashSlashAttackPro 共用冲刺与收招动画）
+					var skillAttack = _attackController?.GetNodeOrNull<EnemyDashSlashAttack>(attackName);
 
-					if (skill1Attack == null || !skill1Attack.IsDashFinished)
+					if (skillAttack == null || !skillAttack.IsDashFinished)
 					{
 						// 正在冲刺中，循环播放冲刺动画
 						PlayLoopIfNeeded("skill_dash", SkillAnimation, SkillMixDuration);
@@ -345,7 +347,8 @@ namespace Kuros.Actors.Enemies.Animation
 				return MatchesAnimationName(animationName, AttackAnimation);
 			}
 
-			if (controller.CurrentAttackName.Equals(controller.Skill1AttackName, _comparison))
+			if (controller.CurrentAttackName.Equals(controller.Skill1AttackName, _comparison)
+				|| controller.CurrentAttackName.Equals(controller.DashSlashAttackProName, _comparison))
 			{
 				// 只有 slash 收招动画的 hit 帧才触发伤害；skill_dash 冲刺动画不触发，防止距离外命中
 				return MatchesAnimationName(animationName, Skill2Animation);

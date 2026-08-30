@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=5 format=3 uid="uid://8ply37t2yh2f"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_732q1"]
+[ext_resource type="Resource" uid="uid://d3vtrx2uv3fdy" path="res://resources/items/skills/WeaponSkill_Unarmed.tres" id="1_skill"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_fgf1l"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="2_item_def"]
+
+[resource]
+script = ExtResource("2_item_def")
+ItemId = "Weapon_Unarmed_Default"
+DisplayName = "空手"
+Description = "默认武器：未装备任何武器时使用的基础近战攻击（兜底定义，不进入任何物品栏）"
+Category = "Weapon"
+Tags = Array[String](["tag_weapon"])
+MaxStackSize = 1
+WeaponSkillResources = Array[Resource]([ExtResource("1_skill")])

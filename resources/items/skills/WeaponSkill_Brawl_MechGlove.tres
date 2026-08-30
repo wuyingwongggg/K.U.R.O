@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=7 format=3 uid="uid://bvtjj5m8rc0pi"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=8 format=3 uid="uid://bvtjj5m8rc0pi"]
 
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_bk1ns"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_rpm6u"]
 [ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_7vkc4"]
-[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_kidmo"]
+[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_kidmo"]
 [ext_resource type="PackedScene" uid="uid://cjfcykygrpf6o" path="res://resources/effects/MechGloveEffect.tscn" id="3_7vkc4"]
 
 [sub_resource type="Resource" id="Resource_bk1ns"]
@@ -30,6 +31,7 @@ SkillId = "WeaponSkill_Brawl_MechGlove"
 DisplayName = "机械冲撞臂攻击"
 AnimationName = "Weapon_Brawl_MechGlove"
 DamageMultiplier = 0.5
+DashDamageMultiplier = 0.8
 ShowHitboxDebug = false
 Description = "第三次攻击到敌人后击退敌人5 m，如果三次攻击都击中敌人则最后一击发生暴击"
 Effects = Array[ExtResource("1_rpm6u")]([SubResource("Resource_bk1ns"), SubResource("Resource_ni6ga")])
@@ -37,3 +39,12 @@ WarmupDuration = 0.5
 ActiveDuration = 0.43
 RecoveryDuration = 0.4
 WarmupAnimationSpeed = 1.5
+DashAnimationName = "Weapon_Brawl_MechGlove_RunAttack"
+DashWarmupDuration = 0.18999999999999995
+DashActiveDuration = 0.51
+DashRecoveryDuration = 0.10000000000000007
+DashWarmupAnimationSpeed = 0.7
+DashActiveAnimationSpeed = 1.0
+DashRecoveryAnimationSpeed = 1.0
+DashAttackSpeedSource = 0
+DashAttackDecayWindow = 0

@@ -9,5 +9,10 @@ namespace Kuros.Actors.Heroes.Attacks
     /// </summary>
     public partial class PlayerLaserPointerAttack : PlayerBatteryAttack
     {
+        public PlayerLaserPointerAttack()
+        {
+            // 激光笔锁定朝向（基类默认 FlipOnBackward 是拳套行为）——场景未覆写时此处兜底
+            FacingPolicy = DirectionalFacingPolicy.KeepFacing;
+        }
     }
 }

@@ -1,0 +1,128 @@
+[gd_scene load_steps=13 format=3 uid="uid://c7milw5nsd0vb"]
+
+[ext_resource type="Shader" uid="uid://dm7c4s67g3dhw" path="res://shaders/materials/outline_scanline.gdshader" id="1_out_scan"]
+[ext_resource type="Shader" uid="uid://dg0rc7s2x8k2r" path="res://shaders/materials/scanline_reveal.gdshader" id="1_scan"]
+[ext_resource type="Script" uid="uid://cwp2s1dc4pyt5" path="res://scripts/effects/EnemyFloatingCannon.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c52bxl80egf26" path="res://assets/weapons/浮游炮.png" id="2_jjiqi"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="3_entry"]
+[ext_resource type="PackedScene" uid="uid://bso7mhhjbapey" path="res://shaders/laser_beam_ultimate.tscn" id="3_laser"]
+
+[sub_resource type="Resource" id="Resource_2ppn8"]
+script = ExtResource("3_entry")
+Scene = ExtResource("3_laser")
+EffectOffset = Vector2(nan, nan)
+SpawnMarkerPaths = [NodePath("Marker2D")]
+PropertyOverrides = Dictionary[String, Variant]({
+"Damage": 5.0,
+"DragFactor": 0.01,
+"Duration": 1.5,
+"Speed": 300.0
+})
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_scan_outline"]
+shader = ExtResource("1_out_scan")
+shader_parameter/outline_color = Color(0.12, 0.02, 0.02, 1)
+shader_parameter/outline_size = 7.0000001043084
+shader_parameter/alpha_threshold = 0.5
+shader_parameter/edge_softness = 0.12
+shader_parameter/preserve_fill = true
+shader_parameter/scanline_pos = -1.0
+shader_parameter/scanline_width = 0.04
+shader_parameter/scanline_color = Color(1, 0.2, 0.1, 1)
+shader_parameter/reverse_scan = false
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_scan_inner"]
+shader = ExtResource("1_scan")
+shader_parameter/scanline_pos = -0.500000011176
+shader_parameter/scanline_width = 0.0999999977648
+shader_parameter/scanline_color = Color(1, 0.15, 0.05, 1)
+shader_parameter/reverse_scan = false
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("outline:offset:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("outline/Sprite2D:offset:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("outline:offset:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -30.0, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("outline/Sprite2D:offset:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -30.0, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ptyi4"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"idle": SubResource("Animation_idle")
+}
+
+[node name="EnemyFloatingCannon" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+script = ExtResource("1_script")
+LaserEntry = SubResource("Resource_2ppn8")
+FireInterval = 0.30000000000000004
+SpawnAnimDuration = 0.1
+DespawnAnimDuration = 0.1
+
+[node name="outline" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_scan_outline")
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_jjiqi")
+
+[node name="Sprite2D" type="Sprite2D" parent="outline"]
+material = SubResource("ShaderMaterial_scan_inner")
+texture = ExtResource("2_jjiqi")
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(70, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ptyi4")
+}

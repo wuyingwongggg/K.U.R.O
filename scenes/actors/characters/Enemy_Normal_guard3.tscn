@@ -1,33 +1,34 @@
-[gd_scene load_steps=39 format=3 uid="uid://bj81vpm6lg1b8"]
+[gd_scene load_steps=42 format=3 uid="uid://bj81vpm6lg1b8"]
 
-[ext_resource type="Script" uid="uid://bjut5b8tdxsx2" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
-[ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
+[ext_resource type="Script" uid="uid://cerpcpp7igtk7" path="res://scripts/actors/enemies/EnemyNormalGuard3.cs" id="1_ofcms"]
+[ext_resource type="Script" uid="uid://d2sy6q8lksykw" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_ofcms"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_3kv8y"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ulog8"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_10g4w"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c0t06u0ancnf8" path="res://animations/spine/Enemy_Normal_guard3.tres" id="5_wjvmm"]
-[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_06rhn"]
-[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="6_ks25x"]
+[ext_resource type="Script" uid="uid://cbasgy23b5jmr" path="res://scripts/controllers/ShadowFollower.cs" id="6_06rhn"]
+[ext_resource type="Script" uid="uid://bop33h2ijy3p4" path="res://scripts/controllers/SpineController.gd" id="6_ks25x"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="7_ewc2t"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="8_bl8xt"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="9_4s8f3"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="10_0nljw"]
-[ext_resource type="Script" uid="uid://bgmignw03rdgx" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3AttackController.cs" id="11_wjvmm"]
-[ext_resource type="Script" uid="uid://d0gbx7fy0idfa" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="12_wjvmm"]
+[ext_resource type="Script" uid="uid://bg68bud8ah4xx" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3AttackController.cs" id="11_wjvmm"]
+[ext_resource type="Script" uid="uid://bn31pv4gjavj4" path="res://scripts/actors/enemies/attacks/EnemyThrowAttack.cs" id="12_wjvmm"]
 [ext_resource type="PackedScene" uid="uid://c41bp3hlh4ix7" path="res://resources/effects/EnemyGuard3ThrowEffect.tscn" id="13_10g4w"]
-[ext_resource type="Script" uid="uid://bymxhmkwlyl21" path="res://scripts/actors/enemies/attacks/EnemyNormalGuard3MeleeAttack.cs" id="14_10g4w"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_e03sy"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_06rhn"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_06rhn"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_m8cja"]
 [ext_resource type="PackedScene" uid="uid://cfm1idhycevph" path="res://scenes/actors/etc/BulletFire.tscn" id="15_u8m7i"]
 [ext_resource type="PackedScene" uid="uid://c1c74ekxu24m1" path="res://shaders/enemy_bullet.tscn" id="15_ulog8"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="16_md8ck"]
+[ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="17_00bye"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="17_pg1qr"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18_wd41p"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="19_47cbq"]
+[ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="20_00bye"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="20_u500j"]
-[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
-[ext_resource type="Script" uid="uid://c8xkf4trw871r" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
+[ext_resource type="Script" uid="uid://bprxf1sr1x5q4" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="21_06rhn"]
+[ext_resource type="Script" uid="uid://ytdcnpeqmnh8" path="res://scripts/actors/enemies/animation/EnemyNormalGuard3SpineAnimationController.cs" id="21_e1554"]
 
 [sub_resource type="Resource" id="Resource_06rhn"]
 script = ExtResource("2_ofcms")
@@ -63,12 +64,37 @@ height = 300.0
 [sub_resource type="Resource" id="Resource_3kv8y"]
 script = ExtResource("15_06rhn")
 Scene = ExtResource("13_10g4w")
+EffectOffset = Vector2(0, -200)
+SpawnTiming = 1
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_00bye"]
 script = ExtResource("15_06rhn")
 Scene = ExtResource("15_ulog8")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D2")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_e0wuj"]
+script = ExtResource("15_06rhn")
+Scene = ExtResource("15_u8m7i")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="Resource" id="Resource_r1mbi"]
+script = ExtResource("15_06rhn")
+Scene = ExtResource("20_00bye")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 0
+SpawnMarkerPaths = [NodePath("../../../../Sprite2D2/Marker2D3")]
+LifecycleBinding = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0
+})
+metadata/_custom_type_script = "uid://8eqj514nqogw"
 
 [node name="Enemy_Normal_guard3" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -83,9 +109,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 250
-AttackDamage = 10
-AttackCooldown = 2
+Speed = 250.0
+AttackDamage = 10.0
+AttackCooldown = 2.0
 MaxHealth = 120
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用手枪攻击客户，会朝客户投掷炸弹，建议优先击破"
 StateMachine = NodePath("StateMachine")
@@ -151,9 +177,9 @@ script = ExtResource("6_ks25x")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("5_wjvmm")
 preview_skin = "Default"
-preview_animation = "attack"
+preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.5
+preview_time = 0.0
 script = ExtResource("6_ks25x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -164,7 +190,7 @@ bone_name = "bone2"
 
 [node name="SpineBoneNode2" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(22.640335, -451.29364)
+position = Vector2(22.640335, -460.8289)
 rotation = -1.6914204
 scale = Vector2(0.9999999, 1)
 bone_name = "bone3"
@@ -219,6 +245,9 @@ FollowBoneY = true
 position = Vector2(0, -550)
 shape = SubResource("CircleShape2D_3kv8y")
 
+[node name="Marker2D3" type="Marker2D" parent="Sprite2D2"]
+position = Vector2(150, -1500)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_3kv8y")
@@ -226,7 +255,10 @@ shape = SubResource("CapsuleShape2D_3kv8y")
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(465, 0)
+position = Vector2(530, -470)
+
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(530, 0)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("7_ewc2t")
@@ -243,8 +275,9 @@ script = ExtResource("10_0nljw")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("11_wjvmm")
-MeleeCountBeforeCharge = 3
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
+MinInterAttackDelay = 0.5
+QueuedAttackTimeout = 3.0
 
 [node name="ThrowAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("12_wjvmm")
@@ -253,30 +286,30 @@ AttackName = "ThrowAttack"
 WarmupDuration = 1.16
 ActiveDuration = 0.34
 RecoveryDuration = 0.33
+CooldownDurationMultiplier = 10.0
 DamageMultiplier = 0.0
 RequireAnimationHitTrigger = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("15_06rhn")]([SubResource("Resource_3kv8y")])
-EffectOffset = Vector2(0, -200)
-SpawnTiming = 1
-metadata/attack_weight = 60.0
+metadata/attack_weight = 30.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
-script = ExtResource("14_10g4w")
-SecondEffectScene = ExtResource("15_u8m7i")
-SecondEffectOffset = Vector2(150, -230)
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("17_00bye")
 AttackName = "SimpleMeleeAttack"
 WarmupDuration = 1.0
 ActiveDuration = 0.05
 RecoveryDuration = 0.45
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
+TargetableFactions = 1
 RequireAnimationHitTrigger = true
-GrantedImmunities = 16
-Effects = Array[ExtResource("15_06rhn")]([SubResource("Resource_00bye")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
-metadata/attack_weight = 40.0
+GrantedImmunities = 24
+StunInterruptOnDamage = true
+DamageTakenFrozenDuration = 2.5
+InterruptDamageSources = 2
+EnableInterruptSlowMo = true
+Effects = Array[ExtResource("15_06rhn")]([SubResource("Resource_00bye"), SubResource("Resource_e0wuj"), SubResource("Resource_r1mbi")])
+metadata/attack_weight = 70.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("14_e03sy")

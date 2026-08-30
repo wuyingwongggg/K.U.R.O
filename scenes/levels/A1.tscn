@@ -1,17 +1,25 @@
-[gd_scene load_steps=24 format=3 uid="uid://cl1ki1csawpip"]
+[gd_scene load_steps=32 format=3 uid="uid://cl1ki1csawpip"]
 
-[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
-[ext_resource type="Script" uid="uid://cifwu23mu55li" path="res://scripts/managers/LightRevealController.cs" id="1_lightreveal"]
-[ext_resource type="Texture2D" uid="uid://20khta50kpjb" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
-[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
+[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_eajhg"]
+[ext_resource type="Script" uid="uid://c48gl80t8ko65" path="res://scripts/managers/LightRevealController.cs" id="1_lightreveal"]
+[ext_resource type="Texture2D" uid="uid://crnd0nvw77ix2" path="res://assets/environments/scene_1_home/房间2地面.png" id="2_jv8iw"]
+[ext_resource type="Texture2D" uid="uid://bwy3ynxccmpby" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="3_kn5l6"]
+[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_utjd6"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="6_jv8iw"]
-[ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
+[ext_resource type="Texture2D" uid="uid://dcewcyug72e3w" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="6_o4vmd"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="7_utjd6"]
-[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
-[ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
+[ext_resource type="Texture2D" uid="uid://cecnum8sfj2jh" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="8_utjd6"]
+[ext_resource type="Texture2D" uid="uid://cjttmrhar2ued" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="9_r1xlm"]
+[ext_resource type="Texture2D" uid="uid://c5qmoopotuh2n" path="res://assets/art/教程1.png" id="10_hi5ln"]
+[ext_resource type="Texture2D" uid="uid://6tl1lc7x4l77" path="res://assets/art/教程2.png" id="11_olnxo"]
+[ext_resource type="Texture2D" uid="uid://dn4sc3xqp51jw" path="res://assets/art/教程3.png" id="12_5xsao"]
 [ext_resource type="Texture2D" uid="uid://dlrus2p3q0rtc" path="res://assets/ui/card/底边.png" id="13_4wkas"]
+[ext_resource type="Texture2D" uid="uid://dwu2ky0lxt7lf" path="res://assets/art/教程4.png" id="13_ct4cc"]
+[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="15_cmy21"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="16_w6i5k"]
+[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="17_kd83u"]
+[ext_resource type="PackedScene" uid="uid://bmk5chuwaohte" path="res://scenes/items/Furniture_A_cubeA.tscn" id="18_um1ns"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_r1xlm"]
 size = Vector2(5860, 3000)
@@ -135,6 +143,26 @@ position = Vector2(0, -1480)
 skew = 0.08726646
 texture = ExtResource("9_r1xlm")
 
+[node name="Sprite2D" type="Sprite2D" parent="Environments"]
+position = Vector2(-1125, -339)
+scale = Vector2(2.5, 3)
+texture = ExtResource("10_hi5ln")
+
+[node name="Sprite2D2" type="Sprite2D" parent="Environments"]
+position = Vector2(-188, -338)
+scale = Vector2(2.5, 3)
+texture = ExtResource("11_olnxo")
+
+[node name="Sprite2D3" type="Sprite2D" parent="Environments"]
+position = Vector2(727, -322)
+scale = Vector2(2.5, 3)
+texture = ExtResource("12_5xsao")
+
+[node name="Sprite2D4" type="Sprite2D" parent="Environments"]
+position = Vector2(1674.0002, -328)
+scale = Vector2(2.5, 3)
+texture = ExtResource("13_ct4cc")
+
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 10
 
@@ -171,7 +199,7 @@ navigation_polygon = SubResource("NavigationPolygon_eajhg")
 position = Vector2(-1985, 0)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
-EnemyScenes = Array[PackedScene]([])
+EnemyScenes = Array[PackedScene]([ExtResource("15_cmy21"), ExtResource("16_w6i5k"), ExtResource("17_kd83u"), ExtResource("18_um1ns")])
 
 [node name="DarkCovers" type="Node2D" parent="."]
 z_index = 3

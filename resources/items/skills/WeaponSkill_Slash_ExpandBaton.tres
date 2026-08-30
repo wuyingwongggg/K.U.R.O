@@ -1,8 +1,36 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=5 format=3 uid="uid://vdq16nvnnvsv"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=12 format=3 uid="uid://vdq16nvnnvsv"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_8mx5c"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_vhody"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="2_7ni5r"]
 [ext_resource type="PackedScene" uid="uid://kqvbemqvcf7" path="res://resources/effects/CriticalStrikeCountEffect.tscn" id="2_8kiax"]
-[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_msw50"]
+[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_msw50"]
+[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="3_3uwal"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_3a2co"]
+
+[sub_resource type="Resource" id="Resource_hgras"]
+script = ExtResource("1_vhody")
+Scene = ExtResource("2_7ni5r")
+EffectOffset = Vector2(275, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="Resource" id="Resource_p66tr"]
+script = ExtResource("1_vhody")
+Scene = ExtResource("3_3uwal")
+EffectOffset = Vector2(275, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="Resource" id="Resource_5osjs"]
+script = ExtResource("1_vhody")
+Scene = ExtResource("4_3a2co")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 10
+})
+metadata/_custom_type_script = "uid://8eqj514nqogw"
 
 [sub_resource type="Resource" id="Resource_hr7lc"]
 script = ExtResource("1_8mx5c")
@@ -10,7 +38,7 @@ Trigger = 1
 EffectScene = ExtResource("2_8kiax")
 PropertyOverrides = Dictionary[String, Variant]({
 "CritBonusMultiplier": 1.0,
-"HitCount": 4,
+"HitCount": 3,
 "WeaponAttackValue": 20.0
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
@@ -24,10 +52,10 @@ DashDamageMultiplier = 1.2
 ShowHitboxDebug = false
 Description = "手持该武器攻击敌人3次后，该武器的下一次攻击触发暴击"
 Effects = Array[ExtResource("1_8mx5c")]([SubResource("Resource_hr7lc")])
+DashAttackFxEntries = Array[ExtResource("1_vhody")]([SubResource("Resource_hgras"), SubResource("Resource_p66tr"), SubResource("Resource_5osjs")])
 WarmupDuration = 0.3
 ActiveDuration = 0.2
 RecoveryDuration = 0.17
-WarmupAnimationSpeed = 0.7
 DashAnimationName = "Weapon_Slash_ExpandBaton_RunAttack"
 DashWarmupDuration = 0.17
 DashActiveDuration = 0.23
@@ -35,3 +63,6 @@ DashRecoveryDuration = 0.27
 DashWarmupAnimationSpeed = 0.7
 DashActiveAnimationSpeed = 1.0
 DashRecoveryAnimationSpeed = 1.0
+DashAttackSpeedSource = 0
+DashAttackSpeedMultiplier = 1.0
+DashAttackDecayWindow = 0

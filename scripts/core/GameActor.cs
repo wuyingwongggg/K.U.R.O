@@ -123,6 +123,11 @@ namespace Kuros.Core
 		public float SpeedBonusPercent { get; set; } = 0f;
 		/// <summary>当前实际移动速度（由移动状态写入：Run/Walk/Dash 写各自速度，Idle 写 0）——供攻击模板查询做"移动速度驱动的位移"，与其他状态最小耦合。</summary>
 		public float CurrentMoveSpeed { get => _currentMoveSpeed; set => _currentMoveSpeed = value; }
+
+		/// <summary>冲刺动量快照：最近一次冲刺 Burst 段的峰值速度（Dash 状态进入时写入，冲刺攻击起步继承用）。</summary>
+		public float LastDashBurstSpeed { get; set; }
+		/// <summary>最近一次冲刺帧的时间戳（毫秒，Dash 状态每帧刷新）：冲刺攻击宽限窗口判定用。</summary>
+		public ulong LastDashFrameMs { get; set; }
 		/// <summary>当前移动方向（归一化，由移动状态写入；静止为 Zero）——供攻击模板继承含 Y 轴的移动方向。</summary>
 		public Vector2 CurrentMoveDirection { get; set; } = Vector2.Zero;
 		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>

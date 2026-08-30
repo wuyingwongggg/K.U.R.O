@@ -29,14 +29,29 @@ namespace Kuros.Fx
 
         [ExportCategory("Timing")]
         [Export(PropertyHint.Range, "0.5,30,0.1")] public float Duration = 6.0f;
+        /// <summary>淡出时长（秒）：到期/命中后视觉原地 alpha 衰减此秒数再销毁。0 = 立即销毁（旧行为）。</summary>
+        [Export(PropertyHint.Range, "0,2,0.05")] public float FadeOutDuration = 0.15f;
 
         [ExportCategory("Trail")]
         /// <summary>拖尾保留的历史点数量；点越多拖尾越长。</summary>
         [Export(PropertyHint.Range, "0,60,1")] public int   TrailPoints = 20;
+        /// <summary>拖尾尾部渐隐：头部（飞弹处）原色，向尾部平滑淡出到透明（同 EnemyBullet）。</summary>
+        [Export] public bool TrailFadeOut = true;
+        /// <summary>拖尾淡出曲线中段位置（0~1）：越小尾部淡出越快，越大尾部保留越久。</summary>
+        [Export(PropertyHint.Range, "0.1,1,0.05")] public float TrailFadeMidpoint = 0.7f;
+        /// <summary>拖尾淡出中段透明度（原色的比例，0~1）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.05")] public float TrailFadeMidAlpha = 0.3f;
+
+        [ExportCategory("Visual Spin")]
+        /// <summary>需要自旋的视觉节点路径（相对根，如 Visual/Sprite2D；空 = 不启用）。
+        /// 旋转叠加在节点自身的当前旋转上（每帧累加角速度），用于光轮/粒子类装饰自转。</summary>
+        [Export] public NodePath SpinSpritePath { get; set; } = new();
+        /// <summary>自旋角速度（度/秒）。正 = 顺时针。</summary>
+        [Export(PropertyHint.Range, "-1440,1440,1")] public float SpinDegreesPerSecond { get; set; } = 90f;
         [Export] public Color BeamColor  = new Color(1f, 0.85f, 0.2f, 1f);
         [Export] public Color GlowColor  = new Color(1f, 0.23f, 0f, 0.52f);
-        [Export(PropertyHint.Range, "1,50,1")]  public float BeamWidth  = 8f;
-        [Export(PropertyHint.Range, "1,100,1")] public float GlowWidth  = 24f;
+        [Export(PropertyHint.Range, "1,100,1")]  public float BeamWidth  = 8f;
+        [Export(PropertyHint.Range, "1,200,1")] public float GlowWidth  = 24f;
 
         [ExportCategory("Damage")]
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
@@ -56,6 +71,7 @@ namespace Kuros.Fx
         private Line2D? _glowLine;
         private Area2D? _attackArea;
         private Node2D? _visual;
+        private Node2D? _spinNode;   // SpinSpritePath 指定的自旋视觉节点（空 = 不启用）
 
         // ── 运行时状态 ────────────────────────────────────────────
 
@@ -64,6 +80,8 @@ namespace Kuros.Fx
         private bool    _initialized;
         private bool    _hit;
         private Node2D? _player;
+        private bool    _fading;        // 淡出中：冻结移动，仅衰减视觉 alpha
+        private float   _fadeElapsed;   // 淡出已进行时长
 
         /// <summary>拖尾历史世界坐标（队列头 = 最旧）。</summary>
         private readonly Queue<Vector2> _trail = new();
@@ -75,11 +93,14 @@ namespace Kuros.Fx
             _timer       = Duration;
             _initialized = false;
             _hit         = false;
+            _fading      = false;
+            _fadeElapsed = 0f;
 
             _beamLine   = GetNodeOrNull<Line2D>("Visual/BeamLine");
             _glowLine   = GetNodeOrNull<Line2D>("Visual/GlowLine");
             _attackArea = GetNodeOrNull<Area2D>("AttackArea");
             _visual     = GetNodeOrNull<Node2D>("Visual");
+            _spinNode   = SpinSpritePath.IsEmpty ? null : GetNodeOrNull<Node2D>(SpinSpritePath);
 
             if (_beamLine != null)
             {
@@ -93,12 +114,32 @@ namespace Kuros.Fx
                 _glowLine.DefaultColor = GlowColor;
                 _glowLine.Points       = System.Array.Empty<Vector2>();
             }
+            SetupTrailGradients();
+
             // 伤害通过 _Process 每帧轮询 IsHitByArea 检测，无需 BodyEntered 信号
         }
 
         public override void _Process(double delta)
         {
             float dt = (float)delta;
+
+            // ─ 淡出阶段：冻结移动，视觉 alpha 原地衰减，结束后销毁 ──────
+            if (_fading)
+            {
+                _fadeElapsed += dt;
+                float t = FadeOutDuration > 0f ? Mathf.Clamp(_fadeElapsed / FadeOutDuration, 0f, 1f) : 1f;
+                if (t >= 1f)
+                {
+                    QueueFree();
+                    return;
+                }
+
+                CanvasItem fadeTarget = _visual is CanvasItem canvasVisual ? canvasVisual : this;
+                Color modulate = fadeTarget.Modulate;
+                modulate.A = 1f - t;
+                fadeTarget.Modulate = modulate;
+                return;
+            }
 
             // ─ 查找 / 缓存玩家 ─────────────────────────────────────
             if (_player == null || !GodotObject.IsInstanceValid(_player))
@@ -146,14 +187,21 @@ namespace Kuros.Fx
                 _trail.Dequeue();
             UpdateTrail();
 
+            // ─ 视觉自旋（SpinSpritePath 指定节点按角速度自转，叠加在节点自身旋转上）──
+            if (_spinNode != null && IsInstanceValid(_spinNode))
+                _spinNode.Rotation += Mathf.DegToRad(SpinDegreesPerSecond) * dt;
+
             // ─ 命中检测（每帧轮询，与项目其他攻击一致）──────────────
             if (!_hit)
                 TryHitPlayer();
 
-            // ─ 计时销毁 ─────────────────────────────────────────────
+            // ─ 计时销毁：到期进入淡出（无淡出时立即销毁）────────────
             _timer -= dt;
             if (_timer <= 0f)
-                QueueFree();
+            {
+                StartFade();
+                return;
+            }
         }
 
         // ── 私有方法 ──────────────────────────────────────────────
@@ -162,6 +210,33 @@ namespace Kuros.Fx
         /// 将历史世界坐标转换到本节点局部空间后赋给 Line2D。<br/>
         /// 结果：从最老位置（拖尾尾部）到最新位置（飞弹头部，接近原点）的连线。
         /// </summary>
+        /// <summary>
+        /// 拖尾渐隐：Line2D 设置 Gradient 后每点颜色按点索引比例采样——
+        /// 队头（最旧=尾部）透明 → 队尾（最新=飞弹处）原色，实现尾部淡出（同 EnemyBullet）。
+        /// </summary>
+        private void SetupTrailGradients()
+        {
+            if (!TrailFadeOut) return;
+            if (_beamLine != null)
+                _beamLine.Gradient = BuildFadeGradient(BeamColor);
+            if (_glowLine != null)
+                _glowLine.Gradient = BuildFadeGradient(GlowColor);
+        }
+
+        private Gradient BuildFadeGradient(Color color)
+        {
+            var g = new Gradient();
+            float mid = Mathf.Clamp(TrailFadeMidpoint, 0.01f, 0.99f);
+            g.SetOffsets(new[] { 0f, mid, 1f });
+            g.SetColors(new[]
+            {
+                new(color.R, color.G, color.B, 0f),
+                new(color.R, color.G, color.B, color.A * Mathf.Clamp(TrailFadeMidAlpha, 0f, 1f)),
+                color,
+            });
+            return g;
+        }
+
         private void UpdateTrail()
         {
             if (_beamLine == null && _glowLine == null) return;
@@ -199,7 +274,7 @@ namespace Kuros.Fx
                 if (area.Owner is GameActor hitActor)
                     ApplyKnockbackTo(hitActor);
                 _hit = true;
-                QueueFree();
+                StartFade();
                 return;
             }
 
@@ -214,7 +289,7 @@ namespace Kuros.Fx
                 if (body is GameActor hitActor)
                     ApplyKnockbackTo(hitActor);
                 _hit = true;
-                QueueFree();
+                StartFade();
                 return;
             }
         }
@@ -231,6 +306,24 @@ namespace Kuros.Fx
                     : 0f);
             if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
                 actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
+        }
+
+        /// <summary>
+        /// 进入淡出：冻结移动，视觉 alpha 原地衰减 FadeOutDuration 秒后销毁（到期/命中共用）。
+        /// FadeOutDuration = 0 时立即销毁（旧行为）。
+        /// </summary>
+        private void StartFade()
+        {
+            if (_fading) return;
+            if (FadeOutDuration <= 0f)
+            {
+                QueueFree();
+                return;
+            }
+
+            _fading = true;
+            _fadeElapsed = 0f;
+            _currentVelocity = Vector2.Zero; // 淡出期间原地衰减，不再追踪/移动
         }
 
         /// <summary>取玩家 HitArea CollisionShape2D 的世界坐标作为转向瞄准中心。</summary>

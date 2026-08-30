@@ -79,6 +79,16 @@ namespace Kuros.Actors.Enemies.States
         [Export(PropertyHint.Flags, "直接攻击,投掷类,区域效果,暴击追加,效果追加")]
         public DamageSourceFilter InterruptDamageSources { get; set; } = DamageSourceFilter.All;
 
+        [ExportCategory("Damage Interrupt Slow-Mo")]
+        /// <summary>受伤眩晕打断触发时开启全场时间减缓（Engine.TimeScale）并把镜头聚焦到被眩晕的敌人。仅 StunInterruptOnDamage=true 时生效。</summary>
+        [Export] public bool EnableInterruptSlowMo = false;
+        /// <summary>时间减缓倍率（1 = 正常；0.3 = 30%）。</summary>
+        [Export(PropertyHint.Range, "0.05,1,0.05")] public float SlowMoTimeScale = 0.3f;
+        /// <summary>减缓持续时长（真实秒，眩晕计时随 TimeScale 同步减缓不会跑完）。</summary>
+        [Export(PropertyHint.Range, "0.1,5,0.1")] public float SlowMoDuration = 1.0f;
+        /// <summary>聚焦期间的镜头缩放（轻微拉近；0 = 只平移不拉近）。结束瞬时恢复触发瞬间的区域 Zoom（如 0.43）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.01")] public float InterruptFocusZoom = 0.6f;
+
         // 当前在扫描范围内的友方集合（不含自身）
         private readonly HashSet<SampleEnemy> _nearbyAllies = new();
 
@@ -594,6 +604,14 @@ namespace Kuros.Actors.Enemies.States
             if (frozenState != null)
                 frozenState.FrozenDuration = Mathf.Max(DamageTakenFrozenDuration, 0.1f);
             Enemy.StateMachine?.ChangeState("Frozen");
+
+            // 全场时间减缓 + 镜头聚焦被眩晕的敌人（真实秒窗口，结束自动恢复 TimeScale/Zoom/聚焦目标）
+            if (EnableInterruptSlowMo)
+            {
+                Kuros.Effects.DamageInterruptSlowMo.Trigger(SlowMoTimeScale, SlowMoDuration);
+                if (Enemy.GetViewport().GetCamera2D() is CameraFollow cam)
+                    cam.FocusOn(Enemy, SlowMoDuration, InterruptFocusZoom);
+            }
         }
     }
 }

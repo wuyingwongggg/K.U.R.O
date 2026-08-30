@@ -1,9 +1,37 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=7 format=3 uid="uid://bdie6361u4op4"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=14 format=3 uid="uid://bdie6361u4op4"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_2po5m"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_sh13i"]
 [ext_resource type="PackedScene" uid="uid://cun60ye1ty36l" path="res://resources/effects/BunnySwordFloatingCannon.tscn" id="2_castc"]
-[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_u3cw1"]
+[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_u3cw1"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="2_wui5w"]
 [ext_resource type="PackedScene" uid="uid://c1bk77cs1ipbb" path="res://resources/effects/WeaponBatteryEffect.tscn" id="3_battery"]
+[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="3_dovl4"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_o02lj"]
+
+[sub_resource type="Resource" id="Resource_0nork"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("2_wui5w")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 1
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="Resource" id="Resource_0h0ug"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("3_dovl4")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 1
+metadata/_custom_type_script = "uid://8eqj514nqogw"
+
+[sub_resource type="Resource" id="Resource_ushmn"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("4_o02lj")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 10.0
+})
+metadata/_custom_type_script = "uid://8eqj514nqogw"
 
 [sub_resource type="Resource" id="Resource_2po5m"]
 script = ExtResource("1_2po5m")
@@ -19,7 +47,7 @@ Notes = "光剑电量"
 PropertyOverrides = Dictionary[String, Variant]({
 "ConsumePerAttack": 20,
 "EffectId": "battery_bunnysword",
-"RecoveryDelaySeconds": 2,
+"RecoveryDelaySeconds": 1,
 "SkillId": "WeaponSkill_Slash_BunnySword"
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
@@ -28,14 +56,26 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("2_u3cw1")
 SkillId = "WeaponSkill_Slash_BunnySword"
 DisplayName = "光剑攻击"
-SkillType = 1
 AnimationName = "Weapon_Slash_BunnySword"
 DamageMultiplier = 0.6
+DashDamageMultiplier = 0.8
 ShowHitboxDebug = false
 Description = "攻击时召唤浮游炮，冷却10秒，浮游炮每秒对目标的敌人发射激光造成伤害，持续5秒。每次攻击消耗电量，电量不足无法攻击"
 Effects = Array[ExtResource("1_2po5m")]([SubResource("Resource_2po5m"), SubResource("Resource_battery")])
-WarmupDuration = 0.17
-ActiveDuration = 0.5
-RecoveryDuration = 0.13
-WarmupAnimationSpeed = 0.4
-RecoveryAnimationSpeed = 0.5
+DashAttackFxEntries = Array[ExtResource("1_sh13i")]([SubResource("Resource_0nork"), SubResource("Resource_0h0ug"), SubResource("Resource_ushmn")])
+WarmupDuration = 0.19999999999999996
+ActiveDuration = 0.47
+RecoveryDuration = 0.15999999999999992
+WarmupAnimationSpeed = 0.7
+ActiveAnimationSpeed = 0.7999999999999999
+RecoveryAnimationSpeed = 0.7
+DashAnimationName = "Weapon_Slash_BunnySword_RunAttack"
+DashWarmupDuration = 0.16999999999999993
+DashActiveDuration = 0.49
+DashRecoveryDuration = 0.07000000000000006
+DashWarmupAnimationSpeed = 0.7
+DashActiveAnimationSpeed = 0.7
+DashRecoveryAnimationSpeed = 0.5
+DashAttackSpeedSource = 0
+DashAttackSpeedMultiplier = 1.0
+DashAttackDecayWindow = 0

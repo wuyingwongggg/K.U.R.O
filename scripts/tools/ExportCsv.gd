@@ -117,14 +117,15 @@ func _export_skills() -> void:
 		return
 
 	var headers := [
-		"file", "SkillId", "DisplayName", "AnimationName",
+		"file", "SkillId", "SkillType", "DisplayName", "AnimationName",
 		"DamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
 		"Description", "ActivationAction", "AllowHoldContinuousAttack",
 		"WarmupDuration", "ActiveDuration", "RecoveryDuration",
 			"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
 			"DashDamageMultiplier", "DashAnimationName",
 			"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
-			"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed"
+			"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed",
+			"DashAttackSpeedSource", "DashAttackFixedSpeed", "DashAttackSpeedMultiplier", "DashAttackDecayWindow"
 	]
 	var rows: Array = [headers]
 
@@ -137,6 +138,7 @@ func _export_skills() -> void:
 		rows.append([
 			fpath.get_file().get_basename(),
 			_str(str(r.get("SkillId", ""))),
+			str(r.get("SkillType", "1")),
 			_str(str(r.get("DisplayName", ""))),
 			_str(str(r.get("AnimationName", ""))),
 			str(r.get("DamageMultiplier", "1.0")),
@@ -158,7 +160,11 @@ func _export_skills() -> void:
 			str(r.get("DashRecoveryDuration", "-1")),
 			str(r.get("DashWarmupAnimationSpeed", "-1")),
 			str(r.get("DashActiveAnimationSpeed", "-1")),
-			str(r.get("DashRecoveryAnimationSpeed", "-1"))
+			str(r.get("DashRecoveryAnimationSpeed", "-1")),
+			str(r.get("DashAttackSpeedSource", "-1")),
+			str(r.get("DashAttackFixedSpeed", "-1")),
+			str(r.get("DashAttackSpeedMultiplier", "-1")),
+			str(r.get("DashAttackDecayWindow", "-1"))
 		])
 
 	_write_csv(OUT_SKILLS, rows)

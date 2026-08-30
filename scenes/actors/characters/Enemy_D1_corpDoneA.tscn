@@ -1,12 +1,12 @@
 [gd_scene load_steps=39 format=3 uid="uid://bak7fmcnkgnjm"]
 
-[ext_resource type="Script" uid="uid://bb00p1iq1pgyl" path="res://scripts/actors/enemies/EnemyD1CorpDoneA.cs" id="1_hglex"]
+[ext_resource type="Script" uid="uid://dkye7emg77q0v" path="res://scripts/actors/enemies/EnemyD1CorpDoneA.cs" id="1_hglex"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_55fyn"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_h8ewy"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_njyiu"]
-[ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="4_xtsxx"]
+[ext_resource type="Script" uid="uid://cbasgy23b5jmr" path="res://scripts/controllers/ShadowFollower.cs" id="4_xtsxx"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://bt6sfk2an8qv7" path="res://animations/spine/Enemy_D1_CorpDoneA.tres" id="5_scapk"]
-[ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="6_jn4m8"]
+[ext_resource type="Script" uid="uid://bop33h2ijy3p4" path="res://scripts/controllers/SpineController.gd" id="6_jn4m8"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="7_tcukf"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="8_nfqhi"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="9_hspxy"]
@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://b73y4fylkvq5o" path="res://resources/effects/CubeData.tscn" id="13_4k14f"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="13_bcq2h"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_0em3l"]
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_xtsxx"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="14_xtsxx"]
 [ext_resource type="PackedScene" uid="uid://c6c3r3w6owctg" path="res://resources/effects/LockdownWallEffect.tscn" id="15_4k14f"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_cbamd"]
 [ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="15_otd4a"]
@@ -23,10 +23,10 @@
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="18_ptrid"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="19_qs66k"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="20_4mxgn"]
-[ext_resource type="Script" uid="uid://dfgse1uwmca1k" path="res://scripts/actors/enemies/attacks/EnemyPinballAttack.cs" id="21_pinball"]
-[ext_resource type="Script" uid="uid://c1kn4gsy08v73" path="res://scripts/actors/enemies/animation/EnemyD1CorpDoneASpineAnimationController.cs" id="22_anim"]
-[ext_resource type="Script" uid="uid://jssl2wlx6q7t" path="res://scripts/actors/enemies/attacks/EnemyD1CorpDoneAAttackController.cs" id="23_atkctrl"]
-[ext_resource type="Script" uid="uid://dn4h1bug0a3y4" path="res://scripts/actors/enemies/attacks/EnemyAreaDetectionAttack.cs" id="24_lockdown"]
+[ext_resource type="Script" uid="uid://babqdgi3owuik" path="res://scripts/actors/enemies/attacks/EnemyPinballAttack.cs" id="21_pinball"]
+[ext_resource type="Script" uid="uid://dmry5m6oajllm" path="res://scripts/actors/enemies/animation/EnemyD1CorpDoneASpineAnimationController.cs" id="22_anim"]
+[ext_resource type="Script" uid="uid://cefuymftibtdj" path="res://scripts/actors/enemies/attacks/EnemyD1CorpDoneAAttackController.cs" id="23_atkctrl"]
+[ext_resource type="Script" uid="uid://i7si6scqcqfy" path="res://scripts/actors/enemies/attacks/EnemyAreaDetectionAttack.cs" id="24_lockdown"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b5vhy"]
 shader = ExtResource("3_h8ewy")
@@ -45,8 +45,9 @@ size = Vector2(350, 300)
 [sub_resource type="RectangleShape2D" id="2"]
 size = Vector2(3000, 2000)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_hglex"]
-size = Vector2(800, 600)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_otd4a"]
+radius = 350.0
+height = 900.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_55fyn"]
 radius = 600.0
@@ -99,9 +100,9 @@ DebugOverlayOffset = Vector2(-2400, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 250
-AttackDamage = 10
-AttackCooldown = 1
+Speed = 250.0
+AttackDamage = 10.0
+AttackCooldown = 1.0
 MaxHealth = 180
 AiDescription = "办公室复制人，普通敌人，长的几乎一个样，似乎已经精神错乱，坐在办公椅上攻击闯入办公室的客户，会使用各种数据信息流攻击和围困客户"
 StateMachine = NodePath("StateMachine")
@@ -227,10 +228,10 @@ position = Vector2(1500, 0)
 shape = SubResource("2")
 
 [node name="PinballAttackArea" type="Area2D" parent="Sprite2D"]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/PinballAttackArea"]
-shape = SubResource("RectangleShape2D_hglex")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_otd4a")
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
 script = ExtResource("4_xtsxx")
@@ -290,6 +291,7 @@ GrantedImmunities = 24
 StunInterruptOnDamage = true
 StunDuringWarmup = false
 InterruptDamageSources = 2
+EnableInterruptSlowMo = true
 Effects = Array[ExtResource("14_xtsxx")]([SubResource("Resource_u72h8")])
 metadata/attack_weight = 30.0
 

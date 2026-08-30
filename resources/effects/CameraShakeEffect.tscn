@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cmh3bnabinwi0"]
 
-[ext_resource type="Script" uid="uid://bm8fe203hu3yh" path="res://scripts/effects/CameraShakeEffect.cs" id="1_shake"]
+[ext_resource type="Script" uid="uid://cx4xf3d3paxdd" path="res://scripts/effects/CameraShakeEffect.cs" id="1_shake"]
 
 [node name="CameraShakeEffect" type="Node"]
 script = ExtResource("1_shake")

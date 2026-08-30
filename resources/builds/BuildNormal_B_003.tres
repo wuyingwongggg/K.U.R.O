@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://dtu4qwjhy7b65"]
 
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://c84xwwivf01ua" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
 [ext_resource type="Texture2D" uid="uid://bokv0xxa8f7bq" path="res://assets/BuildIcon/Normal_B_003_闪避缓存.png" id="3_0ecks"]
 [ext_resource type="PackedScene" uid="uid://8s6kdcqs5ci1" path="res://scenes/builds/normal/NormalDashCacheEffect.tscn" id="3_scene"]
 
