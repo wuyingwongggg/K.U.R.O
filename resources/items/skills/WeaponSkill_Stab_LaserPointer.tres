@@ -33,9 +33,9 @@ Trigger = 1
 EffectScene = ExtResource("5_battery")
 Notes = "激光笔电量"
 PropertyOverrides = Dictionary[String, Variant]({
-"ConsumePerAttack": 15,
+"ConsumePerAttack": 20,
 "EffectId": "battery_laser",
-"RecoveryDelaySeconds": 2,
+"RecoveryDelaySeconds": 1,
 "SkillId": "WeaponSkill_LaserPointer"
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
@@ -45,7 +45,7 @@ script = ExtResource("3_65vvs")
 SkillId = "WeaponSkill_LaserPointer"
 DisplayName = "激光笔攻击"
 AnimationName = "Weapon_Stab_LaserPointer"
-DamageMultiplier = 0.5
+DamageMultiplier = 0.8
 ShowHitboxDebug = false
 Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt"), SubResource("Resource_laserbeam"), SubResource("Resource_battery")])
 WarmupDuration = 0.35

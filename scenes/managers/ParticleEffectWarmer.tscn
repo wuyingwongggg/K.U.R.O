@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bhwg4bci3jcge"]
+[gd_scene load_steps=26 format=3 uid="uid://bhwg4bci3jcge"]
 
 [ext_resource type="Script" uid="uid://b6ex3i14dwbtx" path="res://scripts/fx/ParticleEffectWarmer.cs" id="1_warmer"]
 [ext_resource type="PackedScene" uid="uid://3cwbpbcapw1o" path="res://resources/effects/GreenHealPuff.tscn" id="2_puff"]
@@ -7,7 +7,25 @@
 [ext_resource type="PackedScene" uid="uid://ddi6xmmkbkex2" path="res://shaders/run_smoke.tscn" id="5_runsmoke"]
 [ext_resource type="PackedScene" uid="uid://3o6u0oms7vm6" path="res://shaders/smash_effect.tscn" id="6_7iegi"]
 [ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="7_ly0xq"]
+[ext_resource type="PackedScene" uid="uid://dew4wgl7w576m" path="res://scenes/actors/etc/BrawlAttackEffect.tscn" id="8_d5d5k"]
+[ext_resource type="PackedScene" uid="uid://qhytc6rh50pe" path="res://scenes/actors/etc/SlashAttackEffect.tscn" id="9_n6oli"]
+[ext_resource type="PackedScene" uid="uid://1dmiw35p7g47" path="res://scenes/actors/etc/StabAttackEffectA.tscn" id="10_iq6jr"]
+[ext_resource type="PackedScene" uid="uid://bmseps5gh7qi3" path="res://scenes/actors/etc/StabAttackEffectB.tscn" id="11_rdkt6"]
+[ext_resource type="PackedScene" uid="uid://cdrcs3qtqh8q4" path="res://scenes/actors/etc/HitA.tscn" id="12_2pb0x"]
+[ext_resource type="PackedScene" uid="uid://d38pex7crmtju" path="res://scenes/actors/etc/HitB.tscn" id="13_bbpto"]
+[ext_resource type="PackedScene" uid="uid://bcc7a14hfdumu" path="res://scenes/actors/etc/HitC.tscn" id="14_x8ghc"]
+[ext_resource type="PackedScene" uid="uid://fh2qe34pi0os" path="res://scenes/actors/etc/HitD.tscn" id="15_ludjs"]
+[ext_resource type="PackedScene" uid="uid://w4il6jjbtyb" path="res://scenes/actors/etc/HitE.tscn" id="16_poxfn"]
+[ext_resource type="PackedScene" uid="uid://cwgy8gl8lykio" path="res://scenes/actors/etc/HitF.tscn" id="17_s0n8t"]
+[ext_resource type="PackedScene" uid="uid://b26j4weweb3og" path="res://scenes/actors/etc/HitG.tscn" id="18_77lnh"]
+[ext_resource type="PackedScene" uid="uid://cw3ds501wucw4" path="res://scenes/actors/etc/HitH.tscn" id="19_s20dm"]
+[ext_resource type="PackedScene" uid="uid://d1td06we8ip0i" path="res://scenes/actors/etc/BleedA.tscn" id="20_2pb0x"]
+[ext_resource type="PackedScene" uid="uid://d2k8mvhgfao4i" path="res://scenes/actors/etc/BriefcaseHoldingAnimation.tscn" id="20_n6oli"]
+[ext_resource type="PackedScene" uid="uid://wjyrkwgsoe42" path="res://scenes/actors/etc/EmojiBoomAnimation.tscn" id="21_iq6jr"]
+[ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="21_x8ghc"]
+[ext_resource type="PackedScene" uid="uid://dilq7kawig2v" path="res://scenes/actors/etc/BoomC.tscn" id="22_ludjs"]
+[ext_resource type="PackedScene" uid="uid://cygdm8ytn5cv5" path="res://scenes/actors/etc/GravityGrenadeAnimation.tscn" id="22_rdkt6"]
 
 [node name="ParticleEffectWarmer" type="Node"]
 script = ExtResource("1_warmer")
-ScenesToWarm = Array[PackedScene]([ExtResource("2_puff"), ExtResource("3_somke"), ExtResource("4_smoke"), ExtResource("5_runsmoke"), ExtResource("6_7iegi"), ExtResource("7_ly0xq")])
+ScenesToWarm = Array[PackedScene]([ExtResource("2_puff"), ExtResource("3_somke"), ExtResource("4_smoke"), ExtResource("6_7iegi"), ExtResource("7_ly0xq"), ExtResource("5_runsmoke"), ExtResource("8_d5d5k"), ExtResource("9_n6oli"), ExtResource("10_iq6jr"), ExtResource("11_rdkt6"), ExtResource("12_2pb0x"), ExtResource("13_bbpto"), ExtResource("14_x8ghc"), ExtResource("15_ludjs"), ExtResource("16_poxfn"), ExtResource("17_s0n8t"), ExtResource("18_77lnh"), ExtResource("19_s20dm"), ExtResource("20_2pb0x"), ExtResource("21_x8ghc"), ExtResource("22_ludjs"), ExtResource("20_n6oli"), ExtResource("21_iq6jr"), ExtResource("22_rdkt6")])

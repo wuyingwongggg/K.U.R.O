@@ -332,6 +332,8 @@ namespace Kuros.Actors.Heroes
             if (isThrowWeapon)
             {
                 selectedStack.ThrowCooldownRemaining = selectedStack.Item.ThrowWeaponCooldown;
+                // CD 开始：战斗武器解析变化（武器飞行中按空手处理，技能控制器切空手回退）
+                InventoryComponent.NotifyCombatWeaponResolutionChanged();
                 extracted = new InventoryItemStack(selectedStack.Item, 1);
                 extractedFromInventory = false;
             }

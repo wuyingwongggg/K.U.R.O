@@ -414,6 +414,7 @@ namespace Kuros.Fx
                     if (stack != null && stack.Item.ItemId == weaponId)
                     {
                         stack.ThrowCooldownRemaining = 0f;
+                        player.InventoryComponent?.NotifyCombatWeaponResolutionChanged();
                         return;
                     }
                 }
@@ -421,7 +422,10 @@ namespace Kuros.Fx
 
             var selectedStack = player.InventoryComponent?.GetSelectedQuickBarStack();
             if (selectedStack != null)
+            {
                 selectedStack.ThrowCooldownRemaining = 0f;
+                player.InventoryComponent?.NotifyCombatWeaponResolutionChanged();
+            }
         }
 
         // ── 私有方法 ──────────────────────────────────────────────

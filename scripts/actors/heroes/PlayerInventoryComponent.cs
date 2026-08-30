@@ -127,6 +127,17 @@ namespace Kuros.Actors.Heroes
         /// 家具槽变化事件（放入或清除时触发）
         /// </summary>
         public event Action? FurnitureSlotChanged;
+        /// <summary>
+        /// 战斗武器解析可能变化（投掷 CD 开始/结束等，槽位内容不变但"手中武器"语义变了）。
+        /// 技能控制器监听此事件重新应用武器/空手技能回退——投掷 CD 期间按空手处理。
+        /// </summary>
+        public event Action? CombatWeaponResolutionChanged;
+
+        /// <summary>广播战斗武器解析变化（供投掷 CD 开始/结束等场景主动通知）。</summary>
+        public void NotifyCombatWeaponResolutionChanged()
+        {
+            CombatWeaponResolutionChanged?.Invoke();
+        }
 
         public override void _Ready()
         {
@@ -158,6 +169,12 @@ namespace Kuros.Actors.Heroes
 			var stack = QuickBar.GetStack(i);
 			if (stack == null || stack.ThrowCooldownRemaining <= 0f) continue;
 			stack.ThrowCooldownRemaining -= (float)delta;
+			// CD 到期：武器重新可用，战斗武器解析变化（技能控制器从空手回退切回武器技能）
+			if (stack.ThrowCooldownRemaining <= 0f)
+			{
+				stack.ThrowCooldownRemaining = 0f;
+				NotifyCombatWeaponResolutionChanged();
+			}
 		}
 	}
         /// <summary>创建背包容器（场景中无 Backpack 节点时兜底创建）。</summary>
@@ -845,20 +862,22 @@ namespace Kuros.Actors.Heroes
         /// </summary>
         public ItemDefinition? GetActiveCombatWeaponDefinition()
         {
+            // 投掷 CD 中的堆叠不参与战斗武器解析（视为空手）：武器在飞行/冷却中，手上没有它，
+            // 属性/技能/武器需求匹配全部按空手处理，CD 结束后由 CombatWeaponResolutionChanged 通知重载
             var equippedStack = GetEquippedWeaponStack();
-            if (equippedStack != null && equippedStack.Item != null)
+            if (equippedStack != null && equippedStack.Item != null && !equippedStack.IsThrowOnCooldown)
             {
                 return equippedStack.Item;
             }
 
             var quickBarStack = GetSelectedQuickBarStack();
-            if (quickBarStack != null && !quickBarStack.IsEmpty && quickBarStack.Item.ItemId != "empty_item")
+            if (quickBarStack != null && !quickBarStack.IsEmpty && !quickBarStack.IsThrowOnCooldown && quickBarStack.Item.ItemId != "empty_item")
             {
                 return quickBarStack.Item;
             }
 
             var backpackStack = GetSelectedBackpackStack();
-            if (backpackStack != null && !backpackStack.IsEmpty && backpackStack.Item.ItemId != "empty_item")
+            if (backpackStack != null && !backpackStack.IsEmpty && !backpackStack.IsThrowOnCooldown && backpackStack.Item.ItemId != "empty_item")
             {
                 return backpackStack.Item;
             }

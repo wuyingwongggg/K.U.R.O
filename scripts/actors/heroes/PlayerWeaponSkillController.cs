@@ -51,6 +51,7 @@ namespace Kuros.Actors.Heroes
             Inventory.QuickBarAssigned += OnQuickBarAssigned;
             Inventory.QuickBarSlotChanged += OnQuickBarSelectedSlotChanged;
             Inventory.FurnitureSlotChanged += OnFurnitureSlotChanged;
+            Inventory.CombatWeaponResolutionChanged += OnCombatWeaponResolutionChanged;
             if (Inventory.Backpack != null)
             {
                 Inventory.Backpack.InventoryChanged += OnBackpackInventoryChanged;
@@ -70,6 +71,7 @@ namespace Kuros.Actors.Heroes
                 Inventory.QuickBarAssigned -= OnQuickBarAssigned;
                 Inventory.QuickBarSlotChanged -= OnQuickBarSelectedSlotChanged;
                 Inventory.FurnitureSlotChanged -= OnFurnitureSlotChanged;
+                Inventory.CombatWeaponResolutionChanged -= OnCombatWeaponResolutionChanged;
                 if (Inventory.Backpack != null)
                 {
                     Inventory.Backpack.InventoryChanged -= OnBackpackInventoryChanged;
@@ -207,6 +209,12 @@ namespace Kuros.Actors.Heroes
             ApplyFallbackIfNoWeapon();
         }
 
+        private void OnCombatWeaponResolutionChanged()
+        {
+            // 投掷 CD 开始/结束：槽位内容不变但"手中武器"语义变了，重新评估武器/空手技能
+            ApplyFallbackIfNoWeapon();
+        }
+
         private void InitializeFallbackSkill()
         {
             _fallbackWeaponDefinition = Inventory?.UnarmedWeaponDefinition;
@@ -232,6 +240,13 @@ namespace Kuros.Actors.Heroes
             if (activeWeapon != null)
             {
                 LoadSkills(activeWeapon);
+                // 选中武器没有近战技能（投掷武器等）→ 回退空手技能：
+                // 保证空手近战（含冲刺攻击 attack_runAttack/DashEffects）在持握无技能武器
+                // 与投掷 CD 期间与真·空手一致可用
+                if (_defaultActiveSkill == null)
+                {
+                    ApplyUnarmedFallback();
+                }
                 return;
             }
 
@@ -469,7 +484,8 @@ namespace Kuros.Actors.Heroes
 
         private static bool IsUsableWeaponStack(InventoryItemStack? stack)
         {
-            return stack != null && !stack.IsEmpty && stack.Item.ItemId != "empty_item";
+            // CD 中的堆叠不可用作战斗武器（武器在飞行中）→ 跳过，回退空手技能
+            return stack != null && !stack.IsEmpty && !stack.IsThrowOnCooldown && stack.Item.ItemId != "empty_item";
         }
 
         private void SubscribeToQuickBarSignals()
