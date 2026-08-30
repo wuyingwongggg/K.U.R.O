@@ -65,7 +65,7 @@ func _get_title() -> String:
 
 
 func _get_icon() -> Texture:
-	return preload("uid://j7ym07anlusi")
+	return preload("uid://ot17r1xy8hgy")
 
 
 ## If this editor supports editing resources, load them here (overwrite in subclass)

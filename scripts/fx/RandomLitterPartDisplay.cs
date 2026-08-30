@@ -69,10 +69,13 @@ namespace Kuros.FX
         /// </summary>
         private void ApplyRandomDisplay()
         {
-            // 隐藏所有LitterPart
+            // 隐藏所有LitterPart。隐藏的 GPUParticles2D 依然会模拟（emitting 已启动），
+            // 必须同时关闭发射——否则 9 个粒子系统为 2 个可见项全额付出模拟/渲染成本
             foreach (var part in _allLitterParts)
             {
                 part.Visible = false;
+                if (part is GpuParticles2D gp)
+                    gp.Emitting = false;
             }
 
             // 确保LargeSmoke始终显示
@@ -125,10 +128,15 @@ namespace Kuros.FX
                 toDisplay.Add(validSelected[indices[i]]);
             }
 
-            // 显示随机选择的节点
+            // 显示随机选择的节点（粒子系统重新启动发射——_Ready 时可能已被隐藏关闭）
             foreach (var node in toDisplay)
             {
                 node.Visible = true;
+                if (node is GpuParticles2D gp)
+                {
+                    gp.Emitting = true;
+                    gp.Restart();
+                }
             }
 
             var displayNames = string.Join(", ", toDisplay.Select(n => n.Name));

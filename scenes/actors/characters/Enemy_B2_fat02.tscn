@@ -285,6 +285,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 26
 StunInterruptOnDamage = true
+DamageTakenFrozenDuration = 3.0
 InterruptDamageSources = 2
 EnableInterruptSlowMo = true
 IgnoreEnemyCollisionDuringAttack = true

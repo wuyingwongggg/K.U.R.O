@@ -126,8 +126,6 @@ namespace Kuros.Actors.Heroes
 
         public bool TriggerSkill(string skillId, GameActor? target = null, bool isDashAttack = false)
         {
-            // ── 临时调试（排查冲刺攻击效果配置，确认后删除）──
-            GD.Print($"[SkillDebug] TriggerSkill skill={skillId} isDashAttack={isDashAttack}");
             if (!_skills.TryGetValue(skillId, out var skill) || _actor == null)
             {
                 return false;
@@ -395,12 +393,10 @@ namespace Kuros.Actors.Heroes
                     if (isDashAttack)
                     {
                         var existing = _actor.EffectController.GetEffect(effect.EffectId);
-                        GD.Print($"[SkillDebug] dash entry effectId={effect.EffectId} existing={(existing != null ? "FOUND" : "none")}");
                         if (existing != null && existing != effect)
                         {
                             _actor.EffectController.RemoveEffect(existing);
                             _activeSkillEffects.Remove(existing);
-                            GD.Print($"[SkillDebug] replaced old instance, removed={existing.IsQueuedForDeletion()}");
                         }
                     }
 

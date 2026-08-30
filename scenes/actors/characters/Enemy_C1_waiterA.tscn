@@ -299,7 +299,7 @@ ApproachDistance = 400.0
 AssistMoveSpeedMultiplier = 1.0
 IgnoreEnemyCollisionDuringAssist = true
 Effects = Array[ExtResource("14_ikeql")]([SubResource("Resource_vadag"), SubResource("Resource_bscut")])
-DamageTakenFrozenDuration = 2.0
+DamageTakenFrozenDuration = 3.0
 InterruptDamageSources = 2
 EnableInterruptSlowMo = true
 

@@ -27,7 +27,6 @@ namespace Kuros.Actors.Enemies.Attacks
         private float _orbitSign;
         private bool _strikingBack;
         // ── 临时调试（排查权重疲劳问题，确认后删除）──
-        private int _debugUseCount;
 
         protected override void OnWarmupStarted()
         {
@@ -37,17 +36,6 @@ namespace Kuros.Actors.Enemies.Attacks
             _orbitSign = GD.Randf() > 0.5f ? 1f : -1f;
             _orbitClock = 0f;
             _strikingBack = false;
-
-            // ── 临时调试：每次触发打印当前权重与使用次数 ──
-            _debugUseCount++;
-            var controller = GetParent() as EnemyAttackController;
-            string weightInfo = "?";
-            if (controller != null)
-            {
-                var weights = controller.GetAttackWeights();
-                weightInfo = weights.TryGetValue(Name, out float w) ? w.ToString("F0") : "(not found)";
-            }
-            GD.Print($"[DashSlashPro Debug] trigger=#{_debugUseCount} name={Name} weight={weightInfo} all={DescribeWeights(controller)}");
         }
 
         protected override void UpdateDashMovement(double delta)
@@ -107,16 +95,6 @@ namespace Kuros.Actors.Enemies.Attacks
             if (LockFacingDuringDash && Mathf.Abs(dashDir.X) > 0.3f)
                 Enemy.FlipFacing(dashDir.X > 0);
             Enemy.Velocity = dashDir * DashSpeed;
-        }
-
-        // ── 临时调试：格式化控制器当前全部攻击权重（排查后删除）──
-        private static string DescribeWeights(EnemyAttackController? controller)
-        {
-            if (controller == null) return "{}";
-            var parts = new System.Collections.Generic.List<string>();
-            foreach (var kvp in controller.GetAttackWeights())
-                parts.Add($"{kvp.Key}={kvp.Value:F0}");
-            return "{" + string.Join(", ", parts) + "}";
         }
     }
 }

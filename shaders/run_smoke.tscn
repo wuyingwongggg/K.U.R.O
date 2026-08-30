@@ -40,3 +40,4 @@ texture = ExtResource("1_bwjfg")
 one_shot = true
 explosiveness = 0.6
 process_material = SubResource("ParticleProcessMaterial_srf2u")
+visibility_rect = Rect2(-400, -400, 800, 800)

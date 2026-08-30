@@ -284,7 +284,6 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 StunInterruptOnDamage = true
-StunDuringWarmup = false
 DamageTakenFrozenDuration = 2.0
 InterruptDamageSources = 2
 EnableInterruptSlowMo = true
@@ -311,7 +310,7 @@ ApproachDistance = 400.0
 AssistMoveSpeedMultiplier = 1.0
 IgnoreEnemyCollisionDuringAssist = true
 Effects = Array[ExtResource("14_nf2mn")]([SubResource("Resource_nh0o4"), SubResource("Resource_futv4")])
-DamageTakenFrozenDuration = 2.0
+DamageTakenFrozenDuration = 3.0
 EnableInterruptSlowMo = true
 
 [node name="Hit" type="Node" parent="StateMachine"]
