@@ -24,7 +24,9 @@ namespace Kuros.Builds.Normal
         protected override void OnApply()
         {
             if (Actor == null) return;
-            _originalMaxHealth = Actor.MaxHealth;
+            // 基数 = 玩家基础最大血量（不含任何效果加成）——场景切换玩家重建时，
+            // MaxHealth 可能已被过渡快照恢复为"含加成值"，若用 MaxHealth 做基数会无限叠加
+            _originalMaxHealth = Actor.BaseMaxHealth;
             _tier = 0;
             ApplyTier();
         }

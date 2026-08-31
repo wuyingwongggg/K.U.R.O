@@ -43,6 +43,12 @@ namespace Kuros.Core
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
 		[Export] public float AttackCooldown = 0f;
 		[Export] public int MaxHealth = 15;
+
+		/// <summary>
+		/// 基础最大血量（_Ready 时记录，不含 build 效果加成）——供 MaxHealth 类效果（如 NormalMaxHealthBoostEffect）
+		/// 做叠加基数：效果只能基于基础值计算加成，场景切换/玩家重建时不会因快照恢复的"含加成值"而重复叠加。
+		/// </summary>
+		public int BaseMaxHealth { get; protected set; }
 		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
 		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
 		[Export(PropertyHint.MultilineText)] public string AiDescription { get; set; } = string.Empty;
@@ -172,6 +178,8 @@ namespace Kuros.Core
 
 		public override void _Ready()
 		{
+			// 记录基础最大血量（不含 build 效果加成）——供 MaxHealth 类效果做叠加基数
+			BaseMaxHealth = MaxHealth;
 			CurrentHealth = MaxHealth;
 			CurrentShield = 0;
 

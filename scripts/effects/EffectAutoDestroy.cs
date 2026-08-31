@@ -65,6 +65,10 @@ namespace Kuros.Fx
 		/// <summary>在自身当前位置生成所有衍生特效。</summary>
 		private void SpawnEffects()
 		{
+			// 预热（ParticleEffectWarmer 全透明）时不生成衍生特效：
+			// 衍生脚本（如 FadeInOutDestroy）会每帧驱动 modulate:a 覆盖继承的透明，导致预热时左上角闪现
+			if (Modulate.A <= 0f) return;
+
 			// 生成父节点：QueueFreeOwner 时挂在 Owner 的父级（衍生特效随场景层级走），否则挂自身父级
 			Node? spawnParent = QueueFreeOwner
 				? Owner?.GetParent() ?? GetParent()
@@ -78,6 +82,10 @@ namespace Kuros.Fx
 				var fx = scene.Instantiate<Node2D>();
 				spawnParent?.AddChild(fx);
 				fx.GlobalPosition = spawnPos;
+
+				// 继承自身调制：预热器（ParticleEffectWarmer）全透明预热时，衍生特效同样透明，
+				// 避免预热结束后衍生特效在屏幕左上角闪现；正常游戏（自身 Modulate=1,1,1,1）无变化
+				fx.Modulate *= Modulate;
 
 				// 按自身缩放等比缩放衍生特效（保留衍生特效自身的原始比例，整体放大/缩小）
 				if (ScaleSpawnWithSelf)

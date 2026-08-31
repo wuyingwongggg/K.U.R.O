@@ -298,6 +298,7 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 - [ ] 世界效果（区域/爆炸/落点）：根节点 `Node2D`，继承 `Node2D` + `IAttackerProvider`（不继承 `ActorEffect`），`Duration` 自管理、`_ExitTree` 兜底清理
 - [ ] 阵营过滤：配置 `TargetableFactions` + `AllowSelfDamage`，不写死目标
 - [ ] 生成在目标身上的视觉：`target.GetVisualAnchorWorld()`，不用 `target.GlobalPosition` / 写死 y 偏移
+- [ ] 数值加成效果：用基础值（`BaseMaxHealth` 等）做叠加基数，不用当前属性值（防场景切换快照污染重复叠加，见第十一节）
 
 ---
 
@@ -321,3 +322,31 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 - `DotBurnEffect`（灼烧火焰跟随视觉锚点）
 - `DotBleedEffect`（流血视觉挂视觉锚点）
 - `P2CompanionController.SpawnActionEffect`（P2 护盾/治疗特效——原挂 GrabArea 中心（脚下，俯视角拾取判定），改视觉锚点）
+
+---
+
+## 十一、构筑效果数值叠加规范（基础值基数）
+
+### 问题案例（2026-08 修复）
+
+`NormalMaxHealthBoostEffect`（血量上限提升）跨场景**无限叠加**：
+
+```
+场景切换 → 玩家重建 → 过渡快照把 MaxHealth 恢复为"含加成值"（145）
+→ RestoreBuildState 恢复效果 → 新效果 OnApply → _originalMaxHealth = Actor.MaxHealth（145，已被快照污染）
+→ +25 = 170 → 下次场景 195 → 220 …… 无限
+```
+
+### 规则
+
+1. **数值加成效果的叠加基数 = 基础值，禁止用当前属性值**
+   - `GameActor.BaseMaxHealth`（`_Ready` 记录初始值，不含效果加成）——MaxHealth 类效果用它做基数
+   - 禁止 `Actor.MaxHealth` / 当前属性值做基数——过渡快照恢复的"含加成值"会导致重复叠加
+2. **`OnApply` 必须幂等**——玩家重建/场景切换时效果重新挂载（走 **OnApply**，不走 `OnStackRefreshed`）——OnApply 计算结果只依赖基础值/固定数组值（tier 数组），不依赖"当前属性值"
+3. **`OnStackRefreshed` 的 tier+1 升级语义正确**（玩家选卡叠层触发）——但它**不是场景切换的路径**（场景切换玩家重建 → OnApply）——不要用它承载幂等责任
+4. **Modifier 系统幂等**（`SetStatModifier` 按 EffectId 覆盖）✓——可安全用于数值修改（Machine 系效果均走此路径，无叠加问题）
+5. **场景切换流程**：`RestoreInventoryTransit`（血量快照恢复含加成值）→ `RestoreBuildState`（效果重挂 OnApply）——效果基数必须能在"快照污染后"仍正确 → 只用基础值
+
+### 已修复
+
+- `NormalMaxHealthBoostEffect`：基数改用 `Actor.BaseMaxHealth` ✓（`GameActor.BaseMaxHealth` 于 `_Ready` 记录）

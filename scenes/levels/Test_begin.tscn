@@ -1,18 +1,18 @@
 [gd_scene load_steps=54 format=3 uid="uid://dstgcw0tto5oa"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_7ummj"]
-[ext_resource type="Script" uid="uid://crjihqhay8mup" path="res://scripts/managers/BattleArena.cs" id="4_bn434"]
-[ext_resource type="Script" uid="uid://x5ofkhiwnqlw" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_p5xsj"]
-[ext_resource type="Texture2D" uid="uid://bwy3ynxccmpby" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="6_7ummj"]
-[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_wichh"]
-[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="7_0i20v"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_7ummj"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_bn434"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_p5xsj"]
+[ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="6_7ummj"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_wichh"]
+[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="7_0i20v"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="8_sxc2j"]
-[ext_resource type="Texture2D" uid="uid://dcewcyug72e3w" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="9_bn434"]
+[ext_resource type="Texture2D" uid="uid://b7d2xhua22eht" path="res://assets/environments/scene_1_home/房间1 隔断墙2.png" id="9_bn434"]
 [ext_resource type="PackedScene" uid="uid://dlhn30h21ei8f" path="res://scenes/environments/door1_A_begin.tscn" id="10_p5xsj"]
-[ext_resource type="Texture2D" uid="uid://cecnum8sfj2jh" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="11_wichh"]
-[ext_resource type="Texture2D" uid="uid://cjttmrhar2ued" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="12_0qijd"]
+[ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="11_wichh"]
+[ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="12_0qijd"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="13_2vmef"]
-[ext_resource type="Script" uid="uid://6am057djn61q" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="14_o3k7i"]
+[ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="14_o3k7i"]
 [ext_resource type="PackedScene" uid="uid://dmqi6co8gtn0l" path="res://scenes/weapons/Weapon_Brawl_discoBall.tscn" id="17_oobfl"]
 [ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="18_4812a"]
 [ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="19_lu3nq"]
@@ -37,7 +37,7 @@
 [ext_resource type="PackedScene" uid="uid://dqb7hct2obgg5" path="res://scenes/items/Furniture_A_bedA.tscn" id="38_fdxhs"]
 [ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="39_3yao7"]
 [ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="40_7gqg0"]
-[ext_resource type="Texture2D" uid="uid://dd8gr70fejj3a" path="res://assets/BuildIcon/icon.svg" id="40_21m0k"]
+[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="40_21m0k"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="41_y44s2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -203,7 +203,7 @@ DebugLineWidth = 8.0
 position = Vector2(3940, -269)
 script = ExtResource("37_6h2kq")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://qd5abd4opeob"
+NextStagePath = "uid://wluyqt2wxlvb"
 LoadDistance = 2000.0
 
 [node name="Environments" type="Node2D" parent="."]

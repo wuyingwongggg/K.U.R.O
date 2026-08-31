@@ -29,6 +29,12 @@ namespace Kuros.Effects
         [ExportGroup("Visual")]
         [Export] public Vector2 VisualOffset { get; set; } = Vector2.Zero;
 
+        /// <summary>
+        /// 被动挂载模式：效果被施加时立即对自己施加流血（不等待"宿主攻击命中"）——
+        /// 供区域组件等被动路径使用（如 SpikeAttackEffect 的区域伤害附带流血）。
+        /// </summary>
+        [Export] public bool BleedSelfOnApply = false;
+
         private bool _subscribed;
         private Node2D? _bleedVisualTemplate;
         private readonly Dictionary<GameActor, BleedState> _bleeds = new();
@@ -52,10 +58,28 @@ namespace Kuros.Effects
         protected override void OnApply()
         {
             base.OnApply();
+            if (BleedSelfOnApply)
+            {
+                // 被动挂载模式（区域组件等）：立即对自己施加流血，不订阅"宿主攻击命中"监听
+                if (Actor != null)
+                    ApplyBleed(Actor);
+                return;
+            }
+
             if (!_subscribed)
             {
                 DamageEventBus.SubscribeWithSource(OnDamageResolved);
                 _subscribed = true;
+            }
+        }
+
+        protected override void OnStackRefreshed()
+        {
+            base.OnStackRefreshed();
+            if (BleedSelfOnApply && Actor != null)
+            {
+                // 被动模式：重复施加（同 EffectId 刷新）→ 刷新流血时长（ApplyBleed 内部对已有状态重启 Timer）
+                ApplyBleed(Actor);
             }
         }
 

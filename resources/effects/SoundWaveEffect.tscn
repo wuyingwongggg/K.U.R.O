@@ -24,6 +24,7 @@ EffectId = "5f04a737-8a86-4810-a1f1-dfb7efd22391"
 DisplayName = "声波攻击"
 Description = "攻击到敌人后在敌人身后生成一道锥形声波，对该范围内的敌人造成持续伤害和减速"
 Duration = 2.0
+PersistOnWeaponSwitch = true
 
 [node name="ConeContainer" type="Node2D" parent="."]
 visible = false

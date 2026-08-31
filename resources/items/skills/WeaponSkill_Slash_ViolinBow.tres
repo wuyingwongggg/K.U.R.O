@@ -37,6 +37,9 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 script = ExtResource("1_0yij6")
 Trigger = 1
 EffectScene = ExtResource("2_0yij6")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 2.0
+})
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_mm4j5"]
@@ -53,6 +56,9 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("1_0yij6")
 Trigger = 1
 EffectScene = ExtResource("2_0yij6")
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 2.0
+})
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [resource]

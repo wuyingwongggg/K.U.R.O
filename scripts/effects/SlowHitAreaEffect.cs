@@ -48,6 +48,12 @@ namespace Kuros.Effects
         /// <summary>投掷者（由投掷系统 IAttackerProvider 注入）。</summary>
         public GameActor? Attacker { get; set; }
 
+        /// <summary>
+        /// 每次本区域对该目标造成伤害后触发——通用扩展点，供外部组件附加命中效果（如流血）。
+        /// 未订阅时零成本，复用本脚本的场景不受影响。
+        /// </summary>
+        public event Action<GameActor>? DamageDealtTo;
+
         // ── 私有状态 ─────────────────────────────────────────────────────────
         private Area2D? _area;
         private Sprite2D? _sprite;
@@ -122,8 +128,11 @@ namespace Kuros.Effects
             _actorTimers[actor] = 0f;
 
             if (!actor.IsDeadOrDying)
+            {
                 actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Attacker,
                     DamageSource.AreaEffect);
+                DamageDealtTo?.Invoke(actor);
+            }
 
             if (!actor.ActiveImmunities.HasFlag(ImmunityFlags.SpeedSlow))
                 ApplySpeedMultiplier(actor, _speedMultiplier);
@@ -156,6 +165,7 @@ namespace Kuros.Effects
                     _actorTimers[actor] = 0f;
                     actor.TakeDamage(DamagePerTick, _area?.GlobalPosition, Attacker,
                         DamageSource.AreaEffect);
+                    DamageDealtTo?.Invoke(actor);
                 }
             }
 
