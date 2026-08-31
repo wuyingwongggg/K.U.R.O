@@ -1,9 +1,53 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=6 format=3 uid="uid://be8r8tqkxldf2"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=15 format=3 uid="uid://be8r8tqkxldf2"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_0yij6"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_1tcmq"]
 [ext_resource type="PackedScene" uid="uid://s4nrcrs36gtl" path="res://resources/effects/SoundWaveEffect.tscn" id="2_0yij6"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="2_tyo52"]
 [ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="3_f3ese"]
+[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="3_ovxky"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_vk1sm"]
+[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="7_ovxky"]
+
+[sub_resource type="Resource" id="Resource_3cyqu"]
+script = ExtResource("1_1tcmq")
+Scene = ExtResource("2_tyo52")
+EffectOffset = Vector2(350, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_3x4ab"]
+script = ExtResource("1_1tcmq")
+Scene = ExtResource("3_ovxky")
+EffectOffset = Vector2(350, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_eee0m"]
+script = ExtResource("1_1tcmq")
+Scene = ExtResource("4_vk1sm")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 10.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_vk1sm"]
+script = ExtResource("1_0yij6")
+Trigger = 1
+EffectScene = ExtResource("2_0yij6")
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_mm4j5"]
+script = ExtResource("1_0yij6")
+Trigger = 1
+EffectScene = ExtResource("7_ovxky")
+PropertyOverrides = Dictionary[String, Variant]({
+"KnockbackDistance": 150.0,
+"KnockbackDuration": 0.15
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_1tcmq"]
 script = ExtResource("1_0yij6")
@@ -20,11 +64,13 @@ DashDamageMultiplier = 1.2000000000000002
 ShowHitboxDebug = false
 Description = "攻击到敌人时生成一道对敌人造成伤害和减速的音波"
 Effects = Array[ExtResource("1_0yij6")]([SubResource("Resource_1tcmq")])
+DashEffects = Array[ExtResource("1_0yij6")]([SubResource("Resource_vk1sm"), SubResource("Resource_mm4j5")])
+DashAttackFxEntries = Array[ExtResource("1_1tcmq")]([SubResource("Resource_3cyqu"), SubResource("Resource_3x4ab"), SubResource("Resource_eee0m")])
 WarmupDuration = 0.17
 ActiveDuration = 0.19999999999999996
 RecoveryDuration = 0.15999999999999992
-WarmupAnimationSpeed = 0.7
-ActiveAnimationSpeed = 0.7
+WarmupAnimationSpeed = 0.5
+ActiveAnimationSpeed = 0.5
 RecoveryAnimationSpeed = 0.6
 DashAnimationName = "Weapon_Slash_ViolinBow_RunAttack"
 DashWarmupDuration = 0.30000000000000004

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dyh38a1m2n8oj"]
 
-[ext_resource type="Script" uid="uid://dokk3bjt427x3" path="res://scripts/effects/DiscoFlashStunEffect.cs" id="1_dis_stun"]
+[ext_resource type="Script" uid="uid://dycfil5n08vj4" path="res://scripts/effects/DiscoFlashStunEffect.cs" id="1_dis_stun"]
 [ext_resource type="PackedScene" uid="uid://bsyv4oaosn2gp" path="res://resources/effects/DiscoFlashRays.tscn" id="2_2r2ym"]
 
 [node name="DiscoFlashStunEffect" type="Node"]

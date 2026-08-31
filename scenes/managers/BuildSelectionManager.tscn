@@ -1,9 +1,9 @@
 [gd_scene load_steps=38 format=3 uid="uid://bjwnor5ufbb8r"]
 
-[ext_resource type="Script" uid="uid://bmrt234mx2ojv" path="res://scripts/managers/BuildSelectionManager.cs" id="1"]
-[ext_resource type="Script" uid="uid://bimc7nym3hj4v" path="res://scripts/systems/ScoreThresholdCurve.cs" id="2"]
-[ext_resource type="Script" uid="uid://c84xwwivf01ua" path="res://scripts/systems/BuildEffectDefinition.cs" id="3"]
-[ext_resource type="Script" uid="uid://di3g6rrw13q3c" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_core"]
+[ext_resource type="Script" uid="uid://d3t47ery0onnl" path="res://scripts/managers/BuildSelectionManager.cs" id="1"]
+[ext_resource type="Script" uid="uid://7jkau6kxuvlf" path="res://scripts/systems/ScoreThresholdCurve.cs" id="2"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="3"]
+[ext_resource type="Script" uid="uid://d15dq05a2mlxn" path="res://scripts/systems/BuildCoreDefinition.cs" id="3_core"]
 [ext_resource type="Resource" uid="uid://bh73r5tnpb3qh" path="res://resources/builds/BuildMachine_A_001.tres" id="4"]
 [ext_resource type="Resource" uid="uid://cmuj2nvt6bdcc" path="res://resources/builds/BuildMachine_A_002.tres" id="5"]
 [ext_resource type="Resource" uid="uid://c3nfme2whksfc" path="res://resources/builds/BuildMachine_A_003.tres" id="6"]

@@ -1,10 +1,37 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=8 format=3 uid="uid://bdie6361u4op4"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=14 format=3 uid="uid://bdie6361u4op4"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_2po5m"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_sh13i"]
 [ext_resource type="PackedScene" uid="uid://cun60ye1ty36l" path="res://resources/effects/BunnySwordFloatingCannon.tscn" id="2_castc"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="2_dovl4"]
 [ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_u3cw1"]
 [ext_resource type="PackedScene" uid="uid://c1bk77cs1ipbb" path="res://resources/effects/WeaponBatteryEffect.tscn" id="3_battery"]
+[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="3_o02lj"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_0h0ug"]
+
+[sub_resource type="Resource" id="Resource_ushmn"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("2_dovl4")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 1
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_sb5cf"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("3_o02lj")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 1
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_14em4"]
+script = ExtResource("1_sh13i")
+Scene = ExtResource("4_0h0ug")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 10.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_2po5m"]
 script = ExtResource("1_2po5m")
@@ -35,6 +62,7 @@ DashDamageMultiplier = 0.8
 ShowHitboxDebug = false
 Description = "攻击时召唤浮游炮，冷却10秒，浮游炮每秒对目标的敌人发射激光造成伤害，持续5秒。每次攻击消耗电量，电量不足无法攻击"
 Effects = Array[ExtResource("1_2po5m")]([SubResource("Resource_2po5m"), SubResource("Resource_battery")])
+DashAttackFxEntries = Array[ExtResource("1_sh13i")]([SubResource("Resource_ushmn"), SubResource("Resource_sb5cf"), SubResource("Resource_14em4")])
 WarmupDuration = 0.19999999999999996
 ActiveDuration = 0.47
 RecoveryDuration = 0.15999999999999992

@@ -146,7 +146,6 @@ script = ExtResource("1_enemy_script")
 BehaviorConfig = SubResource("Resource_r5hc0")
 IsBoss = true
 BossIcon = ExtResource("3_jjtbv")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
