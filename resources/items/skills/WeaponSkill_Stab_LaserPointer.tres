@@ -47,6 +47,7 @@ DisplayName = "激光笔攻击"
 AnimationName = "Weapon_Stab_LaserPointer"
 DamageMultiplier = 0.8
 ShowHitboxDebug = false
+Description = "攻击到敌人时击退该敌人，每次攻击消耗电量，电量不足无法攻击"
 Effects = Array[ExtResource("1_g83ek")]([SubResource("Resource_a5flt"), SubResource("Resource_laserbeam"), SubResource("Resource_battery")])
 WarmupDuration = 0.35
 ActiveDuration = 0.95

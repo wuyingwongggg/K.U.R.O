@@ -127,7 +127,10 @@ namespace Kuros.Actors.Heroes.States
             }
         }
 
-        /// <summary>投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度线性衰减到 0（Active 前归零）——出手时已无位移惯性。</summary>
+        /// <summary>
+        /// 投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度线性衰减到 0（Active 前归零）——出手时已无位移惯性。
+        /// Warmup 阶段跟随移动输入翻转面朝（蓄力期间可转向）——惯性方向同步跟随面朝，投掷出手自动朝新方向。
+        /// </summary>
         private void UpdateMomentum(float delta)
         {
             if (!EnableThrowMomentum) return;
@@ -135,8 +138,15 @@ namespace Kuros.Actors.Heroes.States
 
             if (_phase == ThrowPhase.Warmup)
             {
+                // Warmup：跟随移动输入翻转面朝（蓄力期间可转向）
+                Vector2 moveInput = GetMovementInput();
+                if (Mathf.Abs(moveInput.X) > 0.01f)
+                    Player.FlipFacing(moveInput.X > 0);
+
                 _momentumElapsed += delta;
                 float t = ThrowWarmupDuration > 0f ? Mathf.Clamp(_momentumElapsed / ThrowWarmupDuration, 0f, 1f) : 1f;
+                // 惯性方向跟随当前面朝（翻转后投掷/惯性向新方向）
+                _momentumDir = Player.FacingRight ? Vector2.Right : Vector2.Left;
                 Player.Velocity = _momentumDir * (_momentumSpeed * (1f - t));
             }
             else

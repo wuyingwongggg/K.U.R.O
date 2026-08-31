@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="P2SupportSkillDefinition" load_steps=4 format=3 uid="uid://21rtv53ngnu7"]
 
-[ext_resource type="Script" uid="uid://dfiagl5v4ruqi" path="res://scripts/companions/P2SupportSkillDefinition.cs" id="1_skill_def"]
-[ext_resource type="Script" uid="uid://cea03dcql1ct5" path="res://scripts/companions/P2ShieldSkillHandler.cs" id="2_handler"]
+[ext_resource type="Script" uid="uid://l73cfa0sxqwa" path="res://scripts/companions/P2SupportSkillDefinition.cs" id="1_skill_def"]
+[ext_resource type="Script" uid="uid://e71o2pmd1bkd" path="res://scripts/companions/P2ShieldSkillHandler.cs" id="2_handler"]
 
 [sub_resource type="Resource" id="Handler_Shield"]
 script = ExtResource("2_handler")
