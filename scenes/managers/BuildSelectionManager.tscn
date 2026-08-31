@@ -56,4 +56,3 @@ RarityMultiplier = Dictionary[String, float]({
 })
 SkipGoldReward = 5
 CoreSkipGoldReward = 15
-DebugTrigger = true

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Fx;
 
 namespace Kuros.Effects
 {
@@ -9,9 +10,10 @@ namespace Kuros.Effects
     /// 区域伤害附带流血组件：订阅 SlowHitAreaEffect 的 DamageDealtTo（仅本区域造成的伤害），
     /// 对受伤目标施加 DotBleedEffect（被动挂载模式 BleedSelfOnApply——挂载即对自己流血）。
     /// 每个目标有最小触发间隔（防每 tick 刷流血）；DotBleed 同 EffectId 自动刷新时长。
+    /// 实现 IAttackerProvider：SpikeAttackEffect 容器转发攻击者 → 流血伤害归属真正攻击者（非目标自身）。
     /// </summary>
     [GlobalClass]
-    public partial class HitTriggerBleedZone : Node
+    public partial class HitTriggerBleedZone : Node, IAttackerProvider
     {
         /// <summary>订阅的区域（其 DamageDealtTo 事件即触发源）。</summary>
         [Export] public SlowHitAreaEffect? Source { get; set; }
@@ -24,7 +26,14 @@ namespace Kuros.Effects
         public float BleedApplyInterval { get; set; } = 1.0f;
 
         private readonly Dictionary<GameActor, float> _cooldowns = new();
+        private GameActor? _attacker;
         private bool _subscribed;
+
+        public GameActor? Attacker
+        {
+            get => _attacker;
+            set => _attacker = value;
+        }
 
         public override void _Ready()
         {
@@ -78,9 +87,13 @@ namespace Kuros.Effects
 
             var bleed = DotBleedEffectScene.Instantiate<ActorEffect>();
             if (bleed == null) return;
-            // 被动挂载：代码设置 BleedSelfOnApply（不污染 DotBleedEffect.tscn——它还被武器技能复用）
+            // 被动挂载：代码设置 BleedSelfOnApply（不污染 DotBleedEffect.tscn——它还被武器技能复用）；
+            // 流血伤害归属区域攻击者（BleedSelfOnApply 挂载时 Actor=目标自身，不指定会目标自伤归因）
             if (bleed is DotBleedEffect dotBleed)
+            {
                 dotBleed.BleedSelfOnApply = true;
+                dotBleed.BleedAttacker = _attacker;
+            }
             target.ApplyEffect(bleed); // → 挂载即对自己流血
 
             _cooldowns[target] = BleedApplyInterval;

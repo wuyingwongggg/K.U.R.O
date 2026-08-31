@@ -70,6 +70,8 @@ namespace Kuros.Controllers
         [Export(PropertyHint.Layers2DPhysics)] public uint ObstacleCheckMask { get; set; } = 1u; //检测障碍物的层，默认Layer 1
         [Export(PropertyHint.Range, "1,30,1")] public int MaxSpawnAttempts { get; set; } = 10;
         [Export(PropertyHint.Range, "4,500,2")] public float SpawnCheckRadius { get; set; } = 60f; // 生成点周围这个半径范围内如果有障碍物则视为不合适的落点
+        /// <summary>敌人最小间距（px）：智能采样时避开本批已占用/已生成的锚点，防止连续生成叠在一起。0 = 不避让。</summary>
+        [Export(PropertyHint.Range, "0,300,2")] public float MinEnemySpacing { get; set; } = 40f;
 
         private const string DefaultBackEffectPath = "res://scenes/actors/etc/enemy_spaw_back.tscn";
         private const string DefaultFrontEffectPath = "res://scenes/actors/etc/enemy_spawn_front.tscn";
@@ -119,6 +121,8 @@ namespace Kuros.Controllers
         private bool _isSpawning;
         private bool _triggerAreaAutoCreated;
         private CircleShape2D? _spawnCheckShape;
+        /// <summary>本批已占用的生成锚点（智能采样避让用，StartSpawnSequence 时清空）。</summary>
+        private readonly List<Vector2> _spawnedEnemyPositions = new();
 
         public override void _Ready()
         {
@@ -220,6 +224,7 @@ namespace Kuros.Controllers
 
             _isSpawning = true;
             _hasTriggered = true;
+            _spawnedEnemyPositions.Clear(); // 新一批：重置已占用锚点避让记录
             EmitSignal(SignalName.SpawnStarted);
 
             await LoadSpawnEffectScenesAsync();
@@ -300,7 +305,7 @@ namespace Kuros.Controllers
 
         private async System.Threading.Tasks.Task SpawnSingleEnemyAsync(PackedScene enemyScene, int index, int spawnTotal)
         {
-            Vector2 spawnAnchorPosition = ResolveSpawnPosition(index);
+            Vector2 spawnAnchorPosition = ResolveSpawnPosition(index, spawnTotal);
             Vector2 enemySpawnPosition = spawnAnchorPosition + EnemySpawnOffset;
             SpawnEffectRefs effectRefs = PlaySpawnEffects(spawnAnchorPosition);
 
@@ -551,7 +556,7 @@ namespace Kuros.Controllers
             return GetParent() ?? this;
         }
 
-        private Vector2 ResolveSpawnPosition(int index)
+        private Vector2 ResolveSpawnPosition(int index, int spawnTotal)
         {
             if (UseExplicitSpawnOffsets && index < SpawnOffsets.Count)
             {
@@ -565,7 +570,7 @@ namespace Kuros.Controllers
 
             if (EnableSmartSpawnPlacement && !Engine.IsEditorHint() && IsInsideTree())
             {
-                return FindClearSpawnPosition();
+                return FindClearSpawnPosition(index, spawnTotal);
             }
 
             float x = _rng.RandfRange(-SpawnAreaExtents.X, SpawnAreaExtents.X);
@@ -573,37 +578,104 @@ namespace Kuros.Controllers
             return GlobalPosition + new Vector2(x, y);
         }
 
-        private Vector2 FindClearSpawnPosition()
+        /// <summary>
+        /// 分层采样：按本批敌人总数把生成区域切成近似均匀的网格（行列比例贴近区域宽高比），
+        /// 第 index 个敌人在第 index 个格子内采样——覆盖整片区域，避免独立随机采样的聚簇（敌人全挤在一侧）。
+        /// 格子内失败（障碍/间距冲突）后以格子为中心向全区域线性扩展搜索，仍失败回退第一次候选点。
+        /// </summary>
+        private Vector2 FindClearSpawnPosition(int index, int spawnTotal)
         {
             var spaceState = GetWorld2D().DirectSpaceState;
+            int total = Mathf.Max(1, spawnTotal);
+
+            // 网格布局：rows×cols ≥ total，行列比例贴近区域宽高比；末行过空时压缩行数（10 敌人 3×4 → 4/4/2 比 4/4/1/1 均匀）
+            float aspect = SpawnAreaExtents.Y / Mathf.Max(1f, SpawnAreaExtents.X);
+            int rows = Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(total * aspect)));
+            int cols = Mathf.Max(1, Mathf.CeilToInt(total / (float)rows));
+            if ((rows - 1) * cols >= total)
+            {
+                rows = Mathf.Max(1, rows - 1);
+                cols = Mathf.Max(1, Mathf.CeilToInt(total / (float)rows));
+            }
+
+            float cellW = SpawnAreaExtents.X * 2f / cols;
+            float cellH = SpawnAreaExtents.Y * 2f / rows;
+            int cellX = index % cols;
+            int cellY = Mathf.Min(rows - 1, index / cols);
+            Vector2 cellCenter = GlobalPosition + new Vector2(
+                -SpawnAreaExtents.X + cellW * (cellX + 0.5f),
+                -SpawnAreaExtents.Y + cellH * (cellY + 0.5f));
+            Vector2 cellHalf = new(cellW * 0.5f, cellH * 0.5f);
+            Vector2 areaMin = GlobalPosition - SpawnAreaExtents;
+            Vector2 areaMax = GlobalPosition + SpawnAreaExtents;
             Vector2 fallback = GlobalPosition;
 
+            // 阶段 1：格子内均匀随机（主路径——正常情况下敌人覆盖整片区域）
             for (int attempt = 0; attempt < MaxSpawnAttempts; attempt++)
             {
-                float x = _rng.RandfRange(-SpawnAreaExtents.X, SpawnAreaExtents.X);
-                float y = _rng.RandfRange(-SpawnAreaExtents.Y, SpawnAreaExtents.Y);
-                Vector2 candidate = GlobalPosition + new Vector2(x, y);
+                Vector2 candidate = cellCenter + new Vector2(
+                    _rng.RandfRange(-cellHalf.X, cellHalf.X),
+                    _rng.RandfRange(-cellHalf.Y, cellHalf.Y));
 
                 if (attempt == 0)
                 {
                     fallback = candidate;
                 }
 
-                if (IsPositionClear(spaceState, candidate))
+                if (IsPositionClear(spaceState, candidate) && IsClearOfSpawnedEnemies(candidate))
                 {
                     if (LogSpawnEffectPositions && attempt > 0)
                     {
-                        GD.Print($"[{Name}] 智能落点：第 {attempt + 1} 次尝试找到空闲位置 {candidate}");
+                        GD.Print($"[{Name}] 智能落点：格子({cellX},{cellY}) 第 {attempt + 1} 次尝试找到空闲位置 {candidate}");
                     }
+                    _spawnedEnemyPositions.Add(candidate);
+                    return candidate;
+                }
+            }
+
+            // 阶段 2：格子矩形向全区域线性扩展（格子内被占满时就近寻找，保持整体分散；clamp 防止超出区域）
+            for (int attempt = 0; attempt < MaxSpawnAttempts; attempt++)
+            {
+                float t = (attempt + 1f) / (MaxSpawnAttempts + 1f);
+                Vector2 half = new(
+                    Mathf.Lerp(cellHalf.X, SpawnAreaExtents.X, t),
+                    Mathf.Lerp(cellHalf.Y, SpawnAreaExtents.Y, t));
+                Vector2 candidate = cellCenter + new Vector2(
+                    _rng.RandfRange(-half.X, half.X),
+                    _rng.RandfRange(-half.Y, half.Y));
+                candidate = new Vector2(
+                    Mathf.Clamp(candidate.X, areaMin.X, areaMax.X),
+                    Mathf.Clamp(candidate.Y, areaMin.Y, areaMax.Y));
+
+                if (IsPositionClear(spaceState, candidate) && IsClearOfSpawnedEnemies(candidate))
+                {
+                    if (LogSpawnEffectPositions)
+                    {
+                        GD.Print($"[{Name}] 智能落点：格子({cellX},{cellY}) 扩展搜索第 {attempt + 1} 次命中 {candidate}");
+                    }
+                    _spawnedEnemyPositions.Add(candidate);
                     return candidate;
                 }
             }
 
             if (LogSpawnEffectPositions)
             {
-                GD.PushWarning($"[{Name}] 智能落点：{MaxSpawnAttempts} 次尝试均有障碍物，使用第一次候选点 {fallback}");
+                GD.PushWarning($"[{Name}] 智能落点：格子({cellX},{cellY}) 扩展搜索也失败，使用第一次候选点 {fallback}");
             }
+            _spawnedEnemyPositions.Add(fallback); // 占位：后续敌人至少避开此失败点
             return fallback;
+        }
+
+        /// <summary>候选点与本批已占用的生成锚点距离是否 ≥ MinEnemySpacing（防止连续生成叠在一起）。</summary>
+        private bool IsClearOfSpawnedEnemies(Vector2 position)
+        {
+            if (MinEnemySpacing <= 0f || _spawnedEnemyPositions.Count == 0) return true;
+
+            foreach (Vector2 occupied in _spawnedEnemyPositions)
+            {
+                if (position.DistanceTo(occupied) < MinEnemySpacing) return false;
+            }
+            return true;
         }
 
         private bool IsPositionClear(PhysicsDirectSpaceState2D spaceState, Vector2 position)

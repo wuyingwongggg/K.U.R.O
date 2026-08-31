@@ -76,9 +76,9 @@ namespace Kuros.Core
 		public float DamageFlashDuration { get; set; } = 0.1f;
 
 		[ExportCategory("Damage Merge")]
-		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（扣血/日志/闪白/Hit 状态/事件只执行一次），
-		/// 避免极短时间内大量多段伤害逐段放大主线程开销（日志、Spine 闪白、受击动画、事件广播）。0 = 禁用合并。</summary>
-		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.1f;
+		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（首段立即反馈闪白/Hit，后续段合并到期
+		/// 统一扣血——闪白/受击动画不重复，避免区域伤害+流血首伤等窗口内多段连续两次反馈）。0 = 禁用合并。</summary>
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.2f;
 
 		// Exposed state for States to use
 		public int CurrentHealth { get; protected set; }
@@ -483,7 +483,8 @@ namespace Kuros.Core
 			return true;
 		}
 
-		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。</summary>
+		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。
+		/// 合并结算不重复闪白/受击动画——首段已即时反馈（窗口内任意 N 段伤害视觉上只反馈一次）。</summary>
 		private void FlushPendingDamage()
 		{
 			if (!_hasPendingDamage) return;
@@ -499,11 +500,13 @@ namespace Kuros.Core
 			_pendingOrigin = null;
 			_damageMergeTimer = 0f;
 
-			ApplyPendingDamage(total, origin, attacker, source);
+			ApplyPendingDamage(total, origin, attacker, source, isMergedSettlement: true);
 		}
 
-		/// <summary>实际扣血与全部副作用（原 TakeDamage 扣血后的部分，合并窗口内仅执行一次）。</summary>
-		private void ApplyPendingDamage(int damage, Vector2? attackOrigin, GameActor? attacker, Events.DamageSource damageSource)
+		/// <summary>实际扣血与全部副作用（原 TakeDamage 扣血后的部分，合并窗口内仅执行一次）。
+		/// isMergedSettlement = 合并窗口到期结算：只扣血/通知/事件，不重复闪白与受击动画——
+		/// 首段伤害已即时反馈（否则区域伤害+流血首伤等窗口内多段会连续两次闪白/Hit）。</summary>
+		private void ApplyPendingDamage(int damage, Vector2? attackOrigin, GameActor? attacker, Events.DamageSource damageSource, bool isMergedSettlement = false)
 		{
 			CurrentHealth -= damage;
 			CurrentHealth = Mathf.Max(CurrentHealth, 0);
@@ -514,13 +517,14 @@ namespace Kuros.Core
 
 			//GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");
 
-			FlashDamageEffect();
+			if (!isMergedSettlement)
+				FlashDamageEffect();
 
 			if (CurrentHealth <= 0)
 			{
 				Die();
 			}
-			else
+			else if (!isMergedSettlement)
 			{
 				// Force state change to Hit unless this actor is in super-armor phase.
 				bool smallHitSuppressed = SuppressSmallDamageHit
