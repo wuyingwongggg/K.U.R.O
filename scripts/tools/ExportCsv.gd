@@ -391,13 +391,14 @@ func _str(raw: String) -> String:
 		return s.substr(1, s.length() - 2)
 	return s
 
-## 提取 Array[String](["a","b"]) → "a|b"
+## 提取字符串数组 → "a|b"（兼容两种输入格式：
+## 原始 tres 文本 `Array[String](["a","b"])` 或解析后的 Variant `["a","b"]`——统一找 `[` `]` 提取）
 func _arr_str(raw: String) -> String:
-	var start := raw.find("([")
-	var end   := raw.rfind("])")
-	if start < 0 or end < 0:
+	var start := raw.find("[")
+	var end   := raw.rfind("]")
+	if start < 0 or end < 0 or end <= start:
 		return ""
-	var inner := raw.substr(start + 2, end - start - 2)
+	var inner := raw.substr(start + 1, end - start - 1)
 	var re := RegEx.new()
 	re.compile('"([^"]*)"')
 	var out: Array = []
