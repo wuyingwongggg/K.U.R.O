@@ -72,6 +72,10 @@ namespace Kuros.Fx
 
 			var instance = entry.Scene.Instantiate();
 			entry.ApplyOverrides(instance);
+			// 唯一性组标记（同 EnemyAttackTemplate.SpawnSingleEffect）：生成的子场景（如召唤的敌人）入组，
+			// 供"场上已有该组存活成员"检测（BlockedByFxGroup/UniqueGroup 阻塞重复召唤）
+			if (!string.IsNullOrEmpty(entry.UniqueGroup))
+				instance.AddToGroup(entry.UniqueGroup);
 			GetParent()?.AddChild(instance);
 			if (instance is Node2D node)
 				node.GlobalPosition = marker.GlobalPosition;

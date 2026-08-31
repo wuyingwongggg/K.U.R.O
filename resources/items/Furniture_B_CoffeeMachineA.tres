@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_0v566"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_lb4p1"]
-[ext_resource type="Texture2D" uid="uid://bocvowurv11f6" path="res://assets/furnitures/hotel_scene2/CoffeeMachineA.png" id="3_0v566"]
+[ext_resource type="Texture2D" uid="uid://b73hcxi424y4n" path="res://assets/furnitures/hotel_scene2/CoffeeMachineA.png" id="3_0v566"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_lb4p1"]
 [ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_1sllh"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="4_71b4q"]
@@ -54,7 +54,7 @@ DisplayName = "咖啡机"
 Description = "一次性投掷道具：咖啡机"
 Icon = ExtResource("3_0v566")
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = ["tag_throw", "furniture"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_0v566")]([SubResource("Resource_0v566_a")])
 EffectEntries = Array[ExtResource("2_lb4p1")]([SubResource("Resource_0v566"), SubResource("Resource_71b4q"), SubResource("Resource_bycld"), SubResource("Resource_lb3xt")])

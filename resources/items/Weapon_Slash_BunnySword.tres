@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_usfe1"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_usfe1"]
-[ext_resource type="Texture2D" uid="uid://bct0ql1gxa865" path="res://assets/weapons/光剑.png" id="3_usfe1"]
+[ext_resource type="Texture2D" uid="uid://s6eufjdhipuu" path="res://assets/weapons/光剑.png" id="3_usfe1"]
 [ext_resource type="Resource" uid="uid://bdie6361u4op4" path="res://resources/items/skills/WeaponSkill_Slash_BunnySword.tres" id="4_8nlf0"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_8p57d"]
 
@@ -19,7 +19,7 @@ DisplayName = "仿生兔女郎的光剑"
 Description = "稀有类挥砍武器：光剑。攻速快。范围中。攻击后生成一个持续发射激光攻击敌人的浮游炮，一段时间消失"
 Icon = ExtResource("3_usfe1")
 Category = "Weapon"
-Tags = Array[String](["tag_weapon", "tag_slash", "hit_2"])
+Tags = ["tag_weapon", "tag_slash", "hit_2"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_usfe1")]([SubResource("Resource_n7thb")])
 WeaponSkillResources = Array[Resource]([ExtResource("4_8nlf0")])

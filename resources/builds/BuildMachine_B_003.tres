@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://b2makbbyiwpt0"]
 
-[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_jtuph"]
-[ext_resource type="Script" uid="uid://c84xwwivf01ua" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_jtuph"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://ci4osjessewos" path="res://scenes/builds/machine/MachineDeathEmberEffect.tscn" id="2_8tk4j"]
 [ext_resource type="Texture2D" uid="uid://ci4hpk1qmpc45" path="res://assets/BuildIcon/Machine_B_003_死亡余温.png" id="3_jtuph"]
 

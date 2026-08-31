@@ -1,21 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=8 format=3 uid="uid://bf0i6jxqjqnb5"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=6 format=3 uid="uid://bf0i6jxqjqnb5"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_7jkjn"]
-[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_uybkd"]
-[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_wr56q"]
-[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="2_xngd4"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_uybkd"]
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_wr56q"]
 [ext_resource type="PackedScene" uid="uid://c1bk77cs1ipbb" path="res://resources/effects/WeaponBatteryEffect.tscn" id="3_battery"]
-
-[sub_resource type="Resource" id="Resource_xngd4"]
-script = ExtResource("1_7jkjn")
-Trigger = 1
-EffectScene = ExtResource("2_xngd4")
-PropertyOverrides = Dictionary[String, Variant]({
-"EnableKnockbackX": false,
-"KnockbackDistance": 150.0,
-"KnockbackDuration": 0.15
-})
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_battery"]
 script = ExtResource("1_7jkjn")
@@ -40,7 +28,6 @@ DashDamageMultiplier = 0.7
 ShowHitboxDebug = false
 Description = "攻击到敌人时击退该敌人1m并使其速度减少30%持续1秒，长按时持续攻击"
 Effects = Array[ExtResource("1_7jkjn")]([SubResource("Resource_battery")])
-DashEffects = Array[ExtResource("1_7jkjn")]([SubResource("Resource_xngd4")])
 WarmupDuration = 0.5
 ActiveDuration = 0.9
 RecoveryDuration = 0.6

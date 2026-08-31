@@ -11,6 +11,6 @@ ItemId = "Weapon_Unarmed_Default"
 DisplayName = "空手"
 Description = "默认武器：未装备任何武器时使用的基础近战攻击（兜底定义，不进入任何物品栏）"
 Category = "Weapon"
-Tags = Array[String](["tag_weapon"])
+Tags = ["tag_weapon"]
 MaxStackSize = 1
 WeaponSkillResources = Array[Resource]([ExtResource("1_skill")])

@@ -185,7 +185,12 @@ namespace Kuros.Actors.Enemies.Attacks
             // Recovery 阶段打断 → 攻击已基本完成，保留 CD 防止立即复用
             // Warmup/Active 阶段打断 → 攻击未完成，清除 CD 允许重新尝试
             bool childInRecovery = _currentAttack?.CurrentPhase == EnemyAttackTemplate.AttackPhase.Recovery;
+            var interruptedAttack = !childInRecovery ? _currentAttack : null; // 未完成被中断（如受伤眩晕）
             CleanupChildAttack(clearCooldown: !childInRecovery);
+
+            // 打断 = 视为未使用：恢复该攻击权重（子类覆写；与切换攻击恢复上一个攻击的语义一致）
+            if (interruptedAttack != null)
+                OnAttackInterrupted(interruptedAttack);
 
             // 不在此处立即排队下一次攻击，而是清空 _queuedAttack，
             // 让 _PhysicsProcess 空闲循环在所有攻击 CD 结束后再做加权随机选择
@@ -220,8 +225,10 @@ namespace Kuros.Actors.Enemies.Attacks
 
             // 排队攻击等待超时：间隔已过但选中的攻击仍无法启动（玩家距离/角度不符，CanStart 不满足）——
             // 超时视为"使用一次"对该攻击降权（子类覆写 OnQueuedAttackTimeout），
-            // 其概率降低后，突刺等可达攻击有更高机会被选中
-            if (!IsRunning && _queuedAttack != null && QueuedAttackTimeout > 0f && _interAttackDelay <= 0f)
+            // 其概率降低后，突刺等可达攻击有更高机会被选中。
+            // 敌人不可行动（Frozen/Hit 眩晕）期间不计时——避免长时间眩晕把攻击权重反复降到地板
+            if (!IsRunning && _queuedAttack != null && QueuedAttackTimeout > 0f && _interAttackDelay <= 0f
+                && !IsEnemyDisabled())
             {
                 _queuedElapsed += (float)delta;
                 if (_queuedElapsed >= QueuedAttackTimeout && !_queuedAttack.CanStart())
@@ -282,6 +289,19 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 让突刺等可达攻击有机会被选中。默认空。
         /// </summary>
         protected virtual void OnQueuedAttackTimeout(EnemyAttackTemplate attack) { }
+
+        /// <summary>
+        /// 子攻击被打断回调（Warmup/Active 阶段强制中断——如受伤眩晕进入 Frozen）：
+        /// 子类可覆写恢复该攻击权重（视为未使用，不累计疲劳）。默认空。
+        /// </summary>
+        protected virtual void OnAttackInterrupted(EnemyAttackTemplate attack) { }
+
+        /// <summary>敌人是否处于不可行动状态（受伤眩晕/硬直）——期间排队超时不计时。</summary>
+        private bool IsEnemyDisabled()
+        {
+            string state = Enemy?.StateMachine?.CurrentState?.Name ?? "";
+            return state == "Frozen" || state == "CooldownFrozen" || state == "Hit";
+        }
 
         private EnemyAttackTemplate? PickAttack()
         {

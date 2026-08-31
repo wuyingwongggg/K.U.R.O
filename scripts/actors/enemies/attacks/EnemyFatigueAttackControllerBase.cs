@@ -116,6 +116,16 @@ namespace Kuros.Actors.Enemies.Attacks
             TrySetAttackWeight(attack.Name, newWeight);
         }
 
+        /// <summary>
+        /// 子攻击被打断（Warmup/Active 阶段强制中断——如受伤眩晕进入 Frozen）：视为未使用——
+        /// 恢复原始权重并清除该攻击的超时疲劳账本，避免被打断的攻击长期停留在降权值。
+        /// </summary>
+        protected override void OnAttackInterrupted(EnemyAttackTemplate attack)
+        {
+            RestoreAttackWeight(attack.Name); // 内部清除 _timeoutStreaks 对应条目
+            _consecutiveSameCount = 0;
+        }
+
         protected float GetOriginalWeight(string attackName)
         {
             return _originalWeights.TryGetValue(attackName, out float w) ? w : 0f;

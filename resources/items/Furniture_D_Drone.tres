@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="4_b4k65"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_bxbpq"]
 [ext_resource type="PackedScene" uid="uid://cigmmy13avtuu" path="res://resources/effects/DroneStunEffect.tscn" id="6_5a8q7"]
-[ext_resource type="Texture2D" uid="uid://caj2mx0jttbql" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="6_b4k65"]
+[ext_resource type="Texture2D" uid="uid://bifkxv7ctwotp" path="res://assets/objects/drone/drone_base/时间轴 1_0000.png" id="6_b4k65"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_deb1n"]
 
 [sub_resource type="Resource" id="Resource_6qb80"]
@@ -57,7 +57,7 @@ Description = "一次性投掷道具：破损无人机"
 Icon = ExtResource("6_b4k65")
 HoldScenePath = "uid://c8c450masc7f5"
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = ["tag_throw", "furniture"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_b4k65")]([SubResource("Resource_6qb80")])
 EffectEntries = Array[ExtResource("2_5a8q7")]([SubResource("Resource_6f3qv"), SubResource("Resource_1qp51"), SubResource("Resource_mqy4i"), SubResource("Resource_saa34")])

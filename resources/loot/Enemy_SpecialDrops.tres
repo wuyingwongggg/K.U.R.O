@@ -13,7 +13,7 @@
 [ext_resource type="Resource" uid="uid://t836cltal7m" path="res://resources/items/Weapon_Throw_Briefcase.tres" id="11_0gtqq"]
 [ext_resource type="Resource" uid="uid://j6kveph5wqjm" path="res://resources/items/Weapon_Throw_MetalSpike.tres" id="12_pf6o5"]
 [ext_resource type="Resource" uid="uid://dknruw00xelvv" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="13_le1mu"]
-[ext_resource type="Script" uid="uid://b0twmrwjewcol" path="res://scripts/systems/loot/LootDropTable.cs" id="14_u5lf1"]
+[ext_resource type="Script" uid="uid://dpdpwmf4dwu8k" path="res://scripts/systems/loot/LootDropTable.cs" id="14_u5lf1"]
 
 [sub_resource type="Resource" id="Resource_yl8i7"]
 script = ExtResource("2_tsu42")

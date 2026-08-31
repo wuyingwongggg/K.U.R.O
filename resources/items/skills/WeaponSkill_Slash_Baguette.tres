@@ -1,56 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=15 format=3 uid="uid://eccmh813ifss"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=6 format=3 uid="uid://eccmh813ifss"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_8bkkx"]
-[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_itwdm"]
-[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="2_1a4oa"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_itwdm"]
 [ext_resource type="PackedScene" uid="uid://cb63a03x1vhat" path="res://resources/effects/WeaponSlashBaguetteEffect.tscn" id="2_dmijq"]
-[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_uqor0"]
-[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="3_1a4oa"]
-[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="3_dmijq"]
-[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_t013a"]
-
-[sub_resource type="Resource" id="Resource_t013a"]
-script = ExtResource("1_itwdm")
-Scene = ExtResource("2_1a4oa")
-EffectOffset = Vector2(300, 0)
-SpawnTiming = 2
-metadata/_custom_type_script = "uid://8eqj514nqogw"
-
-[sub_resource type="Resource" id="Resource_l17fu"]
-script = ExtResource("1_itwdm")
-Scene = ExtResource("3_1a4oa")
-EffectOffset = Vector2(300, 0)
-SpawnTiming = 2
-metadata/_custom_type_script = "uid://8eqj514nqogw"
-
-[sub_resource type="Resource" id="Resource_rjjlq"]
-script = ExtResource("1_itwdm")
-Scene = ExtResource("4_t013a")
-EffectOffset = Vector2(nan, nan)
-SpawnTiming = 2
-PropertyOverrides = Dictionary[String, Variant]({
-"ShakeStrength": 10
-})
-metadata/_custom_type_script = "uid://8eqj514nqogw"
-
-[sub_resource type="Resource" id="Resource_uqor0"]
-script = ExtResource("1_8bkkx")
-Trigger = 1
-EffectScene = ExtResource("2_dmijq")
-PropertyOverrides = Dictionary[String, Variant]({
-"SpawnChance": 40.0
-})
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
-
-[sub_resource type="Resource" id="Resource_dmijq"]
-script = ExtResource("1_8bkkx")
-Trigger = 1
-EffectScene = ExtResource("3_dmijq")
-PropertyOverrides = Dictionary[String, Variant]({
-"KnockbackDistance": 200.0,
-"KnockbackDuration": 0.15
-})
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_uqor0"]
 
 [sub_resource type="Resource" id="Resource_axkj6"]
 script = ExtResource("1_8bkkx")
@@ -70,10 +23,6 @@ DashDamageMultiplier = 1.2000000000000002
 ShowHitboxDebug = false
 Description = "手持该武器攻击敌人后，有20%概率生成面包碎块，冲刺攻击概率翻倍，接触后恢复生命"
 Effects = Array[ExtResource("1_8bkkx")]([SubResource("Resource_axkj6")])
-DashEffects = Array[ExtResource("1_8bkkx")]([SubResource("Resource_uqor0"), SubResource("Resource_dmijq")])
-DashAttackFxEntries = Array[ExtResource("1_itwdm")]([SubResource("Resource_t013a"), SubResource("Resource_l17fu"), SubResource("Resource_rjjlq")])
-AttackFxSpawnTiming = 2
-AttackFxOffset = Vector2(300, 0)
 WarmupDuration = 0.30000000000000004
 ActiveDuration = 0.19999999999999996
 RecoveryDuration = 0.16999999999999993

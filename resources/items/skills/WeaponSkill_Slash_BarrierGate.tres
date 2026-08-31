@@ -1,35 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=11 format=3 uid="uid://0rwr32wy7yud"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=6 format=3 uid="uid://0rwr32wy7yud"]
 
-[ext_resource type="Script" uid="uid://8eqj514nqogw" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_hrrjb"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_hrrjb"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_joilt"]
 [ext_resource type="PackedScene" uid="uid://cphslrrtuko1d" path="res://resources/effects/SlowOnHitEffect.tscn" id="2_hrrjb"]
-[ext_resource type="Script" uid="uid://b8m2wtsarw57r" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hxcpv"]
-[ext_resource type="PackedScene" uid="uid://3o6u0oms7vm6" path="res://shaders/smash_effect.tscn" id="2_nfyj5"]
-[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="3_w1ai1"]
-
-[sub_resource type="Resource" id="Resource_u4dse"]
-script = ExtResource("1_hrrjb")
-Scene = ExtResource("2_nfyj5")
-EffectOffset = Vector2(375, 0)
-SpawnTiming = 2
-metadata/_custom_type_script = "uid://8eqj514nqogw"
-
-[sub_resource type="Resource" id="Resource_gprf2"]
-script = ExtResource("1_hrrjb")
-Scene = ExtResource("3_w1ai1")
-EffectOffset = Vector2(nan, nan)
-SpawnTiming = 2
-metadata/_custom_type_script = "uid://8eqj514nqogw"
-
-[sub_resource type="Resource" id="Resource_w1ai1"]
-script = ExtResource("1_joilt")
-Trigger = 1
-EffectScene = ExtResource("2_hrrjb")
-PropertyOverrides = Dictionary[String, Variant]({
-"SlowDuration": 1.0,
-"SlowPercent": 100.0
-})
-metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+[ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_hxcpv"]
 
 [sub_resource type="Resource" id="Resource_nfyj5"]
 script = ExtResource("1_joilt")
@@ -50,8 +24,6 @@ DashDamageMultiplier = 1.2000000000000002
 ShowHitboxDebug = false
 Description = "攻击到敌人时使该敌人移动速度减少50%，突刺攻击效果翻倍，持续1秒"
 Effects = Array[ExtResource("1_joilt")]([SubResource("Resource_nfyj5")])
-DashEffects = Array[ExtResource("1_joilt")]([SubResource("Resource_w1ai1")])
-DashAttackFxEntries = Array[ExtResource("1_hrrjb")]([SubResource("Resource_u4dse"), SubResource("Resource_gprf2")])
 WarmupDuration = 0.53
 ActiveDuration = 0.31
 RecoveryDuration = 0.16
