@@ -144,7 +144,7 @@ namespace Kuros.Items.World
 		private readonly System.Collections.Generic.HashSet<GameActor> _actorsInRange = new();
 		private bool _impactArmed = false; // 是否已激活伤害检测
 		private bool _hasDealtDamage = false; // 是否已造成伤害
-		private readonly System.Collections.Generic.HashSet<GameActor> _hitActors = new(); // 已命中的 Actor，防止重复伤害
+		private readonly System.Collections.Generic.HashSet<Node> _hitActors = new(); // 已命中的目标（GameActor/非 GameActor），防止重复伤害
 		private Area2D? _hitboxArea; // 用于伤害检测的 Area2D
 		private bool _isDestroying = false; // 是否正在销毁中
 		private AnimationPlayer? _destructionAnimPlayer; // 销毁动画播放器引用
@@ -1136,18 +1136,85 @@ namespace Kuros.Items.World
 				return;
 
 			var actor = ResolveActorFromArea(area);
-			if (actor == null || actor == LastDroppedBy)
+			if (actor != null)
+			{
+				if (actor == LastDroppedBy)
+					return;
+
+				if (_hitActors.Contains(actor))
+					return;
+
+				if (_rigidBody != null)
+				{
+					var velocity = _rigidBody.LinearVelocity;
+					if (velocity.Length() >= MinDamageVelocity)
+						TryDealImpactDamage(actor, velocity);
+				}
+				return;
+			}
+
+			// 非 GameActor 目标（如 Gate）：向上找 TakeDamage 接收者（与 DamageDispatcher.ResolveDamageReceiver 同逻辑）
+			var receiver = ResolveTakeDamageReceiver(area);
+			if (receiver == null || receiver == LastDroppedBy)
 				return;
 
-			if (_hitActors.Contains(actor))
+			if (_hitActors.Contains(receiver))
 				return;
 
 			if (_rigidBody != null)
 			{
 				var velocity = _rigidBody.LinearVelocity;
 				if (velocity.Length() >= MinDamageVelocity)
-					TryDealImpactDamage(actor, velocity);
+					TryDealDamageToNonActor(receiver);
 			}
+		}
+
+		/// <summary>沿父链向上查找实现 TakeDamage 的伤害接收者（非 GameActor 目标，如 GateController）。</summary>
+		private static Node? ResolveTakeDamageReceiver(Node area)
+		{
+			Node? current = area;
+			while (current != null)
+			{
+				if (current.HasMethod("TakeDamage")) return current;
+				current = current.GetParent();
+			}
+			return null;
+		}
+
+		/// <summary>对非 GameActor 目标造成伤害（数值复用 CalculateImpactDamage，与 GameActor 命中一致），
+		/// 并按 StopOnHit 决定停止飞行（砸到 Gate 等障碍物即停）。</summary>
+		private bool TryDealDamageToNonActor(Node receiver)
+		{
+			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
+			if (damage <= 0) return false;
+
+			receiver.Call("TakeDamage", (float)damage);
+			_hitActors.Add(receiver);
+
+			if (_inFlight)
+			{
+				if (StopOnHit)
+				{
+					// 与 GameActor 命中相同的停止流程（落地隐藏/归还由 _PhysicsProcess 处理）
+					_inFlight = false;
+					_flightTimer = 0.0;
+					_impactArmed = false;
+					if (_rigidBody != null)
+					{
+						_rigidBody.LinearVelocity = Vector2.Zero;
+						try { _rigidBody.Set("freeze", true); } catch { }
+					}
+					RestoreRigidBodyCollision();
+					HandleStopAfterFlight();
+				}
+				return true;
+			}
+
+			if (StopOnHit)
+			{
+				StopItemMovement();
+			}
+			return true;
 		}
 
 		private static GameActor? ResolveActorFromArea(Area2D area)

@@ -116,16 +116,17 @@ func _export_skills() -> void:
 		push_warning("[ExportCsv] No .tres found in " + SKILLS_DIR)
 		return
 
+	# 列顺序与 WeaponSkillDefinition.cs 字段声明顺序一致（跳过注释 Note 与效果数组字段）
 	var headers := [
-		"file", "SkillId", "SkillType", "DisplayName", "AnimationName",
-		"DamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
+		"file", "SkillId", "DisplayName", "SkillType", "AnimationName",
+		"DamageMultiplier", "DashDamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
 		"Description", "ActivationAction", "AllowHoldContinuousAttack",
 		"WarmupDuration", "ActiveDuration", "RecoveryDuration",
-			"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
-			"DashDamageMultiplier", "DashAnimationName",
-			"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
-			"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed",
-			"DashAttackSpeedSource", "DashAttackFixedSpeed", "DashAttackSpeedMultiplier", "DashAttackDecayWindow"
+		"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
+		"DashAnimationName",
+		"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
+		"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed",
+		"DashAttackSpeedSource", "DashAttackFixedSpeed", "DashAttackSpeedMultiplier", "DashAttackDecayWindow"
 	]
 	var rows: Array = [headers]
 
@@ -138,10 +139,11 @@ func _export_skills() -> void:
 		rows.append([
 			fpath.get_file().get_basename(),
 			_str(str(r.get("SkillId", ""))),
-			str(r.get("SkillType", "1")),
 			_str(str(r.get("DisplayName", ""))),
+			str(r.get("SkillType", "1")),
 			_str(str(r.get("AnimationName", ""))),
 			str(r.get("DamageMultiplier", "1.0")),
+			str(r.get("DashDamageMultiplier", "-1")),
 			str(r.get("CooldownSeconds", "0.5")),
 			str(r.get("ShowHitboxDebug", "true")),
 			_str(str(r.get("Description", ""))),
@@ -153,7 +155,6 @@ func _export_skills() -> void:
 			str(r.get("WarmupAnimationSpeed", "1.0")),
 			str(r.get("ActiveAnimationSpeed", "1.0")),
 			str(r.get("RecoveryAnimationSpeed", "1.0")),
-			str(r.get("DashDamageMultiplier", "-1")),
 			_str(str(r.get("DashAnimationName", ""))),
 			str(r.get("DashWarmupDuration", "-1")),
 			str(r.get("DashActiveDuration", "-1")),

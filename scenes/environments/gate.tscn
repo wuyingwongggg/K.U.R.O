@@ -1,11 +1,19 @@
-[gd_scene load_steps=28 format=3 uid="uid://cb4xinggegye7"]
+[gd_scene load_steps=31 format=3 uid="uid://cb4xinggegye7"]
 
 [ext_resource type="Texture2D" uid="uid://gxc75o5wrtfl" path="res://assets/environments/scene_2_hotel/酒店大门口.png" id="1_ahd7w"]
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="1_gxwh4"]
 [ext_resource type="Texture2D" uid="uid://csr8w1j7uq8x0" path="res://assets/environments/scene_2_hotel/破损的酒店大门口.png" id="1_sqrjw"]
 [ext_resource type="Texture2D" uid="uid://dg0dlvjyvdfed" path="res://assets/effect/LightEffect/强光1.png" id="2_xttcx"]
 [ext_resource type="Texture2D" uid="uid://bk0ipufx3kn76" path="res://assets/environments/26.3.17 烟.png" id="3_fkwno"]
 [ext_resource type="Texture2D" uid="uid://b6qys2indga4q" path="res://assets/effect/LightEffect/开门光.png" id="3_xttcx"]
 [ext_resource type="Script" uid="uid://drgauik0pftca" path="res://scripts/environments/GateController.cs" id="14_gatectrl"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7xwka"]
+shader = ExtResource("1_gxwh4")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
 
 [sub_resource type="Shader" id="Shader_xttcx"]
 code = "shader_type canvas_item;
@@ -149,11 +157,18 @@ shader_parameter/brightness = 0.406000019285
 shader_parameter/particle_size = 0.07000000297574
 shader_parameter/anim_speed = 2.42000011169012
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o8x55"]
+shader = ExtResource("1_gxwh4")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_algbx"]
 size = Vector2(400, 1651)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fkwno"]
-size = Vector2(460, 900)
+size = Vector2(400, 900)
 
 [sub_resource type="Gradient" id="Gradient_od0np"]
 offsets = PackedFloat32Array(0, 0.2, 1)
@@ -357,10 +372,10 @@ tracks/2/path = NodePath("Broken:position")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.099999994, 0.13333334, 0.16666667, 0.26666668, 0.4, 0.6),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.03333333, 0.1, 0.2, 0.36666667, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector2(0, 0), Vector2(0, 0), Vector2(50, 0), Vector2(25, 0), Vector2(-12.5, 0), Vector2(6.5, 0), Vector2(0, 0)]
+"values": [Vector2(0, 0), Vector2(50, 0), Vector2(25, 0), Vector2(-12.5, 0), Vector2(6.5, 0), Vector2(0, 0)]
 }
 tracks/3/type = "value"
 tracks/3/imported = false
@@ -413,10 +428,10 @@ tracks/0/path = NodePath("Sprite2D:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.13333334, 0.2, 0.33333334, 0.5, 0.60010004),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.03333333, 0.1, 0.2, 0.36666667, 0.60010004),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector2(0, 0), Vector2(0, 0), Vector2(50, 0), Vector2(-25, 0), Vector2(12.5, 0), Vector2(-2.5, 0), Vector2(0, 0)]
+"values": [Vector2(0, 0), Vector2(50, 0), Vector2(-25, 0), Vector2(12.5, 0), Vector2(-2.5, 0), Vector2(0, 0)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -549,9 +564,13 @@ _data = {
 z_index = 1
 collision_layer = 2
 collision_mask = 7
+script = ExtResource("14_gatectrl")
+MaxHealth = 60
+BrokenThreshold = 30
 
 [node name="Broken" type="Sprite2D" parent="."]
 visible = false
+material = SubResource("ShaderMaterial_7xwka")
 texture = ExtResource("1_sqrjw")
 
 [node name="light1" type="Sprite2D" parent="."]
@@ -605,6 +624,7 @@ texture = ExtResource("3_xttcx")
 flip_h = true
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_o8x55")
 texture = ExtResource("1_ahd7w")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -614,7 +634,7 @@ shape = SubResource("RectangleShape2D_algbx")
 [node name="HitArea" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
-position = Vector2(-70, 250)
+position = Vector2(0, 250)
 shape = SubResource("RectangleShape2D_fkwno")
 
 [node name="Smoke" type="GPUParticles2D" parent="."]
@@ -633,8 +653,3 @@ process_material = SubResource("ParticleProcessMaterial_gxwh4")
 libraries = {
 &"": SubResource("AnimationLibrary_5c8l7")
 }
-
-[node name="GateController" type="Node" parent="."]
-script = ExtResource("14_gatectrl")
-MaxHealth = 3
-BrokenThreshold = 2

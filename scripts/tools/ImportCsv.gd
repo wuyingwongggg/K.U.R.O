@@ -41,11 +41,13 @@ func import_skills_from_csv() -> void:
 		var path = "%s%s.tres" % [SKILLS_DIR, fname]
 		var res = _load(path)
 		if res == null: continue
+		# 顺序与 ExportCsv skills 列一致（对齐 WeaponSkillDefinition.cs 字段声明顺序）
 		_s_str(res, "SkillId",          row, hm, "SkillId")
-		_s_int(res, "SkillType",        row, hm, "SkillType")
 		_s_str(res, "DisplayName",      row, hm, "DisplayName")
+		_s_int(res, "SkillType",        row, hm, "SkillType")
 		_s_str(res, "AnimationName",    row, hm, "AnimationName")
 		_s_float(res, "DamageMultiplier", row, hm, "DamageMultiplier")
+		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
 		_s_float(res, "CooldownSeconds",  row, hm, "CooldownSeconds")
 		_s_bool(res,  "ShowHitboxDebug",  row, hm, "ShowHitboxDebug")
 		_s_str(res, "Description",      row, hm, "Description")
@@ -57,7 +59,6 @@ func import_skills_from_csv() -> void:
 		_s_float(res, "WarmupAnimationSpeed",    row, hm, "WarmupAnimationSpeed")
 		_s_float(res, "ActiveAnimationSpeed",    row, hm, "ActiveAnimationSpeed")
 		_s_float(res, "RecoveryAnimationSpeed",  row, hm, "RecoveryAnimationSpeed")
-		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
 		_s_str(res, "DashAnimationName",         row, hm, "DashAnimationName")
 		_s_float_neg1(res, "DashWarmupDuration",        row, hm)
 		_s_float_neg1(res, "DashActiveDuration",        row, hm)
