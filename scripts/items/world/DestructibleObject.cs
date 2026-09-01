@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Kuros.Core;
 
 namespace Kuros.Items.World
 {
-	public partial class DestructibleObject : Node2D
+	public partial class DestructibleObject : Node2D, IDirectionalDamageReceiver, IBarrier
 	{
+		// 方向位掩码：Left=1, Right=2, Up=4, Down=8（与 ReceiveFromDirections 的 Flags 顺序一致）
+		private const int DirLeft = 1;
+		private const int DirRight = 2;
+		private const int DirUp = 4;
+		private const int DirDown = 8;
+		private const int DirAll = 15;
+
 		private static readonly HashSet<SceneTree> PendingRebakeScenes = new();
 		private static bool _rebakeTimerScheduled;
 		[ExportCategory("Health")]
@@ -31,6 +39,12 @@ namespace Kuros.Items.World
 		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineSpawnDuration = 0.3f;
 		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineDespawnDuration = 0.2f;
 
+		[ExportCategory("Directional Receive")]
+		/// <summary>接收伤害的方向（Flags 位掩码：Left=1, Right=2, Up=4, Down=8，15 = 全方向）。
+		/// 非接收方向的攻击不结算伤害，bullet 类攻击特效直接穿过屏障。</summary>
+		[Export(PropertyHint.Flags, "Left,Right,Up,Down")]
+		public int ReceiveFromDirections { get; set; } = DirAll;
+
 		[ExportCategory("Destroy")]
 		[Export(PropertyHint.Range, "0,120,0.1")] public float LifeTime = 0f;
 		[Export] public PackedScene? DestroyEffectScene { get; set; }
@@ -55,6 +69,9 @@ namespace Kuros.Items.World
 		{
 			if (!IsInGroup("world_items"))
 				AddToGroup("world_items");
+			// 可破坏物声明：无视攻击方分类过滤（TargetableFactions），接收任何攻击方的伤害
+			if (!IsInGroup("damage_receivable"))
+				AddToGroup("damage_receivable");
 
 			CurrentHP = MaxHP;
 			SetupHitFlash();
@@ -89,6 +106,32 @@ namespace Kuros.Items.World
 				if (_lifeTimer >= LifeTime)
 					Destroy();
 			}
+		}
+
+		/// <summary>攻击方向向量（如子弹速度方向）是否接收伤害。主分量判定（对角线取主导分量）。
+		/// 用本地坐标判定——方向跟随屏障朝向：翻转（Scale.x=-1）/旋转后左右自动反转。</summary>
+		public bool AcceptsAttackFromDirection(Vector2 direction)
+		{
+			if (ReceiveFromDirections == DirAll) return true;
+			if (direction == Vector2.Zero) return AcceptsAttackFrom(GlobalPosition);
+
+			Vector2 local = ToLocal(GlobalPosition + direction);
+			return ResolveDirection(local);
+		}
+
+		/// <summary>攻击来源点 origin 相对本屏障的方向是否接收伤害（无攻击方向向量时的回退）。</summary>
+		public bool AcceptsAttackFrom(Vector2 origin)
+		{
+			if (ReceiveFromDirections == DirAll) return true;
+			return ResolveDirection(ToLocal(origin));
+		}
+
+		/// <summary>主方向判定（本地坐标）：|X| ≥ |Y| 判左右，否则判上下。</summary>
+		private bool ResolveDirection(Vector2 local)
+		{
+			if (Mathf.Abs(local.X) >= Mathf.Abs(local.Y))
+				return (ReceiveFromDirections & (local.X >= 0f ? DirRight : DirLeft)) != 0;
+			return (ReceiveFromDirections & (local.Y >= 0f ? DirDown : DirUp)) != 0;
 		}
 
 		public void TakeDamage(float damage)

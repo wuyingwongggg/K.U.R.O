@@ -133,7 +133,7 @@ namespace Kuros.Fx
 			if (!damaged.Add(receiver.GetInstanceId())) return;
 
 			bool dealt = DamageDispatcher.DealDamage(receiver, Damage, GlobalPosition, _attacker,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
+				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null, beamDir);
 			if (!dealt) return;
 
 			// 击退只对 GameActor（WorldItem 无速度概念）

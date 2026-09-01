@@ -64,11 +64,17 @@ height = 500.0
 [sub_resource type="Resource" id="Resource_k1kh3"]
 script = ExtResource("14_sm6sb")
 Scene = ExtResource("13_6yk7q")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3"), NodePath("../../../../Node2D/Marker2D4")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("14_sm6sb")
 Scene = ExtResource("15_6yk7q")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D5")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_D1_printerMachine" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
@@ -152,9 +158,9 @@ script = ExtResource("7_spine_ctrl")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
-preview_animation = "hit"
+preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.8
 script = ExtResource("7_spine_ctrl")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -252,7 +258,7 @@ script = ExtResource("11_k1kh3")
 script = ExtResource("12_attack_ctrl")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="Missile01Attack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="Missile01Attack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("13_throw")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AttackName = "Missile01Attack"
@@ -265,11 +271,9 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_k1kh3")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2"), NodePath("../../../../Node2D/Marker2D3"), NodePath("../../../../Node2D/Marker2D4")]
 metadata/attack_weight = 60.0
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("15_melee")
 AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.3
@@ -281,8 +285,6 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_v1b7h")])
-SpawnTiming = 1
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D5")]
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

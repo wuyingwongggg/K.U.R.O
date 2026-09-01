@@ -268,7 +268,7 @@ namespace Kuros.Fx
                 if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, Attacker)) continue;
 
                 bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, Attacker,
-                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
                 if (!dealt) continue;
 
                 if (area.Owner is GameActor hitActor)
@@ -283,7 +283,7 @@ namespace Kuros.Fx
                 if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, Attacker)) continue;
 
                 bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, Attacker,
-                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                    DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
                 if (!dealt) continue;
 
                 if (body is GameActor hitActor)

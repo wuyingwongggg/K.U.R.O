@@ -315,7 +315,7 @@ namespace Kuros.Fx
                 // WorldItem（DestructibleObject 等 TakeDamage 节点）：一次性结算（不计时、无速度概念）
                 if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
                 DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
+                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null, _currentVelocity);
                 return;
             }
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;

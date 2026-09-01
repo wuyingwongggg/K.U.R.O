@@ -57,6 +57,16 @@ namespace Kuros.Actors.Enemies.Attacks
         private bool _launched;
         private Area2D? _hitbox;
         private bool _hasHit;
+
+        /// <summary>飞行方向（起点→目标），供方向性屏障（FireWallA）判定。</summary>
+        private Vector2 FlightDirection
+        {
+            get
+            {
+                var dir = (_targetPos - _startPos).Normalized();
+                return dir == Vector2.Zero ? Vector2.Right : dir;
+            }
+        }
         private GameActor? _attacker;
         private Node2D? _visual;
 
@@ -154,7 +164,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox, FlightDirection);
             if (!dealt) return;
 
             if (area.Owner is SamplePlayer player)
@@ -171,7 +181,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
 
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox, FlightDirection);
             if (!dealt) return;
 
             if (body is SamplePlayer player)

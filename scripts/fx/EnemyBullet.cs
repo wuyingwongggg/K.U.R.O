@@ -240,7 +240,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = body is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
             if (!dealt) return;
 
             if (!alreadyInvincible && body is GameActor hitActor)
@@ -259,7 +259,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = area.Owner is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)

@@ -712,6 +712,15 @@ namespace Kuros.Items.World
 				}
 			}
 
+			// 飞行中手动空间查询（与玩家攻击打可破坏物同机制）：Hitbox 是 RigidBody2D 子节点，
+			// Area↔Body 重叠检测在快速手动位移下不可靠（bodies 恒 0）——直接查空间，必然命中。
+			// 非 GameActor 接收者（FireWallA 等 StaticBody2D 可破坏物）→ 拦截/放行判定；
+			// 敌人（GameActor）由 AreaEntered 信号路径处理（正常工作），此处跳过
+			if (_impactArmed && _hitboxArea != null)
+			{
+				QueryNonActorTargets();
+			}
+
 			// 抛物线飞行逻辑：平顺的参数化抛物线轨迹
 			if (_inFlight)
 			{
@@ -1153,8 +1162,8 @@ namespace Kuros.Items.World
 				return;
 			}
 
-			// 非 GameActor 目标（如 Gate）：向上找 TakeDamage 接收者（与 DamageDispatcher.ResolveDamageReceiver 同逻辑）
-			var receiver = ResolveTakeDamageReceiver(area);
+			// 非 GameActor 目标（Gate/FireWallA 等 IBarrier 屏障）
+			var receiver = ResolveBarrier(area);
 			if (receiver == null || receiver == LastDroppedBy)
 				return;
 
@@ -1169,26 +1178,73 @@ namespace Kuros.Items.World
 			}
 		}
 
-		/// <summary>沿父链向上查找实现 TakeDamage 的伤害接收者（非 GameActor 目标，如 GateController）。</summary>
-		private static Node? ResolveTakeDamageReceiver(Node area)
+		/// <summary>投掷攻击方向（水平飞行方向，供方向性屏障 FireWallA 的拦截/放行判定）。</summary>
+		private Vector2 ResolveThrowDirection()
+			=> _throwHorizontalVelocity >= 0f ? Vector2.Right : Vector2.Left;
+
+		/// <summary>
+		/// 飞行中手动空间查询：用 Hitbox 形状扫描（mask 与 Hitbox 一致，Areas+Bodies），
+		/// 对 IBarrier 屏障（FireWallA/Gate 等）做拦截/放行结算。
+		/// 物理查询不依赖 Area 重叠状态——Hitbox 是 RigidBody2D 子节点时 Area↔Body 检测不可靠。
+		/// </summary>
+		private void QueryNonActorTargets()
 		{
-			Node? current = area;
+			var shapeNode = _hitboxArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (shapeNode?.Shape == null) return;
+
+			var space = _hitboxArea!.GetWorld2D()?.DirectSpaceState;
+			if (space == null) return;
+
+			var query = new PhysicsShapeQueryParameters2D
+			{
+				Shape = shapeNode.Shape,
+				Transform = shapeNode.GlobalTransform,
+				CollisionMask = _hitboxArea.CollisionMask,
+				CollideWithAreas = true,
+				CollideWithBodies = true
+			};
+
+			foreach (var result in space.IntersectShape(query))
+			{
+				if (!result.TryGetValue("collider", out var collider)) continue;
+				if (collider.As<GodotObject>() is not Node node) continue;
+
+				var receiver = ResolveBarrier(node);
+				if (receiver == null || receiver is GameActor) continue; // 敌人走 AreaEntered 信号路径
+				if (receiver == LastDroppedBy) continue;
+				if (_hitActors.Contains(receiver)) continue;
+
+				TryDealDamageToNonActor(receiver);
+			}
+		}
+
+		/// <summary>沿父链向上查找 IBarrier 屏障（可被投掷物拦截的目标：Gate/FireWallA 等）。
+		/// 显式接口替代 HasMethod("TakeDamage") 鸭子类型——其他投掷物/P2 同伴/普通静态体自然排除。</summary>
+		private static Node? ResolveBarrier(Node node)
+		{
+			Node? current = node;
 			while (current != null)
 			{
-				if (current.HasMethod("TakeDamage")) return current;
+				if (current is IBarrier) return current;
 				current = current.GetParent();
 			}
 			return null;
 		}
 
 		/// <summary>对非 GameActor 目标造成伤害（数值复用 CalculateImpactDamage，与 GameActor 命中一致），
-		/// 并按 StopOnHit 决定停止飞行（砸到 Gate 等障碍物即停）。</summary>
+		/// 并按 StopOnHit 决定停止飞行（砸到 Gate 等障碍物即停）。
+		/// 走 DamageDispatcher 统一管线：方向性屏障（FireWallA）的拦截/放行判定自动生效——
+		/// 放行（非接收方向）→ 返回 false 不伤害不停止，投掷物继续飞；拦截 → 伤害 + 停止。</summary>
 		private bool TryDealDamageToNonActor(Node receiver)
 		{
 			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
 			if (damage <= 0) return false;
 
-			receiver.Call("TakeDamage", (float)damage);
+			bool dealt = DamageDispatcher.DealDamage(receiver, damage, GlobalPosition, LastDroppedBy,
+				Kuros.Core.Events.DamageSource.ThrowImpact, TargetableFactions.All, false, null,
+				ResolveThrowDirection());
+			if (!dealt) return false;
+
 			_hitActors.Add(receiver);
 
 			if (_inFlight)
@@ -2300,6 +2356,10 @@ namespace Kuros.Items.World
 						// 读到的 Attacker 为 null（如 BriefcaseOpenEffect 的朝向翻转）
 						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
 							attackerProvider.Attacker = LastDroppedBy;
+						// 生成朝向 = 投掷方向（非投掷者当前朝向——投掷后转身不应影响生成朝向，
+						// 如 BriefcaseOpenEffect 延迟生成 FireWall 的翻转）
+						if (node2D is Kuros.Fx.IFacingDirectional facing)
+							facing.FacingRight = _throwHorizontalVelocity >= 0f;
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");

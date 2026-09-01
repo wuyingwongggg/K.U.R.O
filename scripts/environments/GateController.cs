@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Core;
 
 namespace Kuros.Environments
 {
@@ -19,7 +20,7 @@ namespace Kuros.Environments
     /// 受击伤害信号由 DamageDispatcher.DealViaCall 广播（GameActor.AnyDamageTaken → 相机抖动/击打特效）。
     /// 一次性动画播放期间不接受新命中（_animLocked），避免动画被打断。
     /// </summary>
-    public partial class GateController : CharacterBody2D
+    public partial class GateController : CharacterBody2D, IBarrier
     {
         [ExportCategory("Health")]
         [Export(PropertyHint.Range, "1,100,1")] public int MaxHealth { get; set; } = 6;

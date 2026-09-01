@@ -67,7 +67,7 @@ namespace Kuros.Fx
             if (TargetableFactions.HasFlag(TargetableFactions.Player))
             {
                 if (GetTree().GetFirstNodeInGroup("player") is GameActor playerActor
-                    && IsWithinRadius(playerActor, origin))
+                    && IsWithinRadius(playerActor.GlobalPosition, origin))
                 {
                     ApplyDamageAndKnockback(playerActor, origin);
                 }
@@ -77,7 +77,7 @@ namespace Kuros.Fx
             {
                 foreach (var node in GetTree().GetNodesInGroup("enemies"))
                 {
-                    if (node is GameActor enemyActor && IsWithinRadius(enemyActor, origin))
+                    if (node is GameActor enemyActor && IsWithinRadius(enemyActor.GlobalPosition, origin))
                         ApplyDamageAndKnockback(enemyActor, origin);
                 }
             }
@@ -86,14 +86,32 @@ namespace Kuros.Fx
             {
                 foreach (var node in GetTree().GetNodesInGroup("world_items"))
                 {
-                    if (node is Node2D item && IsWithinRadius(item, origin))
-                        DamageDispatcher.DealDamage(item, Damage, origin, Attacker, DamageSource.AreaEffect, TargetableFactions.WorldItem);
+                    if (node is not Node2D item) continue;
+
+                    // 距离判定锚点：IBarrier 屏障用碰撞体位置（根在视觉层，与判定层分离——
+                    // 用根位置算距离会让爆炸中心在屏障脚下时也漏判）；其余用根位置
+                    Vector2 anchor = item is IBarrier
+                        ? GetBarrierAnchor(item)
+                        : item.GlobalPosition;
+                    if (!IsWithinRadius(anchor, origin)) continue;
+
+                    // 爆炸是全方位区域效果：无视方向性屏障的方向限制（bypassDirectionCheck）
+                    DamageDispatcher.DealDamage(item, Damage, origin, Attacker, DamageSource.AreaEffect,
+                        TargetableFactions.WorldItem, false, null, null, bypassDirectionCheck: true);
                 }
             }
         }
 
-        private bool IsWithinRadius(Node2D target, Vector2 origin)
-            => target.GlobalPosition.DistanceTo(origin) <= Radius;
+        /// <summary>IBarrier 屏障的判定锚点：StaticBody2D 碰撞体位置（无则回退根位置）。</summary>
+        private static Vector2 GetBarrierAnchor(Node2D item)
+        {
+            var staticBody = item.GetNodeOrNull<StaticBody2D>("StaticBody2D")
+                ?? item.FindChild("StaticBody2D", recursive: true, owned: false) as StaticBody2D;
+            return staticBody != null ? staticBody.GlobalPosition : item.GlobalPosition;
+        }
+
+        private bool IsWithinRadius(Vector2 position, Vector2 origin)
+            => position.DistanceTo(origin) <= Radius;
 
         private void ApplyDamageAndKnockback(GameActor actor, Vector2 origin)
         {

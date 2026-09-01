@@ -20,16 +20,32 @@ namespace Kuros.Core
             DamageSource source = DamageSource.DirectAttack,
             TargetableFactions allowedFactions = TargetableFactions.All,
             bool allowSelfDamage = false,
-            Area2D? attackerArea = null)
+            Area2D? attackerArea = null,
+            Vector2? attackDirection = null,
+            bool bypassDirectionCheck = false)
         {
             Node? current = target;
             while (current != null)
             {
                 var faction = GetFaction(current);
-                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction))
+                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction) && !AcceptsAnyAttack(current))
                 {
                     current = current.GetParentOrNull<Node>();
                     continue;
+                }
+
+                // 目标侧方向过滤：非接收方向的攻击拒绝（返回 false → 攻击方视为未命中 → 子弹/光束穿透）。
+                // 优先用攻击方向向量（命中点可能已深入目标内部，位置差丢失来源侧信息）；无则回退 origin 位置差。
+                // bypassDirectionCheck：全方位区域效果（爆炸）无视方向性屏障的方向限制
+                if (!bypassDirectionCheck && current is IDirectionalDamageReceiver dirReceiver)
+                {
+                    bool accepted = attackDirection.HasValue
+                        ? dirReceiver.AcceptsAttackFromDirection(attackDirection.Value)
+                        : origin.HasValue && dirReceiver.AcceptsAttackFrom(origin.Value);
+                    if (!accepted)
+                    {
+                        return false;
+                    }
                 }
 
                 if (current is GameActor actor)
@@ -89,7 +105,11 @@ namespace Kuros.Core
             }
 
             // 其他阵营：IntersectShape 扫描
+            // 形状查找兜底：默认名 "CollisionShape2D" 找不到时遍历子节点（场景里形状可能命名为
+            // CollisionShape2D2 等——如 guard1 的 OnePunchAttackArea——否则扫描直接 return 打不到 WorldItem/Enemy）
             var shapeNode = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            if (shapeNode?.Shape == null)
+                shapeNode = FindFirstCollisionShape(area);
             if (shapeNode?.Shape == null) return;
 
             var spaceState = area.GetWorld2D()?.DirectSpaceState;
@@ -126,7 +146,7 @@ namespace Kuros.Core
             while (current != null)
             {
                 var faction = GetFaction(current);
-                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction))
+                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction) && !AcceptsAnyAttack(current))
                 {
                     current = current.GetParentOrNull<Node>();
                     continue;
@@ -151,6 +171,19 @@ namespace Kuros.Core
                 current = current.GetParentOrNull<Node>();
             }
             return false;
+        }
+
+        /// <summary>目标侧声明（damage_receivable 组）：无视攻击方分类过滤，接收任何攻击方的伤害（可破坏屏障等）。</summary>
+        private static bool AcceptsAnyAttack(Node node) => node.IsInGroup("damage_receivable");
+
+        /// <summary>遍历节点子节点找第一个 CollisionShape2D（默认名查找失败的兜底）。</summary>
+        private static CollisionShape2D? FindFirstCollisionShape(Node node)
+        {
+            foreach (Node child in node.GetChildren())
+            {
+                if (child is CollisionShape2D shape) return shape;
+            }
+            return null;
         }
 
         private static TargetableFactions GetFaction(Node node)

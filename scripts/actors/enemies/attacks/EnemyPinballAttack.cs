@@ -194,7 +194,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (!_canDealDamage) return;
 
 			bool dealt = DamageDispatcher.DealDamage(body, GetDamage(), enemyPos, Enemy,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea);
+				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea, _dashDirection);
 			if (!dealt) return;
 
 			TryApplyKnockback(body);
@@ -221,7 +221,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (!_canDealDamage) return;
 
 			bool dealt = DamageDispatcher.DealDamage(target, GetDamage(), enemyPos, Enemy,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea);
+				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea, _dashDirection);
 			if (!dealt) return;
 
 			TryApplyKnockback(area.Owner);

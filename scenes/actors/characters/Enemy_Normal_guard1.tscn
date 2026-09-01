@@ -43,9 +43,8 @@ size = Vector2(350, 200)
 radius = 150.0
 height = 750.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fwoyy"]
-radius = 250.0
-height = 900.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ni2eu"]
+size = Vector2(900, 500)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_77ewr"]
 radius = 600.0
@@ -205,10 +204,9 @@ shape = SubResource("CapsuleShape2D_ni2eu")
 [node name="OnePunchAttackArea" type="Area2D" parent="Sprite2D"]
 scale = Vector2(0.9999999, 0.9999999)
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Sprite2D/OnePunchAttackArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/OnePunchAttackArea"]
 position = Vector2(450, 0)
-rotation = 1.5707964
-shape = SubResource("CapsuleShape2D_fwoyy")
+shape = SubResource("RectangleShape2D_ni2eu")
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
 script = ExtResource("5_77ewr")
@@ -261,7 +259,7 @@ WarmupDuration = 1.0
 ActiveDuration = 0.2
 RecoveryDuration = 0.45
 CooldownDurationMultiplier = 6.0
-DamageMultiplier = 1.5
+DamageMultiplier = 2.0
 KnockbackDistance = 200.0
 KnockbackDuration = 0.1
 GrantedImmunities = 24
