@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
 using Kuros.Core.Events;
@@ -84,30 +85,44 @@ namespace Kuros.Fx
 
             if (TargetableFactions.HasFlag(TargetableFactions.WorldItem))
             {
-                foreach (var node in GetTree().GetNodesInGroup("world_items"))
-                {
-                    if (node is not Node2D item) continue;
-
-                    // 距离判定锚点：IBarrier 屏障用碰撞体位置（根在视觉层，与判定层分离——
-                    // 用根位置算距离会让爆炸中心在屏障脚下时也漏判）；其余用根位置
-                    Vector2 anchor = item is IBarrier
-                        ? GetBarrierAnchor(item)
-                        : item.GlobalPosition;
-                    if (!IsWithinRadius(anchor, origin)) continue;
-
-                    // 爆炸是全方位区域效果：无视方向性屏障的方向限制（bypassDirectionCheck）
-                    DamageDispatcher.DealDamage(item, Damage, origin, Attacker, DamageSource.AreaEffect,
-                        TargetableFactions.WorldItem, false, null, null, bypassDirectionCheck: true);
-                }
+                DealDamageToWorldItemsInRadius(origin);
             }
         }
 
-        /// <summary>IBarrier 屏障的判定锚点：StaticBody2D 碰撞体位置（无则回退根位置）。</summary>
-        private static Vector2 GetBarrierAnchor(Node2D item)
+        /// <summary>
+        /// WorldItem 伤害：物理查询（圆，半径 Radius）——碰撞体任意部位进入爆炸圆即命中，
+        /// 与视觉接触一致（"中心点距离"判定对大碰撞体（中心到边缘可达数百像素）会在
+        /// 爆炸碰到边缘时漏判）。解析接收者（FireWallA/家具）后无视方向限制结算。
+        /// </summary>
+        private void DealDamageToWorldItemsInRadius(Vector2 origin)
         {
-            var staticBody = item.GetNodeOrNull<StaticBody2D>("StaticBody2D")
-                ?? item.FindChild("StaticBody2D", recursive: true, owned: false) as StaticBody2D;
-            return staticBody != null ? staticBody.GlobalPosition : item.GlobalPosition;
+            var space = GetWorld2D()?.DirectSpaceState;
+            if (space == null) return;
+
+            var circle = new CircleShape2D { Radius = Radius };
+            var query = new PhysicsShapeQueryParameters2D
+            {
+                Shape = circle,
+                Transform = new Transform2D(0f, origin),
+                CollisionMask = 1u, // layer 1：barrier StaticBody2D / 家具 RigidBody2D 碰撞体
+                CollideWithAreas = true,
+                CollideWithBodies = true
+            };
+
+            var damaged = new HashSet<ulong>();
+            foreach (var result in space.IntersectShape(query))
+            {
+                if (!result.TryGetValue("collider", out var collider)) continue;
+                if (collider.As<GodotObject>() is not Node node) continue;
+
+                var receiver = DamageDispatcher.ResolveDamageReceiver(node, TargetableFactions.WorldItem);
+                if (receiver == null || receiver is GameActor) continue; // 敌人/玩家走各自分支
+                if (!damaged.Add(receiver.GetInstanceId())) continue;
+
+                // 爆炸是全方位区域效果：无视方向性屏障的方向限制（bypassDirectionCheck）
+                DamageDispatcher.DealDamage(receiver, Damage, origin, Attacker, DamageSource.AreaEffect,
+                    TargetableFactions.WorldItem, false, null, null, bypassDirectionCheck: true);
+            }
         }
 
         private bool IsWithinRadius(Vector2 position, Vector2 origin)

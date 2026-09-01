@@ -1,7 +1,8 @@
-[gd_scene load_steps=38 format=3 uid="uid://cpcvmvf2n5ahe"]
+[gd_scene load_steps=39 format=3 uid="uid://cpcvmvf2n5ahe"]
 
 [ext_resource type="Script" uid="uid://c27ux0mic6wyu" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
+[ext_resource type="PackedScene" uid="uid://bjc5xybqpv1rc" path="res://scenes/objects/Animation_printerMachine.tscn" id="3_221pg"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_effect"]
 [ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_v1b7h"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shader"]
@@ -90,6 +91,7 @@ DebugOverlayOffset = Vector2(-1200, 100)
 DebugOverlayFontSize = 64
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+DeathEffect = ExtResource("3_221pg")
 Speed = 250.0
 AttackDamage = 10.0
 AttackCooldown = 3.0
@@ -160,7 +162,7 @@ skeleton_data_res = ExtResource("6_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.8
+preview_time = 0.6666667
 script = ExtResource("7_spine_ctrl")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -271,6 +273,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_k1kh3")])
+SpawnTiming = 2
 metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -285,6 +288,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_v1b7h")])
+SpawnTiming = 2
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]

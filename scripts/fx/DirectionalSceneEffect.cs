@@ -52,6 +52,17 @@ namespace Kuros.Fx
 			QueueFree();
 		}
 
+		/// <summary>生成全部 SpawnEntries 到指定 Marker（动画 method track 单次调用生成所有条目，
+		/// 避免多个 method 调用在编辑器保存时被覆盖丢失）。</summary>
+		public void SpawnAllEntries(string markerName)
+		{
+			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
+			if (marker == null) return;
+
+			for (int i = 0; i < SpawnEntries.Count; i++)
+				SpawnEntryAtMarker(i, marker);
+		}
+
 		public void SpawnAtMarker(string encoded)
 		{
 			int entryIndex = 0;
@@ -63,12 +74,17 @@ namespace Kuros.Fx
 				entryIndex = idx;
 			}
 
+			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
+			if (marker == null) return;
+
+			SpawnEntryAtMarker(entryIndex, marker);
+		}
+
+		private void SpawnEntryAtMarker(int entryIndex, Marker2D marker)
+		{
 			if (entryIndex < 0 || entryIndex >= SpawnEntries.Count) return;
 			var entry = SpawnEntries[entryIndex];
 			if (entry?.Scene == null) return;
-
-			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
-			if (marker == null) return;
 
 			var instance = entry.Scene.Instantiate();
 			entry.ApplyOverrides(instance);
