@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Actors.Heroes.Attacks;
 using Kuros.Core;
 using Kuros.Effects;
 using Kuros.Items.Effects;
@@ -102,6 +103,10 @@ namespace Kuros.Items.World
 		[Export] public uint ThrowCollisionLayer { get; set; } = 1u << 2;
 		[Export] public uint ThrowCollisionMask { get; set; } = 0;
 
+		[ExportGroup("Debug")]
+		/// <summary>调试：砸中敌人时在屏幕上绘制贯穿扫描范围（ZIndex 10，临时可视化）。</summary>
+		[Export] public bool ShowThrowPenetrationDebug { get; set; } = false;
+
 
 		public InventoryItemStack? CurrentStack { get; private set; }
 		public string ItemId => !string.IsNullOrWhiteSpace(ItemIdOverride)
@@ -165,6 +170,7 @@ namespace Kuros.Items.World
 		private bool _hitFlashActive;
 
 		private float _damageCooldownRemaining;
+		private AttackHitboxDebugDrawer? _penetrationDebugDrawer;
 
 		public GameActor? LastDroppedBy { get; set; }
 
@@ -1251,25 +1257,16 @@ namespace Kuros.Items.World
 			_hitActors.Add(target);
 
 			// 应用击退效果
-			if (KnockbackForce > 0)
-			{
-				var knockbackDirection = (target.GlobalPosition - GlobalPosition).Normalized();
-				if (knockbackDirection.LengthSquared() < 0.01f)
-				{
-					knockbackDirection = impactVelocity.Normalized();
-				}
-				
-				// GameActor 继承自 CharacterBody2D，可以直接应用击退
-				var knockbackVelocity = knockbackDirection * KnockbackForce;
-				target.Velocity += knockbackVelocity;
-			}
+			ApplyKnockback(target, impactVelocity);
 
 			// 飞行中命中敌人（必须在 StopItemMovement 之前判断，否则 _inFlight 会被提前清除）
 			if (_inFlight)
 			{
 				if (StopOnHit)
 				{
-					// StopOnHit=true：立即停止飞行，走与落地相同的 LandingHideDelay 流程
+					// StopOnHit=true：立即停止飞行，走与落地相同的 LandingHideDelay 流程。
+					// 停止前沿飞行方向结算贯穿段内的所有敌人——视觉停在第一个敌人，伤害覆盖路径后方敌群
+					DealDamageAlongThrowPath(impactVelocity);
 					_inFlight = false;
 					_flightTimer = 0.0;
 					_impactArmed = false;
@@ -1292,6 +1289,152 @@ namespace Kuros.Items.World
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// 命中即停（StopOnHit=true）时的贯穿结算：沿飞行方向延伸"贯穿段"，
+		/// 对段内所有敌人统一造成伤害——视觉仍停在第一个敌人处，伤害覆盖路径后方敌群。
+		/// 贯穿深度从 CollisionArea（道具实际水平体积）派生，参考对象不是攻击判定区 AttackArea
+		/// （竖直长条 10×200，水平宽度不代表撞击体积）。
+		/// 伤害数值复用 CalculateImpactDamage（attack_power / ThrowDamage），与 CSV 一致。
+		/// </summary>
+		private void DealDamageAlongThrowPath(Vector2 impactVelocity)
+		{
+			if (_hitboxArea == null) return;
+			float penetration = ResolveThrowPenetrationRange();
+			if (penetration <= 0f) return;
+
+			var scanShape = BuildPenetrationScanShape(penetration);
+			if (scanShape == null) return;
+
+			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
+			if (damage <= 0) return;
+
+			// 贯穿段：命中点 → 命中点 + 贯穿距离（X 方向），Y 固定在判定层（与现有 Hitbox 重叠判定同规则，不额外扩展）
+			Vector2 dir = _throwHorizontalVelocity >= 0f ? Vector2.Right : Vector2.Left;
+			Vector2 center = new Vector2(
+				_hitboxArea.GlobalPosition.X + dir.X * penetration * 0.5f,
+				_hitboxArea.GlobalPosition.Y);
+
+			var space = _hitboxArea.GetWorld2D().DirectSpaceState;
+			var query = new PhysicsShapeQueryParameters2D
+			{
+				Shape = scanShape,
+				Transform = new Transform2D(0f, center),
+				CollisionMask = 1u << 0, // 与现有 Hitbox 检测一致（敌人 HitArea 所在层）
+				CollideWithAreas = true,
+				CollideWithBodies = false
+			};
+
+			DrawThrowPenetrationDebug(scanShape, center);
+
+			foreach (var result in space.IntersectShape(query))
+			{
+				if (!result.TryGetValue("collider", out var collider)) continue;
+				if (collider.As<GodotObject>() is not Area2D area) continue;
+				if (!string.Equals(area.Name, "HitArea", StringComparison.OrdinalIgnoreCase)) continue;
+				var actor = ResolveActorFromArea(area);
+				if (actor == null || actor == LastDroppedBy) continue;
+				if (_hitActors.Contains(actor)) continue;
+				if (actor.IsDeadOrDying) continue;
+
+				DamageDispatcher.DealDamage(actor, damage, GlobalPosition, LastDroppedBy, Kuros.Core.Events.DamageSource.ThrowImpact);
+				_hitActors.Add(actor);
+				ApplyKnockback(actor, impactVelocity);
+			}
+		}
+
+		/// <summary>临时调试绘制：砸中时在屏幕上显示贯穿扫描范围（ZIndex 10，TopLevel，自动消失）。</summary>
+		private void DrawThrowPenetrationDebug(Shape2D scanShape, Vector2 center)
+		{
+			if (!ShowThrowPenetrationDebug || scanShape == null) return;
+
+			if (_penetrationDebugDrawer == null || !GodotObject.IsInstanceValid(_penetrationDebugDrawer))
+			{
+				var host = GetTree().CurrentScene ?? GetTree().Root;
+				_penetrationDebugDrawer = new AttackHitboxDebugDrawer
+				{
+					Name = "ThrowPenetrationDebugDrawer",
+					ZIndex = 10,
+					TopLevel = true,
+					Visible = false
+				};
+				host.AddChild(_penetrationDebugDrawer);
+			}
+
+			_penetrationDebugDrawer.ShowFromShape(scanShape, center, new Color(10f, 3f, 10f, 10f), 10f, 2f);
+		}
+
+		/// <summary>
+		/// 贯穿深度：从投掷物自身 CollisionArea（捡拾/互动区，反映道具实际水平体积）的碰撞形状水平尺寸派生。
+		/// 矩形取宽、圆形取直径；无形状回退 0（退化为仅重叠敌人）。
+		/// </summary>
+		private float ResolveThrowPenetrationRange()
+		{
+			var shape = ResolveCollisionAreaShape()?.Shape;
+			if (shape is RectangleShape2D rect) return rect.Size.X;
+			if (shape is CircleShape2D circle) return circle.Radius * 2f;
+			return 0f;
+		}
+
+		private CollisionShape2D? ResolveCollisionAreaShape()
+			=> ResolveAreaCollisionShape(_grabArea);
+
+		/// <summary>通用：查找 Area2D 下的碰撞形状（直接子节点优先，嵌套兜底）。</summary>
+		private static CollisionShape2D? ResolveAreaCollisionShape(Area2D? area)
+		{
+			if (area == null) return null;
+
+			var direct = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (direct != null) return direct;
+
+			foreach (Node child in area.GetChildren())
+			{
+				if (child is CollisionShape2D shape) return shape;
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 贯穿扫描矩形：宽 = 贯穿距离 + AttackArea 水平尺寸，高 = AttackArea 垂直尺寸——
+		/// 等价于"AttackArea 沿飞行方向平移扫过贯穿段"：Y 规则与首段命中判定完全一致，
+		/// CollisionArea 只决定 X 延伸多远（道具实际水平体积）。
+		/// </summary>
+		private RectangleShape2D? BuildPenetrationScanShape(float penetration)
+		{
+			var attackShape = ResolveAreaCollisionShape(_hitboxArea)?.Shape;
+			float attackW = 0f;
+			float attackH = 0f;
+
+			if (attackShape is RectangleShape2D rect)
+			{
+				attackW = rect.Size.X;
+				attackH = rect.Size.Y;
+			}
+			else if (attackShape is CircleShape2D circle)
+			{
+				attackW = circle.Radius * 2f;
+				attackH = circle.Radius * 2f;
+			}
+
+			if (attackH <= 0f) return null;
+
+			return new RectangleShape2D { Size = new Vector2(attackW + penetration, attackH) };
+		}
+
+		/// <summary>统一击退入口（与命中结算共用）：方向优先取目标相对投掷物，退化为飞行方向。</summary>
+		private void ApplyKnockback(GameActor target, Vector2 impactVelocity)
+		{
+			if (KnockbackForce <= 0) return;
+
+			var knockbackDirection = (target.GlobalPosition - GlobalPosition).Normalized();
+			if (knockbackDirection.LengthSquared() < 0.01f)
+			{
+				knockbackDirection = impactVelocity.Normalized();
+			}
+
+			// GameActor 继承自 CharacterBody2D，可以直接应用击退
+			target.Velocity += knockbackDirection * KnockbackForce;
 		}
 
 		/// <summary>

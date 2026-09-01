@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(600, 250)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2jhlq"]
-size = Vector2(450, 410)
+size = Vector2(410, 410)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
 size = Vector2(750, 400)

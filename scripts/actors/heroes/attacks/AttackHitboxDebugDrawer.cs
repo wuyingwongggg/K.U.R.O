@@ -45,6 +45,29 @@ namespace Kuros.Actors.Heroes.Attacks
             base._ExitTree();
         }
 
+        /// <summary>直接绘制一个形状（不依赖 CollisionShape2D 节点）——供运行时计算的扫描区域等使用。</summary>
+        public void ShowFromShape(Shape2D shape, Vector2 worldPosition, Color color, float lineWidth, float duration)
+        {
+            if (shape == null)
+            {
+                Hide();
+                return;
+            }
+
+            _shape = shape;
+            _color = color;
+            _lineWidth = MathF.Max(1f, lineWidth);
+            _remainingDuration = MathF.Max(0.05f, duration);
+
+            GlobalPosition = worldPosition;
+            GlobalRotation = 0f;
+            GlobalScale = Vector2.One;
+
+            Visible = true;
+            SetProcess(true);
+            QueueRedraw();
+        }
+
         public void ShowFromCollisionShape(CollisionShape2D collisionShape, Color color, float lineWidth, float duration)
         {
             if (collisionShape.Shape == null)
