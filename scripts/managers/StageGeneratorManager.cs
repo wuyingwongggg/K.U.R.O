@@ -59,7 +59,7 @@ namespace Kuros.Managers
             CallDeferred(MethodName.GenerateStage);
         }
 
-        private void GenerateStage()
+        private async void GenerateStage()
         {
             var world = GetNodeOrNull<Node2D>(WorldNodePath);
             if (world == null)
@@ -82,6 +82,9 @@ namespace Kuros.Managers
 
             GameLogger.Info(nameof(StageGeneratorManager),
                 $"开始生成关卡：{roomScenes.Count} 个房间（Begin + {roomScenes.Count - 2} 中间 + End）");
+
+            // 临时验证日志：记录生成耗时（分帧后房间日志应跨帧、耗时递增）
+            ulong genStartMs = Time.GetTicksMsec();
 
             float currentRightEdge = 0f;
             float stageLeft = float.MaxValue;
@@ -113,7 +116,10 @@ namespace Kuros.Managers
                 currentRightEdge = worldRight;
 
                 GameLogger.Info(nameof(StageGeneratorManager),
-                    $"  {room.Name}: offsetX={offsetX:F0}，世界范围 [{worldLeft:F0}, {worldRight:F0}]");
+                    $"  {room.Name}: offsetX={offsetX:F0}，世界范围 [{worldLeft:F0}, {worldRight:F0}]（生成进度 {(Time.GetTicksMsec() - genStartMs)}ms）");
+
+                // 分帧实例化：每帧 1 间房间，摊平数百节点一帧建树的卡顿
+                //await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             }
 
             // 更新相机全局边界
@@ -127,7 +133,7 @@ namespace Kuros.Managers
                 GD.PushWarning("[StageGeneratorManager] 未找到 CameraZoneManager，相机边界未更新。");
             }
 
-            // 重定位玩家和同伴
+            // 重定位玩家和同伴（相机改动已撤回——保持分帧前的循环后重定位 + 平滑跟随行为）
             RepositionActors(world, playerSpawn, stageLeft);
 
             // 强制 NavigationServer 立即同步所有房间的导航网格

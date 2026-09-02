@@ -1,16 +1,16 @@
 [gd_scene load_steps=20 format=3 uid="uid://byv7ty32mj11t"]
 
-[ext_resource type="Texture2D" uid="uid://q1uptehfrvda" path="res://assets/environments/scene_1_home/房间3背景.png" id="1_rmv6t"]
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_t2ifw"]
-[ext_resource type="Texture2D" uid="uid://bru72j0rqw78y" path="res://assets/environments/scene_1_home/房间3地面.png" id="2_t2ifw"]
+[ext_resource type="Texture2D" uid="uid://dt0nmdyntreh8" path="res://assets/environments/scene_1_home/房间3背景.png" id="1_rmv6t"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_t2ifw"]
+[ext_resource type="Texture2D" uid="uid://bxoeo1yft0a0h" path="res://assets/environments/scene_1_home/房间3地面.png" id="2_t2ifw"]
 [ext_resource type="Resource" uid="uid://qsacvgs2q4fq" path="res://resources/cutscene/A_end_intro.tres" id="3_ggdpc"]
-[ext_resource type="Texture2D" uid="uid://b044wsmc6wo4d" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_eacmu"]
+[ext_resource type="Texture2D" uid="uid://d0oxywii08nmt" path="res://assets/environments/scene_1_home/房间2隔断墙2.png" id="4_eacmu"]
 [ext_resource type="PackedScene" uid="uid://orctascxfe5c" path="res://scenes/environments/door2_A1.tscn" id="5_4di3j"]
-[ext_resource type="Script" uid="uid://blrupwolbou73" path="res://scripts/environments/ParallaxBackground2D.cs" id="5_xhmyt"]
+[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="5_xhmyt"]
 [ext_resource type="Texture2D" uid="uid://cofpy8nif8mac" path="res://assets/environments/scene_1_home/房间3背景2.png" id="6_3uxt7"]
 [ext_resource type="PackedScene" uid="uid://cgy13s0ewifos" path="res://scenes/environments/taxiSign.tscn" id="6_4di3j"]
 [ext_resource type="PackedScene" uid="uid://fym6u3tp6lve" path="res://scenes/objects/Moving_A_end_taxi.tscn" id="9_gw5dp"]
-[ext_resource type="Script" uid="uid://pijiwtu1j5p2" path="res://scripts/environments/TaxiController.cs" id="10_taxi"]
+[ext_resource type="Script" uid="uid://1rvj0kv60p00" path="res://scripts/environments/TaxiController.cs" id="10_taxi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_245md"]
 size = Vector2(10314, 3000)
@@ -86,10 +86,10 @@ debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="background" type="Sprite2D" parent="Environments"]
 z_index = -10
-position = Vector2(20, -340)
+position = Vector2(-100, -340)
 texture = ExtResource("1_rmv6t")
 script = ExtResource("5_xhmyt")
-ScrollSpeed = 0.7
+ScrollSpeed = 0.6
 AreaPath = NodePath("../../AreaSize")
 
 [node name="background2" type="Sprite2D" parent="Environments/background"]

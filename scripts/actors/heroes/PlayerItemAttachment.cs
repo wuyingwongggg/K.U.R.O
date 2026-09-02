@@ -48,6 +48,7 @@ namespace Kuros.Actors.Heroes
         private Node2D? _activeBoneNode;
         private bool _iconUsesBoneTracking;
         private bool _useSlotAnchorBinding;
+        private ItemDefinition? _lastAttackAreaItem; // 上次处理的物品（换武器才重载场景）
         private Area2D? _equippedAttackArea;
         private Transform2D _equippedAttackAreaLocalTransform = Transform2D.Identity;
         private Shape2D? _equippedAttackShapeTemplate;
@@ -571,6 +572,14 @@ namespace Kuros.Actors.Heroes
 
         private void UpdateEquippedAttackArea(ItemDefinition? item)
         {
+            // 每帧调用但只在物品变化时重载场景：ResourceLoader 加载 + Instantiate 开销大，
+            // 且 CacheMode.Ignore 曾导致每帧强制重载（触发场景内无效 UID 的错误刷屏）
+            if (item == _lastAttackAreaItem)
+            {
+                return;
+            }
+            _lastAttackAreaItem = item;
+
             if (item == null)
             {
                 ClearEquippedAttackArea();
@@ -596,7 +605,7 @@ namespace Kuros.Actors.Heroes
                 return;
             }
 
-            var scene = ResourceLoader.Load<PackedScene>(scenePath, string.Empty, ResourceLoader.CacheMode.Ignore);
+            var scene = ResourceLoader.Load<PackedScene>(scenePath);
             if (scene == null)
             {
                 ClearEquippedAttackArea();

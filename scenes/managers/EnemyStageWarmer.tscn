@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bo57b4lwtre7v"]
+
+[ext_resource type="Script" uid="uid://baufmv1tlbgpb" path="res://scripts/fx/EnemyStageWarmer.cs" id="1_warmer"]
+
+[node name="EnemyStageWarmer" type="Node"]
+script = ExtResource("1_warmer")
