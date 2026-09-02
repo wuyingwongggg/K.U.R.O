@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageConfig" load_steps=4 format=3 uid="uid://bqf7cvpc2hsyb"]
+
+[ext_resource type="PackedScene" uid="uid://cg2o6k0etyc25" path="res://scenes/levels/C_begin.tscn" id="1_w1u11"]
+[ext_resource type="PackedScene" uid="uid://dboywwkmaxr72" path="res://scenes/levels/C_end.tscn" id="2_p5xcd"]
+[ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="3_5mb6o"]
+
+[resource]
+script = ExtResource("3_5mb6o")
+StageId = "stage3a"
+DisplayName = "餐厅a区"
+LevelDescription = "酒店二层餐厅a区（Stage_3 房间池 ）"
+Floor = 2
+BeginPool = Array[PackedScene]([ExtResource("1_w1u11")])
+EndPool = Array[PackedScene]([ExtResource("2_p5xcd")])

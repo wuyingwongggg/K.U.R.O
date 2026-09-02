@@ -138,9 +138,6 @@ namespace Kuros.FX
                     gp.Restart();
                 }
             }
-
-            var displayNames = string.Join(", ", toDisplay.Select(n => n.Name));
-            GD.Print($"RandomLitterPartDisplay: 随机显示 {displayCountActual} 项 - {displayNames}");
         }
 
         /// <summary>

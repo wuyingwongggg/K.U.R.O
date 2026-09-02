@@ -154,11 +154,6 @@ namespace Kuros.Actors.Heroes
 
             if ((_actor is SamplePlayer sp && sp.IsActionJustPressedArbitrated("throw")) && CanPerformItemAction())
             {
-                GD.Print($"[PlayerItemInteractionComponent] throw 快捷键被按下");
-                GD.Print($"[PlayerItemInteractionComponent] EnableInput={EnableInput}, Backpack={InventoryComponent?.Backpack != null}");
-                GD.Print($"[PlayerItemInteractionComponent] InventoryComponent={InventoryComponent?.Name ?? "null"}");
-                GD.Print($"[PlayerItemInteractionComponent] _actor={_actor?.Name ?? "null"}");
-                GD.Print($"[PlayerItemInteractionComponent] StateMachine={_actor?.StateMachine != null}");
                 TryHandleDrop(DropDisposition.Throw);
             }
 
@@ -179,7 +174,6 @@ namespace Kuros.Actors.Heroes
 
             if (player != null && player.WasActionShortPressed("take_up"))
             {
-                GD.Print($"[PlayerItemInteractionComponent] take_up 短按");
                 TriggerPickupState();
             }
 
@@ -452,8 +446,6 @@ namespace Kuros.Actors.Heroes
 
         private bool TryHandlePickup()
         {
-            GD.Print($"[PlayerItemInteractionComponent] TryHandlePickup 被调用");
-            
             if (_actor == null)
             {
                 GD.PrintErr("[PlayerItemInteractionComponent] _actor 为 null");
@@ -467,50 +459,33 @@ namespace Kuros.Actors.Heroes
             // 方法1: 通过 InteractionArea 检测（如果存在）
             if (_interactionArea != null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 使用 InteractionArea 检测，路径: {_interactionArea.GetPath()}");
-                var overlappingAreas = _interactionArea.GetOverlappingAreas();
-                GD.Print($"[PlayerItemInteractionComponent] InteractionArea 重叠的 Area 数量: {overlappingAreas.Count}");
                 nearestPickable = FindNearestPickableFromArea(_interactionArea, actorPosition, ref nearestDistanceSq);
-            }
-            else
-            {
-                GD.Print($"[PlayerItemInteractionComponent] InteractionArea 为 null，使用距离检测模式");
             }
 
             // 方法2: 通过距离检测（备用方案，支持 RigidBodyWorldItemEntity）
             if (nearestPickable == null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 尝试使用距离检测，范围: {PickupRange} 像素");
                 nearestPickable = FindNearestPickableByDistance(actorPosition, ref nearestDistanceSq);
             }
 
             // 执行拾取
             if (nearestPickable != null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 找到可拾取物品: {nearestPickable.Name}, 类型: {nearestPickable.GetType().Name}, 距离: {Mathf.Sqrt(nearestDistanceSq):F2}");
-                
                 if (nearestPickable is WorldItemEntity worldItem)
                 {
                     bool result = worldItem.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] WorldItemEntity.TryPickupByActor 结果: {result}");
                     return result;
                 }
                 else if (nearestPickable is RigidBodyWorldItemEntity rigidItem)
                 {
                     bool result = rigidItem.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] RigidBodyWorldItemEntity.TryPickupByActor 结果: {result}");
                     return result;
                 }
                 else if (nearestPickable is PickupProperty pickupProp)
                 {
                     bool result = pickupProp.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] PickupProperty.TryPickupByActor 结果: {result}");
                     return result;
                 }
-            }
-            else
-            {
-                GD.Print($"[PlayerItemInteractionComponent] 未找到可拾取物品");
             }
 
             return false;
@@ -780,9 +755,7 @@ namespace Kuros.Actors.Heroes
                 return false;
             }
 
-            GD.Print($"[PlayerItemInteractionComponent] 正在改变状态到: {ThrowStateName}");
             _actor.StateMachine.ChangeState(ThrowStateName);
-            GD.Print($"[PlayerItemInteractionComponent] 状态已改变，当前状态: {_actor.StateMachine.CurrentState?.Name ?? "null"}");
             return true;
         }
 

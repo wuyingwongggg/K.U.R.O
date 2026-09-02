@@ -24,10 +24,6 @@ namespace Kuros.Items.World
 		[Signal] public delegate void ItemTransferredEventHandler(RigidBodyWorldItemEntity entity, GameActor actor, ItemDefinition item, int amount);
 		[Signal] public delegate void ItemTransferFailedEventHandler(RigidBodyWorldItemEntity entity, GameActor actor);
 
-		// 防抖：待烘焙的场景树（避免多物品重复遍历场景树）
-		private static readonly HashSet<SceneTree> PendingRebakeScenes = new();
-		private static bool _rebakeTimerScheduled = false;
-
 		[ExportGroup("Item")]
 		[Export] public ItemDefinition? ItemDefinition { get; set; }
 		[Export(PropertyHint.File, "*.tres,*.res")] public string ItemDefinitionResourcePath { get; set; } = string.Empty;
@@ -258,9 +254,9 @@ namespace Kuros.Items.World
 			SetProcess(true);
 
 			// 如果该物品包含导航源几何子节点，进入场景树后延迟烘焙，使障碍区域生效
-			if (HasNavigationSourceGeometryDescendant(this))
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
 			{
-				ScheduleNavigationRebake();
+				NavigationRebakeCoordinator.RequestRebake(this);
 			}
 
 			// 预热 OnThrowDestroy 效果场景的 Shader：
@@ -274,9 +270,9 @@ namespace Kuros.Items.World
 			base._ExitTree();
 
 			// 如果该物品有子节点属于导航源几何组，移除后触发延迟重新烘焙导航网格
-			if (HasNavigationSourceGeometryDescendant(this))
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
 			{
-				ScheduleNavigationRebake();
+				NavigationRebakeCoordinator.RequestRebake(this);
 			}
 
 			if (_grabArea != null)
@@ -1029,7 +1025,6 @@ namespace Kuros.Items.World
 				{
 					_initialRigidBodyCollisionLayer = _rigidBody.CollisionLayer;
 					_initialRigidBodyCollisionMask = _rigidBody.CollisionMask;
-					GD.Print($"[{Name}] 保存原始碰撞设置: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
 				}
 				catch
 				{
@@ -1714,10 +1709,6 @@ namespace Kuros.Items.World
 
 			try
 			{
-				// 先读取当前值
-				var beforeLayer = _rigidBody.CollisionLayer;
-				var beforeMask = _rigidBody.CollisionMask;
-				
 				// 如果 ThrowCollisionLayer 为 0，确保 mask 也只检测需要的层（避免与静止物件碰撞）
 				// 如果用户想要检测第3层（墙/地面），mask 应该设置为 4（1u<<2）
 				uint finalLayer = ThrowCollisionLayer;
@@ -1736,9 +1727,7 @@ namespace Kuros.Items.World
 				// 立即验证设置是否成功
 				var actualLayer = _rigidBody.CollisionLayer;
 				var actualMask = _rigidBody.CollisionMask;
-				
-				GD.Print($"[{Name}] 投掷时碰撞设置: 设置前 layer={beforeLayer}, mask={beforeMask} | 设置后 layer={finalLayer}->{actualLayer}, mask={finalMask}->{actualMask} | 原始: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
-				
+
 				// 如果设置失败，输出警告并重试
 				if (actualLayer != finalLayer || actualMask != finalMask)
 				{
@@ -1769,10 +1758,6 @@ namespace Kuros.Items.World
 				_rigidBody.CollisionLayer = ThrowCollisionLayer;
 				_rigidBody.CollisionMask = ThrowCollisionMask;
 				_rigidBody.Sleeping = false; // 强制唤醒
-				
-				var actualLayer = _rigidBody.CollisionLayer;
-				var actualMask = _rigidBody.CollisionMask;
-				GD.Print($"[{Name}] CallDeferred 应用碰撞设置: layer={ThrowCollisionLayer}->{actualLayer}, mask={ThrowCollisionMask}->{actualMask}");
 			}
 			catch (Exception ex)
 			{
@@ -1796,7 +1781,6 @@ namespace Kuros.Items.World
 				_rigidBody.CollisionMask = _initialRigidBodyCollisionMask;
 				SetFurnitureStaticBodyCollision(true);
 				_isThrown = false;
-				GD.Print($"[{Name}] 恢复碰撞设置: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
 			}
 			catch (Exception ex)
 			{
@@ -1931,7 +1915,6 @@ namespace Kuros.Items.World
 
 			// 播放销毁动画
 			PlayDestructionAnimation();
-			GD.Print($"[{Name}] 在落点销毁物品");
 		}
 
 		/// <summary>
@@ -2110,60 +2093,6 @@ namespace Kuros.Items.World
 			}
 
 			QueueFree();
-		}
-
-		/// <summary>
-		/// 检查该节点的子树中是否有属于导航源几何组的节点。
-		/// </summary>
-		private static bool HasNavigationSourceGeometryDescendant(Node node)
-		{
-			foreach (Node child in node.GetChildren())
-			{
-				if (child.IsInGroup("navigation_polygon_source_geometry_group")) return true;
-				if (HasNavigationSourceGeometryDescendant(child)) return true;
-			}
-			return false;
-		}
-
-		/// <summary>
-		/// 递归查找场景中所有 NavigationRegion2D 并触发重新烘焙。
-		/// </summary>
-		private static void RebakeAllNavigationRegions(Node node)
-		{
-			if (!GodotObject.IsInstanceValid(node)) return;
-			if (node is NavigationRegion2D navRegion)
-			{
-				navRegion.BakeNavigationPolygon();
-				return;
-			}
-			foreach (Node child in node.GetChildren())
-				RebakeAllNavigationRegions(child);
-		}
-
-		/// <summary>
-		/// 防抖机制：将烘焙请求加入待处理列表，统一在下一帧执行（避免多物品重复遍历场景树）。
-		/// </summary>
-		private static void ScheduleNavigationRebake()
-		{
-			var tree = Engine.GetMainLoop() as SceneTree;
-			if (tree == null) return;
-
-			PendingRebakeScenes.Add(tree);
-
-			// 只在首次请求时创建定时器
-			if (_rebakeTimerScheduled) return;
-
-			_rebakeTimerScheduled = true;
-			tree.CreateTimer(0.0).Timeout += () =>
-			{
-				_rebakeTimerScheduled = false;
-				foreach (var sceneTree in PendingRebakeScenes)
-				{
-					var scene = sceneTree.CurrentScene;
-					if (scene != null) RebakeAllNavigationRegions(scene);
-				}
-				PendingRebakeScenes.Clear();
-			};
 		}
 
 		private void InitializeStack()

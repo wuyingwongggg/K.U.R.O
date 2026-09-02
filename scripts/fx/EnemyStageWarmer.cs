@@ -58,20 +58,16 @@ namespace Kuros.Fx
             }
         }
 
-        /// <summary>静默实例化单个敌人场景：玩家位置（有玩家时贴近视野）、
-        /// 全透明（可见但不可见）、渲染两帧后销毁。</summary>
+        /// <summary>静默实例化单个敌人场景：全透明（可见但不可见）、渲染两帧后销毁。
+        /// 位置固定在画布原点——启动预热时玩家必不存在，不依赖玩家/相机。</summary>
         private async System.Threading.Tasks.Task WarmUpAsync(PackedScene scene)
         {
             var instance = scene.Instantiate<Node>();
             AddChild(instance);
 
-            // 有玩家时用玩家位置（接近视野中心）；启动阶段无玩家回退画布原点——无相机也照常渲染
-            var spawnPos = GetTree().GetFirstNodeInGroup("player") is Node2D p
-                ? p.GlobalPosition
-                : Vector2.Zero;
             if (instance is Node2D n2d)
             {
-                n2d.GlobalPosition = spawnPos;
+                n2d.GlobalPosition = Vector2.Zero;
                 n2d.Modulate = new Color(1f, 1f, 1f, 0f); // 可见但全透明——照常提交渲染触发编译
             }
 

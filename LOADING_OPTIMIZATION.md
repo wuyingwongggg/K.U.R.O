@@ -75,16 +75,25 @@
 
 ## 5. 实施步骤（待做，按性价比）
 
-### Step 1：清理运行时日志（低风险，立即见效）
+### Step 1：清理运行时日志（低风险，立即见效）——✅ 已完成
 
-- 家具 `保存原始碰撞设置`、`RandomLitterPartDisplay` 等逐条打印降级或移除（数百家具 = 上千条打印）
-- 保留 `GameLogger` 系统日志
+- ✅ 移除 `RigidBodyWorldItemEntity` 常态逐条打印：`保存原始碰撞设置`（每家具 `_Ready`）、投掷碰撞设置 3 处 trace（每次投掷 3 条）、`在落点销毁物品`（每次落地销毁）
+- ✅ 移除 `RandomLitterPartDisplay` 逐条打印（每家具 `_Ready` 随机显示明细）
+- ✅ 移除交互操作级打印（每次拾取/投掷必打，一次操作 ≈10 行）：
+  `PlayerItemInteractionComponent`（投掷按键 5 连、take_up、TryHandlePickup 全流程 ~8 行、状态切换 2 行）、
+  `PickupProperty`/`ItemPickupProperty`/`DroppablePickupProperty`（每次拾取 1~3 行）、`PlayerIdleState` 持握切换
+- ✅ 保留：全部 `PushWarning`/`PrintErr`（仅异常路径触发）、`GameLogger` 系统日志、碰撞设置被改检测（仅异常触发）、
+  初始化一次性打印（MainCharacter/PlayerItemInteractionComponent 启动确认）、攻击特效类打印
+  （CriticalStrike 系列/SlowOnHit/MechGlove/DiscoFlashStun/CameraShake/EnemyAttackTemplate——按概率/条件触发非每击必打，用户确认保留）、
+  低频事件日志（GameMemoryService session/P2SupportExecutor AI 决策）
+- ✅ 移除 `EnemySpawnManager` 无条件打印：`Trigger ignored`/`Trigger entered by`（每次 body 进出触发器必打）；`LogSpawnEffectPositions` 开关默认值 true→false（该开关内的生成时序日志全部保留但默认静默——所有关卡实例本就显式 false，调试时临时开启即可）
+- 未处理（可选继续）：`EnemySpawnConsole`（测试控制台工具）、`WaveSpawnManager` 每波次数条事件日志——量级低
 
-### Step 2：导航烘焙统一 + 延迟（低风险）
+### Step 2：导航烘焙统一 + 延迟（低风险）——✅ 已完成
 
-- 新建共享静态类 `NavigationRebakeCoordinator`：统一 `RigidBodyWorldItemEntity` + `DestructibleObject` 的两套防抖（消除同帧重复烘焙）
-- 防抖 `Timer(0.0)` → debounce 窗口（0.5s）——地图加载后空闲帧统一烘焙一次
-- 可选：多个 NavigationRegion2D 每帧烘焙 1 个（分帧烘焙）
+- ✅ 新建共享静态类 `NavigationRebakeCoordinator`（scripts/core/）：统一 `RigidBodyWorldItemEntity` + `DestructibleObject` 的烘焙请求（两套重复的静态字段/递归烘焙/调度逻辑已删除，共 4 处调用点改为 `NavigationRebakeCoordinator.RequestRebake(this)`）
+- ✅ 防抖 `Timer(0.0)` → debounce 窗口（0.5s）：窗口内新请求滑动续期，停顿 0.5s 后统一烘焙一次——地图加载时数百家具 `_Ready` 的连续请求合并为加载后一次烘焙
+- 未做（可选）：多个 NavigationRegion2D 每帧烘焙 1 个（分帧烘焙）——当前地图加载卡顿大头已在 Step 3 资源预加载层面解决，烘焙分帧收益低，暂不实施
 
 ### Step 3：房间池资源预加载（核心，解决卡顿大头）
 

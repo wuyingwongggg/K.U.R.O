@@ -157,7 +157,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="TriggerArea" type="Area2D" parent="EnemySpawneManager"]
@@ -172,7 +171,7 @@ debug_color = Color(1, 0, 0, 0.19607843)
 position = Vector2(3940, 340)
 script = ExtResource("6_b2kum")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://dwk6x3qcbsmul"
+NextStagePath = "uid://beup3s3dr4q8h"
 LoadDistance = 2500.0
 
 [node name="Environments" type="Node2D" parent="."]

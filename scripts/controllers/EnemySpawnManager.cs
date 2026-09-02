@@ -106,7 +106,8 @@ namespace Kuros.Controllers
         [ExportCategory("Debug")]
         [Export] public bool ShowDebugOverlay { get; set; } = true;
         [Export] public bool ShowDebugOverlayInGame { get; set; } = true;
-        [Export] public bool LogSpawnEffectPositions { get; set; } = true;
+        /// <summary>生成时序/特效位置调试日志开关（默认关闭——所有关卡实例均已显式 false，调试时临时开启）。</summary>
+        [Export] public bool LogSpawnEffectPositions { get; set; } = false;
         [Export] public Color TriggerDebugColor { get; set; } = new Color(0.2f, 0.8f, 1f, 0.9f);
         [Export] public Color SpawnDebugColor { get; set; } = new Color(1f, 0.85f, 0.25f, 0.9f);
         [Export] public Color ExplicitPointDebugColor { get; set; } = new Color(1f, 0.45f, 0.2f, 1f);
@@ -700,11 +701,9 @@ namespace Kuros.Controllers
         {
             if (!string.IsNullOrWhiteSpace(TriggerGroupName) && !body.IsInGroup(TriggerGroupName))
             {
-                GD.Print($"[{Name}] Trigger ignored: {body.Name} is not in group '{TriggerGroupName}'");
                 return;
             }
 
-            GD.Print($"[{Name}] Trigger entered by: {body.Name}");
             StartSpawnSequence();
         }
 

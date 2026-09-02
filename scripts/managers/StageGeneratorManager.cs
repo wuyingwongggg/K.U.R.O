@@ -1,6 +1,7 @@
 using Godot;
 using Godot.Collections;
 using System.Collections.Generic;
+using Kuros.Systems.Stage;
 using Kuros.Utils;
 
 namespace Kuros.Managers
@@ -42,7 +43,9 @@ namespace Kuros.Managers
 
         [ExportCategory("Generation")]
         /// <summary>随机种子，0 = 每次随机。</summary>
-        [Export] public int RandomSeed { get; set; } = 0;  
+        [Export] public int RandomSeed { get; set; } = 0;
+        /// <summary>false 时不自动生成——首关由 StageSession 注入的 StageConfig 驱动。</summary>
+        [Export] public bool GenerateOnReady { get; set; } = true;
 
         [ExportCategory("Camera Limits")]
         [Export] public int CameraLimitTop { get; set; } = -1500;
@@ -54,9 +57,41 @@ namespace Kuros.Managers
         /// <summary>关卡生成完毕后触发。</summary>
         [Signal] public delegate void StageGeneratedEventHandler();
 
+        /// <summary>注入的关卡配置（null = 使用本节点 export 池）。</summary>
+        private StageConfig? _activeConfig;
+        private bool _relocateActors = true;
+        /// <summary>显式玩家落点（隐藏入口/密道出口用）；null = 新关 PlayerSpawnPoint。</summary>
+        private Vector2? _landingPosition;
+        private readonly List<Node> _spawnedRooms = new();
+
         public override void _Ready()
         {
+            if (GenerateOnReady)
+                CallDeferred(MethodName.GenerateStage);
+        }
+
+        /// <summary>
+        /// 按配置重新生成关卡（先清空上次生成的房间）。config 为 null 时使用本节点 export 池。
+        /// relocateActors=false 时跳过玩家重定位（由调用方控制传送，如电梯会话）。
+        /// landingPosition 指定玩家落点（世界坐标，隐藏入口/密道出口用）；null = 新关 PlayerSpawnPoint。
+        /// </summary>
+        public void Regenerate(StageConfig? config = null, bool relocateActors = true, Vector2? landingPosition = null)
+        {
+            _activeConfig = config;
+            _relocateActors = relocateActors;
+            _landingPosition = landingPosition;
+            ClearSpawnedRooms();
             CallDeferred(MethodName.GenerateStage);
+        }
+
+        private void ClearSpawnedRooms()
+        {
+            foreach (var room in _spawnedRooms)
+            {
+                if (GodotObject.IsInstanceValid(room))
+                    room.Free();
+            }
+            _spawnedRooms.Clear();
         }
 
         private async void GenerateStage()
@@ -95,6 +130,7 @@ namespace Kuros.Managers
             {
                 var room = scene.Instantiate<Node2D>();
                 world.AddChild(room);
+                _spawnedRooms.Add(room);
 
                 // 从 AreaSize 读取本地左右边界
                 var (localLeft, localRight) = GetRoomLocalBounds(room);
@@ -134,7 +170,8 @@ namespace Kuros.Managers
             }
 
             // 重定位玩家和同伴（相机改动已撤回——保持分帧前的循环后重定位 + 平滑跟随行为）
-            RepositionActors(world, playerSpawn, stageLeft);
+            if (_relocateActors)
+                RepositionActors(world, playerSpawn, stageLeft, _landingPosition);
 
             // 强制 NavigationServer 立即同步所有房间的导航网格
             // （各房间 AddChild + 设置 Position 后，NavigationServer 在下一物理帧才处理）
@@ -150,20 +187,23 @@ namespace Kuros.Managers
         private List<PackedScene> BuildRoomSequence(RandomNumberGenerator rng)
         {
             var list = new List<PackedScene>();
+            var cfg = _activeConfig;
 
-            if (BeginPool.Count > 0)
-                list.Add(BeginPool[rng.RandiRange(0, BeginPool.Count - 1)]);
+            var beginPool = cfg?.BeginPool ?? BeginPool;
+            if (beginPool.Count > 0)
+                list.Add(beginPool[rng.RandiRange(0, beginPool.Count - 1)]);
 
             // Easy → Normal → Hard 顺序，每档数量在 Min/Max 间随机
-            AppendRoomsFromPool(list, EasyMiddlePool,
-                rng.RandiRange(EasyRoomMin, EasyRoomMax), rng);
-            AppendRoomsFromPool(list, NormalMiddlePool,
-                rng.RandiRange(NormalRoomMin, NormalRoomMax), rng);
-            AppendRoomsFromPool(list, HardMiddlePool,
-                rng.RandiRange(HardRoomMin, HardRoomMax), rng);
+            AppendRoomsFromPool(list, cfg?.EasyMiddlePool ?? EasyMiddlePool,
+                rng.RandiRange(cfg?.EasyRoomMin ?? EasyRoomMin, cfg?.EasyRoomMax ?? EasyRoomMax), rng);
+            AppendRoomsFromPool(list, cfg?.NormalMiddlePool ?? NormalMiddlePool,
+                rng.RandiRange(cfg?.NormalRoomMin ?? NormalRoomMin, cfg?.NormalRoomMax ?? NormalRoomMax), rng);
+            AppendRoomsFromPool(list, cfg?.HardMiddlePool ?? HardMiddlePool,
+                rng.RandiRange(cfg?.HardRoomMin ?? HardRoomMin, cfg?.HardRoomMax ?? HardRoomMax), rng);
 
-            if (EndPool.Count > 0)
-                list.Add(EndPool[rng.RandiRange(0, EndPool.Count - 1)]);
+            var endPool = cfg?.EndPool ?? EndPool;
+            if (endPool.Count > 0)
+                list.Add(endPool[rng.RandiRange(0, endPool.Count - 1)]);
 
             return list;
         }
@@ -232,10 +272,10 @@ namespace Kuros.Managers
             }
         }
 
-        private void RepositionActors(Node2D world, Node2D? spawnPoint, float stageLeft)
+        private void RepositionActors(Node2D world, Node2D? spawnPoint, float stageLeft, Vector2? explicitTarget = null)
         {
-            // 若场景中没有 PlayerSpawnPoint，默认放在关卡左边缘右侧 1500 处
-            var target = spawnPoint?.GlobalPosition ?? new Vector2(stageLeft + 1500f, 200f);
+            // 若场景中没有 PlayerSpawnPoint，默认放在关卡左边缘右侧 1500 处；explicitTarget（隐藏入口出口）优先
+            var target = explicitTarget ?? spawnPoint?.GlobalPosition ?? new Vector2(stageLeft + 1500f, 200f);
 
             var player = world.GetNodeOrNull<Node2D>("MainCharacter");
             if (player != null)

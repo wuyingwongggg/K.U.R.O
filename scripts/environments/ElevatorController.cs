@@ -2,6 +2,7 @@ using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Items.World;
 using Kuros.Managers;
+using Kuros.Systems.Stage;
 using Kuros.Utils;
 
 namespace Kuros.Environments
@@ -37,7 +38,7 @@ namespace Kuros.Environments
         [Export] public NodePath ExitAreaPath       { get; set; } = new NodePath("ExitArea");
 
         // ── 内部状态 ──────────────────────────────────────────────
-        private enum ElevatorState { Idle, Closing, Loading, Arrived }
+        private enum ElevatorState { Idle, Selecting, Closing, Loading, Arrived }
 
         private ElevatorState _state = ElevatorState.Idle;
         private AnimationPlayer? _animPlayer;
@@ -50,6 +51,9 @@ namespace Kuros.Environments
         private PackedScene? _loadedScene;
         private string      _nextStagePath = "";
         private double      _rideTimer;
+
+        /// <summary>会话模式：场景内找到 StageSession 时，出舱 = 应用选中的关卡配置（world 内换关），不切场景。</summary>
+        private StageSession? _session;
 
         // ── 生命周期 ──────────────────────────────────────────────
 
@@ -85,6 +89,9 @@ namespace Kuros.Environments
             if (string.IsNullOrEmpty(_nextStagePath))
                 GD.PushWarning("[ElevatorController] PendingNextStagePath 为空，请在切换到 Stage_loading 前设置目标路径或在 Inspector 中设置 NextStagePath。");
 
+            // 会话模式：壳场景内有 StageSession（group 注册）→ 出舱改关由会话决定
+            _session = GetTree().GetFirstNodeInGroup("stage_session") as StageSession;
+
             UpdateHintLabel();
 
             // 改键后实时刷新提示文本
@@ -107,6 +114,22 @@ namespace Kuros.Environments
                 GameSettingsManager.Instance.InputBindingsChanged -= OnInputBindingsChanged;
         }
 
+        // ── 输入（选关会话）──────────────────────────────────────
+
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (_state != ElevatorState.Selecting || _session == null) return;
+            if (@event is not InputEventKey key || !key.Pressed || key.Echo) return;
+
+            // 数字键 1~9 对应选项序号（Key.Key1 = '1'）
+            int index = (int)(key.Keycode - Key.Key1);
+            if (index < 0 || index >= _session.GetOptionCount()) return;
+
+            GD.Print($"[ElevatorController] 选定关卡 #{index + 1}，门关上开始骑行");
+            _session.SelectStage(index);
+            StartClosing();
+        }
+
         // ── 每帧逻辑 ──────────────────────────────────────────────
 
         public override void _Process(double delta)
@@ -115,7 +138,16 @@ namespace Kuros.Environments
             {
                 case ElevatorState.Idle:
                     if (_playerInRange && SamplePlayer.IsActionJustPressedGlobal("interact"))
-                        StartClosing();
+                    {
+                        // 会话模式：先选关（数字键），选完才关门骑行；无会话则维持原流程
+                        if (_session != null && _session.GetOptionCount() > 0)
+                            EnterSelecting();
+                        else
+                            StartClosing();
+                    }
+                    break;
+
+                case ElevatorState.Selecting:
                     break;
 
                 case ElevatorState.Closing:
@@ -126,8 +158,8 @@ namespace Kuros.Environments
                     _rideTimer += delta;
                     PollSceneLoad();
 
-                    // 两个条件都满足才停止
-                    if (_sceneReady && _rideTimer >= MinRideDuration)
+                    // 两个条件都满足才停止（会话模式无场景加载，骑行满时长即到达）
+                    if ((_session != null || _sceneReady) && _rideTimer >= MinRideDuration)
                         EnterArrived();
                     break;
 
@@ -138,6 +170,13 @@ namespace Kuros.Environments
         }
 
         // ── 状态转换 ──────────────────────────────────────────────
+
+        /// <summary>进入选关状态：显示可用关卡（数字键选择），选完才关门骑行。</summary>
+        private void EnterSelecting()
+        {
+            _state = ElevatorState.Selecting;
+            UpdateHintLabel();
+        }
 
         /// <summary>玩家按交互键（interact）后先播放 close 动画，动画结束后再进入 Loading。</summary>
         private void StartClosing()
@@ -174,11 +213,15 @@ namespace Kuros.Environments
             _state     = ElevatorState.Loading;
             _rideTimer = 0;
 
-            var err = ResourceLoader.LoadThreadedRequest(_nextStagePath);
-            if (err != Error.Ok)
+            // 会话模式不切场景：骑行仅为动画，换关在出舱时由 StageSession 执行
+            if (_session == null)
             {
-                GD.PushError($"[ElevatorController] ResourceLoader.LoadThreadedRequest 失败: {err}，路径: {_nextStagePath}");
-                _sceneReady = true;
+                var err = ResourceLoader.LoadThreadedRequest(_nextStagePath);
+                if (err != Error.Ok)
+                {
+                    GD.PushError($"[ElevatorController] ResourceLoader.LoadThreadedRequest 失败: {err}，路径: {_nextStagePath}");
+                    _sceneReady = true;
+                }
             }
 
             if (_animPlayer != null && _animPlayer.HasAnimation("loading"))
@@ -206,6 +249,13 @@ namespace Kuros.Environments
 
         private void LeaveElevator()
         {
+            // 会话模式：场景壳常驻，出舱 = 应用选中的关卡配置（world 内换关，不切场景）
+            if (_session != null)
+            {
+                _session.CommitPending();
+                return;
+            }
+
             // 离开前捕获背包+HP快照，传递到目标场景
             if (SaveManager.Instance != null)
             {
@@ -275,8 +325,12 @@ namespace Kuros.Environments
             switch (_state)
             {
                 case ElevatorState.Idle:
-                    _hintLabel.Text    = GameSettingsManager.Instance?.FormatActionPrompt("[{KEY}] 进入下一楼层", "interact") ?? "[{KEY}] 进入下一楼层";
+                    _hintLabel.Text    = GameSettingsManager.Instance?.FormatActionPrompt("[{KEY}] 进入电梯", "interact") ?? "[{KEY}] 进入电梯";
                     _hintLabel.Visible = _playerInRange;
+                    break;
+                case ElevatorState.Selecting:
+                    _hintLabel.Text    = _session?.DescribeOptions() ?? "没有可用关卡";
+                    _hintLabel.Visible = true;
                     break;
                 case ElevatorState.Closing:
                     _hintLabel.Visible = false;
@@ -302,6 +356,9 @@ namespace Kuros.Environments
         {
             if (!body.IsInGroup("player")) return;
             _playerInRange = false;
+            // 未选关就离开交互区 → 放弃选关会话
+            if (_state == ElevatorState.Selecting)
+                _state = ElevatorState.Idle;
             UpdateHintLabel();
         }
 

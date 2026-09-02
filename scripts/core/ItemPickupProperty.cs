@@ -22,18 +22,10 @@ namespace Kuros.Core
 			// 如果是玩家，尝试添加到物品栏
 			if (actor is SamplePlayer player && Item != null)
 			{
-				GD.Print($"ItemPickupProperty: Player {player.Name} picked up {Quantity} x {Item.DisplayName}");
-				
 				if (player.InventoryComponent != null)
 				{
-					GD.Print($"ItemPickupProperty: InventoryComponent found, QuickBar is {(player.InventoryComponent.QuickBar != null ? "set" : "null")}");
-					
 					int added = player.InventoryComponent.AddItemSmart(Item, Quantity);
-					if (added > 0)
-					{
-						GD.Print($"ItemPickupProperty: Successfully added {added} x {Item.DisplayName} to inventory");
-					}
-					else
+					if (added <= 0)
 					{
 						GD.PrintErr($"ItemPickupProperty: Failed to add {Item.DisplayName} to inventory - inventory may be full");
 					}
