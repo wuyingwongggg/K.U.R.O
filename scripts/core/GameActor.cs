@@ -78,7 +78,7 @@ namespace Kuros.Core
 		[ExportCategory("Damage Merge")]
 		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（首段立即反馈闪白/Hit，后续段合并到期
 		/// 统一扣血——闪白/受击动画不重复，避免区域伤害+流血首伤等窗口内多段连续两次反馈）。0 = 禁用合并。</summary>
-		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.2f;
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.15f;
 
 		// Exposed state for States to use
 		public int CurrentHealth { get; protected set; }

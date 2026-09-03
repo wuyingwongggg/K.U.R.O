@@ -83,9 +83,6 @@ namespace Kuros.Effects
         {
             ProcessPhysicsPriority = 100;
 
-            // 根已由投掷系统定位到落点
-            _blackHoleCenter = GlobalPosition;
-
             _damageArea = GetNodeOrNull<Area2D>("Area2D");
             if (_damageArea == null) return;
 
@@ -97,6 +94,9 @@ namespace Kuros.Effects
 
         public override void _Process(double delta)
         {
+            // 位置可能在 _Ready 之后才被生成器设置（AddChild → 设 GlobalPosition 的顺序），
+            // 不能缓存初始位置——伤害/吸附查询统一使用实时中心。
+            _blackHoleCenter = GlobalPosition;
             _elapsed += delta;
 
             // 更新伤害计时
@@ -154,6 +154,7 @@ namespace Kuros.Effects
 
         public override void _PhysicsProcess(double delta)
         {
+            _blackHoleCenter = GlobalPosition;
             AttractNearbyActors(delta);
         }
 
