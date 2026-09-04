@@ -6,11 +6,13 @@ using Kuros.Actors.Heroes.States;
 namespace Kuros.Actors.Enemies.Attacks
 {
     /// <summary>
-    /// 冲刺攻击（时间控制）：
-	/// 1. 玩家进入检测区域后触发预热；
-	/// 2. 预热结束锁定方向后，持续冲刺 DashDuration 秒；
-	/// 3. 冲刺期间命中玩家即造成伤害 + 击退，冲刺本身不中断；
-	/// 4. 时间结束后进入 Recovery。
+    /// 冲刺踢击攻击：
+    /// 1. 玩家进入检测区域后触发预热；
+    /// 2. 预热结束锁定方向（可带快照延迟），持续冲刺 DashDuration 秒；
+    /// 3. 命中（踢击区与玩家 HitArea 重叠，且过 MinDashTimeBeforeAttack）：
+    ///    · 非动画触发（RequireAnimationHitTrigger=false）→ 命中即停，结算伤害+击退后进 Recovery；
+    ///    · 动画触发 → 由动画 hit 事件结算，冲刺持续到 DashDuration/抵达终点才停；
+    /// 4. 冲刺结束（时长到/抵终点/命中停止）后进入 Recovery。
     /// </summary>
     public partial class EnemyKickAttack : EnemyAttackTemplate
     {
@@ -301,7 +303,6 @@ namespace Kuros.Actors.Enemies.Attacks
 				player,
 				KnockbackDistance,
 				KnockbackDuration,
-				KnockbackSpeed,
 				_dashDirection);
 		}
 

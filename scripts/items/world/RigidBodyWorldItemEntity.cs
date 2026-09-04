@@ -1540,7 +1540,8 @@ namespace Kuros.Items.World
 			return new RectangleShape2D { Size = new Vector2(attackW + penetration, attackH) };
 		}
 
-		/// <summary>统一击退入口（与命中结算共用）：方向优先取目标相对投掷物，退化为飞行方向。</summary>
+		/// <summary>统一击退入口（与命中结算共用）：方向优先取目标相对投掷物，退化为飞行方向。
+		/// 走 GameActor 统一 API（旧二参——受击方 Hit 状态按自身时间轴换算位移），禁止直接改 Velocity。</summary>
 		private void ApplyKnockback(GameActor target, Vector2 impactVelocity)
 		{
 			if (KnockbackForce <= 0) return;
@@ -1551,8 +1552,7 @@ namespace Kuros.Items.World
 				knockbackDirection = impactVelocity.Normalized();
 			}
 
-			// GameActor 继承自 CharacterBody2D，可以直接应用击退
-			target.Velocity += knockbackDirection * KnockbackForce;
+			target.ApplyKnockback(knockbackDirection, KnockbackForce);
 		}
 
 		/// <summary>

@@ -365,7 +365,6 @@ namespace Kuros.Actors.Enemies.Attacks
 				player,
 				KnockbackDistance,
 				KnockbackDuration,
-				KnockbackSpeed,
 				_dashDirection);
 		}
 

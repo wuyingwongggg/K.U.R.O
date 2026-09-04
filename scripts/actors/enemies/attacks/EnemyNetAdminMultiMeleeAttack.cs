@@ -104,10 +104,10 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             if (Enemy == null || Player == null) return;
             float distance = Mathf.Max(0f, KnockbackDistance);
-            if (distance <= 0f && KnockbackSpeed <= 0f) return;
+            if (distance <= 0f) return;
             if (area != null && !Player.IsHitByArea(area)) return;
             TryApplyPlayerKnockback(Player, distance,
-                Mathf.Max(KnockbackDuration, 0.01f), KnockbackSpeed,
+                Mathf.Max(KnockbackDuration, 0.01f),
                 Enemy.FacingRight ? Vector2.Right : Vector2.Left, area);
         }
 

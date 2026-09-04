@@ -60,8 +60,6 @@ namespace Kuros.Effects
                 return;
             }
 
-            if (target is not CharacterBody2D targetBody) return;
-
             if (target.ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
 
             Vector2 direction = (target.GlobalPosition - attacker.GlobalPosition);
@@ -73,10 +71,9 @@ namespace Kuros.Effects
                 direction = attacker.FacingRight ? Vector2.Right : Vector2.Left;
             }
 
-            // 线性减速的总位移 = v0 * T / 2，故初速度需乘以 2 才能达到目标距离
-            float speed = 2f * KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f);
-            KnockbackDriver.Attach(targetBody, direction.Normalized(), speed, KnockbackDuration);
-            //GD.PrintS("击退效果生效：", target.Name, " was knocked back with speed ", speed);
+            // 位移请求：受击方 Hit 状态在 KnockbackDuration 内匀减速滑完 KnockbackDistance
+            // （与武器/技能击退同通道——受击动画随位移锁定，击退表现一致）
+            target.ApplyKnockbackDisplacement(direction.Normalized(), KnockbackDistance, KnockbackDuration);
             // 注意：此处不可加 GD.Print/PrintS——反转瞬间大量敌人同时被击退时，
             // 每命中一行同步控制台输出会把主线程拖到 1s+（与伤害日志风暴同类问题）
         }

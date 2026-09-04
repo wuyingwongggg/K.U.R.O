@@ -148,7 +148,7 @@ skeleton_data_res = ExtResource("6_2sv5o")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.36
+preview_time = 0.5
 script = ExtResource("20_2sv5o")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -275,7 +275,6 @@ ActiveDuration = 0.11
 RecoveryDuration = 0.39
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 200.0
-KnockbackDuration = 0.1
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
@@ -283,6 +282,7 @@ metadata/attack_weight = 80.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("6")
+RecoverDuration = 0.3
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("7")

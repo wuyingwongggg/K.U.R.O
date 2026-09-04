@@ -81,9 +81,10 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [ExportCategory("Knockback")]
+        /// <summary>击退位移距离（像素）——位移在 KnockbackDuration 内匀减速滑完。</summary>
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
+        /// <summary>击退位移时长（秒）——由攻击方决定，不受受击方动画时序影响。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
-        [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed = 0f;
         [Export] public bool KnockbackFromHitPosition = false;
 
         [ExportCategory("Animation Sync")]
@@ -728,7 +729,7 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, float configuredSpeed, Vector2 fallbackDirection, Area2D? attackArea = null)
+        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, Vector2 fallbackDirection, Area2D? attackArea = null)
         {
             if (Enemy == null || player == null)
             {
@@ -745,16 +746,9 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
-            float clampedDuration = Mathf.Max(duration, 0.01f);
             float clampedDistance = Mathf.Max(0f, distance);
-            float clampedConfiguredSpeed = Mathf.Max(0f, configuredSpeed);
-            if (clampedDistance <= 0f && clampedConfiguredSpeed <= 0f)
-            {
-                return false;
-            }
-
-            float speed = clampedConfiguredSpeed > 0f ? clampedConfiguredSpeed : clampedDistance / clampedDuration;
-            if (speed <= 0f)
+            float clampedDuration = Mathf.Max(duration, 0.01f);
+            if (clampedDistance <= 0f)
             {
                 return false;
             }
@@ -780,9 +774,11 @@ namespace Kuros.Actors.Enemies.Attacks
                     : (Enemy.FacingRight ? Vector2.Right : Vector2.Left);
             }
 
-            Vector2 knockbackVelocity = direction.Normalized() * speed;
-            player.ApplyKnockback(knockbackVelocity.Normalized(), speed);
-            ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);
+            Vector2 dirNormalized = direction.Normalized();
+            // 位移驱动击退：受击方 Hit 状态在 clampedDuration 内匀减速滑完 clampedDistance
+            player.ApplyKnockbackDisplacement(dirNormalized, clampedDistance, clampedDuration);
+            // Frozen 外部位移保留原语义（平均速度 = distance/duration）
+            ApplyFrozenExternalDisplacement(player, dirNormalized * (clampedDistance / clampedDuration), clampedDuration);
             return true;
         }
 

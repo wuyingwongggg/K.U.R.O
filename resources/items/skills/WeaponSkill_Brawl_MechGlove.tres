@@ -13,7 +13,7 @@ EffectScene = ExtResource("2_7vkc4")
 Notes = "击退"
 PropertyOverrides = Dictionary[String, Variant]({
 "EnableKnockbackY": false,
-"KnockbackDistance": 600.0,
+"KnockbackDistance": 300.0,
 "KnockbackDuration": 0.3,
 "TriggerHitStep": 3
 })
@@ -23,6 +23,7 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("1_rpm6u")
 Trigger = 1
 EffectScene = ExtResource("3_7vkc4")
+Notes = "暴击"
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [resource]

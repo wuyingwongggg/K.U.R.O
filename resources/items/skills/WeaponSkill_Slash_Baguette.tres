@@ -47,8 +47,9 @@ script = ExtResource("1_8bkkx")
 Trigger = 1
 EffectScene = ExtResource("4_axkj6")
 PropertyOverrides = Dictionary[String, Variant]({
-"KnockbackDistance": 200.0,
-"KnockbackDuration": 0.15
+"KnockbackDistance": 50.0,
+"KnockbackDuration": 0.07,
+"TriggerHitStep": 1
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 

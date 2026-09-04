@@ -131,7 +131,7 @@ BoomSceneOverrides = Dictionary[String, Variant]({
 })
 BoomDmgOverrides = Dictionary[String, Variant]({
 "Damage": 20,
-"KnockbackDistance": 100.0,
+"KnockbackDistance": 50.0,
 "KnockbackDuration": 0.1,
 "Radius": 150.0
 })

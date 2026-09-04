@@ -114,16 +114,15 @@ namespace Kuros.Builds.Machine
             if (bonus > 0)
                 target.TakeDamage(bonus, Actor.GlobalPosition, Actor, DamageSource.EffectBonus);
 
-            // 击退：距离 → 初速度（线性减速总位移 = v0×T/2，故 v0 = 2×距离/时长），
-            // 用 KnockbackDriver 累加式驱动（与武器自带击退叠加，总位移相加），
-            // 每帧 MoveAndCollide + 清零 Velocity，后续普通攻击无法打断
+            // 击退：位移请求（受击方 Hit 状态在 KnockbackDuration 内匀减速滑完 CurrentKnockback，
+            // 动画随位移锁定——与武器击退同通道；同帧多重击退为覆盖语义，
+            // KnockbackDriver 的累加式叠加语义暂缓，待请求层 Stack 支持）
             if (CurrentKnockback <= 0f) return;
-            if (target is not CharacterBody2D targetBody) return;
             if (target.ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
             Vector2 dir = target.GlobalPosition - Actor.GlobalPosition;
             if (dir == Vector2.Zero) dir = Vector2.Right;
-            KnockbackDriver.AttachStack(targetBody, dir.Normalized(),
-                2f * CurrentKnockback / Mathf.Max(KnockbackDuration, 0.01f), KnockbackDuration);
+            target.ApplyKnockbackDisplacement(dir.Normalized(),
+                CurrentKnockback, Mathf.Max(KnockbackDuration, 0.01f));
         }
     }
 }

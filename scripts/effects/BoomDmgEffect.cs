@@ -21,12 +21,10 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,2000,1")] public float Radius { get; set; } = 400f;
 
         [ExportCategory("Knockback")]
+        /// <summary>击退位移距离（像素）——目标 Hit 状态在 KnockbackDuration 内匀减速滑完。</summary>
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance { get; set; } = 300f;
+        /// <summary>击退位移时长（秒）。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration { get; set; } = 0.18f;
-        /// <summary>
-        /// 直接指定击退速度（像素/秒）。若 > 0 则覆盖 KnockbackDistance/KnockbackDuration 的换算结果。
-        /// </summary>
-        [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed { get; set; } = 2000f;
 
         [ExportCategory("Debug")]
         [Export] public bool ShowDebugRadius { get; set; } = false;
@@ -136,39 +134,35 @@ namespace Kuros.Fx
             // 先造成伤害（对玩家同时设置 _pendingHitKnockback = true）
             actor.TakeDamage(Damage, origin, Attacker);
 
-            // 计算击退速度
-            float speed = KnockbackSpeed > 0f
-                ? KnockbackSpeed
-                : KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f);
-
-            if (speed <= 0f) return;
+            if (KnockbackDistance <= 0f) return;
 
             Vector2 direction = actor.GlobalPosition - origin;
             if (direction == Vector2.Zero) direction = Vector2.Up;
+            Vector2 dirNormalized = direction.Normalized();
 
-            Vector2 knockbackVelocity = direction.Normalized() * speed;
-
-            // 玩家：通过 ConsumePendingHitKnockback 走标准击退路径（ApplyKnockback 内置 ForcedMovement 守门）
+            // 位移请求：目标 Hit 状态在 KnockbackDuration 内匀减速滑完 KnockbackDistance（内置 ForcedMovement 守门）
             if (actor is Actors.Heroes.MainCharacter mainCharacter)
             {
                 if (mainCharacter.ConsumePendingHitKnockback())
                 {
-                    mainCharacter.ApplyKnockback(knockbackVelocity.Normalized(), speed);
+                    mainCharacter.ApplyKnockbackDisplacement(dirNormalized, KnockbackDistance, KnockbackDuration);
 
-                    // 若玩家处于 Frozen 状态且允许外力位移，同步通知
+                    // 若玩家处于 Frozen 状态且允许外力位移，同步通知（平均速度 = distance/duration）
                     var frozenState = mainCharacter.StateMachine?
                         .GetNodeOrNull<Actors.Heroes.States.PlayerFrozenState>("Frozen");
                     if (frozenState != null
                         && mainCharacter.StateMachine?.CurrentState == frozenState
                         && frozenState.AllowExternalDisplacementWhileFrozen)
                     {
-                        frozenState.ApplyExternalDisplacement(knockbackVelocity, KnockbackDuration);
+                        frozenState.ApplyExternalDisplacement(
+                            dirNormalized * (KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)),
+                            KnockbackDuration);
                     }
                 }
             }
             else
             {
-                actor.ApplyKnockback(knockbackVelocity.Normalized(), speed);
+                actor.ApplyKnockbackDisplacement(dirNormalized, KnockbackDistance, KnockbackDuration);
             }
         }
     }

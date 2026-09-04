@@ -314,6 +314,8 @@ EnableInterruptSlowMo = true
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("15_plwgt")
+HitImpactDuration = 0.16999999999999998
+RecoverDuration = 0.16
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("16_20ym2")

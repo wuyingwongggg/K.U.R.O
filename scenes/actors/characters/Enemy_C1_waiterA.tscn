@@ -169,7 +169,7 @@ skeleton_data_res = ExtResource("7_cc1qw")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 1.33
+preview_time = 0.33
 script = ExtResource("23_spine_controller")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -305,6 +305,8 @@ EnableInterruptSlowMo = true
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("14_k0i03")
+HitImpactDuration = 0.16999999999999998
+RecoverDuration = 0.16
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("15_8u1h6")

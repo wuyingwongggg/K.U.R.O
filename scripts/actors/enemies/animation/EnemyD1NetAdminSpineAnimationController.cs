@@ -82,7 +82,7 @@ namespace Kuros.Actors.Enemies.Animation
 					HandleWalkAnimation();
 					break;
 				case "Hit":
-					PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
+					DriveHitPhaseAnimation(HitAnimation, HitMixDuration);
 					break;
 				case "Dying":
 					PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);

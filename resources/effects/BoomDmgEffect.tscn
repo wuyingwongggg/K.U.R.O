@@ -9,6 +9,5 @@ Damage = 60
 Radius = 300.0
 KnockbackDistance = 200.0
 KnockbackDuration = 0.2
-KnockbackSpeed = 0.0
 TargetableFactions = 7
 AllowSelfDamage = true

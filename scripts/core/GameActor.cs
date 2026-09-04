@@ -162,8 +162,79 @@ namespace Kuros.Core
 		{
 			if (IsDeadOrDying) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+
+			// 旧二参 API 保留（fx/爆炸/投掷物）：无时长语义——sentinel duration=0，
+			// 由受击方 Hit 状态按自身 HitImpactDuration 解析（speed 借存于 Distance 槽位）。
 			Velocity = direction * speed;
+			_knockDirection = direction.Normalized();
+			_knockDistanceOrSpeed = speed;
+			_knockDuration = 0f;
+			_knockWriteMsec = Time.GetTicksMsec();
+			_hasKnockRequest = true;
 		}
+
+		/// <summary>
+		/// 位移驱动击退（新三参 API，LEVEL_PROGRESSION 击飞模型）：
+		/// 受击方 Hit 状态在 KnockbackDuration 内匀减速滑行 KnockbackDistance，时长不受受击方动画影响。
+		/// </summary>
+		public virtual void ApplyKnockbackDisplacement(Vector2 direction, float distance, float duration)
+		{
+			if (IsDeadOrDying) return;
+			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			if (direction == Vector2.Zero || distance <= 0f) return;
+
+			_knockDirection = direction.Normalized();
+			_knockDistanceOrSpeed = distance;
+			_knockDuration = Mathf.Max(0f, duration);
+			_knockWriteMsec = Time.GetTicksMsec();
+			_hasKnockRequest = true;
+		}
+
+		/// <summary>击退请求有效期（毫秒）：超过视为滞留陈旧（Frozen/超甲期间写入无人消费），消费时丢弃。
+		/// 攻击链内"先写入后进 Hit"（同帧/紧邻）远小于该值，不受影响。</summary>
+		private const ulong KnockbackRequestLifetimeMsec = 200;
+
+		/// <summary>
+		/// 消费击退请求（Hit 状态首物理帧调用一次）。
+		/// duration≤0（旧 API）：换算为 duration=defaultDuration（受击方 HitImpactDuration）、
+		/// distance = speed×duration/2（匀减速总位移 = v0×T/2）。
+		/// 请求写入超过 KnockbackRequestLifetimeMsec（滞留陈旧：Frozen/超甲期间写入无人消费）
+		/// 则丢弃并返回 false，防止被之后任意一次受击误用。
+		/// 返回 false = 无请求或过期请求。
+		/// </summary>
+		public bool TryConsumeKnockbackRequest(out Vector2 direction, out float distance, out float duration,
+			float defaultDuration)
+		{
+			direction = Vector2.Zero;
+			distance = 0f;
+			duration = 0f;
+			if (!_hasKnockRequest) return false;
+			_hasKnockRequest = false;
+
+			// 滞留过期请求：写入很久无人消费（非本次攻击链写入）——丢弃
+			if (Time.GetTicksMsec() - _knockWriteMsec > KnockbackRequestLifetimeMsec)
+				return false;
+
+			direction = _knockDirection;
+			if (_knockDuration <= 0f)
+			{
+				float t = Mathf.Max(defaultDuration, 0.01f);
+				duration = t;
+				distance = _knockDistanceOrSpeed * t * 0.5f; // v0×T/2
+			}
+			else
+			{
+				duration = _knockDuration;
+				distance = _knockDistanceOrSpeed;
+			}
+			return distance > 0f && duration > 0f;
+		}
+
+		private Vector2 _knockDirection = Vector2.Zero;
+		private float _knockDistanceOrSpeed = 0f;
+		private float _knockDuration = 0f;
+		private ulong _knockWriteMsec = 0;
+		private bool _hasKnockRequest = false;
 
 		public float GetSecondsSinceLastDamageTaken()
 		{

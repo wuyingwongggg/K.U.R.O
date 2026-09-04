@@ -153,7 +153,7 @@ skeleton_data_res = ExtResource("4_o4xwm")
 preview_skin = "default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.57
+preview_time = 0.0
 script = ExtResource("4_ixg0x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -307,6 +307,7 @@ Description = "法棍甩棍专属攻击模板示例"
 EnableDashMovement = true
 EnableDirectionalMovement = true
 MoveSpeedPercent = 20.0
+EnableEnemyContactStop = false
 HitEffectScene = ExtResource("11_6hy0m")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -320,6 +321,7 @@ DisplayName = "Bunny Sword  Melee Attack"
 Description = "仿生兔女郎的光剑专属攻击模板示例"
 EnableDashMovement = true
 EnableDirectionalMovement = true
+EnableEnemyContactStop = false
 HitEffectScene = ExtResource("12_van21")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -250)
@@ -332,6 +334,7 @@ DisplayName = "Barrier Gate Melee Attack"
 Description = "开刃升降杆门专属攻击模板示例"
 EnableDashMovement = true
 EnableDirectionalMovement = true
+EnableEnemyContactStop = false
 HitEffectScene = ExtResource("12_f18x1")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -344,6 +347,7 @@ DisplayName = "Violin Bow Melee Attack"
 Description = "琴弓专属攻击模板示例"
 EnableDashMovement = true
 EnableDirectionalMovement = true
+EnableEnemyContactStop = false
 HitEffectScene = ExtResource("12_f18x1")
 HitEffectForceTopLevel = true
 HitEffectLocalOffset = Vector2(0, -350)
@@ -405,6 +409,8 @@ SkipWarmupOnRecoveryRestart = true
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("10_utqjm")
+HitImpactDuration = 0.13
+RecoverDuration = 0.2
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("11_t3prk")

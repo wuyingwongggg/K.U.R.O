@@ -153,7 +153,7 @@ skeleton_data_res = ExtResource("6_cdf4i")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.75
+preview_time = 0.0
 script = ExtResource("7_02rt2")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -257,6 +257,8 @@ metadata/attack_weight = 100.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("18_n1d74")
+HitImpactDuration = 0.1
+RecoverDuration = 0.22999999999999998
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("19_1cqrr")

@@ -10,6 +10,7 @@
 script = ExtResource("1_bdrdo")
 Trigger = 1
 EffectScene = ExtResource("2_42yta")
+Notes = "概率暴击"
 PropertyOverrides = Dictionary[String, Variant]({
 "CritBonusMultiplier": 1.0,
 "CritChance": 40.0,
@@ -21,10 +22,12 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("1_bdrdo")
 Trigger = 1
 EffectScene = ExtResource("4_rr1ju")
+Notes = "击退"
 PropertyOverrides = Dictionary[String, Variant]({
 "EnableKnockbackY": false,
 "KnockbackDistance": 150.0,
-"KnockbackDuration": 0.15
+"KnockbackDuration": 0.15,
+"TriggerHitStep": 1
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 

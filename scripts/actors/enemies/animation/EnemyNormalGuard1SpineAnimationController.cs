@@ -78,7 +78,7 @@ namespace Kuros.Actors.Enemies.Animation
                     PlayLoopIfNeeded("Walk", WalkAnimation, WalkMixDuration);
                     break;
                 case "Hit":
-                    PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
+                    DriveHitPhaseAnimation(HitAnimation, HitMixDuration);
                     break;
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);

@@ -170,7 +170,7 @@ skeleton_data_res = ExtResource("5_scapk")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.4
 script = ExtResource("6_jn4m8")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -284,7 +284,6 @@ RecoveryDuration = 0.5
 CooldownDurationMultiplier = 10.0
 KnockbackDistance = 80.0
 KnockbackDuration = 0.15
-KnockbackSpeed = 1500.0
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 StunInterruptOnDamage = true
@@ -324,6 +323,8 @@ metadata/attack_weight = 20.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("14_0em3l")
+HitImpactDuration = 0.1
+RecoverDuration = 0.3
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("15_cbamd")

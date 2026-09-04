@@ -397,13 +397,12 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (Enemy == null || Enemy.PlayerTarget == null) return;
 
 			float distance = Mathf.Max(0f, KnockbackDistance);
-			if (distance > 0f || KnockbackSpeed > 0f)
+			if (distance > 0f)
 			{
 				TryApplyPlayerKnockback(
 					Enemy.PlayerTarget,
 					distance,
 					Mathf.Max(KnockbackDuration, 0.01f),
-					KnockbackSpeed,
 					Enemy.FacingRight ? Vector2.Right : Vector2.Left);
 			}
 		}

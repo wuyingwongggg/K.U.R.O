@@ -83,7 +83,7 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
             float distance = Mathf.Max(0f, KnockbackDistance);
-            if ((distance <= 0f && KnockbackSpeed <= 0f) || !IsPlayerInsideHitbox())
+            if (distance <= 0f || !IsPlayerInsideHitbox())
             {
                 return;
             }
@@ -93,7 +93,6 @@ namespace Kuros.Actors.Enemies.Attacks
                 Player,
                 distance,
                 duration,
-                KnockbackSpeed,
                 Enemy.FacingRight ? Vector2.Right : Vector2.Left);
 
             if (!applied)

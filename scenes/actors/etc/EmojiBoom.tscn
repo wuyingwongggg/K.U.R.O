@@ -145,7 +145,12 @@ BoomSceneOverrides = Dictionary[String, Variant]({
 "SpawnDelay": 0.2,
 "scale": Vector2(1, 1)
 })
-EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
+BoomDmgOverrides = Dictionary[String, Variant]({
+"Damage": 60.0,
+"KnockBackDistance": 100.0,
+"KnockbackDuration": 0.3,
+"Radius": 300.0
+})
 Duration = 1.3
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]

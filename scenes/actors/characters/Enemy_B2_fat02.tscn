@@ -299,7 +299,6 @@ RecoveryDuration = 0.39
 DamageMultiplier = 1.5
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 200.0
-KnockbackDuration = 0.09
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
@@ -307,6 +306,7 @@ metadata/attack_weight = 80.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("13_ey01n")
+RecoverDuration = 0.3
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("14_rru7p")

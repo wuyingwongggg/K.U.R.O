@@ -45,9 +45,6 @@ namespace Kuros.Actors.Enemies.Attacks
         /// <summary>击退时长（秒）。</summary>
         [Export] public float KnockbackDuration { get; set; } = 0.18f;
 
-        /// <summary>击退速度（像素/秒）。</summary>
-        [Export] public float KnockbackSpeed { get; set; } = 1000f;
-
         /// <summary>检测碰撞的 Area2D 节点路径（相对于此根节点）。</summary>
         [Export] public NodePath HitboxPath = new NodePath("Area2D");
 
@@ -200,18 +197,9 @@ namespace Kuros.Actors.Enemies.Attacks
                 knockbackDir = Vector2.Right;
             }
 
-            // 计算击退速度
             float clampedDuration = Mathf.Max(KnockbackDuration, 0.01f);
             float clampedDistance = Mathf.Max(0f, KnockbackDistance);
-            float clampedSpeed = Mathf.Max(0f, KnockbackSpeed);
-
-            if (clampedDistance <= 0f && clampedSpeed <= 0f)
-            {
-                return;
-            }
-
-            float speed = clampedSpeed > 0f ? clampedSpeed : clampedDistance / clampedDuration;
-            if (speed <= 0f)
+            if (clampedDistance <= 0f)
             {
                 return;
             }
@@ -225,12 +213,12 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
-            // 设置玩家速度（击退）
-            Vector2 knockbackVelocity = knockbackDir * speed;
-            player.ApplyKnockback(knockbackVelocity.Normalized(), speed);
+            // 位移驱动击退：受击方 Hit 状态在 clampedDuration 内匀减速滑完 clampedDistance
+            player.ApplyKnockbackDisplacement(knockbackDir, clampedDistance, clampedDuration);
 
-            // 如果玩家在 Frozen 状态，应用外部位移
-            ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);
+            // 如果玩家在 Frozen 状态，应用外部位移（平均速度 = distance/duration）
+            ApplyFrozenExternalDisplacement(player,
+                knockbackDir * (clampedDistance / clampedDuration), clampedDuration);
         }
 
         private void ApplyFrozenExternalDisplacement(SamplePlayer player, Vector2 velocity, float duration)

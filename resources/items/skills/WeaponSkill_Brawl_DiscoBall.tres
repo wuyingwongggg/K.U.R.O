@@ -22,7 +22,8 @@ EffectScene = ExtResource("4_k3bem")
 PropertyOverrides = Dictionary[String, Variant]({
 "EnableKnockbackY": false,
 "KnockbackDistance": 150.0,
-"KnockbackDuration": 0.15
+"KnockbackDuration": 0.15,
+"TriggerHitStep": 1
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 

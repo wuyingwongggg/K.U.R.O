@@ -127,10 +127,9 @@ BoomSceneOverrides = Dictionary[String, Variant]({
 BoomDmgOverrides = Dictionary[String, Variant]({
 "Damage": 100,
 "KnockbackDistance": 300.0,
-"KnockbackDuration": 0.3,
+"KnockbackDuration": 0.5,
 "Radius": 500.0
 })
-EffectId = "7478a223-d900-494d-9460-8c061431b5e8"
 Duration = 1.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

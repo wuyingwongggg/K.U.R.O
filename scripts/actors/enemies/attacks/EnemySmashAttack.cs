@@ -309,7 +309,6 @@ namespace Kuros.Actors.Enemies.Attacks
 				player,
 				KnockbackDistance,
 				KnockbackDuration,
-				KnockbackSpeed,
 				_dashDirection);
 
 			ApplyStunState(player);
@@ -435,7 +434,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				ApplySmashDamage(Enemy.PlayerTarget);
 				if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 				{
-					TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+					TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, _dashDirection);
 					ApplyStunState(Enemy.PlayerTarget);
 				}
 			}
@@ -481,7 +480,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			ApplySmashDamage(Enemy.PlayerTarget);
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 			{
-				TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+				TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, _dashDirection);
 				ApplyStunState(Enemy.PlayerTarget);
 			}
 		}

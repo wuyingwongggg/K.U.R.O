@@ -70,7 +70,7 @@ size = Vector2(350, 200)
 size = Vector2(1000, 400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h8apo"]
-size = Vector2(650, 600)
+size = Vector2(800, 600)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_nb4oj"]
 radius = 500.0
@@ -209,7 +209,7 @@ skeleton_data_res = ExtResource("20_5i0uy")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.91
+preview_time = 2.0
 script = ExtResource("21_8xfgw")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -257,7 +257,7 @@ shape = SubResource("2")
 [node name="KickArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/KickArea"]
-position = Vector2(325, 0)
+position = Vector2(400, 0)
 shape = SubResource("RectangleShape2D_h8apo")
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
@@ -317,8 +317,8 @@ RecoveryDuration = 0.4
 CooldownDurationMultiplier = 5.0
 DamageMultiplier = 0.7
 AttackAreaPath = NodePath("../../../../Sprite2D/KickArea")
-KnockbackDistance = 300.0
-KnockbackDuration = 0.14
+KnockbackDistance = 800.0
+KnockbackDuration = 0.4
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
@@ -337,7 +337,7 @@ RecoveryDuration = 0.28
 CooldownDurationMultiplier = 0.5
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 250.0
-KnockbackDuration = 0.12
+KnockbackDuration = 0.2
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
@@ -346,6 +346,8 @@ metadata/attack_weight = 70.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("6")
+HitImpactDuration = 0.16
+RecoverDuration = 0.16999999999999998
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("7")

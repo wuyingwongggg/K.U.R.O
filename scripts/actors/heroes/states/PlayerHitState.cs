@@ -3,27 +3,80 @@ using System;
 
 namespace Kuros.Actors.Heroes.States
 {
+    /// <summary>
+    /// 受击状态——双时间轴模型：
+    ///   动画轴 A = HitImpactDuration（hit 动画受击段时长，动画实时播放）
+    ///   位移轴 K = 攻击方 KnockbackDuration（击退位移时长，匀减速滑完 KnockbackDistance）
+    /// 交汇规则（回正开始 = max(A0, K0)）：
+    ///   · A 先播完而位移未完（HitImpactDuration < KnockbackDuration）→ 停帧在受击段末帧
+    ///     直到位移结束（冻结延长，无输入）
+    ///   · 位移先结束（KnockbackDuration ≤ HitImpactDuration）→ 动画按正常时序完整播放
+    ///     （位移早停不影响动画，受击段播完自然回正）
+    /// 无击退请求：仅 A 计时 → hit 动画完整自然时序（受击段 + 回正段）。
+    /// 击退请求由攻击方在 Enter 之后写入（GameActor.ApplyKnockbackDisplacement / 旧 ApplyKnockback）。
+    /// </summary>
     public partial class PlayerHitState : PlayerState
     {
+        public enum HitPhase { Impact, Recover }
+
         [Export] public string SpineHitAnimationName = "hit";
         public float HitAnimationSpeed = 1.0f;
+
+        /// <summary>hit 动画受击段时长（秒）——动画播完此段后停帧等待位移（若位移未完）。</summary>
+        [Export(PropertyHint.Range, "0.05,0.8,0.01")] public float HitImpactDuration = 0.2f;
+
+        /// <summary>回正段播放时间（动画回正剩余 + 缓冲，如 0.13s）。</summary>
+        [Export(PropertyHint.Range, "0.05,0.6,0.01")] public float RecoverDuration = 0.13f;
+
+        /// <summary>冻结期动画（空 = 停帧在受击段末帧；资源就绪后填 fly 动画名）。</summary>
+        [Export] public string FlyAnimation { get; set; } = "";
+
+        /// <summary>当前受击阶段（供动画层查询/驱动）。</summary>
+        public HitPhase CurrentPhase { get; private set; } = HitPhase.Impact;
+
+        /// <summary>阶段序号（每次 Enter 递增）——供动画层检测重入。</summary>
+        public int PhaseTick { get; private set; }
+
         private float _originalSpeedScale = 1.0f;
-        private float _stunTimer = 0.0f;
-        
+
+        // 动画轴 A
+        private float _animRemaining;
+        // 位移轴 K（击退请求，Enter 后由攻击方写入）
+        private bool _hasKnock;
+        private Vector2 _knockDirection;
+        private float _knockDistance;
+        private float _knockDuration;
+        private float _knockElapsed;
+        // 冻结标记
+        private bool _frozen;
+        private bool _flyActive;
+        // 回正计时
+        private float _recoverRemaining;
+
         public override void Enter()
         {
-            Actor.Velocity = Vector2.Zero;
+            PhaseTick++;
+            CurrentPhase = HitPhase.Impact;
+            _animRemaining = HitImpactDuration;
+            _recoverRemaining = 0f;
+
+            // 位移字段（_hasKnock/_knock*）保留：连击重入（同状态 Enter 重跑）不中断已在进行的击退位移；
+            // 首次进入时字段本为 false（上次位移已结束）。仅无位移时清零残留速度。
+            if (!_hasKnock)
+                Actor.Velocity = Vector2.Zero;
+
+            _frozen = false;
+            _flyActive = false;
 
             if (Player is MainCharacter mainChar)
             {
-                // MainCharacter uses Spine animation instead of AnimationPlayer.
                 string spineAnim = string.IsNullOrWhiteSpace(SpineHitAnimationName)
                     ? "hit"
                     : SpineHitAnimationName;
                 PlayAnimation(spineAnim, false, HitAnimationSpeed);
                 mainChar.StartHitInvincibility();
             }
-            
+
             if (Actor.AnimPlayer != null)
             {
                 // Save original speed scale before modifying
@@ -37,13 +90,8 @@ namespace Kuros.Actors.Heroes.States
                 // Set animation playback speed only for hit animation
                 Actor.AnimPlayer.SpeedScale = HitAnimationSpeed;
             }
-            
-            // Set default stun duration or calculate based on damage
-            _stunTimer = 0.3f;
-            
-            // Optional: Add knockback force if we had access to damage source
         }
-        
+
         public override void Exit()
         {
             // Restore original animation speed when leaving hit state
@@ -51,22 +99,119 @@ namespace Kuros.Actors.Heroes.States
             {
                 Actor.AnimPlayer.SpeedScale = _originalSpeedScale;
             }
+
+            // Spine 停帧恢复（防从冻结阶段被强制切走）
+            if (Player is MainCharacter mainChar)
+                mainChar.SetSpineAnimationSpeed(1f);
         }
 
         public override void PhysicsUpdate(double delta)
         {
-            _stunTimer -= (float)delta;
-            
-            if (_stunTimer <= 0)
+            float dt = (float)delta;
+
+            // 消费击退请求（攻击方在 Enter 前后写入；首个物理帧即就绪；滞留过期请求自动丢弃）
+            if (!_hasKnock
+                && Actor.TryConsumeKnockbackRequest(out Vector2 dir, out float dist, out float dur,
+                    HitImpactDuration))
             {
-                ChangeState("Idle");
+                _hasKnock = true;
+                _knockDirection = dir;
+                _knockDistance = dist;
+                _knockDuration = dur;
+                _knockElapsed = 0f;
+            }
+
+            // 位移推进：K 内匀减速滑完 distance（v0 = 2d/K，末速 0）；撞墙由 MoveAndSlide 自然早停
+            if (_hasKnock)
+            {
+                _knockElapsed += dt;
+                if (_knockElapsed >= _knockDuration)
+                {
+                    Actor.Velocity = Vector2.Zero;
+                    _hasKnock = false;
+                }
+                else
+                {
+                    float v0 = 2f * _knockDistance / Mathf.Max(_knockDuration, 0.001f);
+                    Actor.Velocity = _knockDirection * (v0 * (1f - _knockElapsed / _knockDuration));
+                }
+                Actor.MoveAndSlide();
+            }
+            // 无位移请求：不碰 Velocity/MoveAndSlide——外部击退通道（如 KnockbackDriver）
+            // 直接驱动位移，Hit 状态清零会将其每帧杀掉；Enter 已清速度，静止状态自然保持
+
+            switch (CurrentPhase)
+            {
+                case HitPhase.Impact:
+                    if (_animRemaining > 0f)
+                        _animRemaining -= dt;
+
+                    if (_animRemaining <= 0f)
+                    {
+                        _animRemaining = 0f;
+
+                        // 动画受击段播完而位移未完 → 定格在受击段末帧（或 fly）等待位移结束
+                        if (_hasKnock && !_frozen)
+                        {
+                            _frozen = true;
+                            FreezeAnimation();
+                        }
+
+                        // 动画轴与位移轴都归零 → 回正
+                        if (!_hasKnock)
+                            EnterRecover();
+                    }
+                    break;
+
+                case HitPhase.Recover:
+                    _recoverRemaining -= dt;
+                    if (_recoverRemaining <= 0f)
+                    {
+                        ChangeState("Idle");
+                        return;
+                    }
+                    break;
+            }
+        }
+
+        private void FreezeAnimation()
+        {
+            if (Player is not MainCharacter mainChar) return;
+
+            if (!string.IsNullOrWhiteSpace(FlyAnimation))
+            {
+                mainChar.PlaySpineAnimation(FlyAnimation, loop: true);
+                _flyActive = true;
+            }
+            else
+            {
+                // 停帧：动画此刻正停在受击段末帧（HitImpactDuration 帧）——回正时续播无跳变
+                mainChar.SetSpineAnimationSpeed(0f);
+                _flyActive = false;
+            }
+        }
+
+        private void EnterRecover()
+        {
+            CurrentPhase = HitPhase.Recover;
+            _recoverRemaining = RecoverDuration;
+
+            if (Player is not MainCharacter mainChar) return;
+
+            if (_flyActive)
+            {
+                // 从 fly 切回 hit 回正段（动画不在 hit 时间轴上，需跳回受击段末帧）
+                string spineAnim = string.IsNullOrWhiteSpace(SpineHitAnimationName)
+                    ? "hit"
+                    : SpineHitAnimationName;
+                mainChar.SetSpineAnimationSpeed(1f);
+                mainChar.PlaySpineAnimationFrom(spineAnim, HitImpactDuration, loop: false);
+                _flyActive = false;
                 return;
             }
-            
-            // While stunned, we can still be moved by external forces (gravity, knockback)
-            // but for now we just apply friction/stop
-             Actor.Velocity = Actor.Velocity.MoveToward(Vector2.Zero, Actor.Speed * (float)delta);
-             Actor.MoveAndSlide();
+
+            // 无 fly：动画若被停帧则恢复播放——停在受击段末帧，续播即回正段（无缝）
+            mainChar.SetSpineAnimationSpeed(1f);
         }
 
         private string ResolveHitAnimationName()
@@ -96,4 +241,3 @@ namespace Kuros.Actors.Heroes.States
         }
     }
 }
-

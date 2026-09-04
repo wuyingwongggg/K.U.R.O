@@ -1,6 +1,6 @@
 {
 "skeleton": {
-	"hash": "aKzYjER2N10",
+	"hash": "8YjNyy6pOtk",
 	"spine": "4.2-from-4.3.23",
 	"x": -548.8586,
 	"y": -20.84992,
@@ -25906,11 +25906,6 @@
 				]
 			}
 		},
-		"transform": {
-			"TF03": [
-				{ "mixX": -0.09452, "mixY": 0.33625, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 }
-			]
-		},
 		"drawOrder": [
 			{
 				"time": 1.2,
@@ -28768,20 +28763,6 @@
 				{ "time": 0.5 }
 			]
 		},
-		"transform": {
-			"TF03": [
-				{ "mixX": -0.11327, "mixY": 0.2125, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 },
-				{
-					"time": 0.7,
-					"mixX": -0.11327,
-					"mixY": 0.07375,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
-		},
 		"drawOrder": [
 			{},
 			{
@@ -28794,7 +28775,7 @@
 		"events": [
 			{ "time": 0.23333333, "name": "hit" },
 			{ "time": 0.3666667, "name": "hit" },
-			{ "time": 0.5666667, "name": "hit" }
+			{ "time": 0.5333333, "name": "hit" }
 		]
 	},
 	"Weapon_Brawl_RiotBracer": {
@@ -32241,28 +32222,6 @@
 				{ "bendPositive": false }
 			]
 		},
-		"transform": {
-			"TF03": [
-				{
-					"mixX": -0.11327,
-					"mixY": -0.035,
-					"curve": "stepped",
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.3,
-					"mixX": -0.11327,
-					"mixY": -0.035,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
-		},
 		"events": [
 			{ "time": 0.2666667, "name": "hit" }
 		]
@@ -35685,11 +35644,6 @@
 		"ik": {
 			"bone35": [
 				{ "bendPositive": false }
-			]
-		},
-		"transform": {
-			"TF03": [
-				{ "mixX": -0.11327, "mixY": 0.19375, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 }
 			]
 		},
 		"drawOrder": [
@@ -39460,19 +39414,6 @@
 				]
 			}
 		},
-		"transform": {
-			"TF03": [
-				{
-					"time": 0.4666667,
-					"mixX": 0.0,
-					"mixY": -0.2225,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
-		},
 		"drawOrder": [
 			{
 				"offsets": [
@@ -40947,11 +40888,6 @@
 					{ "time": 1 }
 				]
 			}
-		},
-		"transform": {
-			"TF03": [
-				{ "mixX": -0.12452, "mixY": 0.1375, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 }
-			]
 		},
 		"drawOrder": [
 			{
@@ -43444,11 +43380,6 @@
 			"bone35": [
 				{ "time": 0.2, "bendPositive": false, "curve": "stepped" },
 				{ "time": 0.3333333 }
-			]
-		},
-		"transform": {
-			"TF03": [
-				{ "mixX": 0.09298001, "mixY": -0.2225, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 }
 			]
 		},
 		"drawOrder": [
@@ -48960,28 +48891,6 @@
 				]
 			}
 		},
-		"transform": {
-			"TF03": [
-				{
-					"mixX": 0.0,
-					"mixY": -0.2225,
-					"curve": "stepped",
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.8666667,
-					"mixX": 0.0,
-					"mixY": -0.2225,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
-		},
 		"attachments": {
 			"default": {
 				"JG": {
@@ -51067,28 +50976,6 @@
 					{ "time": 0.6666667 }
 				]
 			}
-		},
-		"transform": {
-			"TF03": [
-				{
-					"mixX": -0.11327,
-					"mixY": -0.05,
-					"curve": "stepped",
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.6666667,
-					"mixX": -0.11327,
-					"mixY": -0.05,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
 		},
 		"attachments": {
 			"default": {
@@ -53304,29 +53191,6 @@
 					{ "time": 0.6666667 }
 				]
 			}
-		},
-		"transform": {
-			"TF03": [
-				{ "mixX": 0.03673001, "mixY": -0.0575, "mixRotate": 0.0, "mixScaleX": 0.0, "mixScaleY": 0.0, "mixShearY": 0.0 },
-				{
-					"time": 0.4666667,
-					"mixX": 0.0,
-					"mixY": -0.2225,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.6666667,
-					"mixX": 0.03673001,
-					"mixY": -0.0575,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
 		},
 		"drawOrder": [
 			{
@@ -55806,28 +55670,6 @@
 					{ "time": 0.5333333 }
 				]
 			}
-		},
-		"transform": {
-			"TF03": [
-				{
-					"mixX": -0.04952,
-					"mixY": 0.11875,
-					"curve": "stepped",
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.5333333,
-					"mixX": -0.04952,
-					"mixY": 0.11875,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
 		},
 		"drawOrder": [
 			{
@@ -58509,28 +58351,6 @@
 					{ "time": 0.7333333 }
 				]
 			}
-		},
-		"transform": {
-			"TF03": [
-				{
-					"mixX": 0.0,
-					"mixY": 0.0,
-					"curve": "stepped",
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				},
-				{
-					"time": 0.7333333,
-					"mixX": 0.0,
-					"mixY": 0.0,
-					"mixRotate": 0.0,
-					"mixScaleX": 0.0,
-					"mixScaleY": 0.0,
-					"mixShearY": 0.0
-				}
-			]
 		},
 		"drawOrder": [
 			{
@@ -81337,18 +81157,7 @@
 		"mixScaleX": 0.0,
 		"mixScaleY": 0.0,
 		"mixShearY": 0.0,
-		"order": 32
-	},
-	{
-		"name": "TF03",
-		"target": "bone42",
-		"bones": [ "bone70" ],
-		"mixX": 0,
-		"mixRotate": 0.0,
-		"mixScaleX": 0.0,
-		"mixScaleY": 0.0,
-		"mixShearY": 0.0,
-		"order": 27
+		"order": 31
 	},
 	{
 		"name": "TF04",
@@ -81405,7 +81214,7 @@
 		"mixScaleX": 0.0,
 		"mixScaleY": 0.0,
 		"mixShearY": 0.0,
-		"order": 37
+		"order": 36
 	},
 	{
 		"name": "ZM02",
@@ -81425,13 +81234,13 @@
 		"target": "bone32",
 		"bones": [ "bone30", "bone31" ],
 		"bendPositive": false,
-		"order": 39
+		"order": 38
 	},
 	{
 		"name": "bone35",
 		"target": "bone35",
 		"bones": [ "bone33", "bone34" ],
-		"order": 38
+		"order": 37
 	}
 ],
 "physics": [
@@ -81494,7 +81303,7 @@
 		"strength": 30,
 		"damping": 0.7,
 		"mass": 1.2,
-		"order": 28
+		"order": 27
 	},
 	{
 		"name": "bone11",
@@ -81505,7 +81314,7 @@
 		"strength": 30,
 		"damping": 0.7,
 		"mass": 1.2,
-		"order": 29
+		"order": 28
 	},
 	{
 		"name": "bone12",
@@ -81516,7 +81325,7 @@
 		"strength": 30,
 		"damping": 0.7,
 		"mass": 1.2,
-		"order": 30
+		"order": 29
 	},
 	{
 		"name": "bone13",
@@ -81527,7 +81336,7 @@
 		"strength": 30,
 		"damping": 0.7,
 		"mass": 1.2,
-		"order": 31
+		"order": 30
 	},
 	{
 		"name": "bone14",
@@ -81577,7 +81386,7 @@
 		"inertia": 0.3,
 		"strength": 70,
 		"damping": 0.8,
-		"order": 33
+		"order": 32
 	},
 	{
 		"name": "bone19",
@@ -81587,7 +81396,7 @@
 		"inertia": 0.3,
 		"strength": 70,
 		"damping": 0.8,
-		"order": 34
+		"order": 33
 	},
 	{
 		"name": "bone20",
@@ -81597,7 +81406,7 @@
 		"inertia": 0.3,
 		"strength": 70,
 		"damping": 0.8,
-		"order": 35
+		"order": 34
 	},
 	{
 		"name": "bone21",
@@ -81607,7 +81416,7 @@
 		"inertia": 0.3,
 		"strength": 70,
 		"damping": 0.8,
-		"order": 36
+		"order": 35
 	},
 	{
 		"name": "bone22",

@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using Kuros.Actors.Enemies.Attacks;
+using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -79,7 +80,7 @@ namespace Kuros.Actors.Enemies.Animation
                     PlayLoopIfNeeded("Walk", WalkAnimation, WalkMixDuration);
                     break;
                 case "Hit":
-                    PlayOnceIfNeeded("Hit", HitAnimation, HitMixDuration);
+                    DriveHitPhaseAnimation(HitAnimation, HitMixDuration);
                     break;
                 case "Frozen":
                     PlayLoopIfNeeded("Frozen", StunAnimation, HitMixDuration);
@@ -192,6 +193,10 @@ namespace Kuros.Actors.Enemies.Animation
         {
             PlayLoopIfNeeded("Idle", IdleAnimation, IdleMixDuration);
         }
+
+        // 受击动画管线已基类化（EnemySpineAnimationController.DriveHitPhaseAnimation）——
+        // case "Hit" 直接调用基类实现，此处无需重写
+
         private EnemyB1FatAttackController? ResolveAttackController()
         {
             if (_attackController != null && IsInstanceValid(_attackController))
