@@ -14,7 +14,7 @@ namespace Kuros.Actors.Enemies.States
     /// 动画由各 EnemyXxxSpineAnimationController 按 CurrentHitPhase/PhaseTick 驱动；
     /// 击退请求由攻击方在 Enter 之后写入（GameActor.ApplyKnockbackDisplacement / 旧 ApplyKnockback）。
     /// </summary>
-    public partial class EnemyHitState : EnemyState
+    public partial class EnemyHitState : EnemyState, IHitReentrySuppressible
     {
         public enum HitPhase { Impact, Recover }
 
@@ -32,6 +32,24 @@ namespace Kuros.Actors.Enemies.States
 
         /// <summary>动画需停帧：受击段动画已播完（A 尽）而位移未完（K>0）——控制器应将动画 time_scale 置 0 定格。</summary>
         public bool NeedsAnimHold => CurrentPhase == HitPhase.Impact && _animRemaining <= 0f && _hasKnock;
+
+        /// <summary>连击打断上限：同一次 Hit 周期内允许完整打断（重播后仰）的次数——超过后抑制重入，
+        /// 当前硬直自然走完让目标脱出（防屈死）；打击感靠前 N 次打断保留。</summary>
+        [Export(PropertyHint.Range, "1,10,1")] public int MaxReentryBreaks { get; set; } = 3;
+
+        /// <summary>本次 Hit 周期内已提供的打断次数。</summary>
+        private int _comboBreaks;
+
+        /// <summary>重入被抑制标记：消费到新位移请求时补重置（击退豁免——延迟一物理帧的完整重入）。</summary>
+        private bool _reentrySuppressed;
+
+        public bool OnReentryAttempted()
+        {
+            _comboBreaks++;
+            return _comboBreaks <= MaxReentryBreaks;
+        }
+
+        public void NotifyReentrySuppressed() => _reentrySuppressed = true;
 
         // 动画轴 A
         private float _animRemaining;
@@ -52,6 +70,7 @@ namespace Kuros.Actors.Enemies.States
             CurrentPhase = HitPhase.Impact;
             _animRemaining = HitImpactDuration;
             _recoverRemaining = 0f;
+            _reentrySuppressed = false;
 
             // 位移字段（_hasKnock/_knock*）保留：连击重入（同状态 Enter 重跑）不中断已在进行的击退位移；
             // 首次进入时字段本为 false（上次位移已结束）。仅无位移时清零残留速度。
@@ -83,6 +102,16 @@ namespace Kuros.Actors.Enemies.States
                 _knockDistance = dist;
                 _knockDuration = dur;
                 _knockElapsed = 0f;
+
+                // 击退豁免：本次伤害带击退（重入被连击保护抑制）→ 补执行完整重入
+                // （回受击段 + A 重置 + PhaseTick 递增触发动画重播——延迟一物理帧）
+                if (_reentrySuppressed)
+                {
+                    _reentrySuppressed = false;
+                    CurrentPhase = HitPhase.Impact;
+                    _animRemaining = HitImpactDuration;
+                    PhaseTick++;
+                }
             }
 
             // 位移推进：K 内匀减速滑完 distance
@@ -141,6 +170,7 @@ namespace Kuros.Actors.Enemies.States
 
         private void ExitHitState()
         {
+            _comboBreaks = 0; // Hit 周期结束：打断计数复位（新一轮从完整打断开始）
             // 若仍有活跃的 FreezeEffect，Hit 结束后转到该效果配置的目标状态
             var freezeEffect = Enemy.EffectController?.GetEffect<FreezeEffect>();
             if (freezeEffect != null)

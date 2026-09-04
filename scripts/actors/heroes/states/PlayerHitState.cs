@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using Kuros.Core;
 
 namespace Kuros.Actors.Heroes.States
 {
@@ -15,7 +16,7 @@ namespace Kuros.Actors.Heroes.States
     /// 无击退请求：仅 A 计时 → hit 动画完整自然时序（受击段 + 回正段）。
     /// 击退请求由攻击方在 Enter 之后写入（GameActor.ApplyKnockbackDisplacement / 旧 ApplyKnockback）。
     /// </summary>
-    public partial class PlayerHitState : PlayerState
+    public partial class PlayerHitState : PlayerState, IHitReentrySuppressible
     {
         public enum HitPhase { Impact, Recover }
 
@@ -36,6 +37,24 @@ namespace Kuros.Actors.Heroes.States
 
         /// <summary>阶段序号（每次 Enter 递增）——供动画层检测重入。</summary>
         public int PhaseTick { get; private set; }
+
+        /// <summary>连击打断上限：同一次 Hit 周期内允许完整打断（重播后仰）的次数——超过后抑制重入，
+        /// 当前硬直自然走完让目标脱出（防屈死）；打击感靠前 N 次打断保留。</summary>
+        [Export(PropertyHint.Range, "1,10,1")] public int MaxReentryBreaks { get; set; } = 3;
+
+        /// <summary>本次 Hit 周期内已提供的打断次数。</summary>
+        private int _comboBreaks;
+
+        /// <summary>重入被抑制标记：消费到新位移请求时补重置（击退豁免——延迟一物理帧的完整重入）。</summary>
+        private bool _reentrySuppressed;
+
+        public bool OnReentryAttempted()
+        {
+            _comboBreaks++;
+            return _comboBreaks <= MaxReentryBreaks;
+        }
+
+        public void NotifyReentrySuppressed() => _reentrySuppressed = true;
 
         private float _originalSpeedScale = 1.0f;
 
@@ -59,6 +78,7 @@ namespace Kuros.Actors.Heroes.States
             CurrentPhase = HitPhase.Impact;
             _animRemaining = HitImpactDuration;
             _recoverRemaining = 0f;
+            _reentrySuppressed = false;
 
             // 位移字段（_hasKnock/_knock*）保留：连击重入（同状态 Enter 重跑）不中断已在进行的击退位移；
             // 首次进入时字段本为 false（上次位移已结束）。仅无位移时清零残留速度。
@@ -94,6 +114,8 @@ namespace Kuros.Actors.Heroes.States
 
         public override void Exit()
         {
+            _comboBreaks = 0; // Hit 周期结束：打断计数复位（新一轮从完整打断开始）
+
             // Restore original animation speed when leaving hit state
             if (Actor.AnimPlayer != null)
             {
@@ -119,6 +141,16 @@ namespace Kuros.Actors.Heroes.States
                 _knockDistance = dist;
                 _knockDuration = dur;
                 _knockElapsed = 0f;
+
+                // 击退豁免：本次伤害带击退（重入被连击保护抑制）→ 补执行完整重入
+                // （回受击段 + A 重置 + PhaseTick 递增触发动画重播——延迟一物理帧）
+                if (_reentrySuppressed)
+                {
+                    _reentrySuppressed = false;
+                    CurrentPhase = HitPhase.Impact;
+                    _animRemaining = HitImpactDuration;
+                    PhaseTick++;
+                }
             }
 
             // 位移推进：K 内匀减速滑完 distance（v0 = 2d/K，末速 0）；撞墙由 MoveAndSlide 自然早停
@@ -164,6 +196,13 @@ namespace Kuros.Actors.Heroes.States
                     break;
 
                 case HitPhase.Recover:
+                    // 受身：回正段可按 dash 打断恢复（与 Idle→Dash 同模式，无条件切；
+                    // 能否冲刺由 Dash 状态自身的充能判定，此处不耦合）。此刻击退位移已结束，无冲突。
+                    if (IsActionJustPressed("dash"))
+                    {
+                        ChangeState("Dash");
+                        return;
+                    }
                     _recoverRemaining -= dt;
                     if (_recoverRemaining <= 0f)
                     {

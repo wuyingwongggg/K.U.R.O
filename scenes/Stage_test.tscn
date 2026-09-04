@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://wluyqt2wxlvb"]
+[gd_scene load_steps=19 format=3 uid="uid://wluyqt2wxlvb"]
 
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_s6mo5"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="1_tv6fd"]
@@ -17,6 +17,7 @@
 [ext_resource type="Resource" uid="uid://8em5dh01naf" path="res://resources/builds/BuildMachine_B_006.tres" id="9_rf3xq"]
 [ext_resource type="Resource" uid="uid://b5gta1na2nfce" path="res://resources/builds/BuildMachine_B_007.tres" id="10_w0sof"]
 [ext_resource type="Resource" uid="uid://bdjyvylv0rijc" path="res://resources/builds/BuildMachine_B_008.tres" id="11_ve5oi"]
+[ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="18_w0p8f"]
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_s6mo5")
@@ -70,3 +71,6 @@ PlayerDamagedHitStopDuration = 0.18
 PlayerAttackHitHitStopDuration = 0.1
 PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
+
+[node name="P2" parent="World" instance=ExtResource("18_w0p8f")]
+position = Vector2(300, 0)

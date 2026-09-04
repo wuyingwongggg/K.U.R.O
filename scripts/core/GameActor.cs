@@ -604,7 +604,17 @@ namespace Kuros.Core
 				{
 					if (StateMachine.CurrentState?.Name == "Hit")
 					{
-						StateMachine.ReenterState("Hit");
+							// Reentry cap: allow N full hit-breaks (keep hit feel), then suppress
+							// so target recovers; suppressed knockback hits re-apply on K consume (exempt)
+							if (StateMachine.CurrentState is IHitReentrySuppressible suppressible
+								&& !suppressible.OnReentryAttempted())
+							{
+								suppressible.NotifyReentrySuppressed();
+							}
+							else
+							{
+								StateMachine.ReenterState("Hit");
+							}
 					}
 					else
 					{
