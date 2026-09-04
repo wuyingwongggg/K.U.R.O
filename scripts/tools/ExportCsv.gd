@@ -50,6 +50,7 @@ func _export_items() -> void:
 		"IsThrowable", "IsThrowWeapon", "PreventDropDuringCooldown", "SpawnEffectOnThrow",
 		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
 		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
+		"UnpickedLifetime",
 		"attack_power", "SkillRefs"
 	]
 	var rows: Array = [headers]
@@ -100,6 +101,7 @@ func _export_items() -> void:
 			str(r.get("ThrowHorizontalDistance", "500")),
 			str(r.get("ThrowParabolicLandingYOffset", "300")),
 			str(r.get("ThrowWeaponCooldown", "2.0")),
+			str(r.get("UnpickedLifetime", "0")),
 			atk, skill_refs
 		])
 

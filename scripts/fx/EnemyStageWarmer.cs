@@ -30,12 +30,15 @@ namespace Kuros.Fx
             await WarmUpAllAsync();
         }
 
-        /// <summary>预热所有敌人场景（串行，每场景渲染两帧）。重复调用安全。</summary>
+        /// <summary>预热所有敌人场景（串行，每场景渲染两帧）。重复调用安全。
+        /// headless（导出/CI 工具场景）下跳过——无渲染，预热无意义且部分资源加载会抛异常。</summary>
         public async System.Threading.Tasks.Task WarmUpAllAsync()
         {
             if (_warmed) return;
             _warmed = true;
             SetProcess(false);
+
+            if (DisplayServer.GetName() == "headless") return;
 
             foreach (var dir in EnemySceneDirs)
             {
@@ -50,9 +53,16 @@ namespace Kuros.Fx
                     if (!fileName.EndsWith(".tscn")) continue;
                     if (!string.IsNullOrEmpty(EnemyFilePrefix) && !fileName.StartsWith(EnemyFilePrefix)) continue;
 
-                    var scene = GD.Load<PackedScene>($"{dir}/{fileName}");
-                    if (scene != null)
-                        await WarmUpAsync(scene);
+                    try
+                    {
+                        var scene = GD.Load<PackedScene>($"{dir}/{fileName}");
+                        if (scene != null)
+                            await WarmUpAsync(scene);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        GD.PushWarning($"[EnemyStageWarmer] 预热失败（跳过）：{fileName} — {ex.Message}");
+                    }
                 }
                 d.ListDirEnd();
             }

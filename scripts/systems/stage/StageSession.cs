@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Godot.Collections;
 using System.Collections.Generic;
@@ -39,6 +40,10 @@ namespace Kuros.Systems.Stage
         /// <summary>进入彩蛋前的所在层（彩蛋是两层间的隐藏停靠站——离开彩蛋后继续入口层的行程）。</summary>
         private StageConfig? _eggEntryStage;
 
+        /// <summary>换关流程进行中（房间池后台预加载等待）——期间新请求排队，完成后自动应用最新。</summary>
+        private bool _transitionInProgress;
+        private StageConfig? _queuedConfig;
+
         public override void _Ready()
         {
             AddToGroup("stage_session");
@@ -51,13 +56,13 @@ namespace Kuros.Systems.Stage
             }
             _generator.StageGenerated += OnStageGenerated;
 
-            // 首关（配合 StageGeneratorManager.GenerateOnReady=false）
+            // 首关（配合 StageGeneratorManager.GenerateOnReady=false）——房间池预加载后生成
             var first = StartStage ?? (AllConfigs.Count > 0 ? AllConfigs[0] : null);
             if (first != null)
             {
                 _currentConfig = first;
                 GameLogger.Info(nameof(StageSession), $"首关：{first.StageId}（Floor {first.Floor}）");
-                _generator.Regenerate(first, relocateActors: true);
+                ApplyStageAsync(first);
             }
         }
 
@@ -121,7 +126,37 @@ namespace Kuros.Systems.Stage
             GameLogger.Info(nameof(StageSession), $"电梯选定：{options[index]?.StageId ?? "(null)"}");
         }
 
-        /// <summary>出舱动作：应用选中的关卡配置（world 内换关，玩家传送到新关起点）。</summary>
+        /// <summary>当前电梯选定目标（_pendingIndex）的房间池是否已预加载就绪（门可开）。</summary>
+        public bool IsPendingReady { get; private set; } = true;
+
+        /// <summary>立即后台预加载电梯选中的目标 config 房间池（ElevatorController.BeginLoading 时调用）。
+        /// 无有效选择/无生成器时直接视为就绪（不卡门）。完成后 IsPendingReady=true（含失败路径）。</summary>
+        public void PreloadPending()
+        {
+            IsPendingReady = false;
+            if (_generator == null) { IsPendingReady = true; return; }
+
+            var options = GetOptions();
+            if (_pendingIndex < 0 || _pendingIndex >= options.Count)
+            {
+                IsPendingReady = true;
+                return;
+            }
+            _ = PreloadPendingAsync(options[_pendingIndex]);
+        }
+
+        private async System.Threading.Tasks.Task PreloadPendingAsync(StageConfig config)
+        {
+            try { await PreloadStageRoomsAsync(config); }
+            catch (Exception ex)
+            {
+                GameLogger.Warn(nameof(StageSession), $"预加载异常：{ex.Message}");
+            }
+            if (GodotObject.IsInstanceValid(this))
+                IsPendingReady = true; // 含 Failed 路径（PreloadStageRoomsAsync 已把 Failed 当完成）——不卡门
+        }
+
+        /// <summary>出舱动作：应用选中的关卡配置（world 内换关，房间池预加载后生成）。</summary>
         public void CommitPending()
         {
             var options = GetOptions();
@@ -130,15 +165,15 @@ namespace Kuros.Systems.Stage
 
             var config = options[_pendingIndex];
             _pendingIndex = -1;
-            ApplyStage(config);
+            ApplyStageAsync(config);
         }
 
-        /// <summary>直接跳转指定关卡（隐藏入口/机关/剧情切关）：同步换关，不经电梯骑行。
+        /// <summary>直接跳转指定关卡（隐藏入口/机关/剧情切关）：不经电梯骑行，房间池预加载后生成。
         /// landingPosition = 玩家落点（世界坐标，密道出口用）；null = 新关起点。</summary>
         public void GoToStage(StageConfig config, Vector2? landingPosition = null)
         {
             if (config == null || _generator == null) return;
-            ApplyStage(config, landingPosition);
+            ApplyStageAsync(config, landingPosition);
         }
 
         /// <summary>激活彩蛋关（隐藏机关/剧情事件等条件达成时调用）——此后出现在电梯面板尾部。
@@ -156,7 +191,107 @@ namespace Kuros.Systems.Stage
         {
             if (_generator == null || AllConfigs.Count == 0) return;
             _debugIndex = (_debugIndex + 1) % AllConfigs.Count;
-            ApplyStage(AllConfigs[_debugIndex]);
+            ApplyStageAsync(AllConfigs[_debugIndex]);
+        }
+
+        // ── 换关流程（方案 B：房间池后台预加载 → 完成才 Regenerate）──
+
+        /// <summary>异步换关入口：先后台预加载 config 的房间池，完成后才清空/重生成。
+        /// 切换进行中时新请求排队（_queuedConfig），完成后自动应用最新——等待期旧关完整保留。</summary>
+        private void ApplyStageAsync(StageConfig config, Vector2? landingPosition = null)
+        {
+            if (config == null || _generator == null) return;
+
+            if (_transitionInProgress)
+            {
+                _queuedConfig = config;
+                GameLogger.Info(nameof(StageSession), $"换关进行中，排队：{config.StageId}");
+                return;
+            }
+
+            _transitionInProgress = true;
+            GameLogger.Info(nameof(StageSession), $"预加载房间池：{config.StageId}…");
+            _ = RunTransitionAsync(config, landingPosition);
+        }
+
+        private async System.Threading.Tasks.Task RunTransitionAsync(StageConfig config, Vector2? landingPosition)
+        {
+            try
+            {
+                await PreloadStageRoomsAsync(config);
+            }
+            catch (Exception ex)
+            {
+                GameLogger.Warn(nameof(StageSession), $"房间池预加载异常：{ex.Message}");
+            }
+
+            // 节点可能已被释放（场景卸载/壳销毁）——后续访问前检查
+            if (!GodotObject.IsInstanceValid(this) || _generator == null)
+                return;
+
+            if (_queuedConfig != null)
+            {
+                var queued = _queuedConfig;
+                _queuedConfig = null;
+                _transitionInProgress = false;
+                ApplyStageAsync(queued);
+                return;
+            }
+
+            _transitionInProgress = false;
+            GameLogger.Info(nameof(StageSession), $"房间就绪，生成 {config.StageId}");
+            ApplyStage(config, landingPosition);
+        }
+
+        /// <summary>后台加载 config 全部房间池（五池去重），每帧轮询等待完成——主线程不阻塞。
+        /// 参考 EnemySpawnManager.LoadSpawnEffectScenesAsync 的异步等待范式。</summary>
+        private async System.Threading.Tasks.Task PreloadStageRoomsAsync(StageConfig config)
+        {
+            var paths = new List<string>();
+            CollectPoolPaths(paths, config.BeginPool);
+            CollectPoolPaths(paths, config.EndPool);
+            CollectPoolPaths(paths, config.EasyMiddlePool);
+            CollectPoolPaths(paths, config.NormalMiddlePool);
+            CollectPoolPaths(paths, config.HardMiddlePool);
+            if (paths.Count == 0) return;
+
+            foreach (var path in paths)
+            {
+                // 已缓存/正在加载的资源重复请求引擎幂等处理（缓存命中立即 Loaded）
+                ResourceLoader.LoadThreadedRequest(path);
+            }
+
+            while (true)
+            {
+                if (!GodotObject.IsInstanceValid(this)) return;
+
+                bool allDone = true;
+                foreach (var path in paths)
+                {
+                    var status = ResourceLoader.LoadThreadedGetStatus(path);
+                    if (status == ResourceLoader.ThreadLoadStatus.InProgress)
+                    {
+                        allDone = false;
+                        break;
+                    }
+                    if (status == ResourceLoader.ThreadLoadStatus.Failed)
+                        GameLogger.Warn(nameof(StageSession), $"房间加载失败：{path}");
+                }
+                if (allDone) break;
+
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            }
+        }
+
+        private static void CollectPoolPaths(List<string> paths, Array<PackedScene> pool)
+        {
+            foreach (var scene in pool)
+            {
+                if (scene == null) continue;
+                string path = scene.ResourcePath;
+                if (!string.IsNullOrEmpty(path) && !paths.Contains(path))
+                    paths.Add(path);
+            }
         }
 
         /// <summary>应用关卡配置：记录当前关并重新生成（玩家传送到新关起点或指定落点）。

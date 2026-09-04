@@ -225,10 +225,20 @@ namespace Kuros.Items.World
 		/// </summary>
 		public System.Collections.Generic.IReadOnlyCollection<GameActor> ActorsInRange => _actorsInRange;
 
+		/// <summary>未拾取存活时长（秒，0=禁用）：静止后开始计时，到期前闪烁预警并消失（方案 B）。</summary>
+		[Export(PropertyHint.Range, "0,300,1")] public float UnpickedLifetime { get; set; } = 0f;
+
+		/// <summary>过期组件是否允许计时：静止（非投掷/回弹/隐藏中且可见）。</summary>
+		public bool IsSettledForExpiry =>
+			!_isThrown && !_inFlight && !_bouncing && !_isDestroying
+			&& _landingHideTimer <= 0.0 && _inventoryReturnTimer <= 0.0 && Visible;
+
+		private Kuros.Fx.WorldItemExpiry? _expiry;
+
 		public override void _Ready()
 		{
 			base._Ready();
-			
+
 			// 添加到组，方便通过场景树查找
 			if (!IsInGroup("world_items"))
 			{
@@ -237,6 +247,22 @@ namespace Kuros.Items.World
 			if (!IsInGroup("pickables"))
 			{
 				AddToGroup("pickables");
+			}
+
+			// 未拾取过期（方案 B）：本体在世界中（敌人掉落/玩家放置 place）时生效——
+			// 场景 export 优先，否则读 ItemDefinition 定义级配置（0 = 禁用）。
+			// 投掷（throw）生成的副本（IsDisposableCopy）排除——走自身特效自毁路径。
+			if (!IsDisposableCopy)
+			{
+				float lifetime = UnpickedLifetime > 0f
+					? UnpickedLifetime
+					: ItemDefinition?.UnpickedLifetime ?? 0f;
+				if (lifetime > 0f)
+				{
+					_expiry = new Kuros.Fx.WorldItemExpiry { UnpickedLifetime = lifetime };
+					_expiry.Name = "WorldItemExpiry";
+					AddChild(_expiry);
+				}
 			}
 			
 			InitializeStack();

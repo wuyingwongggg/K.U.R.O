@@ -66,6 +66,11 @@ namespace Kuros.Items
         [Export] public bool IsThrowWeapon { get; set; } = false; // 投掷后是否回收（冷却归还背包）。true=投掷武器（回收），false=一次性投掷物（落地销毁）
         [Export] public bool PreventDropDuringCooldown { get; set; } = false; // CD 期间禁止将该投掷武器从背包放置到地面
 
+        /// <summary>物品本体以世界物形式存在（敌人掉落 / 玩家放置 place——背包删除生成世界物）
+        /// 时的存活时长（秒，0=禁用）：静止 N 秒未被拾取 → 闪烁预警并消失。
+        /// 与一般武器/道具一致；投掷（throw）生成的副本走自身特效自毁路径，不挂过期。</summary>
+        [Export(PropertyHint.Range, "0,300,1")] public float UnpickedLifetime { get; set; } = 0f;
+
         [ExportGroup("Durability")]
         [Export] public ItemDurabilityConfig? DurabilityConfig { get; set; }
 

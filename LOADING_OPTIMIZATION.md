@@ -5,6 +5,24 @@
 
 ---
 
+## 0. 架构演进（2026-09：Stage_hotel 壳 + 房间级 streaming 落地）
+
+原架构（Stage_2~5 整关场景，电梯/出租车 `ChangeSceneToPacked` 切换）→ 新链路（关卡推进体系，见 LEVEL_PROGRESSION_DESIGN.md）：
+
+```
+Stage_hotel.tscn（壳常驻：玩家/相机/管理器不重建）
+  └─ StageGeneratorManager（纯引擎，GenerateOnReady=false）
+  └─ StageSession（配置驱动：StartStage → Regenerate(StageConfig) → 清空房间 + x=0 重拼）
+  └─ ElevatorController（会话模式：选关 → 骑行 → 出舱 CommitPending——不再 ChangeScene）
+```
+
+**对加载模型的影响**：
+- ✅ 关卡壳只加载一次（常驻），消除"整关重建"成本
+- ⚠️ 新卡顿点 = **StageConfig 首次使用的房间池资源首次加载**：`Regenerate` 的 Instantiate 无后台加载掩护（首关 `_Ready`、电梯出舱切换瞬间）——即原 2.2 缺口的同源问题，预加载对象从"整关场景"变为"config 的房间池"
+- 旧 Stage_1~4 + ChangeScene 链仍保留（无 StageSession 场景回退），2.2 机制对其仍适用
+
+---
+
 ## 1. 卡顿根因
 
 卡顿均为**一次性主线程同步阻塞**（非持续热点，profiler 平均负载看不出），按占比排列：
@@ -27,10 +45,10 @@
 - 开关：`WarmOnReady`（默认 true）
 - 注意：`GetViewport().GetCamera2D()` / `GetFirstNodeInGroup("player")` 在 Autoload（root）上下文不可靠——预热不依赖相机（无 Camera2D 时 CanvasItem 照常渲染，Shader 编译照常触发）
 
-### 2.2 关卡切换异步预加载（已有）
+### 2.2 关卡切换异步预加载（已有——仅适用于旧 Stage_1~4 ChangeScene 链）
 
 - `ElevatorController` / `TaxiController` / `ChangeSceneStep`：切换前 `LoadThreadedRequest` 整关场景（后台线程）→ 等待 → `ChangeSceneToPacked`
-- **缺口**：只预加载整关场景本身——房间池（`StageGeneratorManager` 的 ext_resource）是**惰性解析**，房间资源树在运行时 Instantiate 才首次加载——卡顿大头未被覆盖
+- **缺口**：只预加载整关场景本身——房间池是**惰性解析**，房间资源树在运行时 Instantiate 才首次加载——卡顿大头未被覆盖（新链路下等同问题见 §5 Step 3）
 
 ---
 
@@ -95,10 +113,12 @@
 - ✅ 防抖 `Timer(0.0)` → debounce 窗口（0.5s）：窗口内新请求滑动续期，停顿 0.5s 后统一烘焙一次——地图加载时数百家具 `_Ready` 的连续请求合并为加载后一次烘焙
 - 未做（可选）：多个 NavigationRegion2D 每帧烘焙 1 个（分帧烘焙）——当前地图加载卡顿大头已在 Step 3 资源预加载层面解决，烘焙分帧收益低，暂不实施
 
-### Step 3：房间池资源预加载（核心，解决卡顿大头）
+### Step 3：房间池资源预加载（核心，解决卡顿大头）——✅ 已完成（含骑行窗口）
 
-- **方案 A（推荐）**：切换流程（电梯/出租车）在加载界面期间，`LoadThreadedRequest` 下一关的房间池（房间路径从场景配置读取或由生成器提供）
-- **方案 B（简单）**：`StageGeneratorManager` 在 `_Ready`（生成前）后台 `LoadThreadedRequest` 自己的房间池，等完成再生成——组件自包含，不依赖切换流程
+新链路语境：预加载对象 = StageConfig 的房间池（`.tres` 内 `PackedScene` 引用 → `ResourcePath` 后台加载），由持有 configs 的 `StageSession` 发起（组件自包含，见 4.3）：
+
+- ✅ **生成前预加载（方案 B）**：`StageSession.ApplyStageAsync`——应用 config 前先对其五池路径 `LoadThreadedRequest` + **异步帧轮询等待**（主线程不阻塞）；首关 `_Ready`、GoToStage、F1/F2 走该入口；`_transitionInProgress` 排队保护竞态
+- ✅ **骑行窗口预加载（方案 A 时机）**：`ElevatorController.BeginLoading` → `StageSession.PreloadPending()`（选中的目标 config 池）——loading 动画（loop）循环掩护；开门条件 = **骑行满 MinRideDuration(3s) 且预加载就绪**（`IsPendingReady`）——预加载超 3s 动画持续到就绪才 open；出舱 `CommitPending` 缓存命中 → Regenerate 无感
 - 效果：Instantiate 不再触发首次加载（IO/解析/Shader 已缓存）——卡顿降为纯建树
 
 ### Step 4：启动预热扩展（可选）

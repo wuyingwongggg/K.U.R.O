@@ -14,7 +14,7 @@
 [ext_resource type="Resource" uid="uid://qahny8a0xlvn" path="res://resources/stages/stage_4a.tres" id="11_i2bjf"]
 [ext_resource type="Resource" uid="uid://wc3mrmbaq4g6" path="res://resources/stages/stage_4b.tres" id="12_axi2i"]
 [ext_resource type="Resource" uid="uid://bg57yox7dv4vg" path="res://resources/stages/stage_4c.tres" id="13_i2bjf"]
-[ext_resource type="Resource" uid="uid://m2i8t5utuame" path="res://resources/stages/stage_egg1.tres" id="14_i2bjf"]
+[ext_resource type="Resource" uid="uid://m2i8t5utuame" path="res://resources/stages/stage_eggA.tres" id="14_i2bjf"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="14_pvxkr"]
 [ext_resource type="Script" uid="uid://ghxude6q2vj8" path="res://scripts/systems/stage/StageSession.cs" id="16_sess"]
 [ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="17_scfg"]

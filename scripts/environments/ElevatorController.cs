@@ -156,10 +156,12 @@ namespace Kuros.Environments
 
                 case ElevatorState.Loading:
                     _rideTimer += delta;
-                    PollSceneLoad();
+                    PollSceneLoad(); // 非会话旧链的场景加载轮询保留
 
-                    // 两个条件都满足才停止（会话模式无场景加载，骑行满时长即到达）
-                    if ((_session != null || _sceneReady) && _rideTimer >= MinRideDuration)
+                    // 会话模式：目标房间池预加载就绪才开门（loading 动画循环持续到就绪）；
+                    // 非会话模式：场景加载完成。两者都须骑行满 MinRideDuration（最短时间）
+                    bool ready = _session == null ? _sceneReady : _session.IsPendingReady;
+                    if (ready && _rideTimer >= MinRideDuration)
                         EnterArrived();
                     break;
 
@@ -212,6 +214,10 @@ namespace Kuros.Environments
 
             _state     = ElevatorState.Loading;
             _rideTimer = 0;
+
+            // 会话模式：骑行期间后台预加载选中的目标房间池（loading 动画循环掩护——
+            // 就绪才开门，预加载超过最短骑行时长则动画持续直到完成）
+            _session?.PreloadPending();
 
             // 会话模式不切场景：骑行仅为动画，换关在出舱时由 StageSession 执行
             if (_session == null)
