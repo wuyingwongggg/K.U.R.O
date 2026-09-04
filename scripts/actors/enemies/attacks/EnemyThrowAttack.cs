@@ -85,15 +85,27 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnActivePhase()
         {
-            // 如果由动画帧事件控制生成时机，交由 OnAnimationHit 逐帧触发
-            if (RequireAnimationHitTrigger && SpawnTiming == EffectSpawnTiming.OnAnimationHit)
+            // 如果存在动画帧时机（OnAnimationHit）的特效，交由 OnAnimationHit 逐帧触发
+            if (RequireAnimationHitTrigger && HasOnAnimationHitEffect())
             {
                 _animationHitReady = true;
                 return;
             }
 
-            // 生成 OnActive 时机的特效（entry 独立时机生效；未配置回退模板 SpawnTiming）
+            // 生成 OnActive 时机的特效（entry 独立时机生效；未配置回退 OnActive）
             SpawnEffectAtEnemy(EffectSpawnTiming.OnActive);
+        }
+
+        /// <summary>Effects 中是否存在显式 OnAnimationHit 时机的特效（模板级 SpawnTiming 已随 entry 迁移移除）。</summary>
+        private bool HasOnAnimationHitEffect()
+        {
+            foreach (var entry in Effects)
+            {
+                if (entry != null
+                    && entry.ResolveTiming(EffectSpawnTiming.OnActive) == EffectSpawnTiming.OnAnimationHit)
+                    return true;
+            }
+            return false;
         }
 
         protected override void OnAnimationHit()

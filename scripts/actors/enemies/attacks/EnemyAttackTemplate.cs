@@ -143,18 +143,6 @@ namespace Kuros.Actors.Enemies.Attacks
         [ExportCategory("Effect")]
         [Export] public Godot.Collections.Array<AttackEffectEntry> Effects { get; set; } = new();
 
-        /// <summary>阻塞特效组：场上（全局，含其他同类敌人）存在该组的存活特效实例时，本攻击不可被选中。
-        /// 通常填 Effects 中特效条目的 UniqueGroup（同组名）。空 = 不按特效阻塞。</summary>
-        [Export] public string BlockedByFxGroup { get; set; } = string.Empty;
-        [Export] public Vector2 EffectOffset = Vector2.Zero;
-        [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
-        /// <summary>
-        /// 特效生成锚点（Marker2D 必须放在 Node2D 派生节点下，如敌人根节点）。
-        /// 不为空时按数组顺序依次使用 Marker2D.GlobalPosition + EffectOffset，否则用敌人原点。
-        /// </summary>
-        [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
-        [Export] public bool FlipEffectWithFacing = false;
-
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
         protected Area2D? AttackArea { get; private set; }
@@ -844,7 +832,8 @@ namespace Kuros.Actors.Enemies.Attacks
             foreach (var entry in Effects)
             {
                 if (entry == null) continue;
-                if (timing.HasValue && entry.ResolveTiming(SpawnTiming) != timing.Value) continue;
+                // 模板级 SpawnTiming 已随 entry 迁移移除——entry 未显式配置时回退 OnActive
+                if (timing.HasValue && entry.ResolveTiming(EffectSpawnTiming.OnActive) != timing.Value) continue;
                 SpawnSingleEffect(entry.Scene, entry);
             }
         }
@@ -873,11 +862,12 @@ namespace Kuros.Actors.Enemies.Attacks
                         effect.AddToGroup(entry.UniqueGroup);
                 }
 
-                // per-entry 配置优先，未配置回退模板级字段。
+                // per-entry 配置（模板级字段已随 entry 迁移移除——未配置时用默认常量）。
                 // NodePath 先按模板自身解析，失败按敌人根兜底（兼容两种配置习惯）
-                Vector2 entryOffset = entry?.ResolveOffset(EffectOffset) ?? EffectOffset;
-                Marker2D[] entryMarkers = entry?.ResolveMarkers(this, Enemy, SpawnMarkers) ?? SpawnMarkers;
-                bool entryFlip = entry?.ResolveFlip(FlipEffectWithFacing) ?? FlipEffectWithFacing;
+                Vector2 entryOffset = entry?.ResolveOffset(Vector2.Zero) ?? Vector2.Zero;
+                Marker2D[] entryMarkers = entry?.ResolveMarkers(this, Enemy, System.Array.Empty<Marker2D>())
+                    ?? System.Array.Empty<Marker2D>();
+                bool entryFlip = entry?.ResolveFlip(false) ?? false;
 
                 // 跟随类特效（IFollowAnchor）：后续跟随 marker 的原始位置/未镜像 offset——
                 // 生成位置必须与跟随位置一致，否则首帧跳变（marker X≠0 且敌人朝左时）

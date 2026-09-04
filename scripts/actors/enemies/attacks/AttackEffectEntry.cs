@@ -12,22 +12,22 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 空 = 不标记。特效销毁后组引用自动失效（检测时用 IsInstanceValid 过滤）。</summary>
         [Export] public string UniqueGroup { get; set; } = string.Empty;
 
-        // ── 每特效独立生成配置（默认"继承"哨兵——未配置时回退模板级字段，旧场景零失效）──
+        // ── 每特效独立生成配置（默认"未配置"哨兵——解析时回退默认常量，模板级字段已随 entry 迁移移除）──
 
-        /// <summary>独立生成位置偏移。(NaN, NaN) = 继承模板 EffectOffset。</summary>
+        /// <summary>独立生成位置偏移。(NaN, NaN) = 未配置（回退 Vector2.Zero）。</summary>
         [Export] public Vector2 EffectOffset = new(float.NaN, float.NaN);
 
-        /// <summary>独立生成时机。Inherit = 继承模板 SpawnTiming。</summary>
+        /// <summary>独立生成时机。Inherit = 未配置（回退 OnActive）。</summary>
         [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.Inherit;
 
         /// <summary>独立生成锚点路径数组（NodePath 相对攻击模板节点解析，轮换；如 "../../../../Node2D/Marker2D"）。
-        /// 空数组 = 继承模板 SpawnMarkers。Resource 不能 export Node 成员（GD0107），故用 NodePath 存储。</summary>
+        /// 空数组 = 未配置（回退无锚点，用敌人原点）。Resource 不能 export Node 成员（GD0107），故用 NodePath 存储。</summary>
         [Export] public NodePath[] SpawnMarkerPaths = System.Array.Empty<NodePath>();
 
-        /// <summary>独立朝向翻转。Inherit = 继承模板 FlipEffectWithFacing。</summary>
+        /// <summary>独立朝向翻转。Inherit = 未配置（回退不翻转）。</summary>
         [Export] public FacingFlipMode FlipMode = FacingFlipMode.Inherit;
 
-        /// <summary>独立阻塞特效组。空 = 继承模板 BlockedByFxGroup。</summary>
+        /// <summary>独立阻塞特效组。空 = 未配置（不阻塞）。</summary>
         [Export] public string BlockedByFxGroup { get; set; } = string.Empty;
 
         /// <summary>特效生命周期绑定（EnemyAttackTemplate 用）：对应阶段结束时由模板销毁，替代固定 Duration

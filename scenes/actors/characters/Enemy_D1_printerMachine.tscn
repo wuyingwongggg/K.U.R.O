@@ -273,7 +273,6 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_k1kh3")])
-SpawnTiming = 2
 metadata/attack_weight = 60.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -288,12 +287,11 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_sm6sb")]([SubResource("Resource_v1b7h")])
-SpawnTiming = 2
 metadata/attack_weight = 40.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("16_hit")
-HitImpactDuration = 0.22999999999999998
+HitImpactDuration = 0.23
 RecoverDuration = 0.1
 
 [node name="Frozen" type="Node" parent="StateMachine"]

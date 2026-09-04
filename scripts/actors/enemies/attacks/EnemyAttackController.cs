@@ -343,17 +343,16 @@ namespace Kuros.Actors.Enemies.Attacks
             return !IsFxBlockedByOwnEffects(entry.Template);
         }
 
-        /// <summary>特效阻塞判定（对所有攻击自动生效）：每个 entry 的显式 BlockedByFxGroup 优先
-        /// （未配置回退模板 BlockedByFxGroup）；另自动收集 entry 的 UniqueGroup——任何一组有存活实例即阻塞。
-        /// Effects 为空时兜底只查模板组。</summary>
+        /// <summary>特效阻塞判定（对所有攻击自动生效）：每个 entry 的显式 BlockedByFxGroup 生效
+        /// （模板级字段已随 entry 迁移移除）；另自动收集 entry 的 UniqueGroup——任何一组有存活实例即阻塞。</summary>
         private bool IsFxBlockedByOwnEffects(EnemyAttackTemplate template)
         {
             foreach (var entry in template.Effects)
             {
                 if (entry == null) continue;
 
-                // entry 显式阻塞组；未配置回退模板 BlockedByFxGroup
-                string group = entry.ResolveBlockedGroup(template.BlockedByFxGroup);
+                // entry 显式阻塞组
+                string group = entry.ResolveBlockedGroup(string.Empty);
                 if (!string.IsNullOrEmpty(group) && IsFxGroupActive(group))
                 {
                     return true;
@@ -364,12 +363,6 @@ namespace Kuros.Actors.Enemies.Attacks
                 {
                     return true;
                 }
-            }
-
-            // 兜底：无 entry（或全部未配置）时仍尊重模板级显式组
-            if (!string.IsNullOrEmpty(template.BlockedByFxGroup) && IsFxGroupActive(template.BlockedByFxGroup))
-            {
-                return true;
             }
 
             return false;

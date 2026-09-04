@@ -54,6 +54,8 @@ height = 300.0
 script = ExtResource("14_4nsh5")
 Scene = ExtResource("17_cdf4i")
 EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
 "Damage": 10,
@@ -239,7 +241,7 @@ script = ExtResource("11_cdf4i")
 script = ExtResource("12_oa3vu")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController" node_paths=PackedStringArray("SpawnMarkers")]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("16_kyb42")
 AttackName = "SimpleMeleeAttack"
 WarmupDuration = 0.5
@@ -252,13 +254,12 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("14_4nsh5")]([SubResource("Resource_v1b7h")])
-SpawnMarkers = [NodePath("../../../../Node2D/Marker2D")]
 metadata/attack_weight = 100.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("18_n1d74")
 HitImpactDuration = 0.1
-RecoverDuration = 0.22999999999999998
+RecoverDuration = 0.23
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("19_1cqrr")
