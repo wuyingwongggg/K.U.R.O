@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://bhwg4bci3jcge"]
+[gd_scene load_steps=28 format=3 uid="uid://bhwg4bci3jcge"]
 
 [ext_resource type="Script" uid="uid://b6ex3i14dwbtx" path="res://scripts/fx/ParticleEffectWarmer.cs" id="1_warmer"]
 [ext_resource type="PackedScene" uid="uid://3cwbpbcapw1o" path="res://resources/effects/GreenHealPuff.tscn" id="2_puff"]
@@ -25,7 +25,9 @@
 [ext_resource type="PackedScene" uid="uid://cmxuejgw41osm" path="res://scenes/actors/etc/BoomB.tscn" id="21_x8ghc"]
 [ext_resource type="PackedScene" uid="uid://dilq7kawig2v" path="res://scenes/actors/etc/BoomC.tscn" id="22_ludjs"]
 [ext_resource type="PackedScene" uid="uid://cygdm8ytn5cv5" path="res://scenes/actors/etc/GravityGrenadeAnimation.tscn" id="22_rdkt6"]
+[ext_resource type="PackedScene" uid="uid://c4ecb44j734sb" path="res://scenes/actors/etc/ActorSpawnEffect.tscn" id="26_ludjs"]
+[ext_resource type="PackedScene" path="res://scenes/actors/etc/enemy_spawn_front.tscn" id="27_poxfn"]
 
 [node name="ParticleEffectWarmer" type="Node"]
 script = ExtResource("1_warmer")
-ScenesToWarm = Array[PackedScene]([ExtResource("2_puff"), ExtResource("3_somke"), ExtResource("4_smoke"), ExtResource("6_7iegi"), ExtResource("7_ly0xq"), ExtResource("5_runsmoke"), ExtResource("8_d5d5k"), ExtResource("9_n6oli"), ExtResource("10_iq6jr"), ExtResource("11_rdkt6"), ExtResource("12_2pb0x"), ExtResource("13_bbpto"), ExtResource("14_x8ghc"), ExtResource("15_ludjs"), ExtResource("16_poxfn"), ExtResource("17_s0n8t"), ExtResource("18_77lnh"), ExtResource("19_s20dm"), ExtResource("20_2pb0x"), ExtResource("21_x8ghc"), ExtResource("22_ludjs"), ExtResource("20_n6oli"), ExtResource("21_iq6jr"), ExtResource("22_rdkt6")])
+ScenesToWarm = Array[PackedScene]([ExtResource("2_puff"), ExtResource("3_somke"), ExtResource("4_smoke"), ExtResource("6_7iegi"), ExtResource("7_ly0xq"), ExtResource("5_runsmoke"), ExtResource("8_d5d5k"), ExtResource("9_n6oli"), ExtResource("10_iq6jr"), ExtResource("11_rdkt6"), ExtResource("12_2pb0x"), ExtResource("13_bbpto"), ExtResource("14_x8ghc"), ExtResource("15_ludjs"), ExtResource("16_poxfn"), ExtResource("17_s0n8t"), ExtResource("18_77lnh"), ExtResource("19_s20dm"), ExtResource("20_2pb0x"), ExtResource("21_x8ghc"), ExtResource("22_ludjs"), ExtResource("20_n6oli"), ExtResource("21_iq6jr"), ExtResource("22_rdkt6"), ExtResource("26_ludjs"), ExtResource("27_poxfn")])

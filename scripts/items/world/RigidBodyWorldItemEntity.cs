@@ -45,7 +45,10 @@ namespace Kuros.Items.World
 		[ExportGroup("Combat")]
 		[Export] public float ThrowDamage {get; set;} = 4f;
 		[Export] public float MinDamageVelocity { get; set; } = 300f; // 造成伤害的最小速度阈值
-        [Export] public float KnockbackForce { get; set; } = 200f; // 击退力度
+			/// <summary>击退位移距离（像素）：攻击方控制——受击方 Hit 在 KnockbackDuration 内匀减速滑完（双时间轴 K 轴）。</summary>
+			[Export(PropertyHint.Range, "0,1000,5")] public float KnockbackDistance { get; set; } = 20f;
+			/// <summary>击退位移时长（秒）：攻击方控制，与受击方 HitImpactDuration 解耦。</summary>
+			[Export(PropertyHint.Range, "0.05,1,0.01")] public float KnockbackDuration { get; set; } = 0.2f;
 		[Export] public bool StopOnHit { get; set; } = true; // 命中敌人后是否停止（false = 穿过敌人）
 
 		[ExportGroup("Physics Mode")]
@@ -1567,10 +1570,10 @@ namespace Kuros.Items.World
 		}
 
 		/// <summary>统一击退入口（与命中结算共用）：方向优先取目标相对投掷物，退化为飞行方向。
-		/// 走 GameActor 统一 API（旧二参——受击方 Hit 状态按自身时间轴换算位移），禁止直接改 Velocity。</summary>
+		/// 走 GameActor 位移驱动 API（新三参——攻击方控制距离+时长，与伤害特效击退统一），禁止直接改 Velocity。</summary>
 		private void ApplyKnockback(GameActor target, Vector2 impactVelocity)
 		{
-			if (KnockbackForce <= 0) return;
+			if (KnockbackDistance <= 0f) return;
 
 			var knockbackDirection = (target.GlobalPosition - GlobalPosition).Normalized();
 			if (knockbackDirection.LengthSquared() < 0.01f)
@@ -1578,7 +1581,7 @@ namespace Kuros.Items.World
 				knockbackDirection = impactVelocity.Normalized();
 			}
 
-			target.ApplyKnockback(knockbackDirection, KnockbackForce);
+			target.ApplyKnockbackDisplacement(knockbackDirection, KnockbackDistance, KnockbackDuration);
 		}
 
 		/// <summary>
