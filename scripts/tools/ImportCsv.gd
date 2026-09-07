@@ -105,6 +105,7 @@ func import_items_from_csv() -> void:
 		_s_float(res, "ThrowParabolicLandingYOffset", row, hm, "ThrowParabolicLandingYOffset")
 		_s_float(res, "ThrowWeaponCooldown", row, hm, "ThrowWeaponCooldown")
 		_s_float(res, "UnpickedLifetime", row, hm, "UnpickedLifetime")
+		_s_int(res,   "ThrowTier", row, hm, "ThrowTier")
 		# attack_power 存于 AttributeEntries 子资源
 		var atk = _col(row, hm, "attack_power")
 		if atk != "": _set_attribute(res, "attack_power", float(atk))

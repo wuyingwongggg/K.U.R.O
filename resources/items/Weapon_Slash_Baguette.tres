@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=7 format=3 uid="uid://b7cpmnpvb42rf"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=7 format=3 uid="uid://c2mb64mrv6u2s"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_kyqlv"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_kyqlv"]
 [ext_resource type="Texture2D" uid="uid://xcu3hnecxemh" path="res://assets/weapons/法棍.png" id="3_kyqlv"]
-[ext_resource type="Resource" uid="uid://eccmh813ifss" path="res://resources/items/skills/WeaponSkill_Slash_Baguette.tres" id="4_kyqlv"]
+[ext_resource type="Resource" uid="uid://cn5dnmenba4hg" path="res://resources/items/skills/WeaponSkill_Slash_Baguette.tres" id="4_kyqlv"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="5_eode8"]
 
 [sub_resource type="Resource" id="Resource_ax0uh"]

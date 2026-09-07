@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://3jmtsbw5xh6p"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://cotwvw5qsl8qy"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_cvpdn"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_hbpm6"]
@@ -11,7 +11,6 @@
 [sub_resource type="Resource" id="Resource_hvqgl"]
 script = ExtResource("1_cvpdn")
 AttributeId = "attack_power"
-Value = 20.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_6f3qv"]
@@ -47,8 +46,9 @@ AttributeEntries = Array[ExtResource("1_cvpdn")]([SubResource("Resource_hvqgl")]
 EffectEntries = Array[ExtResource("2_hbpm6")]([SubResource("Resource_6f3qv"), SubResource("Resource_mqy4i"), SubResource("Resource_1qp51")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.4
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 700.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 1
 WorldScenePath = "uid://diism2n4xtftt"

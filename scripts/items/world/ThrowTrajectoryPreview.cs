@@ -55,8 +55,9 @@ namespace Kuros.Items.World
         private SamplePlayer? _player;
         private PlayerItemInteractionComponent? _interaction;
 
-        // 武器参数缓存：基于 ItemDefinition 引用
+        // 武器参数缓存：基于 ItemDefinition 引用 + 构筑修饰（引用或修饰变化均失效）
         private ItemDefinition? _cachedItem = null;
+        private ThrowableModifiers _cachedMods = ThrowableModifiers.None;
         private WeaponThrowParams _cachedParams = new();
 
         // 当前帧是否应渲染
@@ -195,20 +196,25 @@ namespace Kuros.Items.World
 
         private void EnsureParamsCached(ItemDefinition item)
         {
-            // 如果已缓存当前选中的武器，直接返回（使用引用相等判断）
-            if (ReferenceEquals(_cachedItem, item) && _cachedItem != null)
+            // 修饰取自构筑提供方(无 → None)；缓存键 = (item, mods)，任一变即失效重算
+            ThrowableModifiers mods = _player is IThrowableModifierProvider provider
+                ? provider.GetThrowableModifiers()
+                : ThrowableModifiers.None;
+
+            if (ReferenceEquals(_cachedItem, item) && _cachedItem != null && _cachedMods == mods)
             {
                 return;
             }
 
             _cachedItem = item;
+            _cachedMods = mods;
 
             _cachedParams = new WeaponThrowParams
             {
                 PeakHeight         = item.ThrowParabolicPeakHeight,
                 LandingYOffset     = item.ThrowParabolicLandingYOffset,
-                Duration           = item.ThrowParabolicDuration,
-                HorizontalDistance = item.ThrowHorizontalDistance,
+                Duration           = item.GetEffectiveThrowDuration(mods),
+                HorizontalDistance = item.GetEffectiveThrowDistance(mods),
                 ThrowStartOffset   = item.ThrowStartOffset,
                 ThrowOffset        = _interaction?.ThrowOffset ?? new Vector2(48, -10),
                 ThrowImpulse       = _interaction?.ThrowImpulse ?? 800f,

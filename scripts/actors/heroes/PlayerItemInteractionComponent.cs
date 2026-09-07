@@ -363,6 +363,10 @@ namespace Kuros.Actors.Heroes
             {
                 if (entity is RigidBodyWorldItemEntity rigidEntity)
                 {
+                    // 构筑修饰：投掷者实现 IThrowableModifierProvider 时携带其构筑对投掷参数的修饰
+                    if (_actor is IThrowableModifierProvider modProvider)
+                        rigidEntity.Modifiers = modProvider.GetThrowableModifiers();
+
                     rigidEntity.IsDisposableCopy = isThrowWeapon;
                     rigidEntity.ThrowHoldFrame = PendingThrowFrame;
                     PendingThrowFrame = -1;

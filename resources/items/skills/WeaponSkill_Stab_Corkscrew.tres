@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=9 format=3 uid="uid://vo7baf5ntw2i"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=9 format=3 uid="uid://lat1vftxgu7e"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_dfqri"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_tjf6w"]
