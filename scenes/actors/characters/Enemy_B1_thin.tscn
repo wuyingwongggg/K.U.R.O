@@ -11,7 +11,7 @@
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_5i0uy"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="5"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_8xfgw"]
-[ext_resource type="Resource" uid="uid://d13rra8f1j6ep" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_33td2"]
+[ext_resource type="Resource" uid="uid://kvebs5xs5mph" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_33td2"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="6"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="7"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="8_iwwej"]
@@ -41,11 +41,8 @@
 
 [sub_resource type="Resource" id="Resource_dknnn"]
 script = ExtResource("2_lfvdk")
-MinComfortDistance = 1000.0
-BurstSpeedMultiplier = 2.5
-BurstDuration = 0.5
-BurstCooldown = 2.0
-BurstDamageImmuneDuration = 0.5
+BurstSpeedMultiplier = 3.0
+BurstDamageImmuneDuration = 0.3
 metadata/_custom_type_script = "uid://bs5lhgllhwdlg"
 
 [sub_resource type="Resource" id="Resource_ie6to"]
@@ -209,7 +206,7 @@ skeleton_data_res = ExtResource("20_5i0uy")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 2.0
+preview_time = 0.9
 script = ExtResource("21_8xfgw")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -302,7 +299,7 @@ script = ExtResource("5")
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("23_1hw8y")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-MinInterAttackDelay = 0.5
+MinInterAttackDelay = 1.0
 QueuedAttackTimeout = 1.5
 
 [node name="KickAttack" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -369,10 +366,8 @@ script = ExtResource("18")
 script = ExtResource("19_h8apo")
 DashDistance = 600.0
 DashDuration = 0.6000000000000001
-AnimationName = "animations/Skill3"
-UsesBeforeCooldown = 1
 CooldownAfterUses = 3.0
-ShortCooldownAfterDash = 0.1
+ShortCooldownAfterDash = 1.0
 
 [node name="EnemySpawn" type="Node" parent="StateMachine"]
 script = ExtResource("20_ie6to")

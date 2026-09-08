@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://co8kw74hga37i"]
+
+[ext_resource type="Script" uid="uid://cdq3g05gsp3ak" path="res://scripts/builds/normal/EmptyHandPowerEffect.cs" id="1"]
+
+[node name="EmptyHandPowerEffect" type="Node"]
+script = ExtResource("1")
+TierValues = PackedFloat32Array(30, 60)
+EffectId = "12cb243c-7ad1-4fb4-9dd3-d48858546f36"
+Description = "背包为空时增加徒手攻击的伤害"

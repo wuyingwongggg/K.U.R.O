@@ -309,6 +309,14 @@ namespace Kuros.Systems.Stage
             }
             _currentConfig = config;
             GameLogger.Info(nameof(StageSession), $"前往：{config.StageId}（Floor {config.Floor}）");
+
+            // 换关清场（Regenerate 重排前）:整场白名单清理 World 直属残留——覆盖所有直连生成
+            // 的残留物(place 家具/掉落/OnThrowDestroy 效果物 HealItemA/破坏产物/敌人死亡家具体),
+            // 玩家资产不回收,语义 = 关卡重置即清场。房间由 Regenerate 自行释放。
+            _generator!.ClearWorldRemnants();
+            // 兜底:组追踪清理(覆盖挂在非 World 容器的动态道具)
+            Kuros.Items.World.WorldItemSpawner.ClearStageWorldItems(this);
+
             _generator!.Regenerate(config, relocateActors: true, landingPosition: landingPosition);
         }
 

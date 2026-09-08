@@ -5,8 +5,15 @@ namespace Kuros.Actors.Enemies.States
 	public partial class EnemyCloseInState : EnemyState
 	{
 		[ExportCategory("Obstacle Avoidance")]
+		/// <summary>避障前瞻射线长度(px):突进前沿候选方向发射射线探测此距离内是否有障碍
+		/// (墙/家具等),通畅才走该方向;被挡则依次尝试 ±45°/±90°/180° 找可通行方向。</summary>
 		[Export(PropertyHint.Range, "10,500,10")]
-		public float RaycastDistance = 100f;
+		public float RaycastDistance = 40f;
+
+		/// <summary>到达目标范围(px)即收招退出 CloseIn 并进入 burst 冷却——不再滞留目标点,
+		/// 贴点滞留期的朝向/翻转/抖动问题从根上消除;接近受阻时仍由 BurstDuration 超时兜底退出。</summary>
+		[Export(PropertyHint.Range, "8,200,4")]
+		public float ArriveRangeX = 40f;
 
 		private EnemyBehaviorConfig? _config;
 		private float _timer;
@@ -30,6 +37,7 @@ namespace Kuros.Actors.Enemies.States
 			Enemy.RemoveMeta(MovementSuppressMeta);
 			Enemy.Velocity = Vector2.Zero;
 			Enemy.CloseInCooldownRemaining = _config?.BurstCooldown ?? 3f;
+			// 导航陈旧路径问题已随"CloseIn 期间 chase 保持在线"重构根除,无需再重置 NavAgent
 		}
 
 		public override void PhysicsUpdate(double delta)
@@ -39,7 +47,7 @@ namespace Kuros.Actors.Enemies.States
 
 			if (Player == null) return;
 
-			// 计时结束退出
+			// 计时结束退出(超时兜底:受阻/绕路到不了目标)
 			_timer -= (float)delta;
 			if (_timer <= 0f)
 			{
@@ -47,9 +55,23 @@ namespace Kuros.Actors.Enemies.States
 				return;
 			}
 
-			// 冲向玩家侧方偏移点，避免与玩家重叠
 			Vector2 target = Enemy.GetApproachTarget();
 			Vector2 toTarget = target - Enemy.GlobalPosition;
+
+			// 到达目标范围即收招:ChangeState(Idle) 的 Exit 会设置 burst 冷却(CloseInCooldownRemaining),
+			// 冷却期内 Idle/Walk 不会再次触发 CloseIn——先退出站位,不留滞目标点
+			if (toTarget.Length() <= ArriveRangeX)
+			{
+				ChangeState("Idle");
+				return;
+			}
+
+			// 有移动组件(chase/导航):移动与朝向全由 EnemyChaseMovement 驱动——
+			// 本状态只保留 __close_in_active 加速标记与上面的到达/超时判定(CloseIn = 加速贴近)
+			if (Enemy.HasMeta("__movement_component_registered"))
+				return;
+
+			// 无移动组件回退:原自移逻辑(直线朝目标 + 自研避障)
 			if (Mathf.Abs(toTarget.X) > 0.1f)
 				Enemy.FlipFacing(toTarget.X > 0);
 
@@ -103,6 +125,16 @@ namespace Kuros.Actors.Enemies.States
 			);
 
 			query.CollisionMask = Enemy.CollisionMask;
+			// 排除玩家(与自身)身体:贴脸突进时玩家不是障碍——否则主方向被打中判定不通,
+			// 替代方向选成 180°(背向玩家),敌人会整段 BurstDuration 朝远离玩家方向冲刺
+			var exclude = new Godot.Collections.Array<Rid>();
+			var player = Enemy.PlayerTarget;
+			if (player != null && GodotObject.IsInstanceValid(player))
+				exclude.Add(player.GetRid());
+			if (Enemy.GetRid() is Rid selfRid && selfRid.IsValid)
+				exclude.Add(selfRid);
+			if (exclude.Count > 0)
+				query.Exclude = exclude;
 
 			var result = Enemy.GetWorld2D().DirectSpaceState.IntersectRay(query);
 			return result.Count == 0;

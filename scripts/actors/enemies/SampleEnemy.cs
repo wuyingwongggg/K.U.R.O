@@ -170,15 +170,60 @@ public partial class SampleEnemy : GameActor
 		return distanceToPlayer <= AttackRangeCheckDistance;
 	}
 
+	/// <summary>自身受击判定区（玩家攻击命中通道同一节点；懒解析缓存）。</summary>
+	private Area2D? _selfHitArea;
+
+	public Area2D? GetSelfHitArea()
+	{
+		if (_selfHitArea != null && GodotObject.IsInstanceValid(_selfHitArea))
+			return _selfHitArea;
+
+		_selfHitArea = GetNodeOrNull<Area2D>("Sprite2D/HitArea")
+			?? GetNodeOrNull<Area2D>("Sprite2D/HitAreaMover/HitArea");
+		_selfHitArea ??= FindChild("HitArea", recursive: true, owned: false) as Area2D;
+		return _selfHitArea;
+	}
+
+	/// <summary>
+	/// 本敌人体是否位于玩家当前攻击判定区（解析自当前武器的 AttackArea）几何内——
+	/// 与玩家命中判定同一通道（OverlapsArea）,矩形/胶囊/圆/旋转均由物理引擎处理,
+	/// 不受固定距离(AttackRangeCheckDistance)误差影响。玩家无法解析攻击区时返回 false。
+	/// </summary>
+	public bool IsInsidePlayerAttackArea()
+	{
+		RefreshPlayerReference();
+		if (_player == null) return false;
+
+		var attackArea = _player.ResolveAttackAreaForHitDetection();
+		var myHitArea = GetSelfHitArea();
+		if (attackArea == null || myHitArea == null) return false;
+
+		return attackArea.OverlapsArea(myHitArea);
+	}
+
+	/// <summary>贴脸重叠时锁定的目标边(GetApproachTarget 用):重叠期保持同侧,防玩家微动引发逐帧换边/翻转抖动。
+	/// 离开重叠区(|dx|≥1)时按相对位置重算并刷新锁。</summary>
+	private float _approachSideSign;
+
 	public Vector2 GetApproachTarget()
 	{
 		RefreshPlayerReference();
 		if (_player == null) return GlobalPosition;
 
 		float dx = GlobalPosition.X - _player.GlobalPosition.X;
-		float sideSign = Mathf.Abs(dx) < 1f
-			? (FacingRight ? 1f : -1f)
-			: (dx > 0 ? 1f : -1f);
+		float sideSign;
+		if (Mathf.Abs(dx) >= 1f)
+		{
+			sideSign = dx > 0 ? 1f : -1f;
+			_approachSideSign = sideSign; // 非重叠:直接由相对位置决定并刷新锁定边
+		}
+		else
+		{
+			// 水平重叠:沿用上次锁定边(首次无锁定时按当前朝向侧)
+			if (_approachSideSign == 0f)
+				_approachSideSign = FacingRight ? 1f : -1f;
+			sideSign = _approachSideSign;
+		}
 
 		float offset = GetHitAreaHalfWidth();
 		return _player.GlobalPosition + new Vector2(offset * sideSign, 0);

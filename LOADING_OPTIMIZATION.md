@@ -21,6 +21,11 @@ Stage_hotel.tscn（壳常驻：玩家/相机/管理器不重建）
 - ⚠️ 新卡顿点 = **StageConfig 首次使用的房间池资源首次加载**：`Regenerate` 的 Instantiate 无后台加载掩护（首关 `_Ready`、电梯出舱切换瞬间）——即原 2.2 缺口的同源问题，预加载对象从"整关场景"变为"config 的房间池"
 - 旧 Stage_1~4 + ChangeScene 链仍保留（无 StageSession 场景回退），2.2 机制对其仍适用
 
+**换关清场（ApplyStage 内,Regenerate 前）**：
+- `StageGeneratorManager.ClearWorldRemnants()`：白名单整场清理 World 直属残留（房间/玩家/相机/P2 排除,其余 QueueFree）——覆盖所有**直连生成、未入组**的残留物（place 家具、OnThrowDestroy 效果物 HealItemA、家具破坏产物、敌人死亡家具体）,不依赖逐类追踪；`WorldItemSpawner.ClearStageWorldItems()`（组 `stage_world_items`）作全树兜底
+- 玩家资产不回收（语义 = 关卡重置即清场）;全部为同步 QueueFree（帧末删除,不跨帧 await）——**不破坏 §3"生成是原子操作"原则**（相机/过场只依赖 Regenerate 后的就位状态）
+- 注意：将来向 World 根新增持久对象须加入 `ClearWorldRemnants` 白名单
+
 ---
 
 ## 1. 卡顿根因

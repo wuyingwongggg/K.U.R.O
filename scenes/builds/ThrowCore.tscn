@@ -6,7 +6,8 @@
 [node name="ThrowCore" type="Node"]
 script = ExtResource("1")
 FurnitureScene = ExtResource("2_cd3g7")
-SpawnCooldown = 10.0
+MaxCharges = 8
+PlacementMargin = 200.0
 EffectId = "02f4ccc9-6e5d-4381-ae3d-dc7bcbf90cac"
 Description = "投掷：进入投掷状态时显示指示器（MainCharacter.HitboxEditorPreview），按下核心技能键在指示器位置生成一个一次性家具。"
 Duration = 0.0

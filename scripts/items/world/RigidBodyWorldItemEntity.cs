@@ -211,18 +211,24 @@ namespace Kuros.Items.World
 			? Mathf.Clamp((float)(_throwCooldownTimer / ThrowWeaponCooldown), 0f, 1f)
 			: 0f;
 
+		/// <summary>单次飞行参数重载（&gt;0 时替代物品定义的投掷距离/时长）——效果卡等单次投掷用,普通投掷为 0。</summary>
+		public float OverrideThrowDistance { get; set; }
+		public float OverrideThrowDuration { get; set; }
+
 		/// <summary>
 		/// 从 ItemDefinition 读取投掷参数（档位解析见 ItemDefinition.GetEffectiveThrow*，随 Modifiers 修饰），
-		/// ItemDefinition 为 null 时回退到内置默认值。
+		/// ItemDefinition 为 null 时回退到内置默认值。OverrideThrow* &gt;0 时优先（单次重载）。
 		/// </summary>
 		private double GetEffectiveThrowParabolicDuration()
-			=> ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDuration(Modifiers) : 0.6;
+			=> OverrideThrowDuration > 0f ? OverrideThrowDuration
+				: (ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDuration(Modifiers) : 0.6);
 
 		private float GetEffectiveThrowParabolicPeakHeight()
 			=> ItemDefinition?.ThrowParabolicPeakHeight is > 0 ? ItemDefinition.ThrowParabolicPeakHeight : 200f;
 
 		private float GetEffectiveThrowHorizontalDistance()
-			=> ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDistance(Modifiers) : 600f;
+			=> OverrideThrowDistance > 0f ? OverrideThrowDistance
+				: (ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDistance(Modifiers) : 600f);
 
 		private float GetEffectiveThrowParabolicLandingYOffset()
 			=> ItemDefinition?.ThrowParabolicLandingYOffset ?? 100f;

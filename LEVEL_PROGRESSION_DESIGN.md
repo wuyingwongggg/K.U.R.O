@@ -104,9 +104,17 @@ Idle(舱内 interact)
  → StartClosing：门关(close)
  → Loading：骑行动画（会话模式不 LoadThreadedRequest 场景）；_rideTimer ≥ MinRideDuration → Arrived
  → open（门开）→ 玩家走出 ExitArea
- → LeaveElevator：_session.CommitPending() → Regenerate(选中 config) → 旧房间卸载+新关生成+玩家落新关起点+相机 Snap
+ → LeaveElevator：_session.CommitPending()
+    → ApplyStage：换关清场（ClearWorldRemnants 白名单整场清理 + stage_world_items 组兜底）
+    → Regenerate(选中 config) → 旧房间卸载+新关生成+玩家落新关起点+相机 Snap
 ```
 无 StageSession 的场景（Stage_1~4）：原 ChangeSceneToPacked 流程不变。
+
+**换关清场（✅ 已实施）**：旧关残留物挂**全局常驻 World**（不是房间节点），房间级卸载不覆盖它们——
+- `StageGeneratorManager.ClearWorldRemnants()`：World 直属子节点白名单清场（排除 房间/玩家/相机/P2，其余 QueueFree）——覆盖**直连生成、未入组**的残留（place 家具、OnThrowDestroy 效果物 HealItemA、家具被打碎产物、敌人死亡生成的家具体、投掷副本等），不依赖逐类入组追踪
+- `WorldItemSpawner.ClearStageWorldItems()`（组 `stage_world_items`）作全树兜底
+- 玩家资产不回收（语义 = 关卡重置即清场）;同步 QueueFree（帧末删除，不跨帧 await），不破坏生成原子性
+- 注意：将来向 World 根新增持久对象（雕像/装饰/传送点）须加入 `ClearWorldRemnants` 白名单
 
 ---
 
@@ -128,6 +136,7 @@ Idle(舱内 interact)
 | ElevatorController 会话模式（Selecting/数字键/出舱 Commit/骑行免加载） | ✅ |
 | 关卡配置资源（stage_2/3a/b/c/4a/b/c/home .tres，真实楼层） | ✅（3x/4x 缺中间房间池，待填充） |
 | 壳场景 Stage_hotel.tscn | ✅ |
+| 换关清场（ClearWorldRemnants 白名单 + 组兜底，ApplyStage 内） | ✅ |
 | 方向出口（UpFloorTarget/DownFloorTarget）+ 选项排除自身 | ✅ |
 | 彩蛋三态（默认关 → 激活 → 进入消费） | ✅（内存态；持久化 ❌） |
 | 隐藏入口场景触发器组件 | 🟡 API 就绪，组件待建 |

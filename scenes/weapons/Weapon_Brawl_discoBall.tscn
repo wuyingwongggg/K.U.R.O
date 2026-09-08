@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://dmqi6co8gtn0l"]
 
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_odxds"]
-[ext_resource type="Resource" uid="uid://bckpievppp7bh" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="2_odxds"]
+[ext_resource type="Resource" uid="uid://dyyaj1hkexdcv" path="res://resources/items/Weapon_Brawl_DiscoBall.tres" id="2_odxds"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_3jtwq"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_2aeow"]
 [ext_resource type="Texture2D" uid="uid://xnx60hboixpd" path="res://assets/weapons/迪斯科闪光球.png" id="5_v2efu"]

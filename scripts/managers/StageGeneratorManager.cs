@@ -94,6 +94,29 @@ namespace Kuros.Managers
             _spawnedRooms.Clear();
         }
 
+        /// <summary>
+        /// 换关整场清残留（ApplyStage 在 Regenerate 前调用）:World 直属子节点按白名单清场——
+        /// 排除 房间(由 Regenerate 释放)、玩家/角色/相机(持久),其余一律 QueueFree。
+        /// 覆盖所有直连生成、未入 stage_world_items 组的残留(OnThrowDestroy 效果物 HealItemA、
+        /// 家具被打碎产物、敌人死亡生成的家具体、投掷副本等),不依赖逐类追踪。
+        /// 注意:将来若往 World 添加其它持久物,须在此加入白名单。
+        /// </summary>
+        public void ClearWorldRemnants()
+        {
+            var world = GetNodeOrNull<Node>(WorldNodePath);
+            if (world == null) return;
+
+            foreach (var child in world.GetChildren())
+            {
+                if (_spawnedRooms.Contains(child)) continue;
+                if (child is Kuros.Actors.Heroes.MainCharacter) continue;
+                if (child is Kuros.Core.GameActor) continue;
+                if (child is Camera2D) continue;
+                if (child.Name == "P2") continue; // 第二角色(持久场景实例)
+                child.QueueFree();
+            }
+        }
+
         private async void GenerateStage()
         {
             var world = GetNodeOrNull<Node2D>(WorldNodePath);

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://ci3nt8oo3xha3"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://co8kw74hga37i" path="res://scenes/builds/normal/EmptyHandPowerEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://wg7p3cycrhbc" path="res://assets/BuildIcon/Normal_C_003_空载增幅.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_C003"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([30.0, 60.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildNormal_C_003"
+DisplayName = "空载增幅"
+Description = "背包中没有任何武器时,基础伤害提升{0}%/{1}%"
+BuildClass = "Normal"
+MaxStacks = 2
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_C003")])

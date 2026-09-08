@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://puxarrbsul2t"]
+
+[ext_resource type="Script" uid="uid://uy5ugmm5tk5l" path="res://scripts/builds/normal/BackpackExpandEffect.cs" id="1"]
+
+[node name="BackpackExpandEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "2c8207de-8b3f-4a8f-9847-1823ee8159ef"
+Description = "增加背包栏数量"

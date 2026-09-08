@@ -77,8 +77,8 @@ size = Vector2(300, 1000)
 size = Vector2(300, 600)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2405.1875, 1216, -2706.8828, 1216, -2691.2969, -874, 2405.8828, -874)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+vertices = PackedVector2Array(1914, 978, 754, 978, 660, 910, 660, 200, 2405.7734, -544, 1914, 1438, 2405.0781, 1546, -2709.3516, 1546, 754, 1438, -597, 1197, 50, 910, -1068, 1421, -597, 787, 50, 200, -2031, 37, -2698.1016, 37, -2693.7578, -544, -1107, 787, -1107, 1161, -1528, 1161, -2031, 463, -1068, 1197, -2701.2734, 463, -1528, 1421)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(5, 6, 7, 8), PackedInt32Array(9, 10, 2, 1, 8, 11), PackedInt32Array(10, 9, 12, 13), PackedInt32Array(4, 6, 5, 0), PackedInt32Array(14, 15, 16, 4), PackedInt32Array(17, 18, 19, 20, 14), PackedInt32Array(11, 21, 9), PackedInt32Array(7, 22, 20, 19, 23), PackedInt32Array(14, 4, 3, 13), PackedInt32Array(14, 13, 12, 17), PackedInt32Array(8, 7, 23, 11)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2769, -1183, 2486, -1224, 2485, 1762, -2791, 1767)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -175,7 +175,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
@@ -195,7 +194,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 SpawnDebugColor = Color(1, 0.8509804, 0.2509804, 0)
 DebugLineWidth = 8.0
 
@@ -276,7 +274,6 @@ position = Vector2(-2880, 1190)
 shape = SubResource("RectangleShape2D_jy3vb")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-visible = false
 position = Vector2(122, -196)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 

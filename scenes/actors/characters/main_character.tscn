@@ -37,7 +37,7 @@
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="21_utqjm"]
 [ext_resource type="Script" uid="uid://c060w6pctgir3" path="res://scripts/actors/heroes/attacks/AttackHitboxDebugDrawer.cs" id="22_hitbox_debug"]
 [ext_resource type="PackedScene" uid="uid://ch7507iroiljg" path="res://scenes/ui/hud/EscapeHUD.tscn" id="24_tdm7a"]
-[ext_resource type="Resource" uid="uid://dc7u7akvpcjtn" path="res://resources/items/skills/WeaponSkill_Stab_Umbrella.tres" id="26_hitbox_preview_skill"]
+[ext_resource type="Resource" uid="uid://cep7en8fj3kpr" path="res://resources/items/skills/WeaponSkill_Stab_Umbrella.tres" id="26_hitbox_preview_skill"]
 [ext_resource type="Script" uid="uid://0jtxqm11tc2f" path="res://scripts/items/world/ThrowTrajectoryPreview.cs" id="43_throwpreview"]
 [ext_resource type="Script" uid="uid://dc7rmaqqyg4vn" path="res://scripts/actors/heroes/states/PlayerDashState.cs" id="44_dashstate"]
 [ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="45_afterimage"]

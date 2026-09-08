@@ -1170,6 +1170,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public TargetableFactions CurrentAttackTargetableFactions { get; set; } =
 		TargetableFactions.Enemy | TargetableFactions.WorldItem;
 
+	/// <summary>基础伤害倍率（构筑效果如"空载增幅"写入,条件达成时 ≠1;两处 PerformAttackCheck 共用）。</summary>
+	public float BasicAttackMultiplier { get; set; } = 1f;
+
 	public void PerformAttackCheck()
 	{
 		AttackTimer = AttackCooldown;
@@ -1185,7 +1188,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Source: {areaSource}, Node: {activeAttackArea.GetPath()}");
 		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Detail: {DescribeAttackArea(activeAttackArea)}");
 
-		int hitCount = ApplyDamageWithArea(AttackDamage, (target, isFallback) =>
+		int hitCount = ApplyDamageWithArea(AttackDamage * BasicAttackMultiplier, (target, isFallback) =>
 		{
 			// string suffix = isFallback ? " (fallback)" : string.Empty;
 			// GameLogger.Info(nameof(SamplePlayer), $"Hit enemy{suffix}: {target.Name}");
