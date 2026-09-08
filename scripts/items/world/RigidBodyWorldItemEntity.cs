@@ -21,6 +21,10 @@ namespace Kuros.Items.World
 	/// </summary>
 	public partial class RigidBodyWorldItemEntity : Node2D, IWorldItemEntity
 	{
+		/// <summary>世界物走 Destroy 链销毁完成(被打碎/外部 RequestDestroy;OnThrowDestroy 特效已生成)。
+		/// 供 BuildThrow_A_004 等订阅并按来源组过滤;静态事件,订阅方 OnRemoved 需退订。</summary>
+		public static event Action<RigidBodyWorldItemEntity>? Destroyed;
+
 		[Signal] public delegate void ItemTransferredEventHandler(RigidBodyWorldItemEntity entity, GameActor actor, ItemDefinition item, int amount);
 		[Signal] public delegate void ItemTransferFailedEventHandler(RigidBodyWorldItemEntity entity, GameActor actor);
 
@@ -2438,6 +2442,17 @@ namespace Kuros.Items.World
 				Destroy();
 		}
 
+		/// <summary>
+		/// 外部主动销毁入口(带完整销毁表现:OnThrowDestroy 特效/掉落链 + QueueFree)。
+		/// 供长按核心技能等"清场式"销毁调用;飞行/回弹/已在销毁中的实体忽略(防中途误清)。
+		/// </summary>
+		public void RequestDestroy()
+		{
+			if (_isDestroying || _inFlight || _isThrown || _bouncing) return;
+			_isDestroying = true;
+			Destroy();
+		}
+
 		private void Destroy()
 		{
 			var rigidBody = _rigidBody;
@@ -2482,6 +2497,7 @@ namespace Kuros.Items.World
 				}
 			}
 
+			Destroyed?.Invoke(this);
 			QueueFree();
 		}
 
