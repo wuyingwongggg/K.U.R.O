@@ -1,66 +1,68 @@
-[gd_scene load_steps=16 format=3 uid="uid://cdh355cck8c0d"]
+[gd_scene load_steps=14 format=3 uid="uid://cdh355cck8c0d"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_77wsk"]
 [ext_resource type="Resource" uid="uid://gk8m663xkqb8" path="res://resources/items/Furniture_A_CubeB.tres" id="2_77wsk"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_6w62b"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_fo7ep"]
-[ext_resource type="Texture2D" uid="uid://bhpdfcmroc241" path="res://nothing.png" id="5_yb11a"]
-[ext_resource type="Shader" uid="uid://c6esdptyi4vs3" path="res://shaders/materials/canvas_cube_faces.gdshader" id="6_pp1yr"]
-[ext_resource type="Shader" uid="uid://dpj7cb1n0f80r" path="res://shaders/materials/canvas_cube_glowing.gdshader" id="7_jrfos"]
-[ext_resource type="Shader" uid="uid://bld8m4k2q7x1w" path="res://shaders/materials/canvas_cube_build.gdshader" id="8_q870r"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="6_77wsk"]
+[ext_resource type="Shader" uid="uid://cxhuo3fwakaig" path="res://shaders/materials/canvas_cube_faces_persp.gdshader" id="6_rw6o6"]
+[ext_resource type="Shader" uid="uid://cbbgx5r50eimb" path="res://shaders/materials/canvas_cube_glowing_persp.gdshader" id="7_77wsk"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
 shader = ExtResource("3_6w62b")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cf8gp"]
-shader = ExtResource("6_pp1yr")
-shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
-shader_parameter/edges_size = 24
-shader_parameter/time_scale = 0.0
-shader_parameter/faces = PackedInt32Array(0, 1, 2, 3, 5, 4, 7, 6, 1, 5, 6, 2, 4, 0, 3, 7, 3, 2, 6, 7, 0, 4, 5, 1)
-shader_parameter/face_alpha = 0.9
-shader_parameter/face_color = Color(0.02, 0.06, 0.02, 1)
-shader_parameter/text_color = Color(18.892157, 18.892157, 18.892157, 1)
-shader_parameter/head_color = Color(0.7, 1, 0.8, 1)
-shader_parameter/text_columns = 18.0
-shader_parameter/text_rows = 18.0
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bdinq"]
+shader = ExtResource("6_rw6o6")
+shader_parameter/rotation_x_deg = 180.0
+shader_parameter/rotation_y_deg = 90.000012825
+shader_parameter/rotation_z_deg = 40.00001044999999
+shader_parameter/position_offset = Vector2(0, 0)
+shader_parameter/cube_size = 0.6
+shader_parameter/perspective = 10.0
+shader_parameter/box_half_x = 0.5
+shader_parameter/box_half_y = 0.5
+shader_parameter/box_half_z = 0.5
+shader_parameter/face_alpha = 0.750000035625
+shader_parameter/face_color = Color(0.019607844, 0.08627451, 0.019607844, 1)
+shader_parameter/text_color = Color(0, 4.415934, 0, 1)
+shader_parameter/head_color = Color(1, 0.9764706, 1, 1)
+shader_parameter/text_columns = 12.0
+shader_parameter/text_rows = 12.0
 shader_parameter/scroll_speed = 0.6
-shader_parameter/flicker_rate = 0.01
+shader_parameter/flicker_rate = 2.0
 shader_parameter/rain_density = 0.7
+shader_parameter/light_dir = Vector3(0.4, 0.8, 0.5)
+shader_parameter/ambient = 0.5
+shader_parameter/shading_strength = 0.5
+shader_parameter/draw_outline = true
+shader_parameter/outline_color = Color(0, 1, 0, 1)
+shader_parameter/outline_width = 0.00400000019
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_4ddkc"]
-shader = ExtResource("7_jrfos")
-shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
-shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
-shader_parameter/edges_size = 24
-shader_parameter/sofness = 0.075
-shader_parameter/time_scale = 0.0
-shader_parameter/briness_scale = 1.6
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6w62b"]
+shader = ExtResource("7_77wsk")
+shader_parameter/rotation_x_deg = 180.0
+shader_parameter/rotation_y_deg = 90.000012825
+shader_parameter/rotation_z_deg = 40.00001044999999
+shader_parameter/position_offset = Vector2(0, 0)
+shader_parameter/cube_size = 0.6
+shader_parameter/perspective = 10.0
+shader_parameter/box_half_x = 0.5
+shader_parameter/box_half_y = 0.5
+shader_parameter/box_half_z = 0.5
+shader_parameter/edge_color = Color(0, 1, 0, 1)
+shader_parameter/edge_softness = 0.01200000022074
 shader_parameter/alpha = 1.0
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_u3pnw"]
-shader = ExtResource("8_q870r")
-shader_parameter/points = PackedVector3Array(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1)
-shader_parameter/edges = PackedInt32Array(0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7)
-shader_parameter/edges_size = 24
-shader_parameter/sofness = 0.1
-shader_parameter/time_scale = 0.0
-shader_parameter/briness_scale = 1.6
-shader_parameter/build_progress = 0.0
-shader_parameter/scanline_width = 0.025
-shader_parameter/scanline_color = Color(0.4, 0.9, 1, 1)
-shader_parameter/edge_glow = 0.06
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxt0"]
-size = Vector2(200, 20)
+size = Vector2(250, 30)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(10, 300)
+size = Vector2(100, 230)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(420, 120)
+size = Vector2(400, 230)
 
 [node name="FurnitureCubeB" type="Node2D"]
 z_index = 2
@@ -85,51 +87,38 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-scale = Vector2(8, 3)
+scale = Vector2(8, 4.5)
 texture = ExtResource("4_fo7ep")
-offset = Vector2(1, 22)
+offset = Vector2(0, 15)
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
-position = Vector2(0, -100)
 scale = Vector2(0.33, 0.33)
-texture = ExtResource("5_yb11a")
 region_rect = Rect2(-80, -48, 776, 728)
 
-[node name="FaceFill" type="Sprite2D" parent="RigidBody2D/Outline"]
-material = SubResource("ShaderMaterial_cf8gp")
-rotation = 0.36651915
-scale = Vector2(180, 180)
-texture = ExtResource("5_yb11a")
+[node name="Sprite2D" type="Sprite2D" parent="RigidBody2D/Outline"]
+material = SubResource("ShaderMaterial_bdinq")
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("6_77wsk")
+offset = Vector2(0, -90)
 
 [node name="Wireframe" type="Sprite2D" parent="RigidBody2D/Outline"]
-modulate = Color(0, 0.78431374, 0, 1)
-self_modulate = Color(0, 0.78431374, 0, 1)
-material = SubResource("ShaderMaterial_4ddkc")
-rotation = 0.36651915
-scale = Vector2(180, 180)
-texture = ExtResource("5_yb11a")
-
-[node name="BuildMask" type="Sprite2D" parent="RigidBody2D/Outline"]
-visible = false
-modulate = Color(0, 0.5176471, 0, 1)
-self_modulate = Color(0.19215687, 0.6627451, 0, 1)
-material = SubResource("ShaderMaterial_u3pnw")
-rotation = 0.36651915
-scale = Vector2(180, 180)
-texture = ExtResource("5_yb11a")
+material = SubResource("ShaderMaterial_6w62b")
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("6_77wsk")
+offset = Vector2(0, -90)
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, 10)
+position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_mbxt0")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 10)
+position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]

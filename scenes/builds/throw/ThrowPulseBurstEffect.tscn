@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://b4ckfcsr7r66h"]
+
+[ext_resource type="Script" uid="uid://ciomkxkqfh40k" path="res://scripts/builds/throw/ThrowPulseBurstEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://b8mshxkaapuvd" path="res://resources/effects/PulseRingVisual.tscn" id="2"]
+
+[node name="ThrowPulseBurstEffect" type="Node"]
+script = ExtResource("1")
+PulseVisualScene = ExtResource("2")
+DamageShape = 2
+VerticalHeightFactor = 0.65
+EffectId = "4cf7a826-014e-4cc0-b585-f9e6bc94fb69"
+Description = "脉冲扩散：场上每个乱码块每N秒向周围发出一次范围脉冲"

@@ -356,6 +356,15 @@ namespace Kuros.Actors.Heroes
 
             entity.LastDroppedBy = _actor;
 
+            // 仅"放置"消费件身份:家具放回世界时重新入 throwcore 组 → 在场脉冲恢复;投掷不消费
+            if (disposition == DropDisposition.Place
+                && extracted.RuntimeSourceTag == Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag
+                && entity is Node2D placedPiece)
+            {
+                placedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag);
+                extracted.RuntimeSourceTag = null;
+            }
+
             if (entity is RigidBodyWorldItemEntity re && savedCd > 0f)
                 re.ThrowCooldownRemaining = savedCd;
 

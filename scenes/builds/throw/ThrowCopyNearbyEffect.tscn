@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://cvtpf2vur8xxf"]
 
-[ext_resource type="Script" path="res://scripts/builds/throw/ThrowCopyNearbyEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://6b3al4k12q8e" path="res://scripts/builds/throw/ThrowCopyNearbyEffect.cs" id="1"]
 
 [node name="ThrowCopyNearbyEffect" type="Node"]
 script = ExtResource("1")
+EffectId = "a64b2815-4749-4f1e-97d8-7cd2193a0fb9"
+Description = "乱码块复制玩家当前高亮的投掷道具"

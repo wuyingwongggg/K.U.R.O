@@ -419,6 +419,7 @@ namespace Kuros.Actors.Heroes
             }
 
             extracted = new InventoryItemStack(FurnitureSlotStack!.Item, 1);
+            extracted.RuntimeSourceTag = FurnitureSlotStack.RuntimeSourceTag; // 来源身份随栈副本转移(放置出口消费)
             if (owner != null)
             {
                 FurnitureSlotStack.Item.RemoveEffects(owner, ItemEffectTrigger.OnEquip);

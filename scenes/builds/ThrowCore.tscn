@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://cd4kfqso2x1cw" path="res://scripts/builds/buildcore/ThrowCoreEffect.cs" id="1"]
 [ext_resource type="PackedScene" uid="uid://bmk5chuwaohte" path="res://scenes/items/Furniture_A_cubeA.tscn" id="2_cd3g7"]
 [ext_resource type="PackedScene" uid="uid://cdh355cck8c0d" path="res://scenes/items/Furniture_A_cubeB.tscn" id="3_kcll8"]
-[ext_resource type="PackedScene" uid="uid://daox4k6bu5oqt" path="res://scenes/items/Furniture_A_sofaB.tscn" id="4_4alul"]
+[ext_resource type="PackedScene" uid="uid://yqtbldqychhi" path="res://scenes/items/Furniture_A_cubeC.tscn" id="4_kcll8"]
 
 [node name="ThrowCore" type="Node"]
 script = ExtResource("1")
 FurnitureScene = ExtResource("2_cd3g7")
 FurnitureSceneMedium = ExtResource("3_kcll8")
-FurnitureSceneLarge = ExtResource("4_4alul")
+FurnitureSceneLarge = ExtResource("4_kcll8")
 ChargeCooldown = 0.5
 PlacementMargin = 200.0
 EffectId = "02f4ccc9-6e5d-4381-ae3d-dc7bcbf90cac"

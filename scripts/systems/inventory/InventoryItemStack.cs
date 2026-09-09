@@ -22,6 +22,8 @@ namespace Kuros.Systems.Inventory
         public bool IsEmpty => Quantity <= 0;
         public float ThrowCooldownRemaining { get; set; }
         public bool IsThrowOnCooldown => ThrowCooldownRemaining > 0f;
+        /// <summary>运行期来源标记(跨拾取携带的生成身份,如"投掷核心件");放置出口消费后清除。</summary>
+        public string? RuntimeSourceTag { get; set; }
         private readonly Dictionary<string, float> _runtimeAttributeAdditions = new(StringComparer.OrdinalIgnoreCase);
 
         public InventoryItemStack(ItemDefinition item, int quantity)

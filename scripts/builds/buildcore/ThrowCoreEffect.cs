@@ -31,7 +31,7 @@ namespace Kuros.Builds.BuildCore
         [Export(PropertyHint.Range, "0,200,1")] public float PlacementMargin = 16f;
 
         /// <summary>本效果生成家具的组:长按 F 销毁 / 追踪用(离树自动移除)。</summary>
-        public const string ThrowCoreFurnitureGroup = "throwcore_generated_furniture";
+        public const string ThrowCoreFurnitureGroup = Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag;
 
         // ── 生成聚合运行字段(BuildThrow 卡写入,ThrowCoreEffect 生成时单点读取)──
         /// <summary>生成件档位覆盖(0=默认 FurnitureScene;2/3=从该档家具池随机一件生成,由 A_006 写入)。</summary>

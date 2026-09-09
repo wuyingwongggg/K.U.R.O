@@ -1,20 +1,20 @@
-[gd_scene load_steps=14 format=3 uid="uid://bmk5chuwaohte"]
+[gd_scene load_steps=14 format=3 uid="uid://yqtbldqychhi"]
 
-[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_iegjm"]
-[ext_resource type="Resource" uid="uid://clrbop6qko3hq" path="res://resources/items/Furniture_A_CubeA.tres" id="2_iegjm"]
-[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_oepov"]
-[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_11bag"]
-[ext_resource type="Shader" uid="uid://cxhuo3fwakaig" path="res://shaders/materials/canvas_cube_faces_persp.gdshader" id="5_tu5df"]
-[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="6_tu5df"]
-[ext_resource type="Shader" uid="uid://cbbgx5r50eimb" path="res://shaders/materials/canvas_cube_glowing_persp.gdshader" id="7_oepov"]
+[ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_58blx"]
+[ext_resource type="Resource" uid="uid://du43eys1mxx08" path="res://resources/items/Furniture_A_CubeC.tres" id="2_58blx"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_7o3sx"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_8b55u"]
+[ext_resource type="Shader" uid="uid://cxhuo3fwakaig" path="res://shaders/materials/canvas_cube_faces_persp.gdshader" id="5_0aldi"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="6_tsaw4"]
+[ext_resource type="Shader" uid="uid://cbbgx5r50eimb" path="res://shaders/materials/canvas_cube_glowing_persp.gdshader" id="7_wnl0s"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aa7cv"]
-shader = ExtResource("3_oepov")
+shader = ExtResource("3_7o3sx")
 shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_oepov"]
-shader = ExtResource("5_tu5df")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_58blx"]
+shader = ExtResource("5_0aldi")
 shader_parameter/rotation_x_deg = 180.0
 shader_parameter/rotation_y_deg = 90.000012825
 shader_parameter/rotation_z_deg = 40.00001044999999
@@ -28,8 +28,8 @@ shader_parameter/face_alpha = 0.750000035625
 shader_parameter/face_color = Color(0.019607844, 0.08627451, 0.019607844, 1)
 shader_parameter/text_color = Color(0, 4.415934, 0, 1)
 shader_parameter/head_color = Color(1, 0.9764706, 1, 1)
-shader_parameter/text_columns = 9.0
-shader_parameter/text_rows = 9.0
+shader_parameter/text_columns = 15.0
+shader_parameter/text_rows = 15.0
 shader_parameter/scroll_speed = 0.6
 shader_parameter/flicker_rate = 2.0
 shader_parameter/rain_density = 0.7
@@ -40,8 +40,8 @@ shader_parameter/draw_outline = true
 shader_parameter/outline_color = Color(0, 1, 0, 1)
 shader_parameter/outline_width = 0.00400000019
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_11bag"]
-shader = ExtResource("7_oepov")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bn0q1"]
+shader = ExtResource("7_wnl0s")
 shader_parameter/rotation_x_deg = 180.0
 shader_parameter/rotation_y_deg = 90.000012825
 shader_parameter/rotation_z_deg = 40.00001044999999
@@ -56,19 +56,19 @@ shader_parameter/edge_softness = 0.01200000022074
 shader_parameter/alpha = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxt0"]
-size = Vector2(100, 10)
+size = Vector2(400, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gy46y"]
-size = Vector2(10, 200)
+size = Vector2(250, 460)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyvv2"]
-size = Vector2(240, 120)
+size = Vector2(550, 450)
 
-[node name="FurnitureCubeA" type="Node2D"]
+[node name="FurnitureCubeC" type="Node2D"]
 z_index = 2
 y_sort_enabled = true
-script = ExtResource("1_iegjm")
-ItemDefinition = ExtResource("2_iegjm")
+script = ExtResource("1_58blx")
+ItemDefinition = ExtResource("2_58blx")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
@@ -87,43 +87,40 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-scale = Vector2(5, 2.5)
-texture = ExtResource("4_11bag")
-offset = Vector2(0, 17)
+scale = Vector2(9.5, 9.5)
+texture = ExtResource("4_8b55u")
+offset = Vector2(0, 7)
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
 scale = Vector2(0.33, 0.33)
 region_rect = Rect2(-80, -48, 776, 728)
 
 [node name="Sprite2D" type="Sprite2D" parent="RigidBody2D/Outline"]
-material = SubResource("ShaderMaterial_oepov")
-scale = Vector2(2, 2)
-texture = ExtResource("6_tu5df")
-offset = Vector2(0, -80)
+material = SubResource("ShaderMaterial_58blx")
+scale = Vector2(5, 5)
+texture = ExtResource("6_tsaw4")
+offset = Vector2(0, -100)
 
 [node name="Wireframe" type="Sprite2D" parent="RigidBody2D/Outline"]
-material = SubResource("ShaderMaterial_11bag")
-scale = Vector2(2, 2)
-texture = ExtResource("6_tu5df")
-offset = Vector2(0, -80)
+material = SubResource("ShaderMaterial_bn0q1")
+scale = Vector2(5, 5)
+texture = ExtResource("6_tsaw4")
+offset = Vector2(0, -100)
 
 [node name="CollisionArea" type="Area2D" parent="RigidBody2D"]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
-position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_mbxt0")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/StaticBody2D"]
-position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_jyvv2")

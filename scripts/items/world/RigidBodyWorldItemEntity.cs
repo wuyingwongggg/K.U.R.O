@@ -23,6 +23,9 @@ namespace Kuros.Items.World
 	{
 		/// <summary>世界物走 Destroy 链销毁完成(被打碎/外部 RequestDestroy;OnThrowDestroy 特效已生成)。
 		/// 供 BuildThrow_A_004 等订阅并按来源组过滤;静态事件,订阅方 OnRemoved 需退订。</summary>
+		/// <summary>投掷核心"件"的组/来源标记:生成时入组;拾取→放置恢复在场身份用同一值。</summary>
+		public const string ThrowCorePieceTag = "throwcore_generated_furniture";
+
 		public static event Action<RigidBodyWorldItemEntity>? Destroyed;
 
 		[Signal] public delegate void ItemTransferredEventHandler(RigidBodyWorldItemEntity entity, GameActor actor, ItemDefinition item, int amount);
@@ -968,6 +971,16 @@ namespace Kuros.Items.World
 			if (!TryTransferToActor(actor))
 			{
 				return false;
+			}
+
+			// 投掷核心"件"身份跨拾取携带:实体即将销毁,把标记写到家具槽栈实例上;
+			// 玩家放置该家具时由出口消费,恢复为在场脉冲件。非核心生成物(不在组)不受影响。
+			if (IsInGroup(ThrowCorePieceTag)
+				&& ResolveInventoryComponent(actor) is PlayerInventoryComponent pieceInv
+				&& pieceInv.FurnitureSlotStack != null
+				&& pieceInv.FurnitureSlotStack.Item == ItemDefinition)
+			{
+				pieceInv.FurnitureSlotStack.RuntimeSourceTag = ThrowCorePieceTag;
 			}
 
 			if (ThrowCooldownRemaining > 0f && _lastTransferredItem != null)
