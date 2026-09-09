@@ -379,7 +379,7 @@ namespace Kuros.Actors.Heroes
                     if (extracted.RuntimeIsThrowCoreCopy)
                     {
                         spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCoreCopyTag);
-                        Kuros.Builds.Throw.PieceCopyGlitchDecorator.Apply(spawnedPiece);
+                        Kuros.Fx.PieceCopyGlitchDecorator.Apply(spawnedPiece);
                     }
                 }
                 extracted.RuntimeSourceTag = null;

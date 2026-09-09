@@ -56,6 +56,7 @@ namespace Kuros.Actors.Heroes
         private uint _equippedAttackCollisionMask = 1u;
         private const string SlotSelectProperty = "切换名";
         private const string SlotIconName = "HeldItemSlotIcon";
+        private const string CopyGlitchMeta = "kuros_copy_glitch_applied"; // 举起实例乱码标记(防重复换 seed)
 
         public override void _Ready()
         {
@@ -327,16 +328,43 @@ namespace Kuros.Actors.Heroes
             }
 
             // 优先使用场景，没有场景则回退到 Icon 纹理
+            // A_007 复制件举起联动:家具槽栈带 RuntimeIsThrowCoreCopy → 对举起实例应用乱码滤镜
+            bool holdIsCopy = Inventory?.FurnitureSlotStack?.RuntimeIsThrowCoreCopy == true;
             if (!string.IsNullOrWhiteSpace(activeItem?.HoldScenePath))
             {
                 ShowItemIcon(null);
+                if (!holdIsCopy && _heldSceneInstance != null
+                    && _heldSceneInstance.HasMeta(CopyGlitchMeta))
+                {
+                    // 同路径缓存实例但当前非复制件(同 def 普通家具):强制重建干净实例,避免残留乱码
+                    ClearHeldScene();
+                    _currentHoldScenePath = null;
+                }
                 ShowItemScene(activeItem!.HoldScenePath);
+                if (holdIsCopy && _heldSceneInstance is Node2D heldScene)
+                    DecorateHeldCopy(heldScene);
             }
             else
             {
                 ClearHeldScene();
                 ShowItemIcon(activeItem?.Icon);
+                if (holdIsCopy)
+                    DecorateHeldCopy(_iconSprite);
+                else if (_iconSprite != null && _iconSprite.HasMeta(CopyGlitchMeta))
+                {
+                    _iconSprite.Material = null; // 切回普通家具:清除残留乱码
+                    _iconSprite.RemoveMeta(CopyGlitchMeta);
+                }
             }
+        }
+
+        /// <summary>举起实例应用乱码滤镜(仅一次;持有期间实例缓存不重建 → seed 稳定不跳变)。</summary>
+        private void DecorateHeldCopy(Node2D? visual)
+        {
+            if (visual == null || !IsInstanceValid(visual)) return;
+            if (visual.HasMeta(CopyGlitchMeta)) return;
+            if (Kuros.Fx.PieceCopyGlitchDecorator.Apply(visual, requireFurnitureArt: false))
+                visual.SetMeta(CopyGlitchMeta, true);
         }
 
         public Area2D? GetEquippedAttackArea()

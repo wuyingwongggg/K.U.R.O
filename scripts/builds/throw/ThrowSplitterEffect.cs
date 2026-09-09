@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Core.Effects;
+using Kuros.Fx;
 using Kuros.Items.World;
 
 namespace Kuros.Builds.Throw

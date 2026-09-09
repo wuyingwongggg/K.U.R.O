@@ -223,7 +223,7 @@ namespace Kuros.Builds.BuildCore
             mc.GetParent()?.AddChild(furniture);
             // A_007 复制件整件乱码滤镜(视觉策略独立于生成管线,见 PieceCopyGlitchDecorator)
             if (isCopy)
-                Kuros.Builds.Throw.PieceCopyGlitchDecorator.Apply(furniture);
+                Kuros.Fx.PieceCopyGlitchDecorator.Apply(furniture);
             furniture.GlobalPosition = spawnPos;
 
             // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)

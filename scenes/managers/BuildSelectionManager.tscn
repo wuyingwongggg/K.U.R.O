@@ -69,4 +69,3 @@ CardsPerSelection = 10
 SkipGoldReward = 5
 CoreSkipGoldReward = 15
 DefaultBuildClass = "Normal"
-DebugTrigger = true
