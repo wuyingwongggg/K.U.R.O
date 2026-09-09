@@ -25,6 +25,11 @@ namespace Kuros.Items.World
 		/// 供 BuildThrow_A_004 等订阅并按来源组过滤;静态事件,订阅方 OnRemoved 需退订。</summary>
 		/// <summary>投掷核心"件"的组/来源标记:生成时入组;拾取→放置恢复在场身份用同一值。</summary>
 		public const string ThrowCorePieceTag = "throwcore_generated_furniture";
+		/// <summary>A_007 复制件身份组:生成时入组;拾取→重新生成时据此恢复乱码滤镜。</summary>
+		public const string ThrowCoreCopyTag = "throwcore_copy_furniture";
+		/// <summary>件"身份"组(摧毁爆炸依据):直接生成/放置/投掷的件都入组,
+		/// 与脉冲组分离——投掷件不恢复脉冲,但销毁时仍算"件"触发 A_004。</summary>
+		public const string ThrowCorePieceIdentityTag = "throwcore_piece_identity";
 
 		public static event Action<RigidBodyWorldItemEntity>? Destroyed;
 
@@ -173,6 +178,8 @@ namespace Kuros.Items.World
 		private bool _isThrown = false; // 是否正在投掷中
 		public bool IsDisposableCopy { get; set; }
 		public float ThrowCooldownRemaining { get; set; }
+		/// <summary>投掷落点纵向偏移(px,发射后可改;抛物线每帧重算落点 → A_008 分裂散射把各枚落点沿 Y 错开)。</summary>
+		public float LandingOffsetYDelta { get; set; }
 		private Sprite2D? _highlightSprite; // Outline highlight 精灵
 		private ShaderMaterial? _outlineMaterial; // Outline 着色器材料
 		private Area2D? _cachedPlayerGrabArea; // 缓存的玩家 GrabArea
@@ -787,7 +794,8 @@ namespace Kuros.Items.World
 			if (phase > 1.0) phase = 1.0;
 			
 			// 计算目标落点Y坐标（优先使用 ItemDefinition 参数）
-			float landingY = _throwStartY + GetEffectiveThrowParabolicLandingYOffset();
+			float landingY = _throwStartY + GetEffectiveThrowParabolicLandingYOffset()
+				+ LandingOffsetYDelta; // A_008 散射:每枚落点纵向错开(发射后改亦生效,平滑重定向)
 			float peakY = _throwStartY - GetEffectiveThrowParabolicPeakHeight();
 			
 			// 统一的平顺抛物线公式：使用 sin(phase * π) 生成平顺曲线
@@ -833,10 +841,12 @@ namespace Kuros.Items.World
 			_rigidBody.GlobalPosition = new Vector2(newX, newY);
 
 			// 视觉/判定分离：判定 Hitbox 投影在投掷者地面层（_throwJudgmentY），X 每帧跟随视觉——
-			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层
+			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层。
+			// A_008 散射:判定行从玩家行(0)随 phase 渐变到该枚终点行(LandingOffsetYDelta),与视觉落点同进
 			if (_hitboxArea != null)
 			{
-				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, _throwJudgmentY);
+				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X,
+					_throwJudgmentY + LandingOffsetYDelta * (float)phase);
 			}
 
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
@@ -981,6 +991,7 @@ namespace Kuros.Items.World
 				&& pieceInv.FurnitureSlotStack.Item == ItemDefinition)
 			{
 				pieceInv.FurnitureSlotStack.RuntimeSourceTag = ThrowCorePieceTag;
+				pieceInv.FurnitureSlotStack.RuntimeIsThrowCoreCopy = IsInGroup(ThrowCoreCopyTag);
 			}
 
 			if (ThrowCooldownRemaining > 0f && _lastTransferredItem != null)
@@ -2003,6 +2014,9 @@ namespace Kuros.Items.World
 			// 生成 OnThrowDestroy 效果（Node2D 在世界坐标生成，ActorEffect 应用到投掷者）
 			SpawnThrowDestroyEffects();
 
+			// 飞行命中销毁同样广播(供 A_004 响应"投掷命中销毁")
+			NotifyDestroyedOnce();
+
 			// 播放销毁动画
 			PlayDestructionAnimation();
 		}
@@ -2033,6 +2047,9 @@ namespace Kuros.Items.World
 
 			// 生成 OnThrowDestroy 效果（Node2D 在世界坐标生成，ActorEffect 应用到投掷者）
 			SpawnThrowDestroyEffects();
+
+			// 投掷件销毁广播(节点销毁前;供 A_004 冲击投放等订阅者响应"投掷销毁")
+			NotifyDestroyedOnce();
 
 			// 播放销毁动画
 			PlayDestructionAnimation();
@@ -2108,6 +2125,9 @@ namespace Kuros.Items.World
 				catch { }
 				RestoreRigidBodyCollision();
 			}
+
+			// 落地(非飞行)命中销毁同样广播(供 A_004 响应)
+			NotifyDestroyedOnce();
 
 			// 播放销毁动画
 			PlayDestructionAnimation();
@@ -2466,6 +2486,16 @@ namespace Kuros.Items.World
 			Destroy();
 		}
 
+		private bool _destroyedBroadcast;
+
+		/// 销毁广播只发一次:同一件可能经多个销毁入口(Destroy/落地/飞行命中/墙壁),防重复爆炸。
+		private void NotifyDestroyedOnce()
+		{
+			if (_destroyedBroadcast) return;
+			_destroyedBroadcast = true;
+			Destroyed?.Invoke(this);
+		}
+
 		private void Destroy()
 		{
 			var rigidBody = _rigidBody;
@@ -2510,7 +2540,7 @@ namespace Kuros.Items.World
 				}
 			}
 
-			Destroyed?.Invoke(this);
+			NotifyDestroyedOnce();
 			QueueFree();
 		}
 

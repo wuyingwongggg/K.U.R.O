@@ -1,0 +1,53 @@
+[gd_scene load_steps=11 format=3 uid="uid://duq7gvippbjmp"]
+
+[ext_resource type="Texture2D" uid="uid://bx37ocy10x3w5" path="res://assets/effect/AttackEffect/hit_h/HIT_H0001.png" id="1_iasuy"]
+[ext_resource type="Texture2D" uid="uid://cp3ywoxk4lkxi" path="res://assets/effect/AttackEffect/hit_h/HIT_H0002.png" id="2_j67bp"]
+[ext_resource type="Texture2D" uid="uid://dpgcn3rnubo12" path="res://assets/effect/AttackEffect/hit_h/HIT_H0003.png" id="3_3gom2"]
+[ext_resource type="Texture2D" uid="uid://dj3cj57mnpxvl" path="res://assets/effect/AttackEffect/hit_h/HIT_H0004.png" id="4_y00m4"]
+[ext_resource type="Texture2D" uid="uid://bqi5y2ljne00e" path="res://assets/effect/AttackEffect/hit_h/HIT_H0005.png" id="5_uq624"]
+[ext_resource type="Texture2D" uid="uid://cujom167pu87o" path="res://assets/effect/AttackEffect/hit_h/HIT_H0006.png" id="6_sbd0c"]
+[ext_resource type="Texture2D" uid="uid://dne85b3ejnuok" path="res://assets/effect/AttackEffect/hit_h/HIT_H0007.png" id="7_sdc4u"]
+[ext_resource type="Texture2D" uid="uid://bh1pwlpwr1hc8" path="res://assets/effect/AttackEffect/hit_h/HIT_H0008.png" id="8_kvy5s"]
+[ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="9_j67bp"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_to6ee"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_iasuy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_j67bp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_3gom2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_y00m4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_uq624")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_sbd0c")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_sdc4u")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_kvy5s")
+}],
+"loop": false,
+"name": &"default",
+"speed": 30.0
+}]
+
+[node name="HitI" type="AnimatedSprite2D"]
+modulate = Color(0, 1, 0, 1)
+self_modulate = Color(0, 1, 0, 1)
+z_index = 3
+scale = Vector2(1.25, 1.25)
+sprite_frames = SubResource("SpriteFrames_to6ee")
+autoplay = "default"
+flip_h = true
+script = ExtResource("9_j67bp")

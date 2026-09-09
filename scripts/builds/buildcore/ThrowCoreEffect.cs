@@ -118,18 +118,19 @@ namespace Kuros.Builds.BuildCore
             _rechargeTimer = Mathf.Min(_rechargeTimer, EffectiveChargeCooldown);
         }
 
-        /// <summary>推进当前充能恢复(A_005 等"命中减生成CD"用):把恢复进度提前 seconds 秒,
-        /// 进度跨过一格时长即提前补满一格(串行逐格)。未在恢复中(全满/计时未起)不生效。</summary>
+        /// <summary>推进当前充能恢复(A_005 等"命中减生成CD"用):把恢复进度**提前** seconds 秒
+        /// (计时器前进,满一格才补),串行逐格。未在恢复中(全满)不生效。
+        /// 注意方向:减 CD = 进度加快 = 计时器前进;旧实现用 -= 并越界即补格,
+        /// 导致单格核心任意一击立刻补满整格(误报"瞬间刷完CD")。</summary>
         public void ReduceRecharge(float seconds)
         {
             if (seconds <= 0f || ReadyCharges >= EffectiveMaxCharges) return;
-            if (_rechargeTimer <= 0f) return; // 尚未开始恢复(刚消耗帧/全满)
 
-            _rechargeTimer -= seconds;
+            _rechargeTimer += seconds;
             float cd = EffectiveChargeCooldown;
-            while (_rechargeTimer <= 0f && ReadyCharges < EffectiveMaxCharges)
+            while (_rechargeTimer >= cd && ReadyCharges < EffectiveMaxCharges)
             {
-                _rechargeTimer += cd;
+                _rechargeTimer -= cd;
                 ReadyCharges++;
             }
             if (ReadyCharges >= EffectiveMaxCharges)
@@ -208,14 +209,21 @@ namespace Kuros.Builds.BuildCore
                 ? ((Node2D)indicator).GlobalPosition
                 : mc.GlobalPosition;
 
-            var scene = ResolveSpawnScene();
+            var scene = ResolveSpawnScene(out bool isCopy);
             if (scene == null) return;
 
             var furniture = scene.Instantiate<Node2D>();
             // 进换关清场组(换关残留清理) + 本效果专属组(长按 F 销毁)
             furniture.AddToGroup(Kuros.Items.World.WorldItemSpawner.StageWorldItemsGroup);
             furniture.AddToGroup(ThrowCoreFurnitureGroup);
+            furniture.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceIdentityTag); // 件身份(摧毁爆炸;投掷/放置通用)
+            furniture.SetMeta("throwcore_born_ms", Time.GetTicksMsec()); // A_004 误爆防护(刚生成不炸)
+            if (isCopy)
+                furniture.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCoreCopyTag); // 复制身份(拾取→放置恢复滤镜)
             mc.GetParent()?.AddChild(furniture);
+            // A_007 复制件整件乱码滤镜(视觉策略独立于生成管线,见 PieceCopyGlitchDecorator)
+            if (isCopy)
+                Kuros.Builds.Throw.PieceCopyGlitchDecorator.Apply(furniture);
             furniture.GlobalPosition = spawnPos;
 
             // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)
@@ -232,13 +240,17 @@ namespace Kuros.Builds.BuildCore
 
         // ═══════════════════════════ 生成场景聚合(BuildThrow 卡驱动) ═══════════════════════════
         // 优先级:A_007 复制玩家当前高亮家具 > A_006 升级档(中型/大型 export) > 默认 FurnitureScene(小型)
-        private PackedScene? ResolveSpawnScene()
+        private PackedScene? ResolveSpawnScene(out bool isCopy)
         {
+            isCopy = false;
             if (CopyNearbyFurnitureRange > 0f)
             {
                 var highlighted = FindHighlightedFurnitureDefinition();
                 if (highlighted != null)
+                {
+                    isCopy = true;
                     return LoadFurnitureScene(highlighted);
+                }
             }
 
             if (SpawnTierOverride == 2)

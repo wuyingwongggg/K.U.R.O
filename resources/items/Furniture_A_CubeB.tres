@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_e4fpc"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_xt51l"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_i2t4q"]
-[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="5_i6764"]
+[ext_resource type="PackedScene" uid="uid://duq7gvippbjmp" path="res://scenes/actors/etc/HitI.tscn" id="5_jjxqd"]
 [ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="6_fo7lg"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_4k8re"]
 
@@ -31,11 +31,10 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 [sub_resource type="Resource" id="Resource_i4xrv"]
 script = ExtResource("2_e4fpc")
 Trigger = 4
-EffectScene = ExtResource("5_i6764")
+EffectScene = ExtResource("5_jjxqd")
 Notes = "破坏特效"
 PropertyOverrides = Dictionary[String, Variant]({
-"EnableCenterEffect": true,
-"EnableParticles": false
+"scale": Vector2(0.75, 0.75)
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 

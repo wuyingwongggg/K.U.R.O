@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dx4ep1847h48j"]
+
+[ext_resource type="Script" uid="uid://c74h8rmmalnnh" path="res://scripts/builds/throw/ThrowHitRecoveryEffect.cs" id="1"]
+
+[node name="ThrowHitRecoveryEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "11df5e26-4aa0-4e3e-878d-c3425be94166"
+Description = "即时回收：每次对敌人造成伤害时都减少乱码块的生成CD"

@@ -24,6 +24,8 @@ namespace Kuros.Systems.Inventory
         public bool IsThrowOnCooldown => ThrowCooldownRemaining > 0f;
         /// <summary>运行期来源标记(跨拾取携带的生成身份,如"投掷核心件");放置出口消费后清除。</summary>
         public string? RuntimeSourceTag { get; set; }
+        /// <summary>是否投掷核心的 A_007 复制件(跨拾取携带;重新生成时恢复乱码滤镜与复制身份)。</summary>
+        public bool RuntimeIsThrowCoreCopy { get; set; }
         private readonly Dictionary<string, float> _runtimeAttributeAdditions = new(StringComparer.OrdinalIgnoreCase);
 
         public InventoryItemStack(ItemDefinition item, int quantity)
@@ -47,6 +49,8 @@ namespace Kuros.Systems.Inventory
             Item = other.Item;
             Quantity = other.Quantity;
             ThrowCooldownRemaining = other.ThrowCooldownRemaining;
+            RuntimeSourceTag = other.RuntimeSourceTag;
+            RuntimeIsThrowCoreCopy = other.RuntimeIsThrowCoreCopy;
             if (other.DurabilityState != null)
             {
                 DurabilityState = new ItemDurabilityState(other.DurabilityState.Config);

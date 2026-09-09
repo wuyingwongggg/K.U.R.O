@@ -66,7 +66,10 @@ namespace Kuros.Items.World
         private Vector2 _landingLocalPos = Vector2.Zero;
         // 当前帧的采样点列表（局部坐标）
         private readonly List<Vector2> _trailPoints = new();
-		private Node2D? _landingIndicatorInstance;
+        // 分裂预览:各枚落点(局部坐标,主落点在[0])
+        private readonly List<Vector2> _landingPoints = new();
+        // 落地指示器实例池:与 _landingPoints 等量(分裂时每个落点各一个)
+        private readonly List<Node2D> _landingIndicators = new();
 
         private struct WeaponThrowParams
         {
@@ -94,8 +97,9 @@ namespace Kuros.Items.World
 
         public override void _ExitTree()
         {
-            _landingIndicatorInstance?.QueueFree();
-            _landingIndicatorInstance = null;
+            foreach (var indicator in _landingIndicators)
+                indicator?.QueueFree();
+            _landingIndicators.Clear();
             base._ExitTree();
         }
 
@@ -113,7 +117,10 @@ namespace Kuros.Items.World
             if (wantsDraw)
                 ComputeTrajectory();
             else
+            {
                 _trailPoints.Clear();
+                _landingPoints.Clear();
+            }
 
             if (wantsDraw != _shouldDraw)
             {
@@ -146,33 +153,27 @@ namespace Kuros.Items.World
 
         private void UpdateLandingIndicator(bool show)
         {
-            if (LandingIndicatorScene == null)
+            // 需要数量 = 显示中的落点数(分裂 N 枚 → N 个指示器;无场景则 0)
+            int need = show && LandingIndicatorScene != null ? _landingPoints.Count : 0;
+
+            // 补建缺失实例
+            while (_landingIndicators.Count < need)
             {
-                if (_landingIndicatorInstance != null)
-                {
-                    _landingIndicatorInstance.QueueFree();
-                    _landingIndicatorInstance = null;
-                }
-                return;
+                var instance = LandingIndicatorScene!.Instantiate<Node2D>();
+                AddChild(instance);
+                _landingIndicators.Add(instance);
             }
 
-            if (!show || _trailPoints.Count == 0)
+            // 裁剪多余实例
+            while (_landingIndicators.Count > need)
             {
-                if (_landingIndicatorInstance != null)
-                {
-                    _landingIndicatorInstance.QueueFree();
-                    _landingIndicatorInstance = null;
-                }
-                return;
+                var last = _landingIndicators[^1];
+                _landingIndicators.RemoveAt(_landingIndicators.Count - 1);
+                last?.QueueFree();
             }
 
-            if (_landingIndicatorInstance == null)
-            {
-                _landingIndicatorInstance = LandingIndicatorScene.Instantiate<Node2D>();
-                AddChild(_landingIndicatorInstance);
-            }
-
-            _landingIndicatorInstance.Position = _landingLocalPos;
+            for (int i = 0; i < need && i < _landingPoints.Count; i++)
+                _landingIndicators[i].Position = _landingPoints[i];
         }
         private bool CheckShouldDraw()
         {
@@ -252,6 +253,7 @@ namespace Kuros.Items.World
         private void ComputeTrajectory()
         {
             _trailPoints.Clear();
+            _landingPoints.Clear();
             if (_player == null) return;
 
             var p = _cachedParams;
@@ -262,25 +264,51 @@ namespace Kuros.Items.World
 
             float startLocalX = (facingX * p.ThrowOffset.X + p.ThrowStartOffset.X) * scaleComp;
             float startLocalY = (p.ThrowOffset.Y + p.ThrowStartOffset.Y) * scaleComp;
-            float landingY = startLocalY + p.LandingYOffset * scaleComp;
+            float baseLandingY = startLocalY + p.LandingYOffset * scaleComp;
 
             float totalDX = p.HorizontalDistance * facingX * scaleComp * HorizontalDistanceMultiplier;
             float peakH = p.PeakHeight * scaleComp;
             float duration = (float)p.Duration;
 
-            for (int i = 0; i <= TotalSamples; i++)
+            // 分裂预览:主轨迹(原件落点偏移)+ 各克隆落点偏移;无分裂卡 → 仅主轨迹(偏移 0)
+            var offsets = CollectSplitOffsets();
+            foreach (float offset in offsets)
             {
-                float phase = (float)i / TotalSamples;
+                float landingY = baseLandingY + offset * scaleComp;
+                for (int i = 0; i <= TotalSamples; i++)
+                {
+                    float phase = (float)i / TotalSamples;
 
-                float x = startLocalX + totalDX * phase;
+                    float x = startLocalX + totalDX * phase;
 
-                float y = Mathf.Lerp(startLocalY, landingY, phase)
-                        - Mathf.Sin(phase * Mathf.Pi) * peakH;
+                    float y = Mathf.Lerp(startLocalY, landingY, phase)
+                            - Mathf.Sin(phase * Mathf.Pi) * peakH;
 
-                _trailPoints.Add(new Vector2(x, y));
+                    _trailPoints.Add(new Vector2(x, y));
+                }
+                _landingPoints.Add(new Vector2(startLocalX + totalDX, landingY));
             }
 
-            _landingLocalPos = new Vector2(startLocalX + totalDX, landingY);
+            _landingLocalPos = _landingPoints.Count > 0 ? _landingPoints[0] : Vector2.Zero;
+        }
+
+        /// <summary>本帧应绘制的轨迹落点偏移列表:主轨迹在前;玩家持有分裂卡且手持件可分裂时追加克隆偏移。</summary>
+        private List<float> CollectSplitOffsets()
+        {
+            var offsets = new List<float> { 0f };
+            var provider = _player?.EffectController?.GetEffectByInterface<IThrowSplitPreview>();
+            if (provider != null && provider.IsSplittableForHeldItem())
+            {
+                float center = provider.CenterLandingOffsetY;
+                var clones = provider.CloneLandingOffsetsY;
+                if (center != 0f || (clones != null && clones.Length > 0))
+                {
+                    offsets.Clear();
+                    offsets.Add(center);
+                    if (clones != null) offsets.AddRange(clones);
+                }
+            }
+            return offsets;
         }
     }
 }

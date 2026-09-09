@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3org6xdpko2v"]
+
+[ext_resource type="Script" uid="uid://dolttr1fa46hy" path="res://scripts/builds/throw/ThrowLinkObstacleEffect.cs" id="1"]
+
+[node name="ThrowLinkObstacleEffect" type="Node"]
+script = ExtResource("1")
+LineHalfWidth = 10.0
+LineColor = Color(0, 18.892157, 0, 0.9019608)
+EffectId = "8dfe1b9d-461c-48ba-bab1-bd6a84b86cc3"
+Description = "节点串联：范围内的乱码块彼此链接形成障碍区，对穿过的敌人造成伤害并减速"

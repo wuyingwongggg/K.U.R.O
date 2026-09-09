@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://pywqmhl7dvjh"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://o8fvt1frmq5b" path="res://scenes/builds/throw/ThrowSplitterEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://dvrh763tv01mm" path="res://assets/BuildIcon/Throw_A_008_进程分叉.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_A008"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"SplitCounts": Array[float]([2.0, 3.0]),
+"TierValues": Array[float]([200.0, 350.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_A_008"
+DisplayName = "进程分叉"
+Description = "乱码块在投掷时分裂为{SplitCounts:0}/{SplitCounts:1}个散射状飞出"
+BuildClass = "Throw"
+Rarity = 1
+MaxStacks = 2
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A008")])

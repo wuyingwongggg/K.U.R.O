@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Effects;
 using Kuros.Core.Events;
 using Kuros.Fx;
 
@@ -64,10 +65,6 @@ namespace Kuros.Effects
         private readonly Dictionary<GameActor, float> _appliedMultipliers = new();
 
         private float _elapsed;
-
-        // ── 全局减速状态（此类型的所有实例共享）───────────────────────────────
-        private static readonly Dictionary<GameActor, List<float>> GlobalSpeedMultipliers = new();
-        private static readonly Dictionary<GameActor, float> GlobalOriginalSpeeds = new();
 
         // ── 生命周期 ─────────────────────────────────────────────────────────
         public override void _Ready()
@@ -180,56 +177,15 @@ namespace Kuros.Effects
             if (_appliedMultipliers.TryGetValue(actor, out float mult))
             {
                 _appliedMultipliers.Remove(actor);
-                RemoveSpeedMultiplier(actor, mult);
+                SharedSpeedSlowManager.Remove(actor, mult);
             }
         }
 
-        // ── 减速（静态，跨实例共享）───────────────────────────────────────────
+        // ── 减速(全局共享叠加,最小乘数生效,见 SharedSpeedSlowManager)────────────
         private void ApplySpeedMultiplier(GameActor actor, float multiplier)
         {
-            if (!GlobalOriginalSpeeds.ContainsKey(actor))
-            {
-                GlobalOriginalSpeeds[actor] = actor.Speed;
-                GlobalSpeedMultipliers[actor] = new List<float>();
-            }
-
-            GlobalSpeedMultipliers[actor].Add(multiplier);
             _appliedMultipliers[actor] = multiplier;
-            RecalculateSpeed(actor);
-        }
-
-        private static void RemoveSpeedMultiplier(GameActor actor, float multiplier)
-        {
-            if (!GlobalSpeedMultipliers.TryGetValue(actor, out var list)) return;
-
-            list.Remove(multiplier);
-
-            if (list.Count == 0)
-            {
-                if (GlobalOriginalSpeeds.TryGetValue(actor, out float originalSpeed))
-                {
-                    if (IsInstanceValid(actor) && !actor.IsDeadOrDying)
-                        actor.Speed = originalSpeed;
-                    GlobalOriginalSpeeds.Remove(actor);
-                }
-                GlobalSpeedMultipliers.Remove(actor);
-            }
-            else
-            {
-                RecalculateSpeed(actor);
-            }
-        }
-
-        private static void RecalculateSpeed(GameActor actor)
-        {
-            if (!GlobalOriginalSpeeds.TryGetValue(actor, out float originalSpeed)) return;
-            if (!GlobalSpeedMultipliers.TryGetValue(actor, out var multipliers)) return;
-
-            float totalMultiplier = multipliers.Min();
-            float finalSpeed = originalSpeed * totalMultiplier;
-
-            if (IsInstanceValid(actor) && !actor.IsDeadOrDying)
-                actor.Speed = finalSpeed;
+            SharedSpeedSlowManager.Apply(actor, multiplier);
         }
 
         // ── 视觉 ─────────────────────────────────────────────────────────────
@@ -256,7 +212,7 @@ namespace Kuros.Effects
             foreach (var actor in _appliedMultipliers.Keys.ToList())
             {
                 if (_appliedMultipliers.TryGetValue(actor, out float mult))
-                    RemoveSpeedMultiplier(actor, mult);
+                    SharedSpeedSlowManager.Remove(actor, mult);
             }
 
             _actorTimers.Clear();

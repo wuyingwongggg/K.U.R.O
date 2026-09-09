@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://cv2v56i4g2ldp"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://cu2yb6xfa43f4" path="res://scenes/builds/throw/ThrowImpactDeploymentEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://dcus8s3kwsxdi" path="res://assets/BuildIcon/Throw_A_004_冲击投放.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_A004"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([30.0, 40.0, 50.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_A_004"
+DisplayName = "冲击投放"
+Description = "乱码块摧毁时对范围内的所有目标造成{0}/{1}/{2}的伤害并造成击退。(PS：谨慎使用)"
+BuildClass = "Throw"
+MaxStacks = 3
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A004")])

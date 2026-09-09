@@ -13,6 +13,10 @@ namespace Kuros.Actors.Heroes
     /// </summary>
     public partial class PlayerItemInteractionComponent : Node
     {
+        /// <summary>投掷出手事件(实体已生成并 ApplyThrowImpulse 后同步触发)。
+        /// A_008 进程分叉等玩家侧构筑订阅;投掷者侧不做任何构筑逻辑,零耦合。</summary>
+        public static event Action<RigidBodyWorldItemEntity>? PieceThrown;
+
         [Export(PropertyHint.Range, "0,200,1")]
         public float PlacementMargin = 16f;
 
@@ -356,13 +360,30 @@ namespace Kuros.Actors.Heroes
 
             entity.LastDroppedBy = _actor;
 
-            // 仅"放置"消费件身份:家具放回世界时重新入 throwcore 组 → 在场脉冲恢复;投掷不消费
-            if (disposition == DropDisposition.Place
-                && extracted.RuntimeSourceTag == Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag
-                && entity is Node2D placedPiece)
+            // 消费件身份(跨拾取恢复):
+            // · 件 + 放置 → 重新入 throwcore 组 → 在场脉冲恢复(投掷不恢复)
+            // · A_007 复制件(任意生成方式)→ 恢复复制身份组 + 乱码块滤镜
+            bool isPiece = extracted.RuntimeSourceTag == Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag;
+            if (isPiece || extracted.RuntimeIsThrowCoreCopy)
             {
-                placedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag);
+                if (entity is Node2D spawnedPiece)
+                {
+                    // 件身份(摧毁爆炸依据):放置与投掷都入组;脉冲恢复(ThrowCorePieceTag)仅放置
+                    if (isPiece)
+                    {
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceIdentityTag);
+                        spawnedPiece.SetMeta("throwcore_born_ms", Time.GetTicksMsec()); // A_004 误爆防护
+                    }
+                    if (isPiece && disposition == DropDisposition.Place)
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag);
+                    if (extracted.RuntimeIsThrowCoreCopy)
+                    {
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCoreCopyTag);
+                        Kuros.Builds.Throw.PieceCopyGlitchDecorator.Apply(spawnedPiece);
+                    }
+                }
                 extracted.RuntimeSourceTag = null;
+                extracted.RuntimeIsThrowCoreCopy = false;
             }
 
             if (entity is RigidBodyWorldItemEntity re && savedCd > 0f)
@@ -381,6 +402,8 @@ namespace Kuros.Actors.Heroes
                     PendingThrowFrame = -1;
                 }
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
+                if (entity is RigidBodyWorldItemEntity thrownRigid)
+                    PieceThrown?.Invoke(thrownRigid); // 出手瞬间钩子(A_008 分裂散射)
                 if (entity is Node2D eNode)
                     eNode.ZIndex = extracted.Item.ThrowZIndex;
             }

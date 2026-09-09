@@ -21,7 +21,7 @@ namespace Kuros.Fx
 		/// <summary>生成衍生特效时按自身缩放等比缩放衍生特效（fx.Scale ×= 自身 Scale）。默认关闭。</summary>
 		[Export] public bool ScaleSpawnWithSelf { get; set; } = false;
 		/// <summary>衍生特效生成延迟（秒）：0 = 销毁时生成（与销毁同帧）；N&gt;0 = 动画开始 N 秒后生成（不随销毁）。</summary>
-		[Export(PropertyHint.Range, "0,10,0.1")] public float SpawnDelay { get; set; } = 0f;
+		[Export(PropertyHint.Range, "0,10,0.01")] public float SpawnDelay { get; set; } = 0f;
 		/// <summary>延迟销毁秒数。&gt;0 时用定时器销毁（不等动画播完）；0 时等动画播完销毁。</summary>
 		[Export] public float DestroyDelay { get; set; } = 0f;
 		/// <summary>为 true 时销毁 Owner（如挂载的特效根节点）而非自身，生成的子特效挂在 Owner 的父节点下。</summary>
