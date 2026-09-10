@@ -1,8 +1,8 @@
-[gd_scene load_steps=41 format=3 uid="uid://bvps5t0s8owhw"]
+[gd_scene load_steps=40 format=3 uid="uid://bvps5t0s8owhw"]
 
 [ext_resource type="Script" uid="uid://b80phh0fm2xdj" path="res://scripts/actors/enemies/EnemyC1WaiterA.cs" id="1_cc1qw"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_thw4a"]
-[ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_ikeql"]
+[ext_resource type="Resource" uid="uid://biq1vqy017vmi" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_ikeql"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="4_effect_controller"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="5_dx6wd"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="6_72br6"]
@@ -53,9 +53,6 @@ size = Vector2(600, 300)
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pe6ep"]
 radius = 200.0
 height = 1000.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_pu5dh"]
-radius = 900.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ikeql"]
 radius = 150.0
@@ -219,18 +216,13 @@ position = Vector2(500, 0)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_pe6ep")
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("6_wyuus")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
-[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
-visible = false
-scale = Vector2(0.99999994, 0.99999994)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(40, -1000)
-shape = SubResource("CircleShape2D_pu5dh")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964

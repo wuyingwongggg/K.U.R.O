@@ -277,7 +277,7 @@ P2SupportBrain._Process（0.5s tick）
 关键文件：
 - `OllamaGenerateClient`（scripts/systems/ai/OllamaGenerateClient.cs）：纯通信层，`Endpoint` 导出（默认 `http://localhost:11434/api/generate`）、流式/非流式、超时、`think=false`、**已有 `system` 参数通道**（payload["system"]）
 - `AiDecisionBridge`（scripts/systems/ai/AiDecisionBridge.cs）：状态采集 + prompt 组装 + 响应解析编排；`DefaultInstruction` 导出
-- `P2SupportBrain.TryEmitAiDecision`（scripts/companions/P2SupportBrain.cs:247-309）：LLM 决策消费、去重（signature）、映射、校验
+- `P2SupportBrain.TryEmitAiDecision`（scripts/companions/P2SupportBrain.cs）：LLM 决策消费、去重（signature）、映射、校验
 
 ### 9.2 外部 API 适配现状：目前不能直接接
 
@@ -373,32 +373,32 @@ dtl 现存 label 全部有真实调用链：`ready_N`/`quiet_scene_pickup_N`/`fa
 
 | # | 触发点 | 触发时机/条件 | 代码位置 | 文本 | 通道 | 来源 |
 |---|---|---|---|---|---|---|
-| 1 | `Ready` | P2 就位（场景加载 `_Ready`，一次） | [P2CompanionController.cs:196](scripts/companions/P2CompanionController.cs#L196) | `ready_N` | PushHint | **内置** |
-| 2 | `Combat` | 调试热键按下（EnableDebugHintHotkey + DebugHintKey） | [P2CompanionController.cs:277](scripts/companions/P2CompanionController.cs#L277) | `combat` | PushHint | **内置** |
-| 3 | `FollowStarted` | 越界跟随：与玩家距离 > MoveRangeMax 切 Follow 模式 | [P2CompanionController.cs:159](scripts/companions/P2CompanionController.cs#L159) | `follow_started_N` | PushHint | **内置** |
-| 4 | `FreeRoamStarted` | 跟随超时（FollowMaxDuration）切回自由模式 | [P2CompanionController.cs:159](scripts/companions/P2CompanionController.cs#L159) | `free_roam_started_N` | PushHint | **内置** |
-| 5 | `WeaponFetchStart` | `fetch_weapon` 决策应用成功（出发拾取武器） | [P2SupportExecutor.cs:347](scripts/companions/P2SupportExecutor.cs#L347) | `fetch_weapon_N` | PushHint | **内置** |
-| 6 | `ShieldApplied` | `ApplyShield` 成功施加护盾 | [P2SupportExecutor.cs:549](scripts/companions/P2SupportExecutor.cs#L549) | `shield_applied_N` | PushHint | **内置** |
-| 7 | `Healed` | `ApplyHeal` 成功治疗 | [P2SupportExecutor.cs:591](scripts/companions/P2SupportExecutor.cs#L591) | `healed_N` | PushHint | **内置** |
-| 8 | `ShieldExpired` | 护盾到期计时器触发 | [P2SupportExecutor.cs:659](scripts/companions/P2SupportExecutor.cs#L659) | `shield_expired` | PushHint | **内置** |
-| 9 | `PlayerDying` | 玩家进入 Dying/Dead（规则路径，整个死亡窗口只说一次） | [P2SupportBrain.cs:618](scripts/companions/P2SupportBrain.cs#L618) | `player_dying_N` | **PushHintUrgent 抢占** | **内置** |
+| 1 | `Ready` | P2 就位（场景加载 `_Ready`，一次） | [P2CompanionController.cs `_Ready` 就位气泡](scripts/companions/P2CompanionController.cs) | `ready_N` | PushHint | **内置** |
+| 2 | `Combat` | 调试热键按下（EnableDebugHintHotkey + DebugHintKey） | [P2CompanionController.cs 调试热键分支](scripts/companions/P2CompanionController.cs) | `combat` | PushHint | **内置** |
+| 3 | `FollowStarted` | 越界跟随：与玩家距离 > MoveRangeMax 切 Follow 模式 | [P2CompanionController.cs 漫游模式切换播报](scripts/companions/P2CompanionController.cs) | `follow_started_N` | PushHint | **内置** |
+| 4 | `FreeRoamStarted` | 跟随超时（FollowMaxDuration）切回自由模式 | [P2CompanionController.cs 漫游模式切换播报](scripts/companions/P2CompanionController.cs) | `free_roam_started_N` | PushHint | **内置** |
+| 5 | `WeaponFetchStart` | `fetch_weapon` 决策应用成功（出发拾取武器） | [P2SupportExecutor.cs `fetch_weapon` 分支](scripts/companions/P2SupportExecutor.cs) | `fetch_weapon_N` | PushHint | **内置** |
+| 6 | `ShieldApplied` | `ApplyShield` 成功施加护盾 | [P2SupportExecutor.cs `ApplyShield`](scripts/companions/P2SupportExecutor.cs) | `shield_applied_N` | PushHint | **内置** |
+| 7 | `Healed` | `ApplyHeal` 成功治疗 | [P2SupportExecutor.cs `ApplyHeal`](scripts/companions/P2SupportExecutor.cs) | `healed_N` | PushHint | **内置** |
+| 8 | `ShieldExpired` | 护盾到期计时器触发 | [P2SupportExecutor.cs 护盾到期分支](scripts/companions/P2SupportExecutor.cs) | `shield_expired` | PushHint | **内置** |
+| 9 | `PlayerDying` | 玩家进入 Dying/Dead（规则路径，整个死亡窗口只说一次） | [P2SupportBrain.cs `TryEmitPlayerDyingDialogue`](scripts/companions/P2SupportBrain.cs) | `player_dying_N` | **PushHintUrgent 抢占** | **内置** |
 
 ### 11.2 决策通道（规则/LLM → SupportDecision → Executor）
 
 | # | 触发点 | 触发时机/条件 | 代码位置 | 文本 | 通道 | 来源 |
 |---|---|---|---|---|---|---|
-| 10 | `fallback_enemy_close` | 护盾决策被拒兜底（`enemy_too_close` 且玩家当前无盾） | [P2SupportBrain.cs:529](scripts/companions/P2SupportBrain.cs#L529) → show_hint | `fallback_enemy_close` | PushHint | **内置** |
-| 11 | `fallback_generic` | 任意决策被拒的通用兜底 | [P2SupportBrain.cs:532](scripts/companions/P2SupportBrain.cs#L532) → show_hint | `fallback_generic` | PushHint | **内置** |
-| 12 | `suggest_retreat` | LLM 意图 `retreat` 映射 | [P2SupportDecisionBridge.cs:130](scripts/companions/P2SupportDecisionBridge.cs#L130) | LLM `message`，为空回退 `suggest_retreat` | show_hint | **混合** |
-| 13 | `ai_received` / `suggest_pickup` | LLM 意图 `show_hint`/`suggest_pickup` 映射 | [P2SupportDecisionBridge.cs:123](scripts/companions/P2SupportDecisionBridge.cs#L123) / [:140](scripts/companions/P2SupportDecisionBridge.cs#L140) | LLM `message`，为空回退 `ai_received`/`suggest_pickup_N` | show_hint | **混合** |
-| 14 | LLM 个性台词 | `show_hint_raw`：LLM reason 动态文本；触发 = 决策轮询（AiRequestIntervalSeconds=10s）+ 个性闲聊独立节流（14s 间隔 + 28% 概率 + 签名去重窗口 5 条） | [P2SupportExecutor.cs:282](scripts/companions/P2SupportExecutor.cs#L282) + [P2SupportBrain.cs:437](scripts/companions/P2SupportBrain.cs#L437) | LLM 动态（reason 截断） | show_hint_raw | **AI 实时** |
+| 10 | `fallback_enemy_close` | 护盾决策被拒兜底（`enemy_too_close` 且玩家当前无盾） | [P2SupportBrain.cs `fallback_enemy_close` 兜底](scripts/companions/P2SupportBrain.cs) → show_hint | `fallback_enemy_close` | PushHint | **内置** |
+| 11 | `fallback_generic` | 任意决策被拒的通用兜底 | [P2SupportBrain.cs `fallback_generic` 兜底](scripts/companions/P2SupportBrain.cs) → show_hint | `fallback_generic` | PushHint | **内置** |
+| 12 | `suggest_retreat` | LLM 意图 `retreat` 映射 | [P2SupportDecisionBridge.cs `retreat` 映射](scripts/companions/P2SupportDecisionBridge.cs) | LLM `message`，为空回退 `suggest_retreat` | show_hint | **混合** |
+| 13 | `ai_received` / `suggest_pickup` | LLM 意图 `show_hint`/`suggest_pickup` 映射 | [P2SupportDecisionBridge.cs `show_hint`/`suggest_pickup` 映射](scripts/companions/P2SupportDecisionBridge.cs) | LLM `message`，为空回退 `ai_received`/`suggest_pickup_N` | show_hint | **混合** |
+| 14 | LLM 个性台词 | `show_hint_raw`：LLM reason 动态文本；触发 = 决策轮询（AiRequestIntervalSeconds=10s）+ 个性闲聊独立节流（14s 间隔 + 28% 概率 + 签名去重窗口 5 条） | [P2SupportExecutor.cs `show_hint_raw` 分支](scripts/companions/P2SupportExecutor.cs) + [P2SupportBrain.cs 个性闲聊闸门](scripts/companions/P2SupportBrain.cs) | LLM 动态（reason 截断） | show_hint_raw | **AI 实时** |
 
 ### 11.3 死代码/未接线
 
 | 项 | 现状 |
 |---|---|
-| `QuietScenePickup` | 枚举 + Speak case 存在（[P2DialogueController.cs:88](scripts/companions/P2DialogueController.cs#L88)），**无任何调用方**；dtl 里 `quiet_scene_pickup_N` 变体也不会被触发 |
-| `PushHintRandom` | 方法定义了（[P2DialogueController.cs:126](scripts/companions/P2DialogueController.cs#L126)），无调用方 |
+| `QuietScenePickup` | 枚举 + Speak case 存在（[P2DialogueController.cs `QuietScenePickup` case](scripts/companions/P2DialogueController.cs)），**无任何调用方**；dtl 里 `quiet_scene_pickup_N` 变体也不会被触发 |
+| `PushHintRandom` | 方法定义了（[P2DialogueController.cs `PushHintRandom`](scripts/companions/P2DialogueController.cs)），无调用方 |
 | `FallbackEnemyClose`/`FallbackGeneric` 的 Speak 枚举 case | 存在但实际不走——兜底经 `BuildFallbackHint` 返回 key 字符串 → `SupportDecision.Hint` → show_hint message 路径，与 Speak 枚举无关 |
 
 ### 11.4 触发频率与延迟特征（与实时性问题的关系）
@@ -419,10 +419,10 @@ dtl 现存 label 全部有真实调用链：`ready_N`/`quiet_scene_pickup_N`/`fa
 
 | 需求 | 现状 | 差距 |
 |---|---|---|
-| 称呼精准 | persona 只写了"不要用玩家来称呼玩家"（[AiDecisionBridge.cs:28-33](scripts/systems/ai/AiDecisionBridge.cs#L28-L33)），**无正向定义**；persona 里唯一人类角色是"博士" | 模型倾向用 persona 里出现过的人称——必须显式定义称呼 + 正反例 |
+| 称呼精准 | persona 只写了"不要用玩家来称呼玩家"（[AiDecisionBridge.cs persona 定义](scripts/systems/ai/AiDecisionBridge.cs)），**无正向定义**；persona 里唯一人类角色是"博士" | 模型倾向用 persona 里出现过的人称——必须显式定义称呼 + 正反例 |
 | 生成延迟 | qwen3.5 本地 10~15s（§10.2 实测）；MaxPredictTokens=128 | 可压缩（见 12.2）；但根治靠"文本长时效 + 预取缓存"（见 12.3） |
 | 多样性 | `DefaultInstruction` 是决策指令（god view："Use XX weapon to attack"）；`AiPromptTemplate.DefaultPolicy` 只约束"别报数字"；**无话题轮换机制** | 每次都在"给指令"→ 必然同质化；AiDescription 在状态里但未被引导使用 |
-| 记忆 | **无**。GameState 每次全新快照；Ollama 响应 `Context` 字段（[OllamaGenerateClient.cs:960-961](scripts/systems/ai/OllamaGenerateClient.cs#L960-L961)）存在但桥接层未回传；signature 去重仅内存 5 条 | 击杀/拾取/到达统计不存在；`SaveManager.ClearCount`（通关次数，[SaveManager.cs:553](scripts/managers/SaveManager.cs#L553)）**已持久化可用** |
+| 记忆 | **无**。GameState 每次全新快照；Ollama 响应 `Context` 字段（[OllamaGenerateClient.cs `Context` 字段](scripts/systems/ai/OllamaGenerateClient.cs)）存在但桥接层未回传；signature 去重仅内存 5 条 | 击杀/拾取/到达统计不存在；`SaveManager.ClearCount`（通关次数，[SaveManager.cs `ClearCount`](scripts/managers/SaveManager.cs)）**已持久化可用** |
 
 ### 12.2 延迟压缩（10s 内）
 

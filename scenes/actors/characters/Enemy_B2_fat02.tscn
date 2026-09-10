@@ -1,7 +1,7 @@
-[gd_scene load_steps=38 format=3 uid="uid://wrebd662va23"]
+[gd_scene load_steps=37 format=3 uid="uid://wrebd662va23"]
 
 [ext_resource type="Script" uid="uid://dklt5k3rq7qjb" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
-[ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
+[ext_resource type="Resource" uid="uid://biq1vqy017vmi" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_6yc1u"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_xrpf5"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_3u4qs"]
@@ -48,9 +48,6 @@ height = 1600.0
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3u4qs"]
 radius = 800.0
 height = 1800.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_kl8y6"]
-radius = 1026.4
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_s42mu"]
 radius = 150.0
@@ -221,17 +218,13 @@ position = Vector2(900, 0)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_3u4qs")
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("5_3u4qs")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
-[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
-visible = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(0, -1100)
-shape = SubResource("CircleShape2D_kl8y6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964

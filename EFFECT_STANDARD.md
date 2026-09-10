@@ -302,17 +302,23 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 
 ---
 
-## 十、目标视觉锚点（VisualEffectArea）
+## 十、目标视觉锚点（VisualEffectMarker2D）
 
 生成在目标**身上**的视觉（dot 特效、buff 视觉等）不能直接使用目标原点（`GameActor.GlobalPosition` = 脚底/几何中心）——高个子敌人（如 b1_fat）的视觉中心在身体中上部，原点定位会让特效出现在脚底。
 
 ### 规则
 
 - **视觉定位一律走 `GameActor.GetVisualAnchorWorld()`**，优先级：
-  1. 目标身上的 `VisualEffectArea`（Area2D，挂 `Sprite2D/VisualEffectArea`，其 `CollisionShape2D.GlobalPosition` 即视觉中心）
-  2. 回退 `HitArea` 中心
-  3. 回退目标原点
-- **敌人场景**：体型使视觉中心偏离原点的敌人，需配置 `Sprite2D/VisualEffectArea` + `CollisionShape2D`（先例：`Enemy_B1_fat`，视觉中心 offset 配在 shape 的 position）
+  1. `VisualEffectPosition/VisualEffectMarker2D`（显式视觉挂点，**按名字+类型查找**，与场景内其它 Marker2D 不混淆；可拖拽 Marker 调位置）
+  2. 目标身上的 `VisualEffectArea`（Area2D，挂 `Sprite2D/VisualEffectArea`，其 `CollisionShape2D.GlobalPosition` 即视觉中心；存量回退）
+  3. 回退 `HitArea` 中心
+  4. 回退目标原点
+- **挂载一律用工具 `Kuros.Fx.VisualAnchorAttach.Attach(fx, actor)`**，它封装了两条纪律：
+  - **排序**：挂 `VisualEffectPosition` 容器、根坐标保持原点 —— y_sort 容器中节点 Y 即排序键，根摆在锚点坐标会被排到角色后（遮挡）；
+  - **偏移**：锚点偏移由内部子节点 Position 承载 —— 不要用 `AddChild` 重挂承载偏移（重挂默认保留全局变换，会反向补偿抵消偏移）。
+- **敌人场景**：体型使视觉中心偏离原点的敌人，需配置 `Sprite2D2/VisualEffectPosition` + 子 `VisualEffectMarker2D`（视觉中心 offset 配在 Marker 的 position）。
+  **2026-09 已完成迁移**：14 个敌人场景从 `VisualEffectArea`(Area2D+CollisionShape2D) 全部换为 Marker 结构（形状资源同步清理），与 `main_character` 挂点体例一致；Area 方案保留为解析回退，仅存量/特殊场景使用。
+  动机：Area2D 是为物理查询设计的（默认参与每帧宽相位），纯锚点用途属浪费且拖动 gizmo 易被误认成判定区；Marker2D 运行时零物理/零绘制。
 - **不适用**：
   - 死亡特效——留在目标原点（倒地位置，见 `EnemyDyingState`）
   - 瞄准类打击点（光束/投掷瞄准 `HitArea` 中心）——与伤害判定一致，不随视觉锚点
@@ -321,7 +327,9 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 
 - `DotBurnEffect`（灼烧火焰跟随视觉锚点）
 - `DotBleedEffect`（流血视觉挂视觉锚点）
-- `P2CompanionController.SpawnActionEffect`（P2 护盾/治疗特效——原挂 GrabArea 中心（脚下，俯视角拾取判定），改视觉锚点）
+- `P2CompanionController.SpawnActionEffect`（P2 护盾/治疗特效——经 `VisualAnchorAttach` 挂载，根留原点避免 y-sort 遮挡）
+- `ThrowShieldTransformEffect`（A_009 护盾——推动 Marker 挂点优先级与 `VisualAnchorAttach` 工具收敛；上述调用点随之全体升级）
+- 14 个敌人场景挂点体例迁移：`VisualEffectArea` → `VisualEffectPosition/VisualEffectMarker2D`（`DotBurnEffect`/`DotBleedEffect`/`P2CompanionController.SpawnActionEffect` 在敌人目标上自动受益）
 
 ---
 

@@ -9,7 +9,7 @@ P2 是一个 AI 伴随角色（Spine 骨骼 `Enemy_A1_yui`），独立场景挂�
 - **移动**：自由游走（环形区域）+ 跟随模式（双模式切换）+ 射线碰撞（自由游走时）
 - **动画**：状态机驱动 5 个 Spine 动画（walk/move/action/hit/stun）
 - **决策**：LLM（本地 Ollama）优先 + 规则脚本兜底
-- **动作**：治疗（食物）、护盾、气泡提示、武器拾取拖拽、移动
+- **动作**：治疗（技能路径）、护盾、气泡提示、武器拾取拖拽、移动
 - **受击**：可被敌人攻击（碰撞体 + HitArea + TakeDamage）
 
 ## 2. 场景结构（scenes/actors/characters/P2.tscn）
@@ -89,6 +89,11 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 - 治疗/护盾执行成功 → `TriggerAction()`（两阶段：切跟随接近玩家 → 距离 ≤ `FollowRangeMin` → 播 action 动画）
 - 治疗统一走技能路径（玩家背包食物路径已废弃）；技能 CD（导出）
 
+**护盾视觉挂载（2026-09 修订）**：`SpawnActionEffect` 经 `Kuros.Fx.VisualAnchorAttach.Attach` 挂载——
+特效根挂 `VisualEffectPosition` 容器且**坐标留原点**（y_sort 容器中节点 Y 即排序键，根摆锚点会被排到角色后被遮挡），
+锚点偏移（`GetVisualAnchorWorld`）由内部子节点 Position 承载。**禁止**用 `AddChild` 重挂承载偏移（重挂保留全局变换会反向抵消）。
+详见 `EFFECT_STANDARD.md` 第十节。护盾场景由根节点 `ActionEffectScenes` 数组配置（`[0]` 护盾、`[1]` 治疗、`[2]` 装备加成，P2.tscn 配置），换视觉=换数组引用。
+
 ### 3.4 AI_DecisionBridge（LLM 映射）
 
 | LLM 意图 | 本地意图 |
@@ -118,13 +123,13 @@ CharacterBody2D (P2CompanionController)           ← 总控制器（移动/朝�
 ```
 LLM（每 1s Ollama）→ AI_DecisionBridge 映射+校验 ─┐
 规则（每 0.5s，AI_Brain）─────────────────────────┤
-                                                ▼
-                                    AI_Executor.TryExecute（白名单）
-                                                │
-                    ┌───────────────┬───────────┴──────────────┐
-                    ▼               ▼                          ▼
-              触发 action     PushHint 气泡              SetMoveTarget / 拾取
-            （两阶段接近玩家）  （Dialogic）            （Controller 移动 → 状态机动画）
+												▼
+									AI_Executor.TryExecute（白名单）
+												│
+					┌───────────────┬───────────┴──────────────┐
+					▼               ▼                          ▼
+			  触发 action     PushHint 气泡              SetMoveTarget / 拾取
+			（两阶段接近玩家）  （Dialogic）            （Controller 移动 → 状态机动画）
 ```
 
 ## 5. 命名规范
@@ -150,6 +155,12 @@ LLM（每 1s Ollama）→ AI_DecisionBridge 映射+校验 ─┐
 **兼容要点**：气泡锚点已配置（`Anchor_Hint`），新台词零场景改动。
 
 ### 6.2 添加新动作（行为）
+
+> **数值归属约束（2026-09）**：技能独特数值（护盾量/时长、治疗量、伤害量…）属于**技能定义/携带配置**，
+> 不要写进 Executor 逻辑或跨技能共享导出。Executor 只做"读配置 → 执行行为"；
+> 同一技能需要多套数值时，应通过配置覆盖而非新建 Handler。
+> 现状：数值暂存于 `P2ShieldSkillHandler` 等 Handler 的导出（如 `ShieldAmount`/`ShieldDurationSeconds`），
+> 携带上限/开局配置 HUD 尚**未实施**（见 §7）。
 
 **标准五步**（现有 fetch_weapon / move_to 即此模式）：
 1. **`SupportDecision.cs`**：新增工厂方法（如 `SupportDecision.Defend(...)`）——设置 `Intent` 字符串
@@ -185,3 +196,8 @@ LLM（每 1s Ollama）→ AI_DecisionBridge 映射+校验 ─┐
 - **Stun 状态**：就位无触发源（未来接眩晕/受控效果）
 - **P2HintBubble**：独立场景存在但无调用方（气泡走 Dialogic）
 - **P2 自愈**：P2 受击扣 HP 但无治疗自身的手段（治疗目标是玩家）
+- **技能携带制（未实施，2026-09 讨论）**：目标形态 = 开局在 HUD 从技能目录中选 N 个携带（当前设想的 N=2），
+  每个技能自带独特数值（护盾量/治疗量/持续时间/CD/伤害量，非共有字段），目录含未来技能（拾取武器已有、攻击敌人未建）。
+  独立化方向：① 技能定义补 `EffectScene`（取代 `ActionEffectScenes` 数组索引约定）；② Handler 数值改为"实例可覆盖"；
+  ③ 新增 `SkillLoadout`（本局携带 N 项 + 逐项数值覆盖），Executor 改读 Loadout。
+  触发施工的信号：开始做"开局配置界面"或"同一技能第二套数值"时先落 ③ 的最小形态（暂以数组导出替代正式资源）。

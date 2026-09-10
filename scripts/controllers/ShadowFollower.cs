@@ -6,7 +6,7 @@ namespace Kuros.Controllers
 	/// 读取 SpineBoneNode 的 X 轴位移并应用到 Shadow。
 	/// Shadow 保持在根节点下，不跟随骨骼的 Y 偏移和旋转。
 	/// </summary>
-	public partial class ShadowFollower : Sprite2D
+	public partial class ShadowFollower : Node2D
 	{
 		[Export] public NodePath? TargetBone { get; set; }
 		[Export] public bool FollowBoneX { get; set; } = true;

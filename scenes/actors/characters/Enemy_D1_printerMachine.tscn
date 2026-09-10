@@ -1,10 +1,10 @@
-[gd_scene load_steps=39 format=3 uid="uid://cpcvmvf2n5ahe"]
+[gd_scene load_steps=38 format=3 uid="uid://cpcvmvf2n5ahe"]
 
 [ext_resource type="Script" uid="uid://c27ux0mic6wyu" path="res://scripts/actors/enemies/EnemyD1PrinterMachine.cs" id="1_enemy"]
 [ext_resource type="Script" uid="uid://bs5lhgllhwdlg" path="res://scripts/actors/enemies/EnemyBehaviorConfig.cs" id="2_config"]
 [ext_resource type="PackedScene" uid="uid://bjc5xybqpv1rc" path="res://scenes/objects/Animation_printerMachine.tscn" id="3_221pg"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_effect"]
-[ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_v1b7h"]
+[ext_resource type="Resource" uid="uid://biq1vqy017vmi" path="res://resources/loot/Enemy_NormalDrops.tres" id="3_v1b7h"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shader"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_sm6sb"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_texture"]
@@ -54,9 +54,6 @@ radius = 1024.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
 size = Vector2(650, 300)
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_v1b7h"]
-radius = 900.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_v1b7h"]
 radius = 150.0
@@ -209,18 +206,13 @@ z_index = 10
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_hit")
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("5_sm6sb")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
-[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
-visible = false
-scale = Vector2(0.99999994, 0.99999994)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(0, -550)
-shape = SubResource("CircleShape2D_v1b7h")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964

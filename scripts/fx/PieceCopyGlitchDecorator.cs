@@ -23,10 +23,7 @@ namespace Kuros.Fx
             if (piece == null || !GodotObject.IsInstanceValid(piece)) return false;
 
             if (!TryFindVisualContainer(piece, out var container))
-            {
-                GD.Print($"[PieceCopyGlitchDecorator] {piece.Name} 跳过滤镜:找不到视觉容器(RigidBody2D)");
                 return false;
-            }
 
             var shader = LoadGlitchShader();
             if (shader == null)
@@ -46,14 +43,7 @@ namespace Kuros.Fx
             int applied = ApplyToSprite(container, material, container is Sprite2D selfSprite
                 ? selfSprite : null, requireFurnitureArt);
 
-            if (applied == 0)
-            {
-                GD.Print($"[PieceCopyGlitchDecorator] {piece.Name} 跳过滤镜:无匹配贴图 Sprite(requireFurnitureArt={requireFurnitureArt})");
-                return false;
-            }
-
-            GD.Print($"[PieceCopyGlitchDecorator] {piece.Name} 已应用乱码滤镜({applied} 个 Sprite)");
-            return true;
+            return applied > 0;
         }
 
         private static int ApplyToSprite(Node2D root, ShaderMaterial material,

@@ -405,12 +405,27 @@ namespace Kuros.Core
 		}
 
 		/// <summary>
-		/// 目标的视觉锚点（世界坐标）：优先 VisualEffectArea（模拟视觉身高的锚点——高个子敌人如 b1_fat
-		/// 在 Sprite2D/VisualEffectArea 下配 CollisionShape2D 标记视觉中心），回退 HitArea 中心，再回退目标原点。
-		/// 供生成在目标身上的视觉使用（dot 特效/死亡特效等）——避免高个子敌人特效出现在脚底。
+		/// 目标的视觉锚点（世界坐标）优先级：
+		/// 1. VisualEffectPosition/Marker2D（可拖拽的视觉挂点先例:玩家 main_character）
+		/// 2. VisualEffectArea 的 CollisionShape2D（高个子敌人如 b1_fat 的视觉中心）
+		/// 3. HitArea 中心
+		/// 4. 目标原点
+		/// 供生成在目标身上的视觉使用（dot 特效/护盾/治疗等）——避免特效出现在脚底。
 		/// </summary>
 		public Vector2 GetVisualAnchorWorld()
 		{
+			// 1) 显式视觉挂点 VisualEffectMarker2D(存在即最优先;部署在 VisualEffectPosition 容器下,排序键不参与)
+			//   按"名字+类型"取,避免与场景内其它 Marker2D 混淆
+			var positionNode = GetNodeOrNull<Node2D>("VisualEffectPosition")
+				?? FindChild("VisualEffectPosition", recursive: true, owned: false) as Node2D;
+			if (positionNode != null)
+			{
+				var anchorMarker = positionNode.GetNodeOrNull<Marker2D>("VisualEffectMarker2D");
+				if (anchorMarker != null)
+					return anchorMarker.GlobalPosition;
+			}
+
+			// 2) VisualEffectArea 的碰撞形状中心
 			var visualArea = GetNodeOrNull<Area2D>("VisualEffectArea")
 				?? GetNodeOrNull<Area2D>("Sprite2D/VisualEffectArea")
 				?? FindChild("VisualEffectArea", recursive: true, owned: false) as Area2D;
@@ -418,11 +433,13 @@ namespace Kuros.Core
 			if (visualShape != null)
 				return visualShape.GlobalPosition;
 
+			// 3) HitArea 中心
 			var hitArea = ResolvePreferredHitArea();
 			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			if (hitShape != null)
 				return hitShape.GlobalPosition;
 
+			// 4) 目标原点
 			return GlobalPosition;
 		}
 

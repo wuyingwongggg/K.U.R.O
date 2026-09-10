@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://8ce54l6083nt"]
+[gd_scene load_steps=52 format=3 uid="uid://8ce54l6083nt"]
 
 [ext_resource type="Script" uid="uid://d3gkoo7f3rxiq" path="res://scripts/actors/enemies/EnemyC1WaiterB.cs" id="1_enemy_script"]
 [ext_resource type="Script" uid="uid://crdjpji0qtc4q" path="res://scripts/core/stats/StatModifier.cs" id="2_eqcia"]
@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://binvuyk5j65a2" path="res://assets/ui/hp&exp_bar/boss图标.png" id="3_jjtbv"]
 [ext_resource type="Script" uid="uid://d4mh83kyh88kd" path="res://scripts/core/stats/CharacterStatProfile.cs" id="3_qgdql"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="4_state_machine"]
-[ext_resource type="Resource" uid="uid://d13rra8f1j6ep" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_0r650"]
+[ext_resource type="Resource" uid="uid://kvebs5xs5mph" path="res://resources/loot/Enemy_EliteDrops.tres" id="5_0r650"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="5_idle_state"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="5_muxhp"]
 [ext_resource type="Script" uid="uid://c6mvoo4sy0r7g" path="res://scripts/actors/enemies/states/EnemyWalkState.cs" id="6_walk_state"]
@@ -76,9 +76,6 @@ height = 800.0
 radius = 700.0
 height = 1500.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_jjtbv"]
-radius = 800.0
-
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_jjtbv"]
 radius = 100.0
 height = 300.0
@@ -88,7 +85,7 @@ script = ExtResource("18_r5hc0")
 Scene = ExtResource("19_f3kig")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 0
-SpawnMarkerPaths = [NodePath("../../../../Sprite2D2/Marker2D5")]
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D5")]
 LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 2.5
@@ -100,7 +97,7 @@ script = ExtResource("18_r5hc0")
 Scene = ExtResource("23_uaeio")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 0
-SpawnMarkerPaths = [NodePath("../../../../Sprite2D2/Marker2D4")]
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D4")]
 LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0
@@ -128,7 +125,7 @@ script = ExtResource("18_r5hc0")
 Scene = ExtResource("23_uaeio")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 0
-SpawnMarkerPaths = [NodePath("../../../../Sprite2D2/Marker2D4")]
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D4")]
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0
@@ -223,7 +220,7 @@ skeleton_data_res = ExtResource("18_t4d47")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 1.42
 script = ExtResource("5_muxhp")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -287,23 +284,21 @@ position = Vector2(600, 0)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_lmwrc")
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("8_r5hc0")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
-[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
-visible = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(0, -550)
-shape = SubResource("CircleShape2D_jjtbv")
 
-[node name="Marker2D4" type="Marker2D" parent="Sprite2D2"]
-position = Vector2(0, -1800)
+[node name="Marker2D4" type="Marker2D" parent="VisualEffectPosition"]
+position = Vector2(0, -1799.9999)
+scale = Vector2(0.99999994, 0.99999994)
 
-[node name="Marker2D5" type="Marker2D" parent="Sprite2D2"]
-position = Vector2(-577.5, -1012.5)
+[node name="Marker2D5" type="Marker2D" parent="VisualEffectPosition"]
+position = Vector2(-577.49994, -1012.4999)
+scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964
@@ -312,10 +307,10 @@ shape = SubResource("CapsuleShape2D_jjtbv")
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(-200, -120)
+position = Vector2(-200, -100)
 
 [node name="Marker2D2" type="Marker2D" parent="Node2D"]
-position = Vector2(700, -520)
+position = Vector2(700, -500)
 
 [node name="Marker2D3" type="Marker2D" parent="Node2D"]
 position = Vector2(-250, -1890)

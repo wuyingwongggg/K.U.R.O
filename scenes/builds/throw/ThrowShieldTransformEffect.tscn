@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/builds/throw/ThrowShieldTransformEffect.cs" id="1"]
+[ext_resource type="PackedScene" path="res://resources/effects/ShieldRingEffect.tscn" id="2"]
+
+[node name="ThrowShieldTransformEffect" type="Node"]
+script = ExtResource("1")
+ShieldVisualScene = ExtResource("2")

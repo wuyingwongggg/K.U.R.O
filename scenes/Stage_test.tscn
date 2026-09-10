@@ -62,4 +62,3 @@ PlayerAttackKillHitStopDuration = 0.3
 HitStopDelay = 0.1
 
 [node name="P2" parent="World" instance=ExtResource("18_w0p8f")]
-position = Vector2(300, 0)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://ufprfd4r8ijj"]
+[gd_scene load_steps=49 format=3 uid="uid://ufprfd4r8ijj"]
 
 [ext_resource type="Script" uid="uid://dj1eq3skmq5qf" path="res://scripts/actors/heroes/attacks/PlayerLaserPointerAttack.cs" id="0_laserptr"]
 [ext_resource type="Script" uid="uid://12wblt72y8xt" path="res://scripts/actors/heroes/MainCharacter.cs" id="1_om6pm"]
@@ -61,9 +61,6 @@ size = Vector2(600, 300)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0y2r2"]
 radius = 700.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_t2lf0"]
-radius = 600.0
 
 [node name="MainCharacter" type="CharacterBody2D" node_paths=PackedStringArray("AttackArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
@@ -195,19 +192,17 @@ scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_kqj82")
 
 [node name="GrabArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 7
 collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
 shape = SubResource("CircleShape2D_0y2r2")
 
-[node name="VisualEffectArea" type="Area2D" parent="."]
-visible = false
-scale = Vector2(0.99999994, 0.99999994)
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(0, -650)
-shape = SubResource("CircleShape2D_t2lf0")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("5_y1hyr")

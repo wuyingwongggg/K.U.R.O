@@ -39,6 +39,10 @@ namespace Kuros.Builds.BuildCore
         /// <summary>复制半径(0=关闭):生成点此半径内存在其它家具实体时复制最近一件(由 A_007 写入,默认 250)。</summary>
         public float CopyNearbyFurnitureRange { get; set; }
 
+        /// <summary>手持件核心技能接管(A_009 对象转型注册):短按核心技能时优先调用,
+        /// 返回 true = 已消费本次短按(跳过生成/其它处理);null/返回 false = 走默认生成。</summary>
+        public System.Func<bool>? HeldPieceCoreSkillHandler { get; set; }
+
         /// <summary>当前可用充能数（HUD 读取）。</summary>
         public int ReadyCharges { get; private set; }
         /// <summary>是否正在恢复充能（ReadyCharges &lt; EffectiveMaxCharges）。</summary>
@@ -169,7 +173,11 @@ namespace Kuros.Builds.BuildCore
             if (player == null || !GodotObject.IsInstanceValid(player)) return;
 
             if (player.WasActionShortPressed(Kuros.Core.InputActions.CoreSkill))
-                TrySpawnOnce();
+            {
+                // A_009 等接管优先(手持件转化);未消费则走默认生成
+                if (HeldPieceCoreSkillHandler?.Invoke() != true)
+                    TrySpawnOnce();
+            }
 
             if (player.WasActionLongPressTriggered(Kuros.Core.InputActions.CoreSkill))
                 DestroyAllGeneratedFurniture();
