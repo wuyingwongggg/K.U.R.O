@@ -21,7 +21,6 @@ namespace Kuros.Fx
 		[ExportCategory("Knockback")]
 		[Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
 		[Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
-		[Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 0f;
 
 		[ExportCategory("Targeting")]
 		/// <summary>自动瞄准：射出前物理查询前方可攻击对象，光束向目标微倾斜。false = 保持 FacingRight 水平方向。</summary>
@@ -96,7 +95,7 @@ namespace Kuros.Fx
 		/// </summary>
 		private void TryDamagePlayer()
 		{
-			if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
+			if (Damage <= 0 && KnockbackDistance <= 0f) return;
 			if (_hitArea == null) return;
 
 			// 俯视角地面判定（Area2D 物理重叠）：判定带 = 光束水平段 × DetectionRadius 垂直容差，
@@ -139,10 +138,8 @@ namespace Kuros.Fx
 			// 击退只对 GameActor（WorldItem 无速度概念）
 			if (receiver is GameActor actor)
 			{
-				float knockSpeed = KnockbackSpeed > 0f
-					? KnockbackSpeed
-					: (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-				if (knockSpeed > 0f) actor.ApplyKnockback(beamDir, knockSpeed);
+				if (KnockbackDistance > 0f)
+					actor.ApplyKnockbackDisplacement(beamDir, KnockbackDistance, KnockbackDuration);
 			}
 		}
 

@@ -43,6 +43,10 @@ namespace Kuros.Builds.BuildCore
         /// 返回 true = 已消费本次短按(跳过生成/其它处理);null/返回 false = 走默认生成。</summary>
         public System.Func<bool>? HeldPieceCoreSkillHandler { get; set; }
 
+        /// <summary>指定位置生成半径(0=关闭):生成点改取 AimPointResolver 的设备无关瞄准点
+        /// (A_010 坐标寻址写入,默认 600);0 时保持"玩家身侧"生成。</summary>
+        public float SpawnAtAimPointRange { get; set; }
+
         /// <summary>当前可用充能数（HUD 读取）。</summary>
         public int ReadyCharges { get; private set; }
         /// <summary>是否正在恢复充能（ReadyCharges &lt; EffectiveMaxCharges）。</summary>
@@ -217,6 +221,18 @@ namespace Kuros.Builds.BuildCore
                 ? ((Node2D)indicator).GlobalPosition
                 : mc.GlobalPosition;
 
+            // A_010 坐标寻址:优先取设备无关瞄准点(鼠标为主,手柄/键盘回退)
+            bool useAimPoint = false;
+            if (SpawnAtAimPointRange > 0f)
+            {
+                var resolver = AimPointResolver.Find(mc);
+                if (resolver != null && resolver.TryGetAimWorldPoint(out var aimPoint))
+                {
+                    spawnPos = aimPoint;
+                    useAimPoint = true;
+                }
+            }
+
             var scene = ResolveSpawnScene(out bool isCopy);
             if (scene == null) return;
 
@@ -235,8 +251,9 @@ namespace Kuros.Builds.BuildCore
             furniture.GlobalPosition = spawnPos;
 
             // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)
+            // (指定位置生成时不做身侧校准,直接落在瞄准点)
             var shape = FindFirstCollisionShape(furniture);
-            if (shape != null)
+            if (shape != null && !useAimPoint)
             {
                 float halfWidth = GetCollisionHalfWidth(shape) + PlacementMargin;
                 float sign = mc.FacingRight ? 1f : -1f;

@@ -18,9 +18,8 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 2;
 
         [ExportCategory("Knockback")]
-        [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 50f;
+        [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 200f; // 原速度1000×0.2s折算(此前一直被速度覆盖)
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
-        [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 1000f;
 
         public LaserBeamPlayerWeapon()
         {
@@ -51,7 +50,7 @@ namespace Kuros.Fx
         private void TryDamageEnemies()
         {
             if (_hasDamaged) return;
-            if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
+            if (Damage <= 0 && KnockbackDistance <= 0f) return;
             if (_hitArea == null) return;
 
             // 俯视角地面判定（Area2D 物理重叠，与 LaserBeamA 同构）：判定带 = 光束水平段 × DetectionRadius 垂直容差
@@ -85,15 +84,8 @@ namespace Kuros.Fx
             if (!dealt) return;
 
             // 击退只对 GameActor
-            if (receiver is GameActor actor)
-            {
-                float knockSpeed = KnockbackSpeed > 0f
-                    ? KnockbackSpeed
-                    : KnockbackDistance > 0f
-                        ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-                        : 0f;
-                if (knockSpeed > 0f) actor.ApplyKnockback(beamDir, knockSpeed);
-            }
+            if (receiver is GameActor actor && KnockbackDistance > 0f)
+                actor.ApplyKnockbackDisplacement(beamDir, KnockbackDistance, KnockbackDuration);
         }
     }
 }

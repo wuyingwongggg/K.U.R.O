@@ -58,6 +58,15 @@ namespace Kuros.Core.Effects
             return null;
         }
 
+        /// <summary>遍历所有实现接口 T 的效果(供多来源聚合查询,如玩家投掷修饰逐卡叠加)。</summary>
+        public void ForEachEffect<T>(System.Action<T> action) where T : class
+        {
+            foreach (var effect in _effects)
+            {
+                if (effect is T match) action(match);
+            }
+        }
+
         public void AddEffect(ActorEffect effect)
         {
             if (effect == null) return;

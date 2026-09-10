@@ -185,11 +185,22 @@ namespace Kuros.Items
                 // 家具持握减速注入：档位表为单真源（.tres PropertyOverrides 已废弃）——
                 // 覆盖 effect 实例的倍率再应用；RemoveEffects 的临时实例不受影响（按 EffectId 移除）。
                 // 无档（IsFurniture 但 ThrowTier=0）不注入，保留 effect 自身默认/覆写值。
+                // 用**有效档**(含构筑修饰,如轻量化/重量化)→ 持握减速随档位效果同步变化。
                 if (trigger == ItemEffectTrigger.OnEquip && IsFurniture
-                    && effect is HeavyCarrySlowEffect slow
-                    && GetResolvedTierSpec() is { } tierSpec)
+                    && effect is HeavyCarrySlowEffect slow)
                 {
-                    slow.SpeedMultiplierPerStack = tierSpec.CarrySlowMultiplier;
+                    ThrowableModifiers carryMods = actor is IThrowableModifierProvider modProvider
+                        ? modProvider.GetThrowableModifiers()
+                        : ThrowableModifiers.None;
+                    if (GetResolvedTierSpec(carryMods, 0) is { } tierSpec)
+                    {
+                        // B_003 负载减免:压缩减速幅度(1-倍率),基础倍率(档位+shift)本身不变
+                        float multiplier = tierSpec.CarrySlowMultiplier;
+                        if (carryMods.CarrySlowReduction > 0f)
+                            multiplier = 1f - (1f - multiplier)
+                                * (1f - Mathf.Clamp(carryMods.CarrySlowReduction, 0f, 1f));
+                        slow.SpeedMultiplierPerStack = multiplier;
+                    }
                 }
 
                 actor.ApplyEffect(effect);
@@ -239,12 +250,13 @@ namespace Kuros.Items
             return ThrowableTierTable.TryGetSpec(Tier, out var spec) ? spec : null;
         }
 
-        /// <summary>构筑修饰后的有效档(定义档 + 整体 shift + 参数专属 shift,clamp 至表上下限)。
+        /// <summary>构筑修饰后的有效档(定义档 + 整体 shift + 参数专属 shift;
+        /// 越界回退最近档——如 1 级被轻量化仍按 Small 结算,3 级被重量化仍按 Large)。
         /// 无档(武器/非投掷)或非家具返回 None(修饰不影响无档物品)。</summary>
         public ThrowableTier EffectiveTier(ThrowableModifiers mods, int paramShift)
         {
             if (!IsFurniture || ThrowTier <= 0) return ThrowableTier.None;
-            int effective = ThrowableTierTable.ClampTier(ThrowTier + mods.TierShift + paramShift);
+            int effective = (int)ThrowableTierTable.ResolveTier(ThrowTier + mods.TierShift + paramShift);
             return (ThrowableTier)effective;
         }
 
@@ -259,10 +271,12 @@ namespace Kuros.Items
                 : GetResolvedTierSpec(mods, 0)?.ThrowDuration ?? 0.6;
 
         /// <summary>投掷水平距离：原始字段 &gt;0 覆盖档位;否则按修饰档取值;增幅(覆盖小型/倍率)作用于其上。</summary>
+        /// <summary>投掷水平距离：原始字段 &gt;0 覆盖档位;否则按修饰档取值(距离档 = TierShift + DistanceTierShift);
+        /// 增幅(覆盖小型/倍率)作用于其上。</summary>
         public float GetEffectiveThrowDistance(ThrowableModifiers mods = default)
         {
             float baseDistance = ThrowHorizontalDistance > 0 ? ThrowHorizontalDistance
-                : GetResolvedTierSpec(mods, 0)?.ThrowDistance ?? 600f;
+                : GetResolvedTierSpec(mods, mods.DistanceTierShift)?.ThrowDistance ?? 600f;
 
             if (mods.DistanceAsSmall)
                 baseDistance = ThrowableTierTable.TryGetSpec(ThrowableTier.Small, out var smallSpec)

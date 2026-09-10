@@ -13,8 +13,8 @@ using Kuros.UI;
 using Kuros.Utils;
 using Kuros.Core.Events;
 
-public partial class SamplePlayer : GameActor, IPlayerStatsSource
-{	
+public partial class SamplePlayer : GameActor, IPlayerStatsSource, IThrowableModifierProvider
+{
 	[ExportCategory("Debug")]
 	[Export] public bool EnableStateDebugOverlay = false;
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);
@@ -850,6 +850,17 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		UpdateHandItemVisual();
 	}
 	
+	/// <summary>当前构筑对一次性投掷道具的修饰聚合(IThrowableModifierProvider):
+	/// 由玩家身上实现 IThrowableModifiersContributor 的效果逐层叠加(B_001 轻量化/B_002 重量化等)。
+	/// 投掷与轨迹预览单点消费,无卡时返回 None(原行为)。</summary>
+	public Kuros.Items.ThrowableModifiers GetThrowableModifiers()
+	{
+		Kuros.Items.ThrowableModifiers mods = Kuros.Items.ThrowableModifiers.None;
+		EffectController?.ForEachEffect<Kuros.Items.IThrowableModifiersContributor>(
+			c => mods = c.ModifyThrowableModifiers(mods));
+		return mods;
+	}
+
 	/// <summary>
 	/// 同步左手物品：从当前选中的快捷栏槽位获取物品，确保严格对应
 	/// </summary>

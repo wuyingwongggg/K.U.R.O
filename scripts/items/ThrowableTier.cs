@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,20 +6,25 @@ namespace Kuros.Items
     /// <summary>
     /// 构筑修饰：查询时对物品定义档位做临时偏移/参数覆盖——物品仍只有一个档位,
     /// 档位表不复制。层序:升档(改基础)→ 定义特化(raw>0 字段)→ 增幅(距离覆盖/倍率)。
-    /// 持握减速永不随任何 shift(增强投掷物不让自己变慢)。
+    /// 持握减速随整体升档(TierShift 经档位表倍率结算),不含参数专属 shift。
     /// </summary>
     public readonly record struct ThrowableModifiers(
         int TierShift = 0,
         int AttackTierShift = 0,
         int KnockbackTierShift = 0,
         bool DistanceAsSmall = false,
-        float DistanceScale = 1f)
+        float DistanceScale = 1f,
+        int DistanceTierShift = 0,
+        float CarrySlowReduction = 0f)
     {
         /// <summary>整体升档：伤害/距离/时间/击退/HP 跟随(减速除外)。</summary>
         public int TierShift { get; init; } = TierShift;
 
         /// <summary>伤害单独升档。</summary>
         public int AttackTierShift { get; init; } = AttackTierShift;
+
+        /// <summary>距离单独升档(B_002 重量化"距离不变"= 反向补偿用)。</summary>
+        public int DistanceTierShift { get; init; } = DistanceTierShift;
 
         /// <summary>击退(距离+时长对)单独升档。</summary>
         public int KnockbackTierShift { get; init; } = KnockbackTierShift;
@@ -31,11 +35,15 @@ namespace Kuros.Items
         /// <summary>距离倍率(1 = 无)。</summary>
         public float DistanceScale { get; init; } = DistanceScale;
 
+        /// <summary>持握减速幅度减免比例(B_003 负载减免;0=无,0.5=减速幅度减半)。</summary>
+        public float CarrySlowReduction { get; init; } = CarrySlowReduction;
+
         /// <summary>无修饰(注意:不能用 default——DistanceScale 会为 0,须用此实例)。</summary>
         public static readonly ThrowableModifiers None = new ThrowableModifiers();
     }
 
-    /// <summary>投掷物档位(一次性投掷道具分类;无档=投掷武器/普通道具走原始字段)。</summary>
+    /// <summary>投掷物档位(一次性投掷道具分类;无档=投掷武器/普通道具走原始字段)。仅 1/2/3 三档,
+    /// 构筑修饰(如轻量化+2)越界时报 None,消费方(GetResolvedTierSpec)回退最近档,不新增档位。</summary>
     public enum ThrowableTier
     {
         None = 0,
@@ -80,15 +88,18 @@ namespace Kuros.Items
         public static bool TryGetSpec(ThrowableTier tier, out ThrowableTierSpec spec)
             => Specs.TryGetValue(tier, out spec);
 
-        /// <summary>表中最高档(动态取 Keys 最大值:未来加 4 档仅需加表行+枚举值,此处自动扩)。</summary>
+        /// <summary>表中最高档(动态取 Keys 最大值:再加档仅需加表行+枚举值,此处自动扩)。</summary>
         public static readonly ThrowableTier MaxTier = Specs.Keys.Max();
 
-        /// <summary>档位数值 clamp:下限 Small、上限 MaxTier;入参 &lt;=0(无档)原样返回。</summary>
-        public static int ClampTier(int tierValue)
+        /// <summary>有效档(含构筑偏移)规范化为可查档:数值 &lt;Min 或 &gt;Max 时
+        /// **回退最近档**(如 1 降 2 → 取 Small;3 升 2 → 取 Large),保证任何偏移组合都有落地数值。</summary>
+        public static ThrowableTier ResolveTier(int tierValue)
         {
-            if (tierValue <= 0) return tierValue;
+            int min = (int)Specs.Keys.Min();
             int max = (int)MaxTier;
-            return Math.Clamp(tierValue, (int)ThrowableTier.Small, max);
+            if (tierValue > max) return (ThrowableTier)max;
+            if (tierValue < min) return (ThrowableTier)min;
+            return (ThrowableTier)tierValue;
         }
     }
 }

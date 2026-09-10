@@ -61,8 +61,7 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 30;
 
         [ExportCategory("Knockback")]
-        [Export(PropertyHint.Range, "0,3000,1")]  public float KnockbackSpeed    = 600f;
-        [Export(PropertyHint.Range, "0,2000,1")]  public float KnockbackDistance = 0f;
+        [Export(PropertyHint.Range, "0,2000,1")]  public float KnockbackDistance = 120f; // 原速度600×0.2s折算
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
         // ── 子节点引用 ────────────────────────────────────────────
@@ -294,18 +293,13 @@ namespace Kuros.Fx
             }
         }
 
-        /// <summary>击退（参考子弹）：玩家无敌帧内跳过；速度优先，否则由 KnockbackDistance/Duration 推算。</summary>
+        /// <summary>击退（参考子弹）：玩家无敌帧内跳过；位移制（KnockbackDistance/Duration）。</summary>
         private void ApplyKnockbackTo(GameActor actor)
         {
             if (actor is Kuros.Actors.Heroes.MainCharacter mc && mc.IsHitInvincible) return;
 
-            float knockSpeed = KnockbackSpeed > 0f
-                ? KnockbackSpeed
-                : (KnockbackDistance > 0f
-                    ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-                    : 0f);
-            if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
+            if (KnockbackDistance > 0f && _currentVelocity.LengthSquared() > 0.01f)
+                actor.ApplyKnockbackDisplacement(_currentVelocity.Normalized(), KnockbackDistance, KnockbackDuration);
         }
 
         /// <summary>
