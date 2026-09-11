@@ -50,7 +50,8 @@ func _export_items() -> void:
 		"IsThrowable", "IsThrowWeapon", "PreventDropDuringCooldown", "SpawnEffectOnThrow",
 		"ThrowStartOffset", "ThrowParabolicDuration", "ThrowParabolicPeakHeight",
 		"ThrowHorizontalDistance", "ThrowParabolicLandingYOffset", "ThrowWeaponCooldown",
-		"attack_power", "SkillRefs"
+		"UnpickedLifetime",
+		"ThrowTier", "attack_power", "SkillRefs"
 	]
 	var rows: Array = [headers]
 
@@ -100,6 +101,8 @@ func _export_items() -> void:
 			str(r.get("ThrowHorizontalDistance", "500")),
 			str(r.get("ThrowParabolicLandingYOffset", "300")),
 			str(r.get("ThrowWeaponCooldown", "2.0")),
+			str(r.get("UnpickedLifetime", "0")),
+			str(r.get("ThrowTier", "0")),
 			atk, skill_refs
 		])
 
@@ -116,15 +119,17 @@ func _export_skills() -> void:
 		push_warning("[ExportCsv] No .tres found in " + SKILLS_DIR)
 		return
 
+	# 列顺序与 WeaponSkillDefinition.cs 字段声明顺序一致（跳过注释 Note 与效果数组字段）
 	var headers := [
-		"file", "SkillId", "DisplayName", "AnimationName",
-		"DamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
+		"file", "SkillId", "DisplayName", "SkillType", "AnimationName",
+		"DamageMultiplier", "DashDamageMultiplier", "CooldownSeconds", "ShowHitboxDebug",
 		"Description", "ActivationAction", "AllowHoldContinuousAttack",
 		"WarmupDuration", "ActiveDuration", "RecoveryDuration",
-			"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
-			"DashDamageMultiplier", "DashAnimationName",
-			"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
-			"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed"
+		"WarmupAnimationSpeed", "ActiveAnimationSpeed", "RecoveryAnimationSpeed",
+		"DashAnimationName",
+		"DashWarmupDuration", "DashActiveDuration", "DashRecoveryDuration",
+		"DashWarmupAnimationSpeed", "DashActiveAnimationSpeed", "DashRecoveryAnimationSpeed",
+		"DashAttackSpeedSource", "DashAttackFixedSpeed", "DashAttackSpeedMultiplier", "DashAttackDecayWindow"
 	]
 	var rows: Array = [headers]
 
@@ -138,8 +143,10 @@ func _export_skills() -> void:
 			fpath.get_file().get_basename(),
 			_str(str(r.get("SkillId", ""))),
 			_str(str(r.get("DisplayName", ""))),
+			str(r.get("SkillType", "1")),
 			_str(str(r.get("AnimationName", ""))),
 			str(r.get("DamageMultiplier", "1.0")),
+			str(r.get("DashDamageMultiplier", "-1")),
 			str(r.get("CooldownSeconds", "0.5")),
 			str(r.get("ShowHitboxDebug", "true")),
 			_str(str(r.get("Description", ""))),
@@ -151,14 +158,17 @@ func _export_skills() -> void:
 			str(r.get("WarmupAnimationSpeed", "1.0")),
 			str(r.get("ActiveAnimationSpeed", "1.0")),
 			str(r.get("RecoveryAnimationSpeed", "1.0")),
-			str(r.get("DashDamageMultiplier", "-1")),
 			_str(str(r.get("DashAnimationName", ""))),
 			str(r.get("DashWarmupDuration", "-1")),
 			str(r.get("DashActiveDuration", "-1")),
 			str(r.get("DashRecoveryDuration", "-1")),
 			str(r.get("DashWarmupAnimationSpeed", "-1")),
 			str(r.get("DashActiveAnimationSpeed", "-1")),
-			str(r.get("DashRecoveryAnimationSpeed", "-1"))
+			str(r.get("DashRecoveryAnimationSpeed", "-1")),
+			str(r.get("DashAttackSpeedSource", "-1")),
+			str(r.get("DashAttackFixedSpeed", "-1")),
+			str(r.get("DashAttackSpeedMultiplier", "-1")),
+			str(r.get("DashAttackDecayWindow", "-1"))
 		])
 
 	_write_csv(OUT_SKILLS, rows)
@@ -385,13 +395,14 @@ func _str(raw: String) -> String:
 		return s.substr(1, s.length() - 2)
 	return s
 
-## 提取 Array[String](["a","b"]) → "a|b"
+## 提取字符串数组 → "a|b"（兼容两种输入格式：
+## 原始 tres 文本 `Array[String](["a","b"])` 或解析后的 Variant `["a","b"]`——统一找 `[` `]` 提取）
 func _arr_str(raw: String) -> String:
-	var start := raw.find("([")
-	var end   := raw.rfind("])")
-	if start < 0 or end < 0:
+	var start := raw.find("[")
+	var end   := raw.rfind("]")
+	if start < 0 or end < 0 or end <= start:
 		return ""
-	var inner := raw.substr(start + 2, end - start - 2)
+	var inner := raw.substr(start + 1, end - start - 1)
 	var re := RegEx.new()
 	re.compile('"([^"]*)"')
 	var out: Array = []

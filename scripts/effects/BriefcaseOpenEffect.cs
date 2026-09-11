@@ -14,8 +14,11 @@ namespace Kuros.Effects
     /// EffectController 的 EffectId 去重与 Actor 生命周期绑定——多公文包投掷各自独立生成。
     /// </summary>
     [GlobalClass]
-    public partial class BriefcaseOpenEffect : Node2D, IAttackerProvider
+    public partial class BriefcaseOpenEffect : Node2D, IAttackerProvider, IFacingDirectional
     {
+        /// <summary>生成朝向（投掷方向注入，默认 true）。翻转 FireWall 容器与自身视觉用——非投掷者当前朝向，
+        /// 投掷后玩家转身不应影响生成朝向（投掷延迟 0.5s 后才生成 FireWall）。</summary>
+        public bool FacingRight { get; set; } = true;
         [Export] public PackedScene? EffectScene { get; set; }
         [Export] public Godot.Collections.Dictionary<string, Variant> EffectOverrides { get; set; } = new();
         [Export(PropertyHint.Range, "0,10,0.1")] public float DelaySeconds = 1.0f;
@@ -38,8 +41,8 @@ namespace Kuros.Effects
 
         public override void _Ready()
         {
-            // 按投掷者朝向翻转自身场景
-            ApplyFacing(this, Attacker?.FacingRight ?? true);
+            // 按投掷方向（IFacingDirectional 注入）翻转自身场景
+            ApplyFacing(this, FacingRight);
         }
 
         public override void _Process(double delta)
@@ -120,11 +123,11 @@ namespace Kuros.Effects
                     catch (System.Exception ex) { GD.PushWarning($"[BriefcaseOpenEffect] override '{pair.Key}' failed: {ex.Message}"); }
                 }
 
-                // 朝向翻转放最后：确保 overrides 覆盖 scale 后仍按投掷者朝向翻转
-                ApplyFacing(node2D, Attacker?.FacingRight ?? true);
+                // 朝向翻转放最后：确保 overrides 覆盖 scale 后仍按投掷方向翻转
+                ApplyFacing(node2D, FacingRight);
                 // 同步飞行基准方向（RotatingCube 等 IFacingDirectional 目标在无追踪目标时按此朝向飞行）
                 if (node2D is IFacingDirectional facing)
-                    facing.FacingRight = Attacker?.FacingRight ?? true;
+                    facing.FacingRight = FacingRight;
             }
             else
             {

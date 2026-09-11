@@ -82,10 +82,11 @@ namespace Kuros.Effects
 
             if (GD.Randf() * 100f > TriggerChance) return;
 
-            TriggerFlashStun(attacker.GlobalPosition, attacker.FacingRight);
+            int stunnedCount = TriggerFlashStun(attacker.GlobalPosition, attacker.FacingRight);
+            GD.Print($"[DiscoFlashStunEffect] 闪光眩晕触发！概率 {TriggerChance}%，半径 {StunRadius}，眩晕 {stunnedCount} 个敌人");
         }
 
-        private void TriggerFlashStun(Vector2 playerPosition, bool facingRight)
+        private int TriggerFlashStun(Vector2 playerPosition, bool facingRight)
         {
             if (_flashRect != null && IsInstanceValid(_flashRect))
                 PlayFlash();
@@ -96,7 +97,7 @@ namespace Kuros.Effects
             var center = playerPosition + offset;
 
             SpawnFlashRays(center, facingRight);
-            StunNearbyEnemies(center);
+            return StunNearbyEnemies(center);
         }
 
         private void SpawnFlashRays(Vector2 center, bool facingRight)
@@ -128,15 +129,17 @@ namespace Kuros.Effects
             }));
         }
 
-        private void StunNearbyEnemies(Vector2 center)
+        private int StunNearbyEnemies(Vector2 center)
         {
-            if (Actor == null) return;
+            if (Actor == null) return 0;
 
             if (ShowStunRadius)
                 SpawnRadiusIndicator(center);
 
             var tree = Actor.GetTree();
-            if (tree == null) return;
+            if (tree == null) return 0;
+
+            int stunnedCount = 0;
 
             float radiusSq = StunRadius * StunRadius;
 
@@ -160,7 +163,10 @@ namespace Kuros.Effects
                     ResumePreviousState = false
                 };
                 enemy.ApplyEffect(freeze);
+                stunnedCount++;
             }
+
+            return stunnedCount;
         }
 
         private static Vector2 GetEnemyHitCenter(GameActor enemy)

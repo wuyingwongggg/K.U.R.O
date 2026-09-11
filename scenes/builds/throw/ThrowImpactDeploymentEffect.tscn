@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://cu2yb6xfa43f4"]
+
+[ext_resource type="Script" uid="uid://c5quo6kxnta0j" path="res://scripts/builds/throw/ThrowImpactDeploymentEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://yyltmrdqmlo8" path="res://resources/effects/BoomDmgEffect.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://duq7gvippbjmp" path="res://scenes/actors/etc/HitI.tscn" id="3_nf31a"]
+
+[node name="ThrowImpactDeploymentEffect" type="Node"]
+script = ExtResource("1")
+Radius = 500.0
+KnockbackDistance = 150.0
+KnockbackDuration = 0.3
+BoomScene = ExtResource("2")
+VisualScene = ExtResource("3_nf31a")
+TargetableFactions = 7
+MinBornAgeMs = 0
+EffectId = "5b077a82-f218-4f6e-9a23-faa53257ed32"

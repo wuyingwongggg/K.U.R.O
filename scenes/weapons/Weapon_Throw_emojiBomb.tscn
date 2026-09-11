@@ -1,7 +1,7 @@
 [gd_scene load_steps=27 format=3 uid="uid://b81xhi3r08vha"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_1d0of"]
-[ext_resource type="Resource" uid="uid://cmwneancnik65" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="2_vfp1h"]
+[ext_resource type="Resource" uid="uid://dtv412g1klamn" path="res://resources/items/Weapon_Throw_EmojiBomb.tres" id="2_vfp1h"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_n0uqx"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_g5wk3"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_uc5id"]
@@ -25,7 +25,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0nltr"]
 shader = ExtResource("5_uc5id")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.019607844, 0.019607844, 0.019607844, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -37,6 +37,7 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_2aaj6"]
 animations = [{
@@ -127,8 +128,9 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
-KnockbackForce = 0.0
-BounceAfterStop = true
+BounceSpeed = 650.0
+BounceHorizontalRatio = 0.2
+BounceElasticity = 0.25
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.1
 RigidBodyPath = NodePath("RigidBody2D")
@@ -143,8 +145,8 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_idk0v")
-position = Vector2(10, 50)
-scale = Vector2(3, 0.7)
+position = Vector2(10, 20)
+scale = Vector2(3.5, 2)
 texture = ExtResource("4_g5wk3")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]

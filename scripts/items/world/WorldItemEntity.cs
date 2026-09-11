@@ -79,6 +79,17 @@ namespace Kuros.Items.World
 			EnableGrabAreaOutlineHighlight && !_isPicked
 			&& TriggerArea != null && GodotObject.IsInstanceValid(TriggerArea);
 
+		/// <summary>未拾取存活时长（秒，0=禁用）：静止后开始计时，到期前闪烁预警并消失（方案 B）。</summary>
+		[Export(PropertyHint.Range, "0,300,1")] public float UnpickedLifetime { get; set; } = 20f;
+
+		/// <summary>过期组件是否允许计时：静止（未拾取且无运动速度）。</summary>
+		public bool IsSettledForExpiry =>
+			!_isPicked
+			&& _pendingVelocity.LengthSquared() <= 0.0001f
+			&& Velocity.LengthSquared() <= 0.0001f;
+
+		private Kuros.Fx.WorldItemExpiry? _expiry;
+
 		public override void _Ready()
 		{
 			base._Ready();
@@ -92,6 +103,17 @@ namespace Kuros.Items.World
 			UpdateOutlineHighlight(force: true);
 			SetProcess(true);
 			SetPhysicsProcess(true);
+
+			// 未拾取过期（方案 B）：场景 export 优先，否则读 ItemDefinition 定义级配置（0 = 禁用）
+			float lifetime = UnpickedLifetime > 0f
+				? UnpickedLifetime
+				: ItemDefinition?.UnpickedLifetime ?? 0f;
+			if (lifetime > 0f)
+			{
+				_expiry = new Kuros.Fx.WorldItemExpiry { UnpickedLifetime = lifetime };
+				_expiry.Name = "WorldItemExpiry";
+				AddChild(_expiry);
+			}
 		}
 
 		public override void _ExitTree()

@@ -11,8 +11,27 @@ namespace Kuros.Items.World
     /// </summary>
     public static class WorldItemSpawner
     {
+        /// <summary>动态世界道具组：换关（stage Regenerate）前统一清场用——所有 spawn 物都挂
+        /// 全局 World 容器、不被房间级清理覆盖,须按组追踪。见 ClearStageWorldItems。</summary>
+        public const string StageWorldItemsGroup = "stage_world_items";
+
         private const string DefaultSceneDirectory = "res://scenes/items/";
         private static readonly Dictionary<string, PackedScene> CachedScenes = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 换关清场：把场上所有动态道具（放置家具/掉落物/投掷副本等）移除。
+        /// 在 StageSession.ApplyStage（Regenerate 重排前）调用;玩家资产不回收（语义 = 关卡重置清场）。
+        /// </summary>
+        public static void ClearStageWorldItems(Node context)
+        {
+            var tree = context?.GetTree();
+            if (tree == null) return;
+            foreach (var node in tree.GetNodesInGroup(StageWorldItemsGroup))
+            {
+                if (node != null && GodotObject.IsInstanceValid(node))
+                    node.QueueFree();
+            }
+        }
 
         /// <summary>
         /// 清除场景缓存（用于开发调试）
@@ -58,6 +77,7 @@ namespace Kuros.Items.World
             if (rootNode is WorldItemEntity entity)
             {
                 worldNode.AddChild(entity);
+                entity.AddToGroup(StageWorldItemsGroup);
                 entity.GlobalPosition = globalPosition;
                 entity.InitializeFromStack(stack);
                 return entity;
@@ -66,6 +86,7 @@ namespace Kuros.Items.World
             if (rootNode is RigidBodyWorldItemEntity rigidEntity)
             {
                 worldNode.AddChild(rigidEntity);
+                rigidEntity.AddToGroup(StageWorldItemsGroup);
                 rigidEntity.GlobalPosition = globalPosition;
                 rigidEntity.InitializeFromStack(stack);
                 return rigidEntity;

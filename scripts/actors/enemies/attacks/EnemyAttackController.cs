@@ -19,10 +19,40 @@ namespace Kuros.Actors.Enemies.Attacks
         private Area2D? _playerDetectionArea;
         private string? _pendingQueueReason;
         private bool _playerInside;
-        /// <summary>两次攻击之间的最小全局间隔。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制。</summary>
+        /// <summary>两次攻击之间的全局呼吸窗（= MinInterAttackDelay）。各攻击独立 CD 由子模板的 CooldownDurationMultiplier 控制（只锁自己）。</summary>
         private float _interAttackDelay = 0f;
 
-	        [Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0.1f;
+	    /// <summary>两次攻击之间的全局最小间隔（呼吸窗）：攻击结束后必须经过此间隔才能选下一招。
+/// 各技能仍由自身的 CooldownDurationMultiplier 独立 CD（只锁自己，不锁其他技能）。
+/// 0 = 无间隔（旧行为：纯独立 CD，可能出现 A 结束 B 零间隔连发）。</summary>
+[Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0f;
+
+        /// <summary>
+        /// 排队攻击等待超时（秒）：选中的攻击因距离/角度一直无法启动（CanStart 不满足）时，
+        /// 超时后放弃当前排队并重新加权选择——防止"选中近战但玩家保持远距离，突刺等可达攻击永远轮不到"。
+        /// 0 = 不限（默认）。
+        /// </summary>
+        [Export(PropertyHint.Range, "0,10,0.5")] public float QueuedAttackTimeout = 0f;
+        private float _queuedElapsed;
+
+        /// <summary>调试：当前排队攻击名（空 = 未排队）。</summary>
+        public string QueuedAttackName => _queuedAttack?.Name ?? "";
+        /// <summary>调试：排队等待已计时间（超时判定用）。</summary>
+        public float QueuedElapsed => _queuedElapsed;
+        /// <summary>调试：排队攻击当前是否可启动（CanStart 检查）。</summary>
+        public bool QueuedCanStart => _queuedAttack?.CanStart() == true;
+
+        /// <summary>调试：所有攻击的当前权重（攻击名 → 权重，疲劳降权后）。</summary>
+        public Dictionary<string, float> GetAttackWeights()
+        {
+            var result = new Dictionary<string, float>();
+            foreach (var entry in _entries)
+            {
+                if (entry.Template != null)
+                    result[entry.Template.Name] = entry.Weight;
+            }
+            return result;
+        }
 
         public EnemyAttackController()
         {
@@ -83,7 +113,7 @@ namespace Kuros.Actors.Enemies.Attacks
             if (_entries.Count == 0) return false;
             if (!base.CanStart()) return false;
 
-            // 攻击间隔（上次子攻击的CD）尚未结束，禁止立即发起下一次攻击
+            // 全局呼吸窗（MinInterAttackDelay）尚未结束，禁止立即发起下一次攻击
             if (_interAttackDelay > 0f) return false;
 
             var player = Enemy.PlayerTarget;
@@ -155,7 +185,12 @@ namespace Kuros.Actors.Enemies.Attacks
             // Recovery 阶段打断 → 攻击已基本完成，保留 CD 防止立即复用
             // Warmup/Active 阶段打断 → 攻击未完成，清除 CD 允许重新尝试
             bool childInRecovery = _currentAttack?.CurrentPhase == EnemyAttackTemplate.AttackPhase.Recovery;
+            var interruptedAttack = !childInRecovery ? _currentAttack : null; // 未完成被中断（如受伤眩晕）
             CleanupChildAttack(clearCooldown: !childInRecovery);
+
+            // 打断 = 视为未使用：恢复该攻击权重（子类覆写；与切换攻击恢复上一个攻击的语义一致）
+            if (interruptedAttack != null)
+                OnAttackInterrupted(interruptedAttack);
 
             // 不在此处立即排队下一次攻击，而是清空 _queuedAttack，
             // 让 _PhysicsProcess 空闲循环在所有攻击 CD 结束后再做加权随机选择
@@ -188,8 +223,26 @@ namespace Kuros.Actors.Enemies.Attacks
                 entry.Template.Tick(delta);
             }
 
-            // 控制器空闲时，等待 _interAttackDelay 到期后再做加权随机选择，
-            // 确保此时所有攻击的独立 CD 也已到期，权重真正生效
+            // 排队攻击等待超时：间隔已过但选中的攻击仍无法启动（玩家距离/角度不符，CanStart 不满足）——
+            // 超时视为"使用一次"对该攻击降权（子类覆写 OnQueuedAttackTimeout），
+            // 其概率降低后，突刺等可达攻击有更高机会被选中。
+            // 敌人不可行动（Frozen/Hit 眩晕）期间不计时——避免长时间眩晕把攻击权重反复降到地板
+            if (!IsRunning && _queuedAttack != null && QueuedAttackTimeout > 0f && _interAttackDelay <= 0f
+                && !IsEnemyDisabled())
+            {
+                _queuedElapsed += (float)delta;
+                if (_queuedElapsed >= QueuedAttackTimeout && !_queuedAttack.CanStart())
+                {
+                    DebugLog($"Queued attack {_queuedAttack.Name} timed out waiting to start, applying fatigue.");
+                    OnQueuedAttackTimeout(_queuedAttack);
+                    _queuedAttack = null;
+                    _queuedElapsed = 0f;
+                    // 下一帧空闲循环按降权后的权重重新加权选择（本帧不再重复进入）
+                }
+            }
+
+            // 控制器空闲时，等待呼吸窗到期后再做加权随机选择；
+            // 各攻击的独立 CD 由 IsAttackEligible 过滤，权重真正生效
             if (!IsRunning && _interAttackDelay <= 0f
                 && (_queuedAttack == null || _queuedAttack.IsOnCooldown))
             {
@@ -197,6 +250,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 if (candidate != null)
                 {
                     _queuedAttack = candidate;
+                    _queuedElapsed = 0f; // 新排队重新计时
                     DebugLog($"CD expired, re-queued: {_queuedAttack.Name}");
                     if (ShouldForceAttackState())
                     {
@@ -227,6 +281,26 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 FinishControllerAttack("ChildFinished");
             }
+        }
+
+        /// <summary>
+        /// 排队攻击超时回调（选中后 QueuedAttackTimeout 秒内未能启动，CanStart 不满足）。
+        /// 子类可覆写：将该攻击视为"使用一次"降权（疲劳），降低其后续被选中的概率，
+        /// 让突刺等可达攻击有机会被选中。默认空。
+        /// </summary>
+        protected virtual void OnQueuedAttackTimeout(EnemyAttackTemplate attack) { }
+
+        /// <summary>
+        /// 子攻击被打断回调（Warmup/Active 阶段强制中断——如受伤眩晕进入 Frozen）：
+        /// 子类可覆写恢复该攻击权重（视为未使用，不累计疲劳）。默认空。
+        /// </summary>
+        protected virtual void OnAttackInterrupted(EnemyAttackTemplate attack) { }
+
+        /// <summary>敌人是否处于不可行动状态（受伤眩晕/硬直）——期间排队超时不计时。</summary>
+        private bool IsEnemyDisabled()
+        {
+            string state = Enemy?.StateMachine?.CurrentState?.Name ?? "";
+            return state == "Frozen" || state == "CooldownFrozen" || state == "Hit";
         }
 
         private EnemyAttackTemplate? PickAttack()
@@ -269,19 +343,23 @@ namespace Kuros.Actors.Enemies.Attacks
             return !IsFxBlockedByOwnEffects(entry.Template);
         }
 
-        /// <summary>特效阻塞判定（对所有攻击自动生效）：显式 BlockedByFxGroup 优先；
-        /// 未配置时自动收集 Effects 中所有带 UniqueGroup 的条目组——任何一组有存活实例即阻塞。</summary>
+        /// <summary>特效阻塞判定（对所有攻击自动生效）：每个 entry 的显式 BlockedByFxGroup 生效
+        /// （模板级字段已随 entry 迁移移除）；另自动收集 entry 的 UniqueGroup——任何一组有存活实例即阻塞。</summary>
         private bool IsFxBlockedByOwnEffects(EnemyAttackTemplate template)
         {
-            if (!string.IsNullOrEmpty(template.BlockedByFxGroup) && IsFxGroupActive(template.BlockedByFxGroup))
-            {
-                return true;
-            }
-
             foreach (var entry in template.Effects)
             {
-                if (entry == null || string.IsNullOrEmpty(entry.UniqueGroup)) continue;
-                if (IsFxGroupActive(entry.UniqueGroup))
+                if (entry == null) continue;
+
+                // entry 显式阻塞组
+                string group = entry.ResolveBlockedGroup(string.Empty);
+                if (!string.IsNullOrEmpty(group) && IsFxGroupActive(group))
+                {
+                    return true;
+                }
+
+                // 自动收集：entry 的 UniqueGroup（防同特效叠加）
+                if (!string.IsNullOrEmpty(entry.UniqueGroup) && IsFxGroupActive(entry.UniqueGroup))
                 {
                     return true;
                 }
@@ -343,6 +421,7 @@ namespace Kuros.Actors.Enemies.Attacks
                 _queuedAttack = PickAttack();
             }
             RefreshPlayerDetectionState();
+            _queuedElapsed = 0f; // 排队计时起点
             if (_queuedAttack != null)
             {
 				DebugLog($"({selectionReason}) queued attack {_queuedAttack.Name}.");
@@ -424,12 +503,9 @@ namespace Kuros.Actors.Enemies.Attacks
 
         private void FinishControllerAttack(string reason, bool clearControllerCooldown = false)
         {
-            // 子攻击正常完成时，将其 CooldownDuration 保存为攻击间隔，
-            // 确保结束后不会立即切换到另一种攻击（与旧 Enemy.AttackTimer 语义一致）
-            float childInterAttackDelay = 0f;
-            if (reason == "ChildFinished" && _currentAttack != null)
-                childInterAttackDelay = _currentAttack.GetCooldown();
-
+            // 攻击结束后统一进入 MinInterAttackDelay 全局呼吸窗（默认 0 = 无间隔）。
+            // 各技能由自身 CooldownDurationMultiplier 独立 CD（只锁自己），
+            // 呼吸窗仅填补"A 刚结束 B 零间隔连发"这个独立 CD 覆盖不到的缺口。
             CleanupChildAttack(clearCooldown: false);
             _pendingQueueReason = reason;
 			DebugLog($"Controller finishing because '{reason}'.");
@@ -445,11 +521,8 @@ namespace Kuros.Actors.Enemies.Attacks
                 _queuedAttack = null;
             }
 
-            // 强制清除时同步清除攻击间隔；否则应用子攻击的 CD 作为间隔
-            if (clearControllerCooldown)
-                _interAttackDelay = 0f;
-            else if (MinInterAttackDelay > 0f)
-                _interAttackDelay = MinInterAttackDelay;
+            // 强制清除时同步清除呼吸窗；否则固定用 MinInterAttackDelay 作为全局最小间隔
+            _interAttackDelay = clearControllerCooldown ? 0f : MinInterAttackDelay;
         }
 
 		private void DebugLogPendingAttackIfPlayerInside()

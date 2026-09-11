@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://cbb56n2xt45k6"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://do2j4a0k2tkuq"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_lq6dd"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="3_247hv"]
@@ -11,7 +11,6 @@
 [sub_resource type="Resource" id="Resource_lq6dd"]
 script = ExtResource("1_lq6dd")
 AttributeId = "attack_power"
-Value = 100.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_a4hte"]
@@ -19,9 +18,6 @@ script = ExtResource("3_247hv")
 Trigger = 1
 EffectScene = ExtResource("3_a4hte")
 Notes = "大型家具：减速70%"
-PropertyOverrides = Dictionary[String, Variant]({
-"SpeedMultiplierPerStack": 0.3
-})
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_x548b"]
@@ -46,14 +42,15 @@ DisplayName = "昂贵的酒店柜台"
 Description = "一次性投掷道具：昂贵的酒店柜台"
 Icon = ExtResource("4_a4hte")
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = Array[String](["tag_throw", "furniture", "tier_3"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_lq6dd")]([SubResource("Resource_lq6dd")])
 EffectEntries = Array[ExtResource("3_247hv")]([SubResource("Resource_a4hte"), SubResource("Resource_x548b"), SubResource("Resource_247hv")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.3
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 300.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 3
 WorldScenePath = "uid://bkbhucnxqiys2"

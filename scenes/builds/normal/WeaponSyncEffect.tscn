@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bomodg87vkhq"]
+
+[ext_resource type="Script" uid="uid://lpk158cxa1i8" path="res://scripts/builds/normal/WeaponSyncEffect.cs" id="1"]
+
+[node name="WeaponSyncEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "2d394edf-e8a2-49aa-be9d-cb8bf385474d"
+Description = "攻击命中时，有一定概率同时触发当前装备的其他武器的一次攻击特效（弃用）"

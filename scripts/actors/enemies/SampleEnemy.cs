@@ -100,7 +100,15 @@ public partial class SampleEnemy : GameActor
 		var font = ThemeDB.FallbackFont;
 		if (font == null) return;
 
-		DrawString(font, DebugOverlayOffset, _debugOverlayText, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
+		// 多行绘制（按 \n 分段，归类显示状态/攻击/排队/权重）
+		string[] lines = _debugOverlayText.Split('\n');
+		Vector2 pos = DebugOverlayOffset;
+		float lineHeight = DebugOverlayFontSize + 4f;
+		foreach (string line in lines)
+		{
+			DrawString(font, pos, line, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
+			pos.Y += lineHeight;
+		}
 	}
 
 	public SamplePlayer? PlayerTarget => _player;
@@ -162,15 +170,60 @@ public partial class SampleEnemy : GameActor
 		return distanceToPlayer <= AttackRangeCheckDistance;
 	}
 
+	/// <summary>自身受击判定区（玩家攻击命中通道同一节点；懒解析缓存）。</summary>
+	private Area2D? _selfHitArea;
+
+	public Area2D? GetSelfHitArea()
+	{
+		if (_selfHitArea != null && GodotObject.IsInstanceValid(_selfHitArea))
+			return _selfHitArea;
+
+		_selfHitArea = GetNodeOrNull<Area2D>("Sprite2D/HitArea")
+			?? GetNodeOrNull<Area2D>("Sprite2D/HitAreaMover/HitArea");
+		_selfHitArea ??= FindChild("HitArea", recursive: true, owned: false) as Area2D;
+		return _selfHitArea;
+	}
+
+	/// <summary>
+	/// 本敌人体是否位于玩家当前攻击判定区（解析自当前武器的 AttackArea）几何内——
+	/// 与玩家命中判定同一通道（OverlapsArea）,矩形/胶囊/圆/旋转均由物理引擎处理,
+	/// 不受固定距离(AttackRangeCheckDistance)误差影响。玩家无法解析攻击区时返回 false。
+	/// </summary>
+	public bool IsInsidePlayerAttackArea()
+	{
+		RefreshPlayerReference();
+		if (_player == null) return false;
+
+		var attackArea = _player.ResolveAttackAreaForHitDetection();
+		var myHitArea = GetSelfHitArea();
+		if (attackArea == null || myHitArea == null) return false;
+
+		return attackArea.OverlapsArea(myHitArea);
+	}
+
+	/// <summary>贴脸重叠时锁定的目标边(GetApproachTarget 用):重叠期保持同侧,防玩家微动引发逐帧换边/翻转抖动。
+	/// 离开重叠区(|dx|≥1)时按相对位置重算并刷新锁。</summary>
+	private float _approachSideSign;
+
 	public Vector2 GetApproachTarget()
 	{
 		RefreshPlayerReference();
 		if (_player == null) return GlobalPosition;
 
 		float dx = GlobalPosition.X - _player.GlobalPosition.X;
-		float sideSign = Mathf.Abs(dx) < 1f
-			? (FacingRight ? 1f : -1f)
-			: (dx > 0 ? 1f : -1f);
+		float sideSign;
+		if (Mathf.Abs(dx) >= 1f)
+		{
+			sideSign = dx > 0 ? 1f : -1f;
+			_approachSideSign = sideSign; // 非重叠:直接由相对位置决定并刷新锁定边
+		}
+		else
+		{
+			// 水平重叠:沿用上次锁定边(首次无锁定时按当前朝向侧)
+			if (_approachSideSign == 0f)
+				_approachSideSign = FacingRight ? 1f : -1f;
+			sideSign = _approachSideSign;
+		}
 
 		float offset = GetHitAreaHalfWidth();
 		return _player.GlobalPosition + new Vector2(offset * sideSign, 0);
@@ -293,29 +346,18 @@ public partial class SampleEnemy : GameActor
 	private void UpdateDebugOverlayText()
 	{
 		string stateName = StateMachine?.CurrentState?.Name ?? "None";
-		string frozenInfo = "";
-		string attackInfo = "";
-		string cooldownInfo = "";
+		var lines = new System.Collections.Generic.List<string>();
 
-		// 如果在Frozen状态，显示倒计时
+		// 行1：状态 + HP
+		string statusLine = $"{Name} | State: {stateName} | HP: {CurrentHealth}/{MaxHealth}";
 		if (stateName == "Frozen")
 		{
 			float remainingTime = GetFrozenRemainingTime();
 			if (remainingTime > 0f)
-				frozenInfo = $" | Frozen: {remainingTime:F2}s";
+				statusLine += $" | Frozen: {remainingTime:F2}s";
 		}
+		lines.Add(statusLine);
 
-		// 如果在Attack状态，显示当前攻击模式
-		if (stateName == "Attack")
-		{
-			string currentAttackName = GetCurrentAttackName();
-			if (!string.IsNullOrEmpty(currentAttackName))
-			{
-				attackInfo = $" | Attack: {currentAttackName}";
-			}
-		}
-
-		// 显示排队攻击的冷却倒计时
 		if (_cachedAttackController == null || !IsInstanceValid(_cachedAttackController))
 		{
 			var attackState = StateMachine?.GetNodeOrNull("Attack");
@@ -323,15 +365,43 @@ public partial class SampleEnemy : GameActor
 		}
 		if (_cachedAttackController != null && IsInstanceValid(_cachedAttackController))
 		{
+			// 行2：当前攻击 + 冷却
+			string attackInfo = "";
+			if (stateName == "Attack")
+			{
+				string currentAttackName = GetCurrentAttackName();
+				if (!string.IsNullOrEmpty(currentAttackName))
+					attackInfo = $" | Attack: {currentAttackName}";
+			}
 			var (cdRemaining, cdDuration, cdName) = _cachedAttackController.GetShortestCooldownInfo();
+			string cooldownInfo = "";
 			if (cdRemaining > 0f)
 			{
 				string nameHint = string.IsNullOrEmpty(cdName) ? "" : $"({cdName})";
 				cooldownInfo = $" | CD: {cdRemaining:F2}s/{cdDuration:F1}s {nameHint}";
 			}
+			lines.Add($"Attack:{attackInfo}{cooldownInfo}");
+
+			// 行3：排队攻击等待超时（queued 攻击名 / 已计时间 / 是否可启动）
+			if (_cachedAttackController.QueuedAttackTimeout > 0f && !string.IsNullOrEmpty(_cachedAttackController.QueuedAttackName))
+			{
+				lines.Add($"Queued: {_cachedAttackController.QueuedAttackName} "
+					+ $"{_cachedAttackController.QueuedElapsed:F1}s/{_cachedAttackController.QueuedAttackTimeout:F1}s "
+					+ $"canStart={_cachedAttackController.QueuedCanStart}");
+			}
+
+			// 行4：各攻击当前权重
+			var weights = _cachedAttackController.GetAttackWeights();
+			if (weights.Count > 0)
+			{
+				var parts = new System.Collections.Generic.List<string>();
+				foreach (var kvp in weights)
+					parts.Add($"{kvp.Key}={kvp.Value:F0}");
+				lines.Add($"Weights: {string.Join(" ", parts)}");
+			}
 		}
 
-		_debugOverlayText = $"{Name} | State: {stateName}{attackInfo} | HP: {CurrentHealth}/{MaxHealth}{frozenInfo}{cooldownInfo}";
+		_debugOverlayText = string.Join("\n", lines);
 	}
 
 	private string GetCurrentAttackName()

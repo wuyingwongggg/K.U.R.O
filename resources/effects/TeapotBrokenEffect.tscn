@@ -9,18 +9,19 @@
 points = PackedVector2Array(142, -80, 234, -47, 290, 28, 243, 74, 116, 101, -20, 115, -175, 98, -303.5, 40, -194, -60, -42, -98)
 
 [node name="TeapotBrokenEffect" type="Node2D"]
+z_index = 1
+z_as_relative = false
 script = ExtResource("1_yj7h6")
 DamagePerTick = 10
 TargetCollisionMask = 4
 FadeOutDuration = 0.5
 
-[node name="Area2D" type="Area2D" parent="."]
-z_as_relative = false
-
-[node name="Sprite2D" type="Sprite2D" parent="Area2D"]
+[node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_eq1tq")
 scale = Vector2(0.6, 0.8)
 texture = ExtResource("2_yj7h6")
+
+[node name="Area2D" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(29, 0)

@@ -183,6 +183,54 @@ func play_partial_once_animation(root: Node, anim_name: String, part_start: floa
 
 	return played_any
 
+## 部分一次性播放并保持段尾帧（受击定格用）：
+## 与 play_partial_once_animation 的区别是 track_last = part_end——
+## 段播完（到达 part_end）后姿态停留在 part_end 帧，而非弹回 part_start。
+func play_partial_once_animation_hold_end(root: Node, anim_name: String, part_start: float, part_end: float, mix_duration: float = 0.1, time_scale: float = 1.0) -> bool:
+	if part_end <= part_start:
+		return false
+
+	var played_any := false
+	for sprite in find_spine_nodes(root):
+		var state = sprite.get_animation_state()
+		if not state:
+			continue
+
+		var entry = state.set_animation(anim_name, false)
+		if not entry:
+			continue
+
+		if entry.has_method("set_mix_duration"):
+			entry.set_mix_duration(mix_duration)
+		if entry.has_method("set_time_scale"):
+			entry.set_time_scale(time_scale)
+		if entry.has_method("set_track_time"):
+			entry.set_track_time(part_start)
+		if entry.has_method("set_track_last"):
+			entry.set_track_last(part_end)
+		if entry.has_method("set_track_end"):
+			entry.set_track_end(part_end)
+		played_any = true
+
+	return played_any
+
+## 对 root 下全部 Spine 节点（含描边）统一修改当前动画的时间缩放（time_scale 0 = 停帧）。
+func change_time_scale_all(root: Node, time_scale: float) -> bool:
+	var updated_any := false
+	for sprite in find_spine_nodes(root):
+		var state = sprite.get_animation_state()
+		if not state or not state.has_method("get_current"):
+			continue
+		var entry = state.get_current(0)
+		if not entry:
+			continue
+		if entry.has_method("set_time_scale"):
+			entry.set_time_scale(time_scale)
+		else:
+			entry.time_scale = time_scale
+		updated_any = true
+	return updated_any
+
 func update_partial_loop_animation(root: Node, track_index: int, loop_start: float, loop_end: float) -> bool:
 	if loop_end <= loop_start:
 		return false

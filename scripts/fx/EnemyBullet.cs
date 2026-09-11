@@ -60,8 +60,7 @@ namespace Kuros.Fx
         [Export(PropertyHint.Range, "0,500,1")] public int Damage = 10;
 
         [ExportCategory("Knockback")]
-        [Export(PropertyHint.Range, "0,3000,1")]  public float KnockbackSpeed    = 400f;
-        [Export(PropertyHint.Range, "0,2000,1")]  public float KnockbackDistance = 0f;
+        [Export(PropertyHint.Range, "0,2000,1")]  public float KnockbackDistance = 80f; // 原速度400×0.2s(受击时长)折算
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
         // ── 子节点引用 ────────────────────────────────────────────
@@ -240,7 +239,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = body is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
             if (!dealt) return;
 
             if (!alreadyInvincible && body is GameActor hitActor)
@@ -259,7 +258,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = area.Owner is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _attackArea, _currentVelocity);
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)
@@ -271,13 +270,8 @@ namespace Kuros.Fx
 
         private void ApplyKnockback(GameActor actor)
         {
-            float knockSpeed = KnockbackSpeed > 0f
-                ? KnockbackSpeed
-                : (KnockbackDistance > 0f
-                    ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-                    : 0f);
-            if (knockSpeed > 0f && _currentVelocity.LengthSquared() > 0.01f)
-                actor.ApplyKnockback(_currentVelocity.Normalized(), knockSpeed);
+            if (KnockbackDistance > 0f && _currentVelocity.LengthSquared() > 0.01f)
+                actor.ApplyKnockbackDisplacement(_currentVelocity.Normalized(), KnockbackDistance, KnockbackDuration);
         }
 
         // ── 私有方法 ──────────────────────────────────────────────

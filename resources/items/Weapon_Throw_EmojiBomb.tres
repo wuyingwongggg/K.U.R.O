@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://cmwneancnik65"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://dtv412g1klamn"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_3xlkm"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_6ffm0"]
@@ -65,6 +65,7 @@ AttributeEntries = Array[ExtResource("1_3xlkm")]([SubResource("Attribute_AttackP
 EffectEntries = Array[ExtResource("2_6ffm0")]([SubResource("Resource_neutral"), SubResource("Resource_scared"), SubResource("Resource_happy"), SubResource("Resource_6ffm0")])
 IsThrowable = true
 IsThrowWeapon = true
+UnpickedLifetime = 30.0
 ThrowStartOffset = Vector2(0, -250)
 ThrowParabolicDuration = 0.4
 ThrowParabolicPeakHeight = 100.0

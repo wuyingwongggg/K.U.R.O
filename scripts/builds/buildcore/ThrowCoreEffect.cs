@@ -1,50 +1,229 @@
+using System.Collections.Generic;
 using Godot;
 using Kuros.Actors.Heroes;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Items;
 
 namespace Kuros.Builds.BuildCore
 {
     /// <summary>
-    /// Throw 核心机制：家具生成。
-    /// OnApply 激活投掷指示器，按下核心技能键在指示器位置生成一次性家具。
+    /// Throw 核心机制：家具生成（充能制,串行逐格恢复）。
+    /// OnApply 激活投掷指示器,按下核心技能键消耗 1 充能,在指示器位置生成一次性家具。
+    /// 充能与冷却可被 build 修饰（RegisterChargeModifier 聚合;生成物替换 = 改 FurnitureScene）。
     /// </summary>
     [GlobalClass]
     public partial class ThrowCoreEffect : ActorEffect
     {
         [ExportCategory("Furniture")]
+        /// <summary>小型乱码块家具场景(默认生成件)。</summary>
         [Export] public PackedScene? FurnitureScene { get; set; }
-        [Export(PropertyHint.Range, "0.5,30,0.5")] public float SpawnCooldown = 3f;
+        /// <summary>中型乱码块家具场景(A_006 层 1 升级目标;暂空 = 回退小型)。</summary>
+        [Export] public PackedScene? FurnitureSceneMedium { get; set; }
+        /// <summary>大型乱码块家具场景(A_006 层 2 升级目标;暂空 = 回退上一档)。</summary>
+        [Export] public PackedScene? FurnitureSceneLarge { get; set; }
+        [ExportCategory("Charges")]
+        /// <summary>每格充能恢复时长（秒）。</summary>
+        [Export(PropertyHint.Range, "0.5,60,0.5")] public float ChargeCooldown = 10f;
+        /// <summary>最大充能数（默认 1 = 单次生成 + 冷却,与旧行为等价）。</summary>
+        [Export(PropertyHint.Range, "1,8,1")] public int MaxCharges = 1;
+        /// <summary>家具生成位置校准边距（像素,用于避免生成时与玩家碰撞）。</summary>
         [Export(PropertyHint.Range, "0,200,1")] public float PlacementMargin = 16f;
 
-        /// <summary>CD 剩余时间，HUD 绑定读取。</summary>
-        public float CooldownRemaining { get; private set; }
-        public float CooldownDuration => SpawnCooldown;
-        public bool CanSpawn => CooldownRemaining <= 0f;
+        /// <summary>本效果生成家具的组:长按 F 销毁 / 追踪用(离树自动移除)。</summary>
+        public const string ThrowCoreFurnitureGroup = Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag;
 
+        // ── 生成聚合运行字段(BuildThrow 卡写入,ThrowCoreEffect 生成时单点读取)──
+        /// <summary>生成件档位覆盖(0=默认 FurnitureScene;2/3=从该档家具池随机一件生成,由 A_006 写入)。</summary>
+        public int SpawnTierOverride { get; set; }
+        /// <summary>复制半径(0=关闭):生成点此半径内存在其它家具实体时复制最近一件(由 A_007 写入,默认 250)。</summary>
+        public float CopyNearbyFurnitureRange { get; set; }
+
+        /// <summary>手持件核心技能接管(A_009 对象转型注册):短按核心技能时优先调用,
+        /// 返回 true = 已消费本次短按(跳过生成/其它处理);null/返回 false = 走默认生成。</summary>
+        public System.Func<bool>? HeldPieceCoreSkillHandler { get; set; }
+
+        /// <summary>瞄准模式入口(A_010 坐标寻址注册):短按核心技能(未被 A_009 消费)时调用,
+        /// 返回 true = 已进入瞄准模式(本次不立即生成,确认时由控制器回调 TrySpawnOnce);
+        /// null/返回 false = 走默认立即生成。</summary>
+        public System.Func<bool>? AimModeEnterHandler { get; set; }
+
+        /// <summary>瞄准模式进行中(A_010 控制器置位):短按/长按输入全部交由控制器接管,核心本体不响应。</summary>
+        public bool AimModeActive { get; set; }
+
+        /// <summary>指定位置生成半径(0=关闭):生成点改取 AimPointResolver 的设备无关瞄准点
+        /// (A_010 坐标寻址写入,默认 600);0 时保持"玩家身侧"生成。</summary>
+        public float SpawnAtAimPointRange { get; set; }
+
+        /// <summary>当前可用充能数（HUD 读取）。</summary>
+        public int ReadyCharges { get; private set; }
+        /// <summary>是否正在恢复充能（ReadyCharges &lt; EffectiveMaxCharges）。</summary>
+        public bool Charging => ReadyCharges < EffectiveMaxCharges;
+        /// <summary>当前恢复进度 0-1（串行:同一时间只有一格在恢复）。</summary>
+        public float ChargingProgress => EffectiveChargeCooldown > 0f
+            ? Mathf.Clamp(_rechargeTimer / EffectiveChargeCooldown, 0f, 1f)
+            : 0f;
+        public bool CanSpawn => ReadyCharges > 0 && FurnitureScene != null;
+
+        /// <summary>生成的家具图标（HUD 充能格显示;取 FurnitureScene 根节点 ItemDefinition.Icon,缓存）。</summary>
+        public Texture2D? FurnitureIcon
+        {
+            get
+            {
+                if (_furnitureIconCached) return _furnitureIcon;
+                _furnitureIconCached = true;
+                if (FurnitureScene == null) return null;
+                var root = FurnitureScene.Instantiate<Node>();
+                try
+                {
+                    var itemDef = root.Get("ItemDefinition").As<ItemDefinition>();
+                    _furnitureIcon = itemDef?.Icon;
+                }
+                catch
+                {
+                    _furnitureIcon = null;
+                }
+                finally
+                {
+                    root.Free(); // 未入树节点直接释放(不经 QueueFree)
+                }
+                return _furnitureIcon;
+            }
+        }
+
+        private Texture2D? _furnitureIcon;
+        private bool _furnitureIconCached;
+        private float _rechargeTimer;
         private bool _indicatorEnabled;
+        private readonly Dictionary<string, (int flatCharges, float cdMultiplier)> _chargeModifiers = new();
+
+        /// <summary>有效最大充能 = MaxCharges + Σflat（build 修饰聚合,钳 ≥1）。</summary>
+        public int EffectiveMaxCharges
+        {
+            get
+            {
+                int total = MaxCharges;
+                foreach (var (flat, _) in _chargeModifiers.Values)
+                    total += flat;
+                return Mathf.Max(1, total);
+            }
+        }
+
+        /// <summary>有效恢复时长 = ChargeCooldown × Πmultiplier（build 修饰聚合,钳 ≥0.1）。</summary>
+        public float EffectiveChargeCooldown
+        {
+            get
+            {
+                float result = ChargeCooldown;
+                foreach (var (_, mult) in _chargeModifiers.Values)
+                    result *= mult;
+                return Mathf.Max(0.1f, result);
+            }
+        }
+
+        /// <summary>build 修饰注册（如"充能+1""冷却-20%"卡）;id 用于幂等注册/移除。</summary>
+        public void RegisterChargeModifier(string id, int flatCharges, float cdMultiplier)
+        {
+            _chargeModifiers[id] = (flatCharges, Mathf.Max(0.1f, cdMultiplier));
+            _rechargeTimer = Mathf.Min(_rechargeTimer, EffectiveChargeCooldown);
+        }
+
+        public void UnregisterChargeModifier(string id)
+        {
+            _chargeModifiers.Remove(id);
+            _rechargeTimer = Mathf.Min(_rechargeTimer, EffectiveChargeCooldown);
+        }
+
+        /// <summary>推进当前充能恢复(A_005 等"命中减生成CD"用):把恢复进度**提前** seconds 秒
+        /// (计时器前进,满一格才补),串行逐格。未在恢复中(全满)不生效。
+        /// 注意方向:减 CD = 进度加快 = 计时器前进;旧实现用 -= 并越界即补格,
+        /// 导致单格核心任意一击立刻补满整格(误报"瞬间刷完CD")。</summary>
+        public void ReduceRecharge(float seconds)
+        {
+            if (seconds <= 0f || ReadyCharges >= EffectiveMaxCharges) return;
+
+            _rechargeTimer += seconds;
+            float cd = EffectiveChargeCooldown;
+            while (_rechargeTimer >= cd && ReadyCharges < EffectiveMaxCharges)
+            {
+                _rechargeTimer -= cd;
+                ReadyCharges++;
+            }
+            if (ReadyCharges >= EffectiveMaxCharges)
+                _rechargeTimer = 0f;
+        }
 
         protected override void OnApply()
         {
-            CooldownRemaining = 0f;
+            ReadyCharges = EffectiveMaxCharges;
+            _rechargeTimer = 0f;
             _indicatorEnabled = true;
             GetMainCharacter()?.EnableThrowIndicator(true);
         }
 
         protected override void OnTick(double delta)
         {
-            if (CooldownRemaining > 0f)
-                CooldownRemaining -= (float)delta;
+            // 串行逐格恢复：单计时器,满一格补一格（溢出丢弃）
+            if (ReadyCharges < EffectiveMaxCharges)
+            {
+                _rechargeTimer += (float)delta;
+                float cd = EffectiveChargeCooldown;
+                while (ReadyCharges < EffectiveMaxCharges && _rechargeTimer >= cd)
+                {
+                    _rechargeTimer -= cd;
+                    ReadyCharges++;
+                }
+            }
+            else
+            {
+                _rechargeTimer = 0f;
+            }
+
+            // A_010 瞄准模式进行中:输入由 ThrowAimTargetingController 接管(确认/取消),核心不响应长短按
+            if (AimModeActive) return;
+
+            // 输入走玩家 InputHoldTracker 的长短按语义（阈值 = GameSettings HoldThresholdSeconds）:
+            // 短按(松开 < 阈值) → 消耗 1 充能生成;长按(按住 ≥ 阈值) → 销毁本效果生成的家具
+            var player = GetMainCharacter();
+            if (player == null || !GodotObject.IsInstanceValid(player)) return;
+
+            if (player.WasActionShortPressed(Kuros.Core.InputActions.CoreSkill))
+            {
+                // A_009 接管优先(手持件转化) → A_010 瞄准模式入口 → 默认立即生成
+                if (HeldPieceCoreSkillHandler?.Invoke() != true
+                    && AimModeEnterHandler?.Invoke() != true)
+                    TrySpawnOnce();
+            }
+
+            if (player.WasActionLongPressTriggered(Kuros.Core.InputActions.CoreSkill))
+                DestroyAllGeneratedFurniture();
         }
 
-        public override void _UnhandledInput(InputEvent @event)
+        /// <summary>消耗 1 充能生成一件(短按默认路径;A_010 瞄准模式"确认"也走此入口)。
+        /// 返回 false = 未生成(无充能/无场景)。</summary>
+        public bool TrySpawnOnce()
         {
-            if (!IsInstanceValid(this) || Actor == null) return;
-            if (!@event.IsActionPressed(InputActions.CoreSkill) || @event.IsEcho()) return;
-            if (!CanSpawn || FurnitureScene == null) return;
-
+            if (!CanSpawn) return false;
             SpawnFurniture();
-            GetViewport()?.SetInputAsHandled();
+            ReadyCharges--;
+            return true;
+        }
+
+        /// <summary>长按 F:触发场上本效果生成家具的**正常销毁流程**(OnThrowDestroy 特效/掉落链,非直接
+        /// QueueFree)。飞行/回弹/销毁中的实体由实体侧 RequestDestroy 自行忽略;非实体节点兜底 QueueFree。</summary>
+        private void DestroyAllGeneratedFurniture()
+        {
+            var mc = GetMainCharacter();
+            if (mc == null || !GodotObject.IsInstanceValid(mc)) return;
+
+            foreach (Node node in GetTree().GetNodesInGroup(ThrowCoreFurnitureGroup))
+            {
+                if (node == null || !GodotObject.IsInstanceValid(node)) continue;
+                if (node is Kuros.Items.World.RigidBodyWorldItemEntity rigidBody)
+                    rigidBody.RequestDestroy();
+                else
+                    node.QueueFree();
+            }
         }
 
         private void SpawnFurniture()
@@ -57,13 +236,28 @@ namespace Kuros.Builds.BuildCore
                 ? ((Node2D)indicator).GlobalPosition
                 : mc.GlobalPosition;
 
-            var furniture = FurnitureScene!.Instantiate<Node2D>();
-            mc.GetParent()?.AddChild(furniture);
-            furniture.GlobalPosition = spawnPos;
+            // A_010 坐标寻址:优先取设备无关瞄准点(鼠标为主,手柄/键盘回退)
+            bool useAimPoint = false;
+            if (SpawnAtAimPointRange > 0f)
+            {
+                var resolver = AimPointResolver.Find(mc);
+                if (resolver != null && resolver.TryGetAimWorldPoint(out var aimPoint))
+                {
+                    spawnPos = aimPoint;
+                    useAimPoint = true;
+                }
+            }
+
+            var scene = ResolveSpawnScene(out bool isCopy);
+            if (scene == null) return;
+
+            var furniture = SpawnPieceFromScene(scene, isCopy, spawnPos);
+            if (furniture == null) return;
 
             // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)
+            // (指定位置生成时不做身侧校准,直接落在瞄准点)
             var shape = FindFirstCollisionShape(furniture);
-            if (shape != null)
+            if (shape != null && !useAimPoint)
             {
                 float halfWidth = GetCollisionHalfWidth(shape) + PlacementMargin;
                 float sign = mc.FacingRight ? 1f : -1f;
@@ -71,8 +265,93 @@ namespace Kuros.Builds.BuildCore
                     mc.GlobalPosition.X + sign * halfWidth,
                     spawnPos.Y);
             }
+        }
 
-            CooldownRemaining = SpawnCooldown;
+        /// <summary>外部卡牌入口(B_007 故障析出):在指定世界位置生成一件(不走充能/身侧校准/瞄准点),
+        /// 生成内容仍按 ResolveSpawnScene(A_006 升档 / A_007 复制)。返回生成实例(失败 null),
+        /// 调用方可对其追加标记(如 B_007 防链标记)。</summary>
+        public Kuros.Items.World.RigidBodyWorldItemEntity? SpawnPieceAt(Vector2 worldPosition)
+        {
+            var scene = ResolveSpawnScene(out bool isCopy);
+            return scene == null ? null : SpawnPieceFromScene(scene, isCopy, worldPosition);
+        }
+
+        /// <summary>生成管线单点:实例化场景并完成全部入组/标记/滤镜/落位
+        /// (直接生成、放置、B_007 析出共用;调用方负责场景解析与位置)。</summary>
+        private Kuros.Items.World.RigidBodyWorldItemEntity? SpawnPieceFromScene(
+            PackedScene scene, bool isCopy, Vector2 spawnPos)
+        {
+            var mc = GetMainCharacter();
+            if (mc == null) return null;
+
+            var furniture = scene.Instantiate<Node2D>();
+            // 进换关清场组(换关残留清理) + 本效果专属组(长按 F 销毁)
+            furniture.AddToGroup(Kuros.Items.World.WorldItemSpawner.StageWorldItemsGroup);
+            furniture.AddToGroup(ThrowCoreFurnitureGroup);
+            furniture.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceIdentityTag); // 件身份(摧毁爆炸;投掷/放置通用)
+            furniture.SetMeta("throwcore_born_ms", Time.GetTicksMsec()); // A_004 误爆防护(刚生成不炸)
+            if (isCopy)
+                furniture.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCoreCopyTag); // 复制身份(拾取→放置恢复滤镜)
+            mc.GetParent()?.AddChild(furniture);
+            // A_007 复制件整件乱码滤镜(视觉策略独立于生成管线,见 PieceCopyGlitchDecorator)
+            if (isCopy)
+                Kuros.Fx.PieceCopyGlitchDecorator.Apply(furniture);
+            furniture.GlobalPosition = spawnPos;
+            return furniture as Kuros.Items.World.RigidBodyWorldItemEntity;
+        }
+
+        // ═══════════════════════════ 生成场景聚合(BuildThrow 卡驱动) ═══════════════════════════
+        // 优先级:A_007 复制玩家当前高亮家具 > A_006 升级档(中型/大型 export) > 默认 FurnitureScene(小型)
+        /// <summary>当前将生成的场景(与 SpawnFurniture 同一逻辑;A_010 瞄准模式幽灵预览也走此入口)。</summary>
+        public PackedScene? ResolveSpawnScene(out bool isCopy)
+        {
+            isCopy = false;
+            if (CopyNearbyFurnitureRange > 0f)
+            {
+                var highlighted = FindHighlightedFurnitureDefinition();
+                if (highlighted != null)
+                {
+                    isCopy = true;
+                    return LoadFurnitureScene(highlighted);
+                }
+            }
+
+            if (SpawnTierOverride == 2)
+                return FurnitureSceneMedium ?? FurnitureScene;
+            if (SpawnTierOverride == 3)
+                return FurnitureSceneLarge ?? FurnitureSceneMedium ?? FurnitureScene;
+
+            return FurnitureScene;
+        }
+
+        private static readonly System.Collections.Generic.Dictionary<string, PackedScene> SceneCache = new();
+
+        private static PackedScene? LoadFurnitureScene(ItemDefinition def)
+        {
+            if (def == null) return null;
+            string path = def.ResolveWorldScenePath();
+            if (string.IsNullOrEmpty(path)) return null;
+            if (!SceneCache.TryGetValue(path, out var scene))
+            {
+                scene = ResourceLoader.Load<PackedScene>(path);
+                if (scene != null)
+                    SceneCache[path] = scene;
+            }
+            return scene;
+        }
+
+        /// <summary>
+        /// A_007 复制目标 = 玩家当前高亮(描边)的家具(PlayerItemInteractionComponent 每帧仲裁,
+        /// 与 UI 拾取提示同源:只有玩家 GrabArea 重叠范围内最近的一件会高亮)。
+        /// 排除本效果生成的件(防复制链);无高亮 → null(生成普通乱码块)。
+        /// </summary>
+        private ItemDefinition? FindHighlightedFurnitureDefinition()
+        {
+            var highlighted = Kuros.Items.World.RigidBodyWorldItemEntity.CurrentHighlightedEntity;
+            if (highlighted == null || !GodotObject.IsInstanceValid(highlighted)) return null;
+            if (highlighted.IsInGroup(ThrowCoreFurnitureGroup)) return null;
+            var def = highlighted.ItemDefinition;
+            return def != null && def.IsFurniture ? def : null;
         }
 
         private static CollisionShape2D? FindFirstCollisionShape(Node2D root)

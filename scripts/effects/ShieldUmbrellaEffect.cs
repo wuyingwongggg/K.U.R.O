@@ -11,8 +11,9 @@ namespace Kuros.Effects
     /// - 常态：core 主体 + glow fresnel 呼吸 + scan 扫描线/闪烁（shader 内部 TIME 自驱动）
     /// - 受到攻击：damage_level 拉到 1（core 变色 + scan 故障腐蚀），随后消失
     /// - 消失：core/glow/scan alpha 淡出后整体隐藏
-    /// 正面受到伤害时代替玩家承受（DamageIntercepted 拦截，同 DirectionalBlockEffect），
-    /// 抵挡一次后消失，随后进入 CooldownSeconds 冷却，冷却结束后的下一次攻击重新生成。
+    /// 正面受到伤害时开启格挡:受击后进入 BlockImmunitySeconds 秒**正面免疫窗口**,
+    /// 窗口内正面伤害全免(背后攻击照常受伤);窗口结束伞破碎消失,进入 CooldownSeconds 冷却,
+    /// 冷却结束后的下一次攻击重新生成。格挡开启与窗口内判定均为正面角度(DamageIntercepted 拦截)。
     /// </summary>
     [GlobalClass]
     public partial class ShieldUmbrellaEffect : ActorEffect
@@ -44,6 +45,8 @@ namespace Kuros.Effects
         [Export(PropertyHint.Range, "30,360,5")] public float BlockArcDegrees { get; set; } = 150f;
         /// <summary>护盾破碎后的冷却时间（秒）：冷却期间攻击不会重新生成。</summary>
         [Export(PropertyHint.Range, "0,60,0.5")] public float CooldownSeconds { get; set; } = 3f;
+        /// <summary>正面免疫窗口时长(秒):武装态首次格挡后开启,窗口内正面伤害全免(背后照常受伤),结束才破碎。</summary>
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float BlockImmunitySeconds { get; set; } = 1f;
 
         [ExportCategory("Visual")]
         /// <summary>生成动画时长（秒）：build_progress 0 → 1 扫描显现。</summary>
@@ -79,6 +82,7 @@ namespace Kuros.Effects
         private UmbrellaState _state = UmbrellaState.Ready;
         private float _stateElapsed;
         private float _cooldownRemaining;
+        private float _immunityRemaining; // >0 = 格挡免疫窗口进行中(任意方向全免)
         private float _baseScaleX = 1f;
         private float _hoverClock;
 
@@ -137,6 +141,10 @@ namespace Kuros.Effects
             }
 
             float dt = (float)delta;
+
+            // 免疫窗口倒计时(跨状态有效:格挡开启后残影/淡出期间仍全免)
+            if (_immunityRemaining > 0f)
+                _immunityRemaining = Mathf.Max(0f, _immunityRemaining - dt);
 
             switch (_state)
             {
@@ -212,16 +220,28 @@ namespace Kuros.Effects
             }
         }
 
-        /// <summary>正面伤害拦截（同 DirectionalBlockEffect）：仅在 Idle 武装状态下生效，成功格挡一次后进入受击状态。</summary>
+        /// <summary>伤害拦截:免疫窗口中任意方向全免;窗口外仅 Idle 武装态且正面角度可开启格挡
+        /// (开启窗口 → 受击表现 → 窗口结束后进入消失/冷却)。</summary>
         private bool OnDamageIntercepted(GameActor.DamageEventArgs args)
         {
-            if (_state != UmbrellaState.Idle) return false;
             if (args.Target != Actor) return false;
+
+            // 窗口内:仅**正面**免疫(背后攻击照常受伤,窗口不破坏)
+            if (_immunityRemaining > 0f)
+            {
+                if (!IsWithinFrontArc(args)) return false;
+                args.Damage = 0;
+                args.IsBlocked = true;
+                return true;
+            }
+
+            if (_state != UmbrellaState.Idle) return false;
             if (!IsWithinFrontArc(args)) return false;
 
             args.Damage = 0;
             args.IsBlocked = true;
 
+            _immunityRemaining = Mathf.Max(BlockImmunitySeconds, 0.1f);
             _state = UmbrellaState.Hit;
             _stateElapsed = 0f;
             SetDamageLevel(1f);

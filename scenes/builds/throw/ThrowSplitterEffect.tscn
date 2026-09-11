@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://o8fvt1frmq5b"]
+
+[ext_resource type="Script" uid="uid://burfv5c0vylki" path="res://scripts/builds/throw/ThrowSplitterEffect.cs" id="1"]
+
+[node name="ThrowSplitterEffect" type="Node"]
+script = ExtResource("1")
+EffectId = "3f9077bc-e93a-4c35-a163-b5db16691c6b"
+Description = "进程分叉：,乱码块在投掷时分裂成多个散射状飞出"

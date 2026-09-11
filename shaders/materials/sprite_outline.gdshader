@@ -1,7 +1,7 @@
 shader_type canvas_item;
 render_mode blend_mix, unshaded;
 
-uniform vec4 outline_color : source_color = vec4(0.02, 0.02, 0.02, 1.0);// 描边颜色
+uniform vec4 outline_color : source_color = vec4(0.02, 0.02, 0.02, 0.0);// 描边颜色
 uniform float outline_size : hint_range(0.0, 32.0, 0.1) = 16.0;// 描边大小
 uniform float alpha_threshold : hint_range(0.0, 1.0, 0.01) = 0.5;// 透明度阈值，低于该值的像素将被视为透明
 uniform float edge_softness : hint_range(0.001, 0.25, 0.001) = 0.12;// 边缘软化，降低锯齿
@@ -14,6 +14,8 @@ float alpha_mask(float alpha)
 
 float sample_neighbor_alpha(sampler2D tex, vec2 uv, vec2 offset)
 {
+	// 性能优化：12 邻域采样（含 4 个半像素偏移）降为 8 邻域（13 → 9 次采样/像素）。
+	// 家具等大 sprite 密集场景下描边 shader 是持续卡顿主因，8 邻域视觉差异极小
 	float a = 0.0;
 	a = max(a, texture(tex, uv + vec2( offset.x,  0.0)).a);
 	a = max(a, texture(tex, uv + vec2(-offset.x,  0.0)).a);
@@ -23,10 +25,6 @@ float sample_neighbor_alpha(sampler2D tex, vec2 uv, vec2 offset)
 	a = max(a, texture(tex, uv + vec2(-offset.x,  offset.y)).a * 0.92);
 	a = max(a, texture(tex, uv + vec2( offset.x, -offset.y)).a * 0.92);
 	a = max(a, texture(tex, uv + vec2(-offset.x, -offset.y)).a * 0.92);
-	a = max(a, texture(tex, uv + vec2( offset.x * 0.5,  0.0)).a * 0.9);
-	a = max(a, texture(tex, uv + vec2(-offset.x * 0.5,  0.0)).a * 0.9);
-	a = max(a, texture(tex, uv + vec2( 0.0,  offset.y * 0.5)).a * 0.9);
-	a = max(a, texture(tex, uv + vec2( 0.0, -offset.y * 0.5)).a * 0.9);
 	return a;
 }
 

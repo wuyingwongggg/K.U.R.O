@@ -55,8 +55,9 @@ namespace Kuros.Items.World
         private SamplePlayer? _player;
         private PlayerItemInteractionComponent? _interaction;
 
-        // 武器参数缓存：基于 ItemDefinition 引用
+        // 武器参数缓存：基于 ItemDefinition 引用 + 构筑修饰（引用或修饰变化均失效）
         private ItemDefinition? _cachedItem = null;
+        private ThrowableModifiers _cachedMods = ThrowableModifiers.None;
         private WeaponThrowParams _cachedParams = new();
 
         // 当前帧是否应渲染
@@ -65,7 +66,10 @@ namespace Kuros.Items.World
         private Vector2 _landingLocalPos = Vector2.Zero;
         // 当前帧的采样点列表（局部坐标）
         private readonly List<Vector2> _trailPoints = new();
-		private Node2D? _landingIndicatorInstance;
+        // 分裂预览:各枚落点(局部坐标,主落点在[0])
+        private readonly List<Vector2> _landingPoints = new();
+        // 落地指示器实例池:与 _landingPoints 等量(分裂时每个落点各一个)
+        private readonly List<Node2D> _landingIndicators = new();
 
         private struct WeaponThrowParams
         {
@@ -93,8 +97,9 @@ namespace Kuros.Items.World
 
         public override void _ExitTree()
         {
-            _landingIndicatorInstance?.QueueFree();
-            _landingIndicatorInstance = null;
+            foreach (var indicator in _landingIndicators)
+                indicator?.QueueFree();
+            _landingIndicators.Clear();
             base._ExitTree();
         }
 
@@ -112,7 +117,10 @@ namespace Kuros.Items.World
             if (wantsDraw)
                 ComputeTrajectory();
             else
+            {
                 _trailPoints.Clear();
+                _landingPoints.Clear();
+            }
 
             if (wantsDraw != _shouldDraw)
             {
@@ -145,46 +153,45 @@ namespace Kuros.Items.World
 
         private void UpdateLandingIndicator(bool show)
         {
-            if (LandingIndicatorScene == null)
+            // 需要数量 = 显示中的落点数(分裂 N 枚 → N 个指示器;无场景则 0)
+            int need = show && LandingIndicatorScene != null ? _landingPoints.Count : 0;
+
+            // 补建缺失实例
+            while (_landingIndicators.Count < need)
             {
-                if (_landingIndicatorInstance != null)
-                {
-                    _landingIndicatorInstance.QueueFree();
-                    _landingIndicatorInstance = null;
-                }
-                return;
+                var instance = LandingIndicatorScene!.Instantiate<Node2D>();
+                AddChild(instance);
+                _landingIndicators.Add(instance);
             }
 
-            if (!show || _trailPoints.Count == 0)
+            // 裁剪多余实例
+            while (_landingIndicators.Count > need)
             {
-                if (_landingIndicatorInstance != null)
-                {
-                    _landingIndicatorInstance.QueueFree();
-                    _landingIndicatorInstance = null;
-                }
-                return;
+                var last = _landingIndicators[^1];
+                _landingIndicators.RemoveAt(_landingIndicators.Count - 1);
+                last?.QueueFree();
             }
 
-            if (_landingIndicatorInstance == null)
-            {
-                _landingIndicatorInstance = LandingIndicatorScene.Instantiate<Node2D>();
-                AddChild(_landingIndicatorInstance);
-            }
-
-            _landingIndicatorInstance.Position = _landingLocalPos;
+            for (int i = 0; i < need && i < _landingPoints.Count; i++)
+                _landingIndicators[i].Position = _landingPoints[i];
         }
         private bool CheckShouldDraw()
         {
             if (_player == null) return false;
 
             var state = _player.StateMachine?.CurrentState?.Name;
-            if (state != "IdleHolding" && state != "RunHolding") return false;
+            bool holdingState = state == "IdleHolding" || state == "RunHolding";
+            // B_006 投掷预载:蓄力窗口内(Throw 状态)也显示——修饰每帧变化触发缓存失效,轨迹随蓄力实时增长
+            bool charging = !holdingState && state == "Throw"
+                && _player.EffectController?.GetEffectByInterface<IThrowChargeModifier>()?.Charging == true;
+            if (!holdingState && !charging) return false;
 
             var stack = _player.InventoryComponent?.GetSelectedQuickBarStack();
             if (stack == null || stack.IsEmpty || !stack.Item.IsThrowable) return false;
 
-            // 投掷即效果武器不飞行（轨迹由效果表现），不显示投掷轨迹预览
-            if (stack.Item.SpawnEffectOnThrow) return false;
+            // 投掷即效果武器(回旋镖等)本体不飞行,轨迹由生成的特效表现——仅当定义提供了显式飞行距离
+            // (ThrowHorizontalDistance>0,与生成侧注入同一真源)时预览该距离;否则不显示
+            if (stack.Item.SpawnEffectOnThrow && stack.Item.ThrowHorizontalDistance <= 0f) return false;
 
             // 确保武器参数已缓存
             EnsureParamsCached(stack.Item);
@@ -195,20 +202,25 @@ namespace Kuros.Items.World
 
         private void EnsureParamsCached(ItemDefinition item)
         {
-            // 如果已缓存当前选中的武器，直接返回（使用引用相等判断）
-            if (ReferenceEquals(_cachedItem, item) && _cachedItem != null)
+            // 修饰取自构筑提供方(无 → None)；缓存键 = (item, mods)，任一变即失效重算
+            ThrowableModifiers mods = _player is IThrowableModifierProvider provider
+                ? provider.GetThrowableModifiers()
+                : ThrowableModifiers.None;
+
+            if (ReferenceEquals(_cachedItem, item) && _cachedItem != null && _cachedMods == mods)
             {
                 return;
             }
 
             _cachedItem = item;
+            _cachedMods = mods;
 
             _cachedParams = new WeaponThrowParams
             {
                 PeakHeight         = item.ThrowParabolicPeakHeight,
                 LandingYOffset     = item.ThrowParabolicLandingYOffset,
-                Duration           = item.ThrowParabolicDuration,
-                HorizontalDistance = item.ThrowHorizontalDistance,
+                Duration           = item.GetEffectiveThrowDuration(mods),
+                HorizontalDistance = item.GetEffectiveThrowDistance(mods),
                 ThrowStartOffset   = item.ThrowStartOffset,
                 ThrowOffset        = _interaction?.ThrowOffset ?? new Vector2(48, -10),
                 ThrowImpulse       = _interaction?.ThrowImpulse ?? 800f,
@@ -246,6 +258,7 @@ namespace Kuros.Items.World
         private void ComputeTrajectory()
         {
             _trailPoints.Clear();
+            _landingPoints.Clear();
             if (_player == null) return;
 
             var p = _cachedParams;
@@ -256,25 +269,54 @@ namespace Kuros.Items.World
 
             float startLocalX = (facingX * p.ThrowOffset.X + p.ThrowStartOffset.X) * scaleComp;
             float startLocalY = (p.ThrowOffset.Y + p.ThrowStartOffset.Y) * scaleComp;
-            float landingY = startLocalY + p.LandingYOffset * scaleComp;
+            float baseLandingY = startLocalY + p.LandingYOffset * scaleComp;
 
-            float totalDX = p.HorizontalDistance * facingX * scaleComp * HorizontalDistanceMultiplier;
+            // 投掷即效果武器(回旋镖):特效飞行精确停在 effective distance,预览乘数取 1.0 使落点=真实到达距离;
+            // 普通投掷保持场景调校乘数(2.1)
+            float distanceMultiplier = _cachedItem?.SpawnEffectOnThrow == true ? 1f : HorizontalDistanceMultiplier;
+            float totalDX = p.HorizontalDistance * facingX * scaleComp * distanceMultiplier;
             float peakH = p.PeakHeight * scaleComp;
             float duration = (float)p.Duration;
 
-            for (int i = 0; i <= TotalSamples; i++)
+            // 分裂预览:主轨迹(原件落点偏移)+ 各克隆落点偏移;无分裂卡 → 仅主轨迹(偏移 0)
+            var offsets = CollectSplitOffsets();
+            foreach (float offset in offsets)
             {
-                float phase = (float)i / TotalSamples;
+                float landingY = baseLandingY + offset * scaleComp;
+                for (int i = 0; i <= TotalSamples; i++)
+                {
+                    float phase = (float)i / TotalSamples;
 
-                float x = startLocalX + totalDX * phase;
+                    float x = startLocalX + totalDX * phase;
 
-                float y = Mathf.Lerp(startLocalY, landingY, phase)
-                        - Mathf.Sin(phase * Mathf.Pi) * peakH;
+                    float y = Mathf.Lerp(startLocalY, landingY, phase)
+                            - Mathf.Sin(phase * Mathf.Pi) * peakH;
 
-                _trailPoints.Add(new Vector2(x, y));
+                    _trailPoints.Add(new Vector2(x, y));
+                }
+                _landingPoints.Add(new Vector2(startLocalX + totalDX, landingY));
             }
 
-            _landingLocalPos = new Vector2(startLocalX + totalDX, landingY);
+            _landingLocalPos = _landingPoints.Count > 0 ? _landingPoints[0] : Vector2.Zero;
+        }
+
+        /// <summary>本帧应绘制的轨迹落点偏移列表:主轨迹在前;玩家持有分裂卡且手持件可分裂时追加克隆偏移。</summary>
+        private List<float> CollectSplitOffsets()
+        {
+            var offsets = new List<float> { 0f };
+            var provider = _player?.EffectController?.GetEffectByInterface<IThrowSplitPreview>();
+            if (provider != null && provider.IsSplittableForHeldItem())
+            {
+                float center = provider.CenterLandingOffsetY;
+                var clones = provider.CloneLandingOffsetsY;
+                if (center != 0f || (clones != null && clones.Length > 0))
+                {
+                    offsets.Clear();
+                    offsets.Add(center);
+                    if (clones != null) offsets.AddRange(clones);
+                }
+            }
+            return offsets;
         }
     }
 }

@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://du43eys1mxx08"]
+
+[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_5lp8e"]
+[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_qyine"]
+[ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_evnfo"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_hy33l"]
+[ext_resource type="PackedScene" uid="uid://duq7gvippbjmp" path="res://scenes/actors/etc/HitI.tscn" id="5_5lp8e"]
+[ext_resource type="Texture2D" uid="uid://c401qf6kvcjbn" path="res://assets/ui/throw_bar/方块++.png" id="6_5lp8e"]
+[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_cxbl0"]
+
+[sub_resource type="Resource" id="Resource_ab7ls"]
+script = ExtResource("1_5lp8e")
+AttributeId = "attack_power"
+metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
+
+[sub_resource type="Resource" id="Resource_6f3qv"]
+script = ExtResource("2_qyine")
+Trigger = 1
+EffectScene = ExtResource("3_evnfo")
+Notes = "大型家具：减速70%
+"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_1qp51"]
+script = ExtResource("2_qyine")
+Trigger = 4
+EffectScene = ExtResource("4_hy33l")
+Notes = "相机震动"
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_i4xrv"]
+script = ExtResource("2_qyine")
+Trigger = 4
+EffectScene = ExtResource("5_5lp8e")
+Notes = "破坏特效"
+PropertyOverrides = Dictionary[String, Variant]({
+"scale": Vector2(1, 1)
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[resource]
+script = ExtResource("7_cxbl0")
+ItemId = "Furniture_A_CubeC"
+DisplayName = "乱码块"
+Description = "一次性投掷道具：乱码块(大型)"
+Icon = ExtResource("6_5lp8e")
+HoldScenePath = "uid://bpeqwkncwuhef"
+Category = "Furniture"
+Tags = Array[String](["tag_throw", "furniture", "tier_3"])
+MaxStackSize = 1
+AttributeEntries = Array[ExtResource("1_5lp8e")]([SubResource("Resource_ab7ls")])
+EffectEntries = Array[ExtResource("2_qyine")]([SubResource("Resource_6f3qv"), SubResource("Resource_1qp51"), SubResource("Resource_i4xrv")])
+IsThrowable = true
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicDuration = 0.0
+ThrowParabolicPeakHeight = 100.0
+ThrowHorizontalDistance = 0.0
+ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 3
+WorldScenePath = "uid://yqtbldqychhi"

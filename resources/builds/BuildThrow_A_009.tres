@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://bfe6xmagql6is"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://0r4xtgl2qyg4" path="res://scenes/builds/throw/ThrowShieldTransformEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://bu07ck0riyf74" path="res://assets/BuildIcon/Throw_A_009_对象转型.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_A009"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_A_009"
+DisplayName = "对象转型"
+Description = "举起乱码块时使用核心技能,将其转化为护盾,根据乱码块的投掷等级抵挡1/2/3次伤害"
+BuildClass = "Throw"
+Rarity = 2
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A009")])

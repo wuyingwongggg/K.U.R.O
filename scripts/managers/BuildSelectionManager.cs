@@ -79,6 +79,9 @@ namespace Kuros.Managers
 
         [ExportGroup("Debug")]
         [Export] public bool DebugTrigger { get; set; }
+        /// <summary>调试触发键（默认 B）：每次按下翻转 DebugTrigger（等价于 Inspector 勾选/取消）。
+        /// 置 true 后由 _Process 消费（需已绑定玩家且当前无选择窗）→ 打开一次三选一窗口。</summary>
+        [Export] public Key DebugTriggerKey { get; set; } = Key.B;
 
         private SamplePlayer? _boundPlayer;
         private string? _playerCoreClass;
@@ -88,6 +91,9 @@ namespace Kuros.Managers
         private int _triggerCount;
         private bool _isSelectionActive;
         private int _pendingScore;
+        /// <summary>构筑选择主数据源（时间序,含被反向取代的废卡）。</summary>
+        private readonly List<BuildPickRecord> _pickRecords = new();
+        /// <summary>派生快照：active 记录按 EffectId 归并最大层数（外部兼容出口,废卡不进入）。</summary>
         private readonly Dictionary<string, int> _pickedEffectIds = new();
         private readonly System.Random _rng = new();
 
@@ -120,6 +126,16 @@ namespace Kuros.Managers
                 DebugTrigger = false;
                 TriggerSelection();
             }
+        }
+
+        /// <summary>调试键：翻转 DebugTrigger。窗口打开期间树暂停（INHERIT 输入不触发）——不会误触发连续弹窗。</summary>
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (@event is not InputEventKey key || !key.Pressed || key.Echo) return;
+            if (key.Keycode != DebugTriggerKey) return;
+
+            DebugTrigger = !DebugTrigger;
+            GetViewport().SetInputAsHandled();
         }
 
         private void TryBindPlayer()
@@ -170,7 +186,8 @@ namespace Kuros.Managers
             _isSelectionActive = false;
             _lastKnownScore = 0;
             _pendingScore = 0;
-            _pickedEffectIds.Clear();
+            _pickRecords.Clear();
+            RebuildPickedSnapshot();
             _boundPlayer = null;
         }
 
@@ -259,13 +276,15 @@ namespace Kuros.Managers
                     createdCoreEffect = coreEffect;
                 }
 
-                // 通知 CoreHUD 切换显示，并注入 MachineCoreEffect 引用
+                // 通知 CoreHUD 切换显示，并注入核心效果引用（Machine 热量 / Throw 充能）
                 var coreHUD = GetTree().Root.FindChild("CoreHUD", recursive: true, owned: false) as UI.CoreHUD;
                 if (coreHUD != null)
                 {
                     coreHUD.ShowFor(chosenEffect.BuildClass);
                     if (createdCoreEffect is MachineCoreEffect machineCore)
                         coreHUD.BindMachineCore(machineCore);
+                    else if (createdCoreEffect is ThrowCoreEffect throwCore)
+                        coreHUD.BindThrowCore(throwCore);
                 }
 
                 if (_boundPlayer != null && IsInstanceValid(_boundPlayer))
@@ -348,6 +367,7 @@ namespace Kuros.Managers
                     CheckAndTriggerSelection(_boundPlayer.Score);
             },
             excluded => PickRandomEffects(CardsPerSelection, excluded),
+            GetPickContext,
             RerollBaseCost, RerollCostGrowth, GetFreeRerollCount());
         }
 
@@ -358,15 +378,44 @@ namespace Kuros.Managers
             string effectId = effect.EffectId;
             if (string.IsNullOrWhiteSpace(effectId)) return;
 
-            // 追踪已选效果
-            _pickedEffectIds.TryGetValue(effectId, out int currentStacks);
-            _pickedEffectIds[effectId] = currentStacks + 1;
-            PickedEffectsChanged?.Invoke();
+            // ── 反向取代判定：同族(共用 EffectScene)存在方向相反的 active 卡 → 整族作废 ──
+            var familyRecords = ActiveFamilyRecords(effect);
+            bool hasOpposite = false;
+            int familyNet = 0;
+            foreach (var r in familyRecords)
+            {
+                familyNet += r.Stacks;
+                if (!hasOpposite && effect.Direction != 0)
+                {
+                    var d = FindEffectById(r.EffectId);
+                    if (d?.Direction != 0 && d.Direction != effect.Direction)
+                        hasOpposite = true;
+                }
+            }
 
-            // 复杂效果：遍历 EffectEntries，每个 entry 自带 PropertyOverrides
+            int recordStacks;
+            if (hasOpposite)
+            {
+                // 整族作废：移除实例(→ OnRemoved → RemoveStatModifier)并把族内全部 active 记录标废
+                foreach (var r in familyRecords)
+                {
+                    _boundPlayer.RemoveEffect(r.EffectId);
+                    r.Active = false;
+                }
+                // 生效层数 = 旧族净层 + 1（反向补偿起步），钳制在档位表长度内
+                int tierLen = effect.GetTierValues()?.Length ?? Mathf.Max(1, effect.MaxStacks);
+                recordStacks = Mathf.Clamp(familyNet + 1, 1, Mathf.Max(1, tierLen));
+            }
+            else
+            {
+                // 同方向/无同族：层数 = 该卡 active 最大层 + 1（首次=1）
+                recordStacks = ActiveStacksOf(effectId) + 1;
+            }
+
+            // ── 效果实例推进（沿用原语义：isNew 每 entry 实例化一次；否则每 entry Refresh 一次）──
+            bool isNew = _boundPlayer.EffectController.GetEffect(effectId) == null;
             if (effect.EffectEntries.Count > 0)
             {
-                bool isNew = _boundPlayer.EffectController.GetEffect(effectId) == null;
                 foreach (var entry in effect.EffectEntries)
                 {
                     if (entry?.Scene == null) continue;
@@ -387,10 +436,33 @@ namespace Kuros.Managers
                         existing?.Refresh(1);
                     }
                 }
-                return;
             }
 
-            // 所有效果统一由 EffectEntries 驱动（含 AttackEffectEntry.PropertyOverrides）
+            // 反向取代起手高于 1 层：实例从第 1 层起,补 Refresh 至生效层（单实例目标,显式次数防多 entry 漂移）
+            if (hasOpposite && recordStacks > 1)
+            {
+                var existing = _boundPlayer.EffectController.GetEffect(effectId);
+                for (int r = 1; r < recordStacks; r++)
+                    existing?.Refresh(1);
+            }
+
+            // ── 记录入栈（同 id 续接合并到现有 active 记录；否则新增）──
+            BuildPickRecord? activeRecord = null;
+            foreach (var r in _pickRecords)
+            {
+                if (r.Active && r.EffectId == effectId)
+                {
+                    activeRecord = r;
+                    break;
+                }
+            }
+            if (activeRecord != null)
+                activeRecord.Stacks = recordStacks;
+            else
+                _pickRecords.Add(new BuildPickRecord { EffectId = effectId, Stacks = recordStacks, Active = true });
+
+            RebuildPickedSnapshot();
+            PickedEffectsChanged?.Invoke();
         }
 
         private List<BuildEffectDefinition> PickRandomEffects(int count, ICollection<string>? excludeEffectIds = null)
@@ -435,7 +507,7 @@ namespace Kuros.Managers
                 if (effect == null) return false;
                 if (string.IsNullOrWhiteSpace(effect.BuildClass)) return false;
                 if (!allowedSet.Contains(effect.BuildClass)) return false;
-                _pickedEffectIds.TryGetValue(effect.EffectId, out int stacks);
+                int stacks = ActiveStacksOf(effect.EffectId); // 废卡不计层:被取代后可重选
                 if (effect.MaxStacks > 0 && stacks >= effect.MaxStacks) return false;
                 return true;
             }
@@ -498,7 +570,8 @@ namespace Kuros.Managers
         /// <summary>清除构筑选择状态（返回主菜单/退出战斗时调用）——清空已选记录，重进存档后重新选择构筑，避免旧构筑效果跨主菜单残留。</summary>
         public void ClearBuildState()
         {
-            _pickedEffectIds.Clear();
+            _pickRecords.Clear();
+            RebuildPickedSnapshot();
             _selectedCoreId = null;
             _playerCoreClass = null;
             PickedEffectsChanged?.Invoke();
@@ -524,21 +597,24 @@ namespace Kuros.Managers
                     restoredCoreEffect = coreEffect;
                 }
 
-                // 恢复 CoreHUD，注入 MachineCoreEffect 引用
+                // 恢复 CoreHUD，注入核心效果引用（Machine 热量 / Throw 充能——与核心选择回调一致）
                 var coreHUD = GetTree().Root.FindChild("CoreHUD", recursive: true, owned: false) as UI.CoreHUD;
                 if (coreHUD != null)
                 {
                     coreHUD.ShowFor(_playerCoreClass ?? "");
                     if (restoredCoreEffect is MachineCoreEffect machineCore)
                         coreHUD.BindMachineCore(machineCore);
+                    else if (restoredCoreEffect is ThrowCoreEffect throwCore)
+                        coreHUD.BindThrowCore(throwCore);
                 }
             }
 
-            // 恢复已选的构筑效果（重新实例化，按记录的栈层数）
-            foreach (var kvp in _pickedEffectIds)
+            // 恢复已选的构筑效果（重新实例化，按记录的栈层数；废卡保留记录但不重建实例）
+            foreach (var record in _pickRecords)
             {
-                string effectId = kvp.Key;
-                int stacks = kvp.Value;
+                if (!record.Active) continue;
+                string effectId = record.EffectId;
+                int stacks = record.Stacks;
 
                 var definition = FindEffectById(effectId);
                 if (definition == null) continue;
@@ -585,5 +661,83 @@ namespace Kuros.Managers
         }
 
         public IReadOnlyDictionary<string, int> PickedEffectIds => _pickedEffectIds;
+
+        /// <summary>构筑选择历史（含废卡,UI 层叠展示用）。</summary>
+        public IReadOnlyList<BuildPickRecord> PickHistory => _pickRecords;
+
+        /// <summary>指定效果的当前生效层数（active 记录最大 Stacks——层数唯一口径）。</summary>
+        public int ActiveStacksOf(string effectId)
+        {
+            int max = 0;
+            foreach (var r in _pickRecords)
+            {
+                if (r.Active && r.EffectId == effectId && r.Stacks > max)
+                    max = r.Stacks;
+            }
+            return max;
+        }
+
+        /// <summary>同族(共用 EffectScene)且 active 的记录集合；无族返回空。族净层 = 各记录 Stacks 之和(族内恒同向)。</summary>
+        private List<BuildPickRecord> ActiveFamilyRecords(BuildEffectDefinition effect)
+        {
+            var result = new List<BuildPickRecord>();
+            if (effect?.FamilyKey == null) return result;
+            foreach (var r in _pickRecords)
+            {
+                if (!r.Active) continue;
+                var d = FindEffectById(r.EffectId);
+                if (d?.FamilyKey != null && d.FamilyKey == effect.FamilyKey)
+                    result.Add(r);
+            }
+            return result;
+        }
+
+        private void RebuildPickedSnapshot()
+        {
+            _pickedEffectIds.Clear();
+            foreach (var r in _pickRecords)
+            {
+                if (!r.Active) continue;
+                if (!_pickedEffectIds.TryGetValue(r.EffectId, out int cur) || r.Stacks > cur)
+                    _pickedEffectIds[r.EffectId] = r.Stacks;
+            }
+        }
+
+        /// <summary>候选卡的族上下文（选择窗展示用）：反向候选 → 取代目标与生效层；否则 null。</summary>
+        public BuildPickCardContext? GetPickContext(BuildEffectDefinition effect)
+        {
+            if (effect?.FamilyKey == null || effect.Direction == 0) return null;
+
+            var familyRecords = ActiveFamilyRecords(effect);
+            if (familyRecords.Count == 0) return null;
+
+            int familyNet = 0;
+            var targetNames = new List<string>();
+            bool hasOpposite = false;
+            foreach (var r in familyRecords)
+            {
+                familyNet += r.Stacks;
+                var d = FindEffectById(r.EffectId);
+                if (d == null) continue;
+                targetNames.Add(d.DisplayName); // 被取代的是整族(无论叠几层),卡面只报目标名
+                if (d.Direction != 0 && d.Direction != effect.Direction)
+                    hasOpposite = true;
+            }
+            if (!hasOpposite) return null;
+
+            int tierLen = effect.GetTierValues()?.Length ?? Mathf.Max(1, effect.MaxStacks);
+            return new BuildPickCardContext
+            {
+                SupersedeTargets = targetNames,
+                ResultStacks = Mathf.Clamp(familyNet + 1, 1, Mathf.Max(1, tierLen)),
+            };
+        }
+    }
+
+    /// <summary>候选卡的选择窗上下文（反向取代时）。</summary>
+    public sealed class BuildPickCardContext
+    {
+        public List<string> SupersedeTargets { get; set; } = new();
+        public int ResultStacks { get; set; } = 1;
     }
 }

@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Kuros.Core;
 
 namespace Kuros.Items.World
 {
-	public partial class DestructibleObject : Node2D
+	public partial class DestructibleObject : Node2D, IDirectionalDamageReceiver, IBarrier
 	{
-		private static readonly HashSet<SceneTree> PendingRebakeScenes = new();
-		private static bool _rebakeTimerScheduled;
+		// 方向位掩码：Left=1, Right=2, Up=4, Down=8（与 ReceiveFromDirections 的 Flags 顺序一致）
+		private const int DirLeft = 1;
+		private const int DirRight = 2;
+		private const int DirUp = 4;
+		private const int DirDown = 8;
+		private const int DirAll = 15;
+
 		[ExportCategory("Health")]
 		[Export] public bool Destructible { get; set; } = true;
 		[Export(PropertyHint.Range, "1,9999,1")] public float MaxHP = 60f;
@@ -30,6 +36,12 @@ namespace Kuros.Items.World
 		[Export] public NodePath ScanlineSpritePath { get; set; } = new("Sprite2D");
 		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineSpawnDuration = 0.3f;
 		[Export(PropertyHint.Range, "0.05,2,0.05")] public float ScanlineDespawnDuration = 0.2f;
+
+		[ExportCategory("Directional Receive")]
+		/// <summary>接收伤害的方向（Flags 位掩码：Left=1, Right=2, Up=4, Down=8，15 = 全方向）。
+		/// 非接收方向的攻击不结算伤害，bullet 类攻击特效直接穿过屏障。</summary>
+		[Export(PropertyHint.Flags, "Left,Right,Up,Down")]
+		public int ReceiveFromDirections { get; set; } = DirAll;
 
 		[ExportCategory("Destroy")]
 		[Export(PropertyHint.Range, "0,120,0.1")] public float LifeTime = 0f;
@@ -55,6 +67,9 @@ namespace Kuros.Items.World
 		{
 			if (!IsInGroup("world_items"))
 				AddToGroup("world_items");
+			// 可破坏物声明：无视攻击方分类过滤（TargetableFactions），接收任何攻击方的伤害
+			if (!IsInGroup("damage_receivable"))
+				AddToGroup("damage_receivable");
 
 			CurrentHP = MaxHP;
 			SetupHitFlash();
@@ -64,8 +79,8 @@ namespace Kuros.Items.World
 		}
 		public override void _ExitTree()
 		{
-			if (HasNavigationSourceGeometryDescendant(this))
-				ScheduleNavigationRebake();
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
+				NavigationRebakeCoordinator.RequestRebake(this);
 		}
 
 
@@ -89,6 +104,32 @@ namespace Kuros.Items.World
 				if (_lifeTimer >= LifeTime)
 					Destroy();
 			}
+		}
+
+		/// <summary>攻击方向向量（如子弹速度方向）是否接收伤害。主分量判定（对角线取主导分量）。
+		/// 用本地坐标判定——方向跟随屏障朝向：翻转（Scale.x=-1）/旋转后左右自动反转。</summary>
+		public bool AcceptsAttackFromDirection(Vector2 direction)
+		{
+			if (ReceiveFromDirections == DirAll) return true;
+			if (direction == Vector2.Zero) return AcceptsAttackFrom(GlobalPosition);
+
+			Vector2 local = ToLocal(GlobalPosition + direction);
+			return ResolveDirection(local);
+		}
+
+		/// <summary>攻击来源点 origin 相对本屏障的方向是否接收伤害（无攻击方向向量时的回退）。</summary>
+		public bool AcceptsAttackFrom(Vector2 origin)
+		{
+			if (ReceiveFromDirections == DirAll) return true;
+			return ResolveDirection(ToLocal(origin));
+		}
+
+		/// <summary>主方向判定（本地坐标）：|X| ≥ |Y| 判左右，否则判上下。</summary>
+		private bool ResolveDirection(Vector2 local)
+		{
+			if (Mathf.Abs(local.X) >= Mathf.Abs(local.Y))
+				return (ReceiveFromDirections & (local.X >= 0f ? DirRight : DirLeft)) != 0;
+			return (ReceiveFromDirections & (local.Y >= 0f ? DirDown : DirUp)) != 0;
 		}
 
 		public void TakeDamage(float damage)
@@ -177,8 +218,8 @@ namespace Kuros.Items.World
 			if (_staticBody == null || !IsInstanceValid(_staticBody)) return;
 			_staticBody.CollisionLayer = _originalCollisionLayer;
 			_staticBody.CollisionMask = _originalCollisionMask;
-			if (HasNavigationSourceGeometryDescendant(this))
-				ScheduleNavigationRebake();
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
+				NavigationRebakeCoordinator.RequestRebake(this);
 		}
 
 		protected void DisableCollision()
@@ -287,49 +328,6 @@ namespace Kuros.Items.World
 				Callable.From<float>(pos => _scanlineMaterial.SetShaderParameter("scanline_pos", pos)),
 				1f, 0f, ScanlineDespawnDuration);
 			tween.TweenCallback(Callable.From(onDone));
-		}
-		private static bool HasNavigationSourceGeometryDescendant(Node node)
-		{
-			foreach (Node child in node.GetChildren())
-			{
-				if (child.IsInGroup("navigation_polygon_source_geometry_group")) return true;
-				if (HasNavigationSourceGeometryDescendant(child)) return true;
-			}
-			return false;
-		}
-
-		private static void RebakeAllNavigationRegions(Node node)
-		{
-			if (!GodotObject.IsInstanceValid(node)) return;
-			if (node is NavigationRegion2D navRegion)
-			{
-				navRegion.BakeNavigationPolygon();
-				return;
-			}
-			foreach (Node child in node.GetChildren())
-				RebakeAllNavigationRegions(child);
-		}
-
-		private static void ScheduleNavigationRebake()
-		{
-			var tree = Engine.GetMainLoop() as SceneTree;
-			if (tree == null) return;
-
-			PendingRebakeScenes.Add(tree);
-
-			if (_rebakeTimerScheduled) return;
-
-			_rebakeTimerScheduled = true;
-			tree.CreateTimer(0.0).Timeout += () =>
-			{
-				_rebakeTimerScheduled = false;
-				foreach (var sceneTree in PendingRebakeScenes)
-				{
-					var scene = sceneTree.CurrentScene;
-					if (scene != null) RebakeAllNavigationRegions(scene);
-				}
-				PendingRebakeScenes.Clear();
-			};
 		}
 	}
 }

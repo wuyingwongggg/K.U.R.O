@@ -101,7 +101,10 @@ public partial class EnemyChaseMovement : Node
 		if (Enemy.StateMachine == null) return;
 
 		if (Enemy.HasMeta("__keep_distance_active")) return;
-			if (Enemy.HasMeta("__close_in_active")) return;
+
+		// CloseIn 期间导航保持在线:CloseIn 状态只标记加速/计时/到达判定,移动寻路全走本组件
+		// (meta 只用于让 chase 在 CloseIn 期间忽略"进入攻击范围即停"并提速,CloseIn 结束自动恢复)
+		bool closeInActive = Enemy.HasMeta("__close_in_active");
 
 		string currentState = Enemy.StateMachine.CurrentState?.Name ?? string.Empty;
 		if (IsBlocked(currentState))
@@ -113,17 +116,26 @@ public partial class EnemyChaseMovement : Node
 
 		if (Enemy.IsPlayerWithinDetectionRange())
 		{
-			if (!Enemy.IsPlayerInAttackRange())
+			// CloseIn 期间无视"进入攻击范围即停",一路冲向 GetApproachTarget(贴身点);否则维持原停点规则
+			if (!Enemy.IsPlayerInAttackRange() || closeInActive)
 			{
-				EnsureState(WalkStateName, currentState);
+				// 不要弹走 CloseIn 状态(chase 只提供移动,状态进出/到达退出由 CloseIn 自己判定)
+				if (currentState != "CloseIn")
+					EnsureState(WalkStateName, currentState);
+
+				// CloseIn = 加速贴近:移动仍走 GetMoveDirection(导航/approach),仅速度乘 BurstSpeedMultiplier
+				float speedMul = closeInActive && Enemy.BehaviorConfig != null
+					? Mathf.Max(1f, Enemy.BehaviorConfig.BurstSpeedMultiplier)
+					: 1f;
+
 				Vector2 direction = GetMoveDirection();
-				Vector2 desiredVelocity = direction * Enemy.Speed;
+				Vector2 desiredVelocity = direction * Enemy.Speed * speedMul;
 
 				if (NavAgent != null && NavAgent.AvoidanceEnabled)
 				{
 					NavAgent.SetVelocity(desiredVelocity);
 					if (_hasSafeVelocity && _safeVelocity.LengthSquared() > 0.01f)
-						Enemy.Velocity = _safeVelocity.Normalized() * Enemy.Speed;
+						Enemy.Velocity = _safeVelocity.Normalized() * Enemy.Speed * speedMul;
 					else
 						Enemy.Velocity = desiredVelocity;
 					_hasSafeVelocity = false;

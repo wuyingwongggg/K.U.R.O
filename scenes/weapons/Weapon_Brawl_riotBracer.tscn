@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://dtgdjgrqgype7" path="res://scripts/items/world/WorldItemEntity.cs" id="1_82c6d"]
 [ext_resource type="Resource" uid="uid://c0h5f2yocbgcw" path="res://resources/items/Weapon_Brawl_RiotBracer.tres" id="2_82c6d"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="3_2q28g"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="3_2q28g"]
 [ext_resource type="Texture2D" uid="uid://crfbiiitqgkjb" path="res://assets/weapons/镇暴护腕.png" id="3_82c6d"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_yqjh8"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_blqw4"]
-[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_blqw4"]
-[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="8_rrc52"]
-[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="9_jlsbm"]
+[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_blqw4"]
+[ext_resource type="Shader" uid="uid://dohrihv500dkc" path="res://shaders/materials/sparkling_star.gdshader" id="8_rrc52"]
+[ext_resource type="Texture2D" uid="uid://cte5bwtt7ps1d" path="res://assets/art/godot_icon.png" id="9_jlsbm"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rrc52"]
 shader = ExtResource("3_yqjh8")

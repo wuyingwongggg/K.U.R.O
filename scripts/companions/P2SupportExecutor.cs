@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
+using Kuros.Core.Effects;
 using Kuros.Items.Tags;
 using Kuros.Managers;
 
@@ -44,12 +45,24 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "100,2000,50")] public float MoveAwayDistance { get; set; } = 600f;
 
         [ExportCategory("Shield VFX")]
-        /// <summary>护盾格挡时玩家的闪光颜色。</summary>
-        [Export] public Color ShieldBlockFlashColor { get; set; } = new Color(0.55f, 0.85f, 1f, 1f);
-        /// <summary>闪光总时长（秒）。</summary>
-        [Export(PropertyHint.Range, "0.05,0.6,0.01")] public float ShieldBlockFlashDuration { get; set; } = 0.16f;
-        /// <summary>闪光强度（0~1，向闪光色插值比例）。</summary>
-        [Export(PropertyHint.Range, "0.1,1,0.01")] public float ShieldBlockFlashStrength { get; set; } = 0.58f;
+        /// <summary>护盾等级（次数盾的抵挡次数，默认 2——后期可由 SetShieldChargeLevel 钩子升级）。</summary>
+        [Export(PropertyHint.Range, "1,5,1")] public int _shieldChargeLevel = 2;
+        /// <summary>按等级(1/2/3)的护盾配色（RGB=颜色，A=整体透明度）：高等级更深更实、低等级更浅更透。
+        /// 长度不足按末档取值；A_009 同款视觉分级。</summary>
+        [Export] public Color[] ShieldTierColors { get; set; } =
+        {
+            new(0.55f, 0.80f, 1.00f, 0.45f), // 1 次：浅、透
+            new(0.30f, 0.60f, 0.95f, 0.70f), // 2 次
+            new(0.12f, 0.35f, 0.85f, 0.95f), // 3 次：深、实
+        };
+        /// <summary>护盾受击反馈：闪色。</summary>
+        [Export] public Color ShieldBlockFlashColor { get; set; } = new Color(1f, 0.42f, 0.42f, 1f);
+        /// <summary>护盾受击反馈：闪光时长（秒）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.01")] public float ShieldBlockFlashDuration { get; set; } = 0.16f;
+        /// <summary>护盾受击反馈：弹跳峰值缩放（1=无弹跳）。</summary>
+        [Export(PropertyHint.Range, "1,1.5,0.01")] public float ShieldPopScale { get; set; } = 1.12f;
+        /// <summary>护盾免疫窗口时长（秒）：窗口内伤害全免，结束才消耗一次次数。</summary>
+        [Export(PropertyHint.Range, "0.1,3,0.1")] public float ShieldImmunitySeconds { get; set; } = 1f;
 
         [ExportCategory("P2 Loadout")]
         /// <summary>可用支持技能列表（默认加载 ShieldTest/HealTest）。</summary>
@@ -65,7 +78,6 @@ namespace Kuros.Companions
         private P2WeaponCarrier? _weaponCarrier;             // 武器搬运组件（fetch_weapon 转发）
         private P2DialogueController? _dialogue;             // 对话控制器（气泡/Speak）
         private global::SamplePlayer? _player;               // 玩家引用（治疗/护盾目标）
-        private global::SamplePlayer? _shieldBoundPlayer;    // 当前绑定护盾拦截的玩家（防重复订阅）
 
         // ── 状态/统计暴露（供 P2DebugPanel 显示） ──
         /// <summary>最近应用的决策 JSON。</summary>
@@ -93,11 +105,8 @@ namespace Kuros.Companions
 
         // ── 冷却与护盾状态 ──
         private readonly Dictionary<string, ulong> _supportSkillCooldownsMs = new(StringComparer.OrdinalIgnoreCase); // 技能冷却表（技能ID → 可用时间戳）
-        private int _activeShieldPoints;      // 当前护盾剩余点数
-        private ulong _shieldExpireAtMs;      // 护盾过期时间戳
-        private Tween? _shieldFlashTween;     // 护盾格挡闪光动画
-        private Color _playerBaseModulate = Colors.White; // 玩家原始 Modulate（格挡闪光恢复目标，防连续伤害累积污染）
-        private Node? _shieldEffectInstance;  // 护盾特效实例（随护盾生命周期销毁：施加生成，超时/打破时消失）
+        // 护盾为**次数盾**:次数/窗口/视觉统一由 ChargeShieldController 管理(与 A_009 共享,互相覆盖),
+        // 本执行器不再维护点数/过期/拦截/闪光本地状态。
 
         // ── 默认资源路径（无配置时自动加载） ──
         private const string ShieldSkillResourcePath = "res://resources/companions/P2SupportSkill_ShieldTest.tres";
@@ -113,25 +122,7 @@ namespace Kuros.Companions
 
         public override void _ExitTree()
         {
-            UnbindShieldInterceptor(); // 退订玩家伤害拦截，防悬挂回调
-            _shieldEffectInstance?.QueueFree(); // 清理护盾特效，防悬挂
-            _shieldEffectInstance = null;
             base._ExitTree();
-        }
-
-        public override void _Process(double delta)
-        {
-            base._Process(delta);
-            if (_activeShieldPoints <= 0)
-            {
-                return;
-            }
-
-            // 护盾到期自动清除
-            if (Time.GetTicksMsec() >= _shieldExpireAtMs)
-            {
-                ClearShieldState(notifyHint: true);
-            }
         }
 
         // ── Loadout 查询接口（供 P2LoadoutPanel 使用） ──
@@ -148,25 +139,13 @@ namespace Kuros.Companions
         /// <summary>获取当前装备 ID。</summary>
         public string GetEquippedEquipmentId() => EquippedEquipmentId;
 
-        /// <summary>获取当前护盾剩余点数。</summary>
-        public int GetActiveShieldPoints() => Mathf.Max(0, _activeShieldPoints);
+        /// <summary>获取当前护盾剩余次数（无护盾返回 0）。</summary>
+        public int GetActiveShieldPoints()
+            => _player != null ? ChargeShieldController.Find(_player)?.Charges ?? 0 : 0;
 
-        /// <summary>获取护盾剩余时间（秒），无护盾返回 0。</summary>
+        /// <summary>获取当前护盾免疫窗口剩余时间（秒），无窗口返回 0（次数盾无总时长）。</summary>
         public float GetShieldRemainingSeconds()
-        {
-            if (_activeShieldPoints <= 0 || _shieldExpireAtMs == 0)
-            {
-                return 0f;
-            }
-
-            ulong now = Time.GetTicksMsec();
-            if (now >= _shieldExpireAtMs)
-            {
-                return 0f;
-            }
-
-            return (_shieldExpireAtMs - now) / 1000f;
-        }
+            => _player != null ? ChargeShieldController.Find(_player)?.WindowRemaining ?? 0f : 0f;
 
         /// <summary>获取当前装备技能的剩余冷却（秒）。</summary>
         public float GetSupportSkillCooldownRemainingSeconds()
@@ -517,7 +496,9 @@ namespace Kuros.Companions
         }
 
         /// <summary>
-        /// 施加护盾（技能 Handler 调用）：累加护盾点数 + 设定过期时间 + 绑定玩家伤害拦截 + 更新玩家护盾值 + 气泡提示。
+        /// 施加护盾（技能 Handler 调用）：转为**次数盾**——经 <see cref="ChargeShieldController"/> 施加/覆盖
+        /// （与 A_009 对象转型同一控制器,互相覆盖不叠加）+ 气泡提示。
+        /// shieldAmount 参数保留兼容但不再使用（次数盾按"等级"计次，非点数）。
         /// </summary>
         public bool ApplyShield(int shieldAmount, float durationSeconds, string skillId, out string detail, out string rejectReason)
         {
@@ -536,20 +517,29 @@ namespace Kuros.Companions
                 return false;
             }
 
-            int addShield = Mathf.Max(1, shieldAmount);
-            float duration = Mathf.Max(0.5f, durationSeconds);
+            int charges = Mathf.Max(1, _shieldChargeLevel);
 
-            _activeShieldPoints += addShield;
-            _shieldExpireAtMs = Time.GetTicksMsec() + SecondsToMs(duration);
-            BindShieldInterceptor();
-            _player.SetShieldValue(_activeShieldPoints);
+            var controller = ChargeShieldController.GetOrCreate(_player);
+            controller.Apply(this, charges,
+                _companionController?.GetActionEffectScene(0), ShieldTierColors, // 等级配色分级(同 A_009)
+                ShieldImmunitySeconds, ShieldBlockFlashColor, ShieldBlockFlashDuration, ShieldPopScale);
 
-            // 护盾特效（ActionEffectScenes[0]）：记录实例，随护盾生命周期销毁
-            _shieldEffectInstance = _companionController?.SpawnActionEffect(0);
-            _dialogue?.Speak(P2DialogueEvent.ShieldApplied, _activeShieldPoints);
-            detail = $"{skillId}|shield={_activeShieldPoints}|dur={duration:0.0}s";
+            _dialogue?.Speak(P2DialogueEvent.ShieldApplied, charges);
+            detail = $"{skillId}|charges={charges}";
             return true;
         }
+
+        /// <summary>
+        /// 护盾等级设置钩子(供后期升级系统调用):决定 P2 护盾的抵挡次数(1/2/3+),默认 2 次。
+        /// 经验升级接入时在外部调用本方法即可,无需改本类。
+        /// </summary>
+        public void SetShieldChargeLevel(int level)
+        {
+            _shieldChargeLevel = Mathf.Max(1, level);
+        }
+
+        /// <summary>当前 P2 护盾等级(默认 2)。</summary>
+        public int GetShieldChargeLevel() => _shieldChargeLevel;
 
         /// <summary>
         /// 治疗（技能 Handler 调用）：满血拒绝；按装备倍率计算治疗量并恢复玩家生命 + 气泡提示。
@@ -591,129 +581,6 @@ namespace Kuros.Companions
             _dialogue?.Speak(P2DialogueEvent.Healed, finalHeal);
             detail = $"{skillId}|heal={finalHeal}|mult={multiplier:0.00}";
             return true;
-        }
-
-        /// <summary>
-        /// 玩家伤害拦截回调（绑定在玩家 DamageIntercepted）：护盾吸收伤害。
-        /// 全吸收 → IsBlocked=true（整体拦截）；部分吸收 → 剩余伤害继续结算；护盾耗尽/过期自动清除。
-        /// </summary>
-        private bool OnPlayerDamageIntercepted(GameActor.DamageEventArgs args)
-        {
-            if (_activeShieldPoints <= 0)
-            {
-                return false;
-            }
-
-            if (Time.GetTicksMsec() >= _shieldExpireAtMs)
-            {
-                ClearShieldState(notifyHint: true);
-                return false;
-            }
-
-            int incoming = Mathf.Max(0, args.Damage);
-            if (incoming <= 0)
-            {
-                return false;
-            }
-
-            int absorbed = Mathf.Min(incoming, _activeShieldPoints);
-            _activeShieldPoints -= absorbed;
-            TotalShieldAbsorbedDamage += absorbed;
-            _player?.SetShieldValue(_activeShieldPoints);
-            args.Damage = Mathf.Max(0, incoming - absorbed);
-            if (args.Damage <= 0)
-            {
-                args.IsBlocked = true; // 全吸收：整体拦截本次伤害
-            }
-
-            if (absorbed > 0)
-            {
-                PlayShieldBlockVfx(); // 格挡闪光
-            }
-
-            if (_activeShieldPoints <= 0)
-            {
-                ClearShieldState(notifyHint: true);
-            }
-
-            return args.IsBlocked;
-        }
-
-        /// <summary>清除护盾状态：销毁护盾特效 + 清零点数/过期时间 + 清除玩家护盾值 + 退订拦截 + 可选气泡提示。
-        /// 所有护盾结束路径（超时/伤害耗尽）都汇聚于此，护盾特效随生命周期在此销毁。</summary>
-        private void ClearShieldState(bool notifyHint)
-        {
-            if (_activeShieldPoints <= 0 && _shieldExpireAtMs == 0)
-            {
-                return;
-            }
-
-            _shieldEffectInstance?.QueueFree();
-            _shieldEffectInstance = null;
-            _activeShieldPoints = 0;
-            _shieldExpireAtMs = 0;
-            _player?.ClearShield();
-            UnbindShieldInterceptor();
-            if (notifyHint)
-            {
-                _dialogue?.Speak(P2DialogueEvent.ShieldExpired);
-            }
-        }
-
-        /// <summary>绑定玩家伤害拦截（仅绑一次，玩家变更时先解绑旧的）。</summary>
-        private void BindShieldInterceptor()
-        {
-            if (_player == null)
-            {
-                return;
-            }
-
-            if (!ReferenceEquals(_shieldBoundPlayer, _player))
-            {
-                UnbindShieldInterceptor();
-                _shieldBoundPlayer = _player;
-                _shieldBoundPlayer.DamageIntercepted += OnPlayerDamageIntercepted;
-            }
-        }
-
-        /// <summary>解绑玩家伤害拦截（节点销毁/玩家变更时）。</summary>
-        private void UnbindShieldInterceptor()
-        {
-            if (_shieldBoundPlayer == null)
-            {
-                return;
-            }
-
-            _shieldBoundPlayer.DamageIntercepted -= OnPlayerDamageIntercepted;
-            _shieldBoundPlayer = null;
-        }
-
-        /// <summary>护盾格挡闪光：玩家 Modulate 短暂插值到闪光色再还原（Tween 驱动）。</summary>
-        private void PlayShieldBlockVfx()
-        {
-            if (_player == null)
-            {
-                return;
-            }
-
-            if (_shieldFlashTween != null && _shieldFlashTween.IsRunning())
-            {
-                _shieldFlashTween.Kill();
-            }
-
-            // 恢复目标用缓存的玩家原始颜色：连续伤害时旧 Tween 被 Kill 停在中间色，
-            // 若读当前 Modulate 会以污染色为基准越偏越远；缓存值保证最终一定还原
-            Color baseColor = _playerBaseModulate;
-            float strength = Mathf.Clamp(ShieldBlockFlashStrength, 0.1f, 1f);
-            Color flashColor = baseColor.Lerp(ShieldBlockFlashColor, strength);
-
-            float total = Mathf.Max(0.05f, ShieldBlockFlashDuration);
-            float inDuration = total * 0.35f;
-            float outDuration = total - inDuration;
-
-            _shieldFlashTween = CreateTween();
-            _shieldFlashTween.TweenProperty(_player, "modulate", flashColor, inDuration);
-            _shieldFlashTween.TweenProperty(_player, "modulate", baseColor, outDuration);
         }
 
         /// <summary>兜底加载默认技能/装备（列表为空时），并修正装备 ID 有效性。</summary>
@@ -894,15 +761,7 @@ namespace Kuros.Companions
                 ?? GetTree().GetFirstNodeInGroup("player") as global::SamplePlayer;
 
             if (!ReferenceEquals(_player, nextPlayer))
-            {
-                UnbindShieldInterceptor();
                 _player = nextPlayer;
-                _playerBaseModulate = nextPlayer?.Modulate ?? Colors.White; // 缓存原始颜色（玩家变更时刷新）
-                if (_activeShieldPoints > 0)
-                {
-                    BindShieldInterceptor(); // 换玩家后护盾拦截重绑到新玩家
-                }
-            }
         }
 
         /// <summary>相对路径归一化：无 ../ 前缀时补上（统一相对本节点的路径形式）。</summary>

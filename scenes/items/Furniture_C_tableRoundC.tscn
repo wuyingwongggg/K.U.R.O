@@ -14,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_3lwoa")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -24,7 +24,7 @@ shader_parameter/preserve_fill = true
 size = Vector2(800, 450)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2jhlq"]
-size = Vector2(650, 610)
+size = Vector2(610, 610)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_bfy1o"]
 radius = 300.0
@@ -38,13 +38,10 @@ ItemDefinition = ExtResource("2_bfy1o")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
-ThrowDamage = 10.0
 MinDamageVelocity = 0.0
-KnockbackForce = 800.0
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
-MaxHP = 100.0
 HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")

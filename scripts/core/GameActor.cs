@@ -18,6 +18,11 @@ namespace Kuros.Core
 		/// </summary>
 		public event Action<int>? DamageTaken;
 		/// <summary>
+		/// 完整伤害信息（实例级、无条件广播）：伤害值 + 伤害类型 + 攻击者（可为 null）。
+		/// 供按目标订阅的伤害检测系统使用（如受伤打断的伤害类型过滤）——无 attacker 门控，环境伤害同样触发。
+		/// </summary>
+		public event Action<int, Events.DamageSource, GameActor?>? DamageTakenDetailed;
+		/// <summary>
 		/// 任意 GameActor 受到伤害时触发的全局静态事件。
 		/// 参数：victim（受击方）, attacker（攻击方，可为 null）, damage（实际伤害）
 		/// </summary>
@@ -38,6 +43,12 @@ namespace Kuros.Core
 		// [Export] public float AttackRange = 100.0f; // Removed: Deprecated, rely on AttackArea logic
 		[Export] public float AttackCooldown = 0f;
 		[Export] public int MaxHealth = 15;
+
+		/// <summary>
+		/// 基础最大血量（_Ready 时记录，不含 build 效果加成）——供 MaxHealth 类效果（如 NormalMaxHealthBoostEffect）
+		/// 做叠加基数：效果只能基于基础值计算加成，场景切换/玩家重建时不会因快照恢复的"含加成值"而重复叠加。
+		/// </summary>
+		public int BaseMaxHealth { get; protected set; }
 		/// <summary>AI 可读描述（供 GameStateProvider 快照喂给 LLM——敌人类型/特点说明）。
 		/// 各角色 .tscn 根节点 Inspector 配置；经 characters.csv 导出/导入维护。</summary>
 		[Export(PropertyHint.MultilineText)] public string AiDescription { get; set; } = string.Empty;
@@ -65,9 +76,9 @@ namespace Kuros.Core
 		public float DamageFlashDuration { get; set; } = 0.1f;
 
 		[ExportCategory("Damage Merge")]
-		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（扣血/日志/闪白/Hit 状态/事件只执行一次），
-		/// 避免极短时间内大量多段伤害逐段放大主线程开销（日志、Spine 闪白、受击动画、事件广播）。0 = 禁用合并。</summary>
-		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.1f;
+		/// <summary>伤害合并窗口（秒）：窗口内多段伤害累计一次结算（首段立即反馈闪白/Hit，后续段合并到期
+		/// 统一扣血——闪白/受击动画不重复，避免区域伤害+流血首伤等窗口内多段连续两次反馈）。0 = 禁用合并。</summary>
+		[Export(PropertyHint.Range, "0,0.5,0.01")] public float DamageMergeWindow { get; set; } = 0.15f;
 
 		// Exposed state for States to use
 		public int CurrentHealth { get; protected set; }
@@ -118,6 +129,11 @@ namespace Kuros.Core
 		public float SpeedBonusPercent { get; set; } = 0f;
 		/// <summary>当前实际移动速度（由移动状态写入：Run/Walk/Dash 写各自速度，Idle 写 0）——供攻击模板查询做"移动速度驱动的位移"，与其他状态最小耦合。</summary>
 		public float CurrentMoveSpeed { get => _currentMoveSpeed; set => _currentMoveSpeed = value; }
+
+		/// <summary>冲刺动量快照：最近一次冲刺 Burst 段的峰值速度（Dash 状态进入时写入，冲刺攻击起步继承用）。</summary>
+		public float LastDashBurstSpeed { get; set; }
+		/// <summary>最近一次冲刺帧的时间戳（毫秒，Dash 状态每帧刷新）：冲刺攻击宽限窗口判定用。</summary>
+		public ulong LastDashFrameMs { get; set; }
 		/// <summary>当前移动方向（归一化，由移动状态写入；静止为 Zero）——供攻击模板继承含 Y 轴的移动方向。</summary>
 		public Vector2 CurrentMoveDirection { get; set; } = Vector2.Zero;
 		/// <summary>后撤闪避免费窗口判定（B_003 等效果注入：前向闪避后窗口内 backdash 不消耗充能/热量）。</summary>
@@ -146,8 +162,79 @@ namespace Kuros.Core
 		{
 			if (IsDeadOrDying) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+
+			// 旧二参 API 保留（fx/爆炸/投掷物）：无时长语义——sentinel duration=0，
+			// 由受击方 Hit 状态按自身 HitImpactDuration 解析（speed 借存于 Distance 槽位）。
 			Velocity = direction * speed;
+			_knockDirection = direction.Normalized();
+			_knockDistanceOrSpeed = speed;
+			_knockDuration = 0f;
+			_knockWriteMsec = Time.GetTicksMsec();
+			_hasKnockRequest = true;
 		}
+
+		/// <summary>
+		/// 位移驱动击退（新三参 API，LEVEL_PROGRESSION 击飞模型）：
+		/// 受击方 Hit 状态在 KnockbackDuration 内匀减速滑行 KnockbackDistance，时长不受受击方动画影响。
+		/// </summary>
+		public virtual void ApplyKnockbackDisplacement(Vector2 direction, float distance, float duration)
+		{
+			if (IsDeadOrDying) return;
+			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			if (direction == Vector2.Zero || distance <= 0f) return;
+
+			_knockDirection = direction.Normalized();
+			_knockDistanceOrSpeed = distance;
+			_knockDuration = Mathf.Max(0f, duration);
+			_knockWriteMsec = Time.GetTicksMsec();
+			_hasKnockRequest = true;
+		}
+
+		/// <summary>击退请求有效期（毫秒）：超过视为滞留陈旧（Frozen/超甲期间写入无人消费），消费时丢弃。
+		/// 攻击链内"先写入后进 Hit"（同帧/紧邻）远小于该值，不受影响。</summary>
+		private const ulong KnockbackRequestLifetimeMsec = 200;
+
+		/// <summary>
+		/// 消费击退请求（Hit 状态首物理帧调用一次）。
+		/// duration≤0（旧 API）：换算为 duration=defaultDuration（受击方 HitImpactDuration）、
+		/// distance = speed×duration/2（匀减速总位移 = v0×T/2）。
+		/// 请求写入超过 KnockbackRequestLifetimeMsec（滞留陈旧：Frozen/超甲期间写入无人消费）
+		/// 则丢弃并返回 false，防止被之后任意一次受击误用。
+		/// 返回 false = 无请求或过期请求。
+		/// </summary>
+		public bool TryConsumeKnockbackRequest(out Vector2 direction, out float distance, out float duration,
+			float defaultDuration)
+		{
+			direction = Vector2.Zero;
+			distance = 0f;
+			duration = 0f;
+			if (!_hasKnockRequest) return false;
+			_hasKnockRequest = false;
+
+			// 滞留过期请求：写入很久无人消费（非本次攻击链写入）——丢弃
+			if (Time.GetTicksMsec() - _knockWriteMsec > KnockbackRequestLifetimeMsec)
+				return false;
+
+			direction = _knockDirection;
+			if (_knockDuration <= 0f)
+			{
+				float t = Mathf.Max(defaultDuration, 0.01f);
+				duration = t;
+				distance = _knockDistanceOrSpeed * t * 0.5f; // v0×T/2
+			}
+			else
+			{
+				duration = _knockDuration;
+				distance = _knockDistanceOrSpeed;
+			}
+			return distance > 0f && duration > 0f;
+		}
+
+		private Vector2 _knockDirection = Vector2.Zero;
+		private float _knockDistanceOrSpeed = 0f;
+		private float _knockDuration = 0f;
+		private ulong _knockWriteMsec = 0;
+		private bool _hasKnockRequest = false;
 
 		public float GetSecondsSinceLastDamageTaken()
 		{
@@ -162,6 +249,8 @@ namespace Kuros.Core
 
 		public override void _Ready()
 		{
+			// 记录基础最大血量（不含 build 效果加成）——供 MaxHealth 类效果做叠加基数
+			BaseMaxHealth = MaxHealth;
 			CurrentHealth = MaxHealth;
 			CurrentShield = 0;
 
@@ -316,12 +405,27 @@ namespace Kuros.Core
 		}
 
 		/// <summary>
-		/// 目标的视觉锚点（世界坐标）：优先 VisualEffectArea（模拟视觉身高的锚点——高个子敌人如 b1_fat
-		/// 在 Sprite2D/VisualEffectArea 下配 CollisionShape2D 标记视觉中心），回退 HitArea 中心，再回退目标原点。
-		/// 供生成在目标身上的视觉使用（dot 特效/死亡特效等）——避免高个子敌人特效出现在脚底。
+		/// 目标的视觉锚点（世界坐标）优先级：
+		/// 1. VisualEffectPosition/Marker2D（可拖拽的视觉挂点先例:玩家 main_character）
+		/// 2. VisualEffectArea 的 CollisionShape2D（高个子敌人如 b1_fat 的视觉中心）
+		/// 3. HitArea 中心
+		/// 4. 目标原点
+		/// 供生成在目标身上的视觉使用（dot 特效/护盾/治疗等）——避免特效出现在脚底。
 		/// </summary>
 		public Vector2 GetVisualAnchorWorld()
 		{
+			// 1) 显式视觉挂点 VisualEffectMarker2D(存在即最优先;部署在 VisualEffectPosition 容器下,排序键不参与)
+			//   按"名字+类型"取,避免与场景内其它 Marker2D 混淆
+			var positionNode = GetNodeOrNull<Node2D>("VisualEffectPosition")
+				?? FindChild("VisualEffectPosition", recursive: true, owned: false) as Node2D;
+			if (positionNode != null)
+			{
+				var anchorMarker = positionNode.GetNodeOrNull<Marker2D>("VisualEffectMarker2D");
+				if (anchorMarker != null)
+					return anchorMarker.GlobalPosition;
+			}
+
+			// 2) VisualEffectArea 的碰撞形状中心
 			var visualArea = GetNodeOrNull<Area2D>("VisualEffectArea")
 				?? GetNodeOrNull<Area2D>("Sprite2D/VisualEffectArea")
 				?? FindChild("VisualEffectArea", recursive: true, owned: false) as Area2D;
@@ -329,11 +433,13 @@ namespace Kuros.Core
 			if (visualShape != null)
 				return visualShape.GlobalPosition;
 
+			// 3) HitArea 中心
 			var hitArea = ResolvePreferredHitArea();
 			var hitShape = hitArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			if (hitShape != null)
 				return hitShape.GlobalPosition;
 
+			// 4) 目标原点
 			return GlobalPosition;
 		}
 
@@ -465,7 +571,8 @@ namespace Kuros.Core
 			return true;
 		}
 
-		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。</summary>
+		/// <summary>合并窗口到期（或致死预检）时统一结算累计伤害：只走一次扣血与全部副作用。
+		/// 合并结算不重复闪白/受击动画——首段已即时反馈（窗口内任意 N 段伤害视觉上只反馈一次）。</summary>
 		private void FlushPendingDamage()
 		{
 			if (!_hasPendingDamage) return;
@@ -481,27 +588,31 @@ namespace Kuros.Core
 			_pendingOrigin = null;
 			_damageMergeTimer = 0f;
 
-			ApplyPendingDamage(total, origin, attacker, source);
+			ApplyPendingDamage(total, origin, attacker, source, isMergedSettlement: true);
 		}
 
-		/// <summary>实际扣血与全部副作用（原 TakeDamage 扣血后的部分，合并窗口内仅执行一次）。</summary>
-		private void ApplyPendingDamage(int damage, Vector2? attackOrigin, GameActor? attacker, Events.DamageSource damageSource)
+		/// <summary>实际扣血与全部副作用（原 TakeDamage 扣血后的部分，合并窗口内仅执行一次）。
+		/// isMergedSettlement = 合并窗口到期结算：只扣血/通知/事件，不重复闪白与受击动画——
+		/// 首段伤害已即时反馈（否则区域伤害+流血首伤等窗口内多段会连续两次闪白/Hit）。</summary>
+		private void ApplyPendingDamage(int damage, Vector2? attackOrigin, GameActor? attacker, Events.DamageSource damageSource, bool isMergedSettlement = false)
 		{
 			CurrentHealth -= damage;
 			CurrentHealth = Mathf.Max(CurrentHealth, 0);
 			NotifyHealthChanged();
 			DamageTaken?.Invoke(damage);
+			DamageTakenDetailed?.Invoke(damage, damageSource, attacker);
 			AnyDamageTaken?.Invoke(this, attacker, damage);
 
 			//GameLogger.Info(nameof(GameActor), $"{Name} took {damage} damage! Health: {CurrentHealth}");
 
-			FlashDamageEffect();
+			if (!isMergedSettlement)
+				FlashDamageEffect();
 
 			if (CurrentHealth <= 0)
 			{
 				Die();
 			}
-			else
+			else if (!isMergedSettlement)
 			{
 				// Force state change to Hit unless this actor is in super-armor phase.
 				bool smallHitSuppressed = SuppressSmallDamageHit
@@ -510,7 +621,17 @@ namespace Kuros.Core
 				{
 					if (StateMachine.CurrentState?.Name == "Hit")
 					{
-						StateMachine.ReenterState("Hit");
+							// Reentry cap: allow N full hit-breaks (keep hit feel), then suppress
+							// so target recovers; suppressed knockback hits re-apply on K consume (exempt)
+							if (StateMachine.CurrentState is IHitReentrySuppressible suppressible
+								&& !suppressible.OnReentryAttempted())
+							{
+								suppressible.NotifyReentrySuppressed();
+							}
+							else
+							{
+								StateMachine.ReenterState("Hit");
+							}
 					}
 					else
 					{

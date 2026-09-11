@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://dugfq8qy1okf1"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_ra6er"]
-[ext_resource type="Resource" uid="uid://dnaqmb5wt472u" path="res://resources/items/Furniture_A_ChairOfficeB.tres" id="2_ra6er"]
+[ext_resource type="Resource" uid="uid://csvmyp3anxqpd" path="res://resources/items/Furniture_A_ChairOfficeB.tres" id="2_ra6er"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_0y6iv"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_kvtrl"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_lhvv2"]
@@ -15,7 +15,7 @@ shader_parameter/alpha = 0.4
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 resource_local_to_scene = true
 shader = ExtResource("5_lhvv2")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -38,12 +38,10 @@ ItemDefinition = ExtResource("2_ra6er")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
-ThrowDamage = 2.0
 MinDamageVelocity = 0.0
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
-MaxHP = 20.0
 HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")

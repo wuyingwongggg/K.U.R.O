@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Kuros.Actors.Heroes;
+using Kuros.Actors.Heroes.Attacks;
 using Kuros.Core;
 using Kuros.Effects;
 using Kuros.Items.Effects;
@@ -20,18 +21,41 @@ namespace Kuros.Items.World
 	/// </summary>
 	public partial class RigidBodyWorldItemEntity : Node2D, IWorldItemEntity
 	{
+		/// <summary>世界物走 Destroy 链销毁完成(被打碎/外部 RequestDestroy;OnThrowDestroy 特效已生成)。
+		/// 供 BuildThrow_A_004 等订阅并按来源组过滤;静态事件,订阅方 OnRemoved 需退订。</summary>
+		/// <summary>投掷核心"件"的组/来源标记:生成时入组;拾取→放置恢复在场身份用同一值。</summary>
+		public const string ThrowCorePieceTag = "throwcore_generated_furniture";
+		/// <summary>A_007 复制件身份组:生成时入组;拾取→重新生成时据此恢复乱码滤镜。</summary>
+		public const string ThrowCoreCopyTag = "throwcore_copy_furniture";
+		/// <summary>件"身份"组(摧毁爆炸依据):直接生成/放置/投掷的件都入组,
+		/// 与脉冲组分离——投掷件不恢复脉冲,但销毁时仍算"件"触发 A_004。</summary>
+		public const string ThrowCorePieceIdentityTag = "throwcore_piece_identity";
+
+		public static event Action<RigidBodyWorldItemEntity>? Destroyed;
+
 		[Signal] public delegate void ItemTransferredEventHandler(RigidBodyWorldItemEntity entity, GameActor actor, ItemDefinition item, int amount);
 		[Signal] public delegate void ItemTransferFailedEventHandler(RigidBodyWorldItemEntity entity, GameActor actor);
-
-		// 防抖：待烘焙的场景树（避免多物品重复遍历场景树）
-		private static readonly HashSet<SceneTree> PendingRebakeScenes = new();
-		private static bool _rebakeTimerScheduled = false;
 
 		[ExportGroup("Item")]
 		[Export] public ItemDefinition? ItemDefinition { get; set; }
 		[Export(PropertyHint.File, "*.tres,*.res")] public string ItemDefinitionResourcePath { get; set; } = string.Empty;
 		[Export] public string ItemIdOverride { get; set; } = string.Empty;
 		[Export(PropertyHint.Range, "1,9999,1")] public int Quantity { get; set; } = 1;
+
+		/// <summary>构筑修饰(投掷者/放置者在生成后设置;_Ready 之后设置会按修饰档重解析血量——满血)。</summary>
+		public ThrowableModifiers Modifiers
+		{
+			get => _modifiers;
+			set
+			{
+				_modifiers = value;
+				if (_readyDone)
+					CurrentHP = ResolveMaxHP();
+			}
+		}
+
+		private ThrowableModifiers _modifiers;
+		private bool _readyDone;
 
 		[ExportGroup("Pickup")]
 		[Export] public NodePath GrabAreaPath { get; set; } = new NodePath("GrabArea");
@@ -48,18 +72,22 @@ namespace Kuros.Items.World
 		[ExportGroup("Combat")]
 		[Export] public float ThrowDamage {get; set;} = 4f;
 		[Export] public float MinDamageVelocity { get; set; } = 300f; // 造成伤害的最小速度阈值
-        [Export] public float KnockbackForce { get; set; } = 200f; // 击退力度
+			/// <summary>击退位移距离（像素）：0=未配置 → 家具档位值；攻击方控制——受击方 Hit 在 KnockbackDuration 内匀减速滑完（双时间轴 K 轴）。</summary>
+		[Export(PropertyHint.Range, "0,1000,5")] public float KnockbackDistance { get; set; } = 0f;
+		/// <summary>击退位移时长（秒）：0=未配置 → 家具档位值；攻击方控制，与受击方 HitImpactDuration 解耦。</summary>
+		[Export(PropertyHint.Range, "0,1,0.01")] public float KnockbackDuration { get; set; } = 0f;
 		[Export] public bool StopOnHit { get; set; } = true; // 命中敌人后是否停止（false = 穿过敌人）
 
 		[ExportGroup("Physics Mode")]
 		/// <summary>停止后是否回弹（与 StopOnHit 解耦：false = 停止后直接走 LandingHideDelay 销毁流程）。</summary>
-		[Export] public bool BounceAfterStop { get; set; } = false;
-		/// <summary>停止后回弹的向上初速度（像素/秒）。</summary>
-		[Export] public float BounceSpeed { get; set; } = 650f;
-		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。</summary>
-		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0.2f;
+		[Export] public bool BounceAfterStop { get; set; } = true;
+		/// <summary>停止后回弹的向上初速度（像素/秒）。0=未配置 → 家具档位值（越重越不弹）；无档回退 650。</summary>
+		[Export] public float BounceSpeed { get; set; } = 0f;
+		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。
+		/// 0=未配置 → 家具档位值（越重向后弹得越少）；无档回退 0.2。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0f;
 		/// <summary>落地反弹弹性（判定层边界反弹衰减系数，0 = 落地即停，1 = 完全弹性）。</summary>
-		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.25f;
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.0f;
 		/// <summary>回弹下落的重力倍率（脚本模拟，仅用于回弹上升/回落）。</summary>
 		[Export] public float PhysicsModeGravityScale { get; set; } = 8.0f;
 		/// <summary>回弹水平速度的衰减系数（指数衰减 ≈ 物理阻尼，越大弹开后越快停住）。</summary>
@@ -84,7 +112,8 @@ namespace Kuros.Items.World
 
 		[ExportCategory("Health")]
 		[Export] public bool Destructible { get; set; } = false;
-		[Export(PropertyHint.Range, "1,9999,1")] public float MaxHP = 60f;
+		/// <summary>最大血量：0=未配置 → 家具档位值（无档回退 60）。</summary>
+		[Export(PropertyHint.Range, "0,9999,1")] public float MaxHP = 0f;
 		[Export(PropertyHint.Range, "0.1,5,0.05")] public float DamageCooldown = 0.2f;
 		public float CurrentHP { get; private set; }
 
@@ -98,9 +127,16 @@ namespace Kuros.Items.World
 		[ExportGroup("Physics")]
 		[Export] public NodePath RigidBodyPath { get; set; } = new NodePath(".");
 		[Export] public NodePath HitboxAreaPath { get; set; } = new NodePath("Rigidbody2D/Hitbox");
-		[Export] public NodePath ShadowPath { get; set; } = new NodePath("Shadow"); // 阴影节点路径，投掷飞行期间隐藏
+		/// <summary>阴影节点路径（投掷飞行期间影子做地面投影:随视觉 X 水平移动、按离地高度等比缩放）。</summary>
+		[Export] public NodePath ShadowPath { get; set; } = new NodePath("Shadow");
+		/// <summary>飞行中影子最小缩放比例（相对场景原尺寸;1=不缩放）。起步/最高点约取该值，落地还原为 1。</summary>
+		[Export(PropertyHint.Range, "0.1,1,0.05")] public float ShadowMinScaleFactor { get; set; } = 0.5f;
 		[Export] public uint ThrowCollisionLayer { get; set; } = 1u << 2;
 		[Export] public uint ThrowCollisionMask { get; set; } = 0;
+
+		[ExportGroup("Debug")]
+		/// <summary>调试：砸中敌人时在屏幕上绘制贯穿扫描范围（ZIndex 10，临时可视化）。</summary>
+		[Export] public bool ShowThrowPenetrationDebug { get; set; } = false;
 
 
 		public InventoryItemStack? CurrentStack { get; private set; }
@@ -139,18 +175,25 @@ namespace Kuros.Items.World
 		private readonly System.Collections.Generic.HashSet<GameActor> _actorsInRange = new();
 		private bool _impactArmed = false; // 是否已激活伤害检测
 		private bool _hasDealtDamage = false; // 是否已造成伤害
-		private readonly System.Collections.Generic.HashSet<GameActor> _hitActors = new(); // 已命中的 Actor，防止重复伤害
+		private readonly System.Collections.Generic.HashSet<Node> _hitActors = new(); // 已命中的目标（GameActor/非 GameActor），防止重复伤害
 		private Area2D? _hitboxArea; // 用于伤害检测的 Area2D
 		private bool _isDestroying = false; // 是否正在销毁中
 		private AnimationPlayer? _destructionAnimPlayer; // 销毁动画播放器引用
 		private bool _isThrown = false; // 是否正在投掷中
 		public bool IsDisposableCopy { get; set; }
 		public float ThrowCooldownRemaining { get; set; }
+		/// <summary>投掷落点纵向偏移(px,发射后可改;抛物线每帧重算落点 → A_008 分裂散射把各枚落点沿 Y 错开)。</summary>
+		public float LandingOffsetYDelta { get; set; }
 		private Sprite2D? _highlightSprite; // Outline highlight 精灵
 		private ShaderMaterial? _outlineMaterial; // Outline 着色器材料
 		private Area2D? _cachedPlayerGrabArea; // 缓存的玩家 GrabArea
 		private bool _isOutlineHighlighted; // 是否正在高亮显示
 		private Node2D? _shadowNode; // 阴影节点缓存
+		private Vector2 _shadowBasePosition;    // 阴影本地变换(飞行结束还原;飞行中影子被覆写为地面投影)
+		private Vector2 _shadowBaseScale = Vector2.One;
+		private float _shadowHeightRef = 1f;    // 飞行起步时的视觉离地高度(影子缩放归一参考)
+		private bool _flightProjectionActive;   // 影子/判定盒处于飞行地面投影中(结束帧统一归位)
+		private Vector2 _hitboxBasePosition;    // 判定盒本地位置(飞行结束还原)
 		private double _throwCooldownTimer = 0.0; // 投掷武器冷却计时器
 		private bool _isInCooldown = false; // 是否在冷却中
 		private double _landingHideTimer = 0.0; // 落点隐藏计时器（LandingHideDelay：到期后隐藏视觉，不销毁节点）
@@ -165,6 +208,7 @@ namespace Kuros.Items.World
 		private bool _hitFlashActive;
 
 		private float _damageCooldownRemaining;
+		private AttackHitboxDebugDrawer? _penetrationDebugDrawer;
 
 		public GameActor? LastDroppedBy { get; set; }
 
@@ -190,17 +234,24 @@ namespace Kuros.Items.World
 			? Mathf.Clamp((float)(_throwCooldownTimer / ThrowWeaponCooldown), 0f, 1f)
 			: 0f;
 
+		/// <summary>单次飞行参数重载（&gt;0 时替代物品定义的投掷距离/时长）——效果卡等单次投掷用,普通投掷为 0。</summary>
+		public float OverrideThrowDistance { get; set; }
+		public float OverrideThrowDuration { get; set; }
+
 		/// <summary>
-		/// 从 ItemDefinition 读取投掷参数，ItemDefinition 为 null 时回退到内置默认值。
+		/// 从 ItemDefinition 读取投掷参数（档位解析见 ItemDefinition.GetEffectiveThrow*，随 Modifiers 修饰），
+		/// ItemDefinition 为 null 时回退到内置默认值。OverrideThrow* &gt;0 时优先（单次重载）。
 		/// </summary>
 		private double GetEffectiveThrowParabolicDuration()
-			=> ItemDefinition?.ThrowParabolicDuration is > 0 ? ItemDefinition.ThrowParabolicDuration : 0.6;
+			=> OverrideThrowDuration > 0f ? OverrideThrowDuration
+				: (ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDuration(Modifiers) : 0.6);
 
 		private float GetEffectiveThrowParabolicPeakHeight()
 			=> ItemDefinition?.ThrowParabolicPeakHeight is > 0 ? ItemDefinition.ThrowParabolicPeakHeight : 200f;
 
 		private float GetEffectiveThrowHorizontalDistance()
-			=> ItemDefinition?.ThrowHorizontalDistance is > 0 ? ItemDefinition.ThrowHorizontalDistance : 600f;
+			=> OverrideThrowDistance > 0f ? OverrideThrowDistance
+				: (ItemDefinition != null ? ItemDefinition.GetEffectiveThrowDistance(Modifiers) : 600f);
 
 		private float GetEffectiveThrowParabolicLandingYOffset()
 			=> ItemDefinition?.ThrowParabolicLandingYOffset ?? 100f;
@@ -209,6 +260,18 @@ namespace Kuros.Items.World
 			=> (ItemDefinition != null && ItemDefinition.ThrowStartOffset != Vector2.Zero)
 				? ItemDefinition.ThrowStartOffset
 				: new Vector2(0, -200);
+
+		/// <summary>回弹初速度:场景 export &gt;0 逐件特化覆盖;0 = 家具档位值(越重越不弹);无档(武器)回退 650。</summary>
+		private float GetEffectiveBounceSpeed()
+			=> BounceSpeed > 0f
+				? BounceSpeed
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.BounceSpeed ?? 650f;
+
+		/// <summary>回弹水平分量比例:场景 export &gt;0 逐件特化覆盖;0 = 家具档位值(越重向后弹得越少);无档(武器)回退 0.2。</summary>
+		private float GetEffectiveBounceHorizontalRatio()
+			=> BounceHorizontalRatio > 0f
+				? BounceHorizontalRatio
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.BounceHorizontalRatio ?? 0.2f;
 		
 		/// <summary>
 		/// 检查指定 Actor 是否在 GrabArea 范围内
@@ -223,10 +286,20 @@ namespace Kuros.Items.World
 		/// </summary>
 		public System.Collections.Generic.IReadOnlyCollection<GameActor> ActorsInRange => _actorsInRange;
 
+		/// <summary>未拾取存活时长（秒，0=禁用）：静止后开始计时，到期前闪烁预警并消失（方案 B）。</summary>
+		[Export(PropertyHint.Range, "0,300,1")] public float UnpickedLifetime { get; set; } = 0f;
+
+		/// <summary>过期组件是否允许计时：静止（非投掷/回弹/隐藏中且可见）。</summary>
+		public bool IsSettledForExpiry =>
+			!_isThrown && !_inFlight && !_bouncing && !_isDestroying
+			&& _landingHideTimer <= 0.0 && _inventoryReturnTimer <= 0.0 && Visible;
+
+		private Kuros.Fx.WorldItemExpiry? _expiry;
+
 		public override void _Ready()
 		{
 			base._Ready();
-			
+
 			// 添加到组，方便通过场景树查找
 			if (!IsInGroup("world_items"))
 			{
@@ -235,6 +308,22 @@ namespace Kuros.Items.World
 			if (!IsInGroup("pickables"))
 			{
 				AddToGroup("pickables");
+			}
+
+			// 未拾取过期（方案 B）：本体在世界中（敌人掉落/玩家放置 place）时生效——
+			// 场景 export 优先，否则读 ItemDefinition 定义级配置（0 = 禁用）。
+			// 投掷（throw）生成的副本（IsDisposableCopy）排除——走自身特效自毁路径。
+			if (!IsDisposableCopy)
+			{
+				float lifetime = UnpickedLifetime > 0f
+					? UnpickedLifetime
+					: ItemDefinition?.UnpickedLifetime ?? 0f;
+				if (lifetime > 0f)
+				{
+					_expiry = new Kuros.Fx.WorldItemExpiry { UnpickedLifetime = lifetime };
+					_expiry.Name = "WorldItemExpiry";
+					AddChild(_expiry);
+				}
 			}
 			
 			InitializeStack();
@@ -246,15 +335,16 @@ namespace Kuros.Items.World
 			ResolveShadowNode();
 			UpdateOutlineHighlight(force: true);
 
-			CurrentHP = MaxHP;
+			CurrentHP = ResolveMaxHP();
+			_readyDone = true;
 			SetupHitFlash();
 
 			SetProcess(true);
 
 			// 如果该物品包含导航源几何子节点，进入场景树后延迟烘焙，使障碍区域生效
-			if (HasNavigationSourceGeometryDescendant(this))
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
 			{
-				ScheduleNavigationRebake();
+				NavigationRebakeCoordinator.RequestRebake(this);
 			}
 
 			// 预热 OnThrowDestroy 效果场景的 Shader：
@@ -268,9 +358,9 @@ namespace Kuros.Items.World
 			base._ExitTree();
 
 			// 如果该物品有子节点属于导航源几何组，移除后触发延迟重新烘焙导航网格
-			if (HasNavigationSourceGeometryDescendant(this))
+			if (NavigationRebakeCoordinator.HasNavigationSourceGeometry(this))
 			{
-				ScheduleNavigationRebake();
+				NavigationRebakeCoordinator.RequestRebake(this);
 			}
 
 			if (_grabArea != null)
@@ -393,12 +483,48 @@ namespace Kuros.Items.World
 				_shadowNode = GetNodeOrNull<Node2D>("Shadow")
 					?? _rigidBody?.GetNodeOrNull<Node2D>("Shadow");
 			}
+
+			// 缓存本地变换:飞行中影子被覆写为地面投影,结束帧按此还原
+			if (_shadowNode != null)
+			{
+				_shadowBasePosition = _shadowNode.Position;
+				_shadowBaseScale = _shadowNode.Scale;
+			}
 		}
 
 		private void SetShadowVisible(bool visible)
 		{
 			if (_shadowNode != null && GodotObject.IsInstanceValid(_shadowNode))
 				_shadowNode.Visible = visible;
+		}
+
+		/// <summary>飞行中影子:地面投影(与判定盒同一手法——X 随视觉、Y 取投掷地面行),
+		/// 并按"视觉离地高度"等比缩放:越高越小、落地还原场景原尺寸(伪 3D)。</summary>
+		private void UpdateFlightShadow(float visualX, float groundY)
+		{
+			if (_shadowNode == null || !GodotObject.IsInstanceValid(_shadowNode)) return;
+
+			_shadowNode.GlobalPosition = new Vector2(visualX, groundY);
+
+			// 高度归一:参考 = 起步瞬间离地高度;落地 dist→0 → 1(原尺寸),起步/峰值 → 最小缩放
+			float dist = Mathf.Abs(_rigidBody.GlobalPosition.Y - groundY);
+			float t = Mathf.Clamp(dist / Mathf.Max(_shadowHeightRef, 1f), 0f, 1f);
+			_shadowNode.Scale = _shadowBaseScale * Mathf.Lerp(ShadowMinScaleFactor, 1f, 1f - t);
+		}
+
+		/// <summary>飞行结束统一归位(覆盖落地/撞墙/命中停止/被接住等所有退出路径,
+		/// 由 _PhysicsProcess 的"投影中且不在飞行"检查触发一次):影子与判定盒从地面投影还原为实体本地变换。</summary>
+		private void RestoreFlightProjection()
+		{
+			_flightProjectionActive = false;
+
+			if (_shadowNode != null && GodotObject.IsInstanceValid(_shadowNode))
+			{
+				_shadowNode.Position = _shadowBasePosition;
+				_shadowNode.Scale = _shadowBaseScale;
+			}
+			if (_hitboxArea != null && GodotObject.IsInstanceValid(_hitboxArea))
+				_hitboxArea.Position = _hitboxBasePosition;
 		}
 
 		private void ResolveOutlineHighlight()
@@ -577,6 +703,8 @@ namespace Kuros.Items.World
 			_throwStartY = _rigidBody.GlobalPosition.Y;
 			// 判定层：投掷者站立的地面世界 Y（敌人 HitArea 同层）——不是场景原点 0
 			_throwJudgmentY = origin.Y;
+			// 影子缩放归一参考 = 起步瞬间的视觉离地高度(峰值段超出 → 钳到最小缩放)
+			_shadowHeightRef = Mathf.Max(Mathf.Abs(_throwStartY - _throwJudgmentY), 1f);
 
 				// 激活伤害检测并应用投掷时的碰撞设置
 				if (velocity.LengthSquared() > 0.01f)
@@ -588,8 +716,7 @@ namespace Kuros.Items.World
 					
 						// 家具投掷时关闭 StaticBody2D 碰撞体，避免大碰撞体推开敌人导致 AttackArea 无法命中
 						SetFurnitureStaticBodyCollision(false);
-				// 投掷飞行期间隐藏阴影
-				SetShadowVisible(false);
+						// (影子不再于飞行期间隐藏:改为地面投影,见 UpdateFlightShadow)
 				
 
 					// 构筑效果已在 PlayerItemInteractionComponent.TryHandleDrop 中预注册，此处无需重复注册
@@ -706,6 +833,20 @@ namespace Kuros.Items.World
 				}
 			}
 
+			// 飞行中手动空间查询（与玩家攻击打可破坏物同机制）：Hitbox 是 RigidBody2D 子节点，
+			// Area↔Body 重叠检测在快速手动位移下不可靠（bodies 恒 0）——直接查空间，必然命中。
+			// 非 GameActor 接收者（FireWallA 等 StaticBody2D 可破坏物）→ 拦截/放行判定；
+			// 敌人（GameActor）由 AreaEntered 信号路径处理（正常工作），此处跳过
+			if (_impactArmed && _hitboxArea != null)
+			{
+				QueryNonActorTargets();
+			}
+
+			// 飞行结束统一归位(覆盖落地/撞墙/命中停止/被接住等所有退出路径):
+			// 影子与判定盒从地面投影还原为实体本地变换;回弹段(_bouncing)继续投影,静止后再归位
+			if (_flightProjectionActive && !_inFlight && !_bouncing)
+				RestoreFlightProjection();
+
 			// 抛物线飞行逻辑：平顺的参数化抛物线轨迹
 			if (_inFlight)
 			{
@@ -716,7 +857,8 @@ namespace Kuros.Items.World
 			if (phase > 1.0) phase = 1.0;
 			
 			// 计算目标落点Y坐标（优先使用 ItemDefinition 参数）
-			float landingY = _throwStartY + GetEffectiveThrowParabolicLandingYOffset();
+			float landingY = _throwStartY + GetEffectiveThrowParabolicLandingYOffset()
+				+ LandingOffsetYDelta; // A_008 散射:每枚落点纵向错开(发射后改亦生效,平滑重定向)
 			float peakY = _throwStartY - GetEffectiveThrowParabolicPeakHeight();
 			
 			// 统一的平顺抛物线公式：使用 sin(phase * π) 生成平顺曲线
@@ -762,11 +904,17 @@ namespace Kuros.Items.World
 			_rigidBody.GlobalPosition = new Vector2(newX, newY);
 
 			// 视觉/判定分离：判定 Hitbox 投影在投掷者地面层（_throwJudgmentY），X 每帧跟随视觉——
-			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层
+			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层。
+			// A_008 散射:判定行从玩家行(0)随 phase 渐变到该枚终点行(LandingOffsetYDelta),与视觉落点同进
+			float groundRowY = _throwJudgmentY + LandingOffsetYDelta * (float)phase;
+			_flightProjectionActive = true; // 标记投影中(含判定盒归位),飞行结束帧统一还原
 			if (_hitboxArea != null)
 			{
-				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, _throwJudgmentY);
+				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, groundRowY);
 			}
+
+			// 影子地面投影(与判定盒同一手法):X 随视觉、Y 在投掷地面行;按离地高度等比缩放(伪 3D)
+			UpdateFlightShadow(_rigidBody.GlobalPosition.X, groundRowY);
 
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
 			Vector2 simulatedVelocity = new Vector2(
@@ -785,7 +933,12 @@ namespace Kuros.Items.World
 					
 					// 确保最终位置精确在落点
 					_rigidBody.GlobalPosition = new Vector2(newX, landingY);
-					
+
+					// 落点砸地 AoE（仅一次性投掷物）：飞尽未中敌时按碰撞体积结算一次范围伤害，
+					// 必须在关闭判定臂之前执行（命中过的敌人已在 _hitActors,不会重复结算）
+					if (!IsThrowWeapon)
+						DealDamageOnLanding();
+
 					// 停止伤害检测并恢复原始碰撞设置
 					_impactArmed = false;
 					_rigidBody.LinearVelocity = Vector2.Zero;
@@ -836,6 +989,10 @@ namespace Kuros.Items.World
 					}
 				}
 				_rigidBody.GlobalPosition = pos;
+
+				// 影子同投影(StopOnHit 后的回弹段;地面 = 判定层,与反弹地面一致):
+				// X 随视觉、Y 在地面行;越接近地面越大,静止归位由顶部统一检查触发
+				UpdateFlightShadow(_rigidBody.GlobalPosition.X, _throwJudgmentY);
 
 				// 静止：已接触判定层、反弹已完全吸收（无上升速度）、水平速度衰减到位
 				if (grounded && _bounceVelY >= 0f && Mathf.Abs(_bounceVelX) < 40f)
@@ -895,6 +1052,17 @@ namespace Kuros.Items.World
 			if (!TryTransferToActor(actor))
 			{
 				return false;
+			}
+
+			// 投掷核心"件"身份跨拾取携带:实体即将销毁,把标记写到家具槽栈实例上;
+			// 玩家放置该家具时由出口消费,恢复为在场脉冲件。非核心生成物(不在组)不受影响。
+			if (IsInGroup(ThrowCorePieceTag)
+				&& ResolveInventoryComponent(actor) is PlayerInventoryComponent pieceInv
+				&& pieceInv.FurnitureSlotStack != null
+				&& pieceInv.FurnitureSlotStack.Item == ItemDefinition)
+			{
+				pieceInv.FurnitureSlotStack.RuntimeSourceTag = ThrowCorePieceTag;
+				pieceInv.FurnitureSlotStack.RuntimeIsThrowCoreCopy = IsInGroup(ThrowCoreCopyTag);
 			}
 
 			if (ThrowCooldownRemaining > 0f && _lastTransferredItem != null)
@@ -1014,7 +1182,6 @@ namespace Kuros.Items.World
 				{
 					_initialRigidBodyCollisionLayer = _rigidBody.CollisionLayer;
 					_initialRigidBodyCollisionMask = _rigidBody.CollisionMask;
-					GD.Print($"[{Name}] 保存原始碰撞设置: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
 				}
 				catch
 				{
@@ -1115,6 +1282,8 @@ namespace Kuros.Items.World
 			_hitboxArea.Monitoring = true;
 			_hitboxArea.Monitorable = false;
 
+			_hitboxBasePosition = _hitboxArea.Position; // 飞行结束还原(飞行中覆写为地面投影)
+
 			_hitboxArea.AreaEntered += OnHitboxAreaEntered;
 		}
 
@@ -1130,18 +1299,132 @@ namespace Kuros.Items.World
 				return;
 
 			var actor = ResolveActorFromArea(area);
-			if (actor == null || actor == LastDroppedBy)
+			if (actor != null)
+			{
+				if (actor == LastDroppedBy)
+					return;
+
+				if (_hitActors.Contains(actor))
+					return;
+
+				if (_rigidBody != null)
+				{
+					var velocity = _rigidBody.LinearVelocity;
+					if (velocity.Length() >= MinDamageVelocity)
+						TryDealImpactDamage(actor, velocity);
+				}
+				return;
+			}
+
+			// 非 GameActor 目标（Gate/FireWallA 等 IBarrier 屏障）
+			var receiver = ResolveBarrier(area);
+			if (receiver == null || receiver == LastDroppedBy)
 				return;
 
-			if (_hitActors.Contains(actor))
+			if (_hitActors.Contains(receiver))
 				return;
 
 			if (_rigidBody != null)
 			{
 				var velocity = _rigidBody.LinearVelocity;
 				if (velocity.Length() >= MinDamageVelocity)
-					TryDealImpactDamage(actor, velocity);
+					TryDealDamageToNonActor(receiver);
 			}
+		}
+
+		/// <summary>投掷攻击方向（水平飞行方向，供方向性屏障 FireWallA 的拦截/放行判定）。</summary>
+		private Vector2 ResolveThrowDirection()
+			=> _throwHorizontalVelocity >= 0f ? Vector2.Right : Vector2.Left;
+
+		/// <summary>
+		/// 飞行中手动空间查询：用 Hitbox 形状扫描（mask 与 Hitbox 一致，Areas+Bodies），
+		/// 对 IBarrier 屏障（FireWallA/Gate 等）做拦截/放行结算。
+		/// 物理查询不依赖 Area 重叠状态——Hitbox 是 RigidBody2D 子节点时 Area↔Body 检测不可靠。
+		/// </summary>
+		private void QueryNonActorTargets()
+		{
+			var shapeNode = _hitboxArea?.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (shapeNode?.Shape == null) return;
+
+			var space = _hitboxArea!.GetWorld2D()?.DirectSpaceState;
+			if (space == null) return;
+
+			var query = new PhysicsShapeQueryParameters2D
+			{
+				Shape = shapeNode.Shape,
+				Transform = shapeNode.GlobalTransform,
+				CollisionMask = _hitboxArea.CollisionMask,
+				CollideWithAreas = true,
+				CollideWithBodies = true
+			};
+
+			foreach (var result in space.IntersectShape(query))
+			{
+				if (!result.TryGetValue("collider", out var collider)) continue;
+				if (collider.As<GodotObject>() is not Node node) continue;
+
+				var receiver = ResolveBarrier(node);
+				if (receiver == null || receiver is GameActor) continue; // 敌人走 AreaEntered 信号路径
+				if (receiver == LastDroppedBy) continue;
+				if (_hitActors.Contains(receiver)) continue;
+
+				TryDealDamageToNonActor(receiver);
+			}
+		}
+
+		/// <summary>沿父链向上查找 IBarrier 屏障（可被投掷物拦截的目标：Gate/FireWallA 等）。
+		/// 显式接口替代 HasMethod("TakeDamage") 鸭子类型——其他投掷物/P2 同伴/普通静态体自然排除。</summary>
+		private static Node? ResolveBarrier(Node node)
+		{
+			Node? current = node;
+			while (current != null)
+			{
+				if (current is IBarrier) return current;
+				current = current.GetParent();
+			}
+			return null;
+		}
+
+		/// <summary>对非 GameActor 目标造成伤害（数值复用 CalculateImpactDamage，与 GameActor 命中一致），
+		/// 并按 StopOnHit 决定停止飞行（砸到 Gate 等障碍物即停）。
+		/// 走 DamageDispatcher 统一管线：方向性屏障（FireWallA）的拦截/放行判定自动生效——
+		/// 放行（非接收方向）→ 返回 false 不伤害不停止，投掷物继续飞；拦截 → 伤害 + 停止。</summary>
+		private bool TryDealDamageToNonActor(Node receiver)
+		{
+			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
+			if (damage <= 0) return false;
+
+			bool dealt = DamageDispatcher.DealDamage(receiver, damage, GlobalPosition, LastDroppedBy,
+				Kuros.Core.Events.DamageSource.ThrowImpact, TargetableFactions.All, false, null,
+				ResolveThrowDirection());
+			if (!dealt) return false;
+
+			_hitActors.Add(receiver);
+
+			if (_inFlight)
+			{
+				if (StopOnHit)
+				{
+					// 与 GameActor 命中相同的停止流程（落地隐藏/归还由 _PhysicsProcess 处理）
+					_inFlight = false;
+					_flightTimer = 0.0;
+					_impactArmed = false;
+					if (_rigidBody != null)
+					{
+						_rigidBody.LinearVelocity = Vector2.Zero;
+						try { _rigidBody.Set("freeze", true); } catch { }
+					}
+					RestoreRigidBodyCollision();
+					HandleStopAfterFlight();
+				}
+				return true;
+			}
+
+			if (StopOnHit)
+			{
+				StopItemMovement();
+			}
+			return true;
 		}
 
 		private static GameActor? ResolveActorFromArea(Area2D area)
@@ -1222,7 +1505,7 @@ namespace Kuros.Items.World
 		}
 
 		/// <summary>
-		/// 尝试对目标造成碰撞伤害
+		/// 尝试对目标造成碰撞伤害：attack_power 属性(逐项特化) → 家具档位 → ThrowDamage 兜底。
 		/// </summary>
 		private float CalculateImpactDamage()
 		{
@@ -1230,7 +1513,9 @@ namespace Kuros.Items.World
 			var snapshot = GetAttributeSnapshot();
 			if (snapshot.TryGetValue("attack_power", out float ap) && ap > 0f)
 				attributeDamage = ap;
-			return attributeDamage > 0f ? attributeDamage : ThrowDamage;
+			return ItemDefinition != null
+				? ItemDefinition.ResolveThrowImpactDamage(attributeDamage, ThrowDamage, Modifiers)
+				: (attributeDamage > 0f ? attributeDamage : ThrowDamage);
 		}
 
 		private bool TryDealImpactDamage(GameActor target, Vector2 impactVelocity)
@@ -1241,35 +1526,23 @@ namespace Kuros.Items.World
 			}
 
 			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
-			
+
 			if (damage <= 0)
 			{
 				return false;
 			}
 
-			DamageDispatcher.DealDamage(target, damage, GlobalPosition, LastDroppedBy, Kuros.Core.Events.DamageSource.ThrowImpact);
-			_hitActors.Add(target);
-
-			// 应用击退效果
-			if (KnockbackForce > 0)
-			{
-				var knockbackDirection = (target.GlobalPosition - GlobalPosition).Normalized();
-				if (knockbackDirection.LengthSquared() < 0.01f)
-				{
-					knockbackDirection = impactVelocity.Normalized();
-				}
-				
-				// GameActor 继承自 CharacterBody2D，可以直接应用击退
-				var knockbackVelocity = knockbackDirection * KnockbackForce;
-				target.Velocity += knockbackVelocity;
-			}
+			DealImpactToActor(target, damage, impactVelocity);
 
 			// 飞行中命中敌人（必须在 StopItemMovement 之前判断，否则 _inFlight 会被提前清除）
 			if (_inFlight)
 			{
-				if (StopOnHit)
+				// B_008 延迟销毁:一次性道具携带穿透修饰时不停留,穿透敌人继续飞向落点(武器不受该卡影响)
+				if (StopOnHit && !(Modifiers.PassThroughEnemies && !IsThrowWeapon))
 				{
-					// StopOnHit=true：立即停止飞行，走与落地相同的 LandingHideDelay 流程
+					// StopOnHit=true：立即停止飞行，走与落地相同的 LandingHideDelay 流程。
+					// 停止前沿飞行方向结算贯穿段内的所有敌人——视觉停在第一个敌人，伤害覆盖路径后方敌群
+					DealDamageAlongThrowPath(impactVelocity);
 					_inFlight = false;
 					_flightTimer = 0.0;
 					_impactArmed = false;
@@ -1293,6 +1566,200 @@ namespace Kuros.Items.World
 
 			return true;
 		}
+
+		/// <summary>
+		/// 命中即停（StopOnHit=true）时的贯穿结算：沿飞行方向延伸"贯穿段"，
+		/// 对段内所有敌人统一造成伤害——视觉仍停在第一个敌人处，伤害覆盖路径后方敌群。
+		/// 贯穿深度从 CollisionArea（道具实际水平体积）派生，参考对象不是攻击判定区 Hitbox
+		/// （竖直长条 10×200，水平宽度不代表撞击体积）。
+		/// 伤害数值复用 CalculateImpactDamage（attack_power / 档位 / ThrowDamage），与 CSV 一致。
+		/// </summary>
+		private void DealDamageAlongThrowPath(Vector2 impactVelocity)
+		{
+			if (_hitboxArea == null) return;
+			float penetration = ResolveThrowPenetrationRange();
+			if (penetration <= 0f) return;
+
+			var scanShape = BuildPenetrationScanShape(penetration);
+			if (scanShape == null) return;
+
+			// 贯穿段：命中点 → 命中点 + 贯穿距离（X 方向），Y 固定在判定层（与现有 Hitbox 重叠判定同规则，不额外扩展）
+			Vector2 dir = _throwHorizontalVelocity >= 0f ? Vector2.Right : Vector2.Left;
+			Vector2 center = new Vector2(
+				_hitboxArea.GlobalPosition.X + dir.X * penetration * 0.5f,
+				_hitboxArea.GlobalPosition.Y);
+
+			DrawThrowPenetrationDebug(scanShape, center);
+			DealDamageInScanShape(scanShape, center, impactVelocity);
+		}
+
+		/// <summary>共用范围扫描：遍历与 shape 相交的敌人 HitArea,逐个结算(过滤投掷者/已命中/死亡)。</summary>
+		private void DealDamageInScanShape(Shape2D shape, Vector2 center, Vector2 impactVelocity)
+		{
+			if (_hitboxArea == null) return;
+			int damage = Mathf.Max(1, Mathf.RoundToInt(CalculateImpactDamage()));
+			if (damage <= 0) return;
+
+			var space = _hitboxArea.GetWorld2D().DirectSpaceState;
+			var query = new PhysicsShapeQueryParameters2D
+			{
+				Shape = shape,
+				Transform = new Transform2D(0f, center),
+				CollisionMask = 1u << 0, // 与现有 Hitbox 检测一致（敌人 HitArea 所在层）
+				CollideWithAreas = true,
+				CollideWithBodies = false
+			};
+
+			foreach (var result in space.IntersectShape(query))
+			{
+				if (!result.TryGetValue("collider", out var collider)) continue;
+				if (collider.As<GodotObject>() is not Area2D area) continue;
+				if (!string.Equals(area.Name, "HitArea", StringComparison.OrdinalIgnoreCase)) continue;
+				var actor = ResolveActorFromArea(area);
+				if (actor == null || actor == LastDroppedBy) continue;
+				if (_hitActors.Contains(actor)) continue;
+				if (actor.IsDeadOrDying) continue;
+
+				DealImpactToActor(actor, damage, impactVelocity);
+			}
+		}
+
+		/// <summary>共用目标结算：伤害分发 + 记录 + 击退（方向水平化在 ApplyKnockback 内）。</summary>
+		private void DealImpactToActor(GameActor actor, int damage, Vector2 impactVelocity)
+		{
+			DamageDispatcher.DealDamage(actor, damage, GlobalPosition, LastDroppedBy, Kuros.Core.Events.DamageSource.ThrowImpact);
+			_hitActors.Add(actor);
+			ApplyKnockback(actor, impactVelocity);
+		}
+
+		/// <summary>
+		/// 落点砸地 AoE（仅一次性投掷物,投掷武器走自身特效）：飞尽（未命中敌人走到最远落点）时
+		/// 按道具碰撞体积生成一次范围伤害——补"终点与敌人重叠却因判定臂已关而无伤"的判定洞,
+		/// 并把占地宽度纳入命中范围。范围 = CollisionArea 实际占地 × Hitbox 判定高,中心 = 落点;
+		/// 击退离心（自落点向外水平推）。
+		/// </summary>
+		private void DealDamageOnLanding()
+		{
+			if (_hitboxArea == null) return;
+			float footprint = ResolveThrowPenetrationRange(); // CollisionArea 实际水平占地（矩形取宽/圆取直径）
+			if (footprint <= 0f) return;
+
+			var scanShape = BuildPenetrationScanShape(footprint); // (Hitbox 水平宽 + 占地) × Hitbox 高
+			if (scanShape == null) return;
+
+			DealDamageInScanShape(scanShape, _hitboxArea.GlobalPosition,
+				new Vector2(_throwHorizontalVelocity, 0f));
+		}
+
+		/// <summary>临时调试绘制：砸中时在屏幕上显示贯穿扫描范围（ZIndex 10，TopLevel，自动消失）。</summary>
+		private void DrawThrowPenetrationDebug(Shape2D scanShape, Vector2 center)
+		{
+			if (!ShowThrowPenetrationDebug || scanShape == null) return;
+
+			if (_penetrationDebugDrawer == null || !GodotObject.IsInstanceValid(_penetrationDebugDrawer))
+			{
+				var host = GetTree().CurrentScene ?? GetTree().Root;
+				_penetrationDebugDrawer = new AttackHitboxDebugDrawer
+				{
+					Name = "ThrowPenetrationDebugDrawer",
+					ZIndex = 10,
+					TopLevel = true,
+					Visible = false
+				};
+				host.AddChild(_penetrationDebugDrawer);
+			}
+
+			_penetrationDebugDrawer.ShowFromShape(scanShape, center, new Color(10f, 3f, 10f, 10f), 10f, 2f);
+		}
+
+		/// <summary>
+		/// 贯穿深度：从投掷物自身 CollisionArea（捡拾/互动区，反映道具实际水平体积）的碰撞形状水平尺寸派生。
+		/// 矩形取宽、圆形取直径；无形状回退 0（退化为仅重叠敌人）。
+		/// </summary>
+		private float ResolveThrowPenetrationRange()
+		{
+			var shape = ResolveCollisionAreaShape()?.Shape;
+			if (shape is RectangleShape2D rect) return rect.Size.X;
+			if (shape is CircleShape2D circle) return circle.Radius * 2f;
+			return 0f;
+		}
+
+		private CollisionShape2D? ResolveCollisionAreaShape()
+			=> ResolveAreaCollisionShape(_grabArea);
+
+		/// <summary>通用：查找 Area2D 下的碰撞形状（直接子节点优先，嵌套兜底）。</summary>
+		private static CollisionShape2D? ResolveAreaCollisionShape(Area2D? area)
+		{
+			if (area == null) return null;
+
+			var direct = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+			if (direct != null) return direct;
+
+			foreach (Node child in area.GetChildren())
+			{
+				if (child is CollisionShape2D shape) return shape;
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 贯穿扫描矩形：宽 = 贯穿距离 + AttackArea 水平尺寸，高 = AttackArea 垂直尺寸——
+		/// 等价于"AttackArea 沿飞行方向平移扫过贯穿段"：Y 规则与首段命中判定完全一致，
+		/// CollisionArea 只决定 X 延伸多远（道具实际水平体积）。
+		/// </summary>
+		private RectangleShape2D? BuildPenetrationScanShape(float penetration)
+		{
+			var attackShape = ResolveAreaCollisionShape(_hitboxArea)?.Shape;
+			float attackW = 0f;
+			float attackH = 0f;
+
+			if (attackShape is RectangleShape2D rect)
+			{
+				attackW = rect.Size.X;
+				attackH = rect.Size.Y;
+			}
+			else if (attackShape is CircleShape2D circle)
+			{
+				attackW = circle.Radius * 2f;
+				attackH = circle.Radius * 2f;
+			}
+
+			if (attackH <= 0f) return null;
+
+			return new RectangleShape2D { Size = new Vector2(attackW + penetration, attackH) };
+		}
+
+		/// <summary>统一击退入口（与命中结算共用）：方向仅取水平分量——击退位移锁定 X 轴，
+		/// 目标高度不受影响（不会被砸压或挑飞）。退化链：目标相对水平 → 撞击速度水平分量 → 正 X。
+		/// 走 GameActor 位移驱动 API（新三参——攻击方控制距离+时长，与伤害特效击退统一），禁止直接改 Velocity。
+		/// 距离/时长解析：场景 export &gt;0 优先 → 家具档位 → 无击退。</summary>
+		private void ApplyKnockback(GameActor target, Vector2 impactVelocity)
+		{
+			float distance = ResolveKnockbackDistance();
+			if (distance <= 0f) return;
+
+			float dirX = target.GlobalPosition.X - GlobalPosition.X;
+			if (Mathf.Abs(dirX) < 1f)
+				dirX = impactVelocity.X;
+			if (Mathf.Abs(dirX) < 1f)
+				dirX = 1f;
+			var knockbackDirection = new Vector2(Mathf.Sign(dirX), 0f);
+
+			target.ApplyKnockbackDisplacement(knockbackDirection, distance, ResolveKnockbackDuration());
+		}
+
+		// 击退与血量解析：场景 export >0 优先；否则按修饰档(整体+击退专属 shift / 整体 shift)取档位值。
+		private float ResolveKnockbackDistance()
+			=> KnockbackDistance > 0f ? KnockbackDistance
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDistance ?? 0f;
+
+		private float ResolveKnockbackDuration()
+			=> KnockbackDuration > 0f ? KnockbackDuration
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDuration ?? 0.2f;
+
+		private float ResolveMaxHP()
+			=> MaxHP > 0f ? MaxHP
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.MaxHp ?? 60f;
 
 		/// <summary>
 		/// 飞行中沿水平方向发射射线，检测前方是否为 AirWall（空气墙）。
@@ -1376,8 +1843,8 @@ namespace Kuros.Items.World
 		{
 			if (_rigidBody == null || _bouncing) return;
 			_bouncing = true;
-			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * BounceHorizontalRatio;
-			_bounceVelY = -BounceSpeed;
+			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * GetEffectiveBounceHorizontalRatio();
+			_bounceVelY = -GetEffectiveBounceSpeed();
 
 			// 回弹阶段视觉在地面附近，恢复阴影
 			SetShadowVisible(true);
@@ -1448,10 +1915,6 @@ namespace Kuros.Items.World
 
 			try
 			{
-				// 先读取当前值
-				var beforeLayer = _rigidBody.CollisionLayer;
-				var beforeMask = _rigidBody.CollisionMask;
-				
 				// 如果 ThrowCollisionLayer 为 0，确保 mask 也只检测需要的层（避免与静止物件碰撞）
 				// 如果用户想要检测第3层（墙/地面），mask 应该设置为 4（1u<<2）
 				uint finalLayer = ThrowCollisionLayer;
@@ -1470,9 +1933,7 @@ namespace Kuros.Items.World
 				// 立即验证设置是否成功
 				var actualLayer = _rigidBody.CollisionLayer;
 				var actualMask = _rigidBody.CollisionMask;
-				
-				GD.Print($"[{Name}] 投掷时碰撞设置: 设置前 layer={beforeLayer}, mask={beforeMask} | 设置后 layer={finalLayer}->{actualLayer}, mask={finalMask}->{actualMask} | 原始: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
-				
+
 				// 如果设置失败，输出警告并重试
 				if (actualLayer != finalLayer || actualMask != finalMask)
 				{
@@ -1503,10 +1964,6 @@ namespace Kuros.Items.World
 				_rigidBody.CollisionLayer = ThrowCollisionLayer;
 				_rigidBody.CollisionMask = ThrowCollisionMask;
 				_rigidBody.Sleeping = false; // 强制唤醒
-				
-				var actualLayer = _rigidBody.CollisionLayer;
-				var actualMask = _rigidBody.CollisionMask;
-				GD.Print($"[{Name}] CallDeferred 应用碰撞设置: layer={ThrowCollisionLayer}->{actualLayer}, mask={ThrowCollisionMask}->{actualMask}");
 			}
 			catch (Exception ex)
 			{
@@ -1530,7 +1987,6 @@ namespace Kuros.Items.World
 				_rigidBody.CollisionMask = _initialRigidBodyCollisionMask;
 				SetFurnitureStaticBodyCollision(true);
 				_isThrown = false;
-				GD.Print($"[{Name}] 恢复碰撞设置: layer={_initialRigidBodyCollisionLayer}, mask={_initialRigidBodyCollisionMask}");
 			}
 			catch (Exception ex)
 			{
@@ -1632,6 +2088,9 @@ namespace Kuros.Items.World
 			// 生成 OnThrowDestroy 效果（Node2D 在世界坐标生成，ActorEffect 应用到投掷者）
 			SpawnThrowDestroyEffects();
 
+			// 飞行命中销毁同样广播(供 A_004 响应"投掷命中销毁")
+			NotifyDestroyedOnce();
+
 			// 播放销毁动画
 			PlayDestructionAnimation();
 		}
@@ -1663,9 +2122,11 @@ namespace Kuros.Items.World
 			// 生成 OnThrowDestroy 效果（Node2D 在世界坐标生成，ActorEffect 应用到投掷者）
 			SpawnThrowDestroyEffects();
 
+			// 投掷件销毁广播(节点销毁前;供 A_004 冲击投放等订阅者响应"投掷销毁")
+			NotifyDestroyedOnce();
+
 			// 播放销毁动画
 			PlayDestructionAnimation();
-			GD.Print($"[{Name}] 在落点销毁物品");
 		}
 
 		/// <summary>
@@ -1738,6 +2199,9 @@ namespace Kuros.Items.World
 				catch { }
 				RestoreRigidBodyCollision();
 			}
+
+			// 落地(非飞行)命中销毁同样广播(供 A_004 响应)
+			NotifyDestroyedOnce();
 
 			// 播放销毁动画
 			PlayDestructionAnimation();
@@ -1844,60 +2308,6 @@ namespace Kuros.Items.World
 			}
 
 			QueueFree();
-		}
-
-		/// <summary>
-		/// 检查该节点的子树中是否有属于导航源几何组的节点。
-		/// </summary>
-		private static bool HasNavigationSourceGeometryDescendant(Node node)
-		{
-			foreach (Node child in node.GetChildren())
-			{
-				if (child.IsInGroup("navigation_polygon_source_geometry_group")) return true;
-				if (HasNavigationSourceGeometryDescendant(child)) return true;
-			}
-			return false;
-		}
-
-		/// <summary>
-		/// 递归查找场景中所有 NavigationRegion2D 并触发重新烘焙。
-		/// </summary>
-		private static void RebakeAllNavigationRegions(Node node)
-		{
-			if (!GodotObject.IsInstanceValid(node)) return;
-			if (node is NavigationRegion2D navRegion)
-			{
-				navRegion.BakeNavigationPolygon();
-				return;
-			}
-			foreach (Node child in node.GetChildren())
-				RebakeAllNavigationRegions(child);
-		}
-
-		/// <summary>
-		/// 防抖机制：将烘焙请求加入待处理列表，统一在下一帧执行（避免多物品重复遍历场景树）。
-		/// </summary>
-		private static void ScheduleNavigationRebake()
-		{
-			var tree = Engine.GetMainLoop() as SceneTree;
-			if (tree == null) return;
-
-			PendingRebakeScenes.Add(tree);
-
-			// 只在首次请求时创建定时器
-			if (_rebakeTimerScheduled) return;
-
-			_rebakeTimerScheduled = true;
-			tree.CreateTimer(0.0).Timeout += () =>
-			{
-				_rebakeTimerScheduled = false;
-				foreach (var sceneTree in PendingRebakeScenes)
-				{
-					var scene = sceneTree.CurrentScene;
-					if (scene != null) RebakeAllNavigationRegions(scene);
-				}
-				PendingRebakeScenes.Clear();
-			};
 		}
 
 		private void InitializeStack()
@@ -2090,6 +2500,16 @@ namespace Kuros.Items.World
 						// 读到的 Attacker 为 null（如 BriefcaseOpenEffect 的朝向翻转）
 						if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
 							attackerProvider.Attacker = LastDroppedBy;
+						// 生成朝向 = 投掷方向（非投掷者当前朝向——投掷后转身不应影响生成朝向，
+						// 如 BriefcaseOpenEffect 延迟生成 FireWall 的翻转）
+						if (node2D is Kuros.Fx.IFacingDirectional facing)
+							facing.FacingRight = _throwHorizontalVelocity >= 0f;
+						// 投掷即效果(回旋镖等):注入本次投掷飞行距离——与 ThrowTrajectoryPreview 同一解析真源
+						// (ItemDefinition.GetEffectiveThrowDistance + 出手快照 Modifiers/单次 Override);
+						// 仅在定义提供了显式距离来源时注入,否则特效使用自有参数
+						if (node2D is Kuros.Fx.IThrowFlightDistance flightDistance
+							&& (OverrideThrowDistance > 0f || ItemDefinition?.ThrowHorizontalDistance > 0f))
+							flightDistance.SetThrowFlightDistance(GetEffectiveThrowHorizontalDistance());
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");
@@ -2133,6 +2553,27 @@ namespace Kuros.Items.World
 
 			if (CurrentHP <= 0f)
 				Destroy();
+		}
+
+		/// <summary>
+		/// 外部主动销毁入口(带完整销毁表现:OnThrowDestroy 特效/掉落链 + QueueFree)。
+		/// 供长按核心技能等"清场式"销毁调用;飞行/回弹/已在销毁中的实体忽略(防中途误清)。
+		/// </summary>
+		public void RequestDestroy()
+		{
+			if (_isDestroying || _inFlight || _isThrown || _bouncing) return;
+			_isDestroying = true;
+			Destroy();
+		}
+
+		private bool _destroyedBroadcast;
+
+		/// 销毁广播只发一次:同一件可能经多个销毁入口(Destroy/落地/飞行命中/墙壁),防重复爆炸。
+		private void NotifyDestroyedOnce()
+		{
+			if (_destroyedBroadcast) return;
+			_destroyedBroadcast = true;
+			Destroyed?.Invoke(this);
 		}
 
 		private void Destroy()
@@ -2179,6 +2620,7 @@ namespace Kuros.Items.World
 				}
 			}
 
+			NotifyDestroyedOnce();
 			QueueFree();
 		}
 

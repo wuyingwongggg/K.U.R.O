@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://bjwnor5ufbb8r"]
+[gd_scene load_steps=58 format=3 uid="uid://bjwnor5ufbb8r"]
 
 [ext_resource type="Script" uid="uid://d3t47ery0onnl" path="res://scripts/managers/BuildSelectionManager.cs" id="1"]
 [ext_resource type="Script" uid="uid://7jkau6kxuvlf" path="res://scripts/systems/ScoreThresholdCurve.cs" id="2"]
@@ -36,6 +36,26 @@
 [ext_resource type="Resource" uid="uid://coxd2yko1f5hr" path="res://resources/builds/BuildNormal_B_001.tres" id="34_an8ih"]
 [ext_resource type="Resource" uid="uid://bnihrs6b3l6c7" path="res://resources/builds/BuildNormal_B_002.tres" id="35_hia2b"]
 [ext_resource type="Resource" uid="uid://dtu4qwjhy7b65" path="res://resources/builds/BuildNormal_B_003.tres" id="36_jnoys"]
+[ext_resource type="Resource" uid="uid://bnpillebfn1t2" path="res://resources/builds/BuildNormal_B_006.tres" id="37_k2m2"]
+[ext_resource type="Resource" uid="uid://c5ppuglxiq5wp" path="res://resources/builds/BuildNormal_C_001.tres" id="38_k2m3"]
+[ext_resource type="Resource" uid="uid://ci3nt8oo3xha3" path="res://resources/builds/BuildNormal_C_003.tres" id="39_k2m4"]
+[ext_resource type="Resource" uid="uid://byv2j1g00wpw0" path="res://resources/builds/BuildThrow_A_001.tres" id="41_k2m6"]
+[ext_resource type="Resource" uid="uid://cdmffuxv8gh1p" path="res://resources/builds/BuildThrow_A_006.tres" id="42_k2m7"]
+[ext_resource type="Resource" uid="uid://c4wm7q4l6r4wv" path="res://resources/builds/BuildThrow_A_007.tres" id="43_k2m8"]
+[ext_resource type="Resource" uid="uid://3krditn78uto" path="res://resources/builds/BuildThrow_A_002.tres" id="44_k2m9"]
+[ext_resource type="Resource" uid="uid://bqhxf76eimm70" path="res://resources/builds/BuildThrow_A_003.tres" id="45_k2m10"]
+[ext_resource type="Resource" uid="uid://cv2v56i4g2ldp" path="res://resources/builds/BuildThrow_A_004.tres" id="46_k2m11"]
+[ext_resource type="Resource" uid="uid://b7mlasvkch7e7" path="res://resources/builds/BuildThrow_A_005.tres" id="47_k2m12"]
+[ext_resource type="Resource" uid="uid://pywqmhl7dvjh" path="res://resources/builds/BuildThrow_A_008.tres" id="48_k2m13"]
+[ext_resource type="Resource" uid="uid://bfe6xmagql6is" path="res://resources/builds/BuildThrow_A_009.tres" id="49_k2m14"]
+[ext_resource type="Resource" uid="uid://ctyi382dxculk" path="res://resources/builds/BuildThrow_A_010.tres" id="50_k2m15"]
+[ext_resource type="Resource" uid="uid://dgnhkr3lw213n" path="res://resources/builds/BuildThrow_B_001.tres" id="50_q1nqq"]
+[ext_resource type="Resource" uid="uid://cdswkjr4187x3" path="res://resources/builds/BuildThrow_B_002.tres" id="51_fbqki"]
+[ext_resource type="Resource" uid="uid://cww1wqluh0dda" path="res://resources/builds/BuildThrow_B_003.tres" id="52_b003"]
+[ext_resource type="Resource" uid="uid://csa572m74owa7" path="res://resources/builds/BuildThrow_B_005.tres" id="53_b005"]
+[ext_resource type="Resource" uid="uid://c6nbw2xq8krt4" path="res://resources/builds/BuildThrow_B_006.tres" id="54_b006"]
+[ext_resource type="Resource" uid="uid://c1m8vq3xk7tw2" path="res://resources/builds/BuildThrow_B_007.tres" id="55_b007"]
+[ext_resource type="Resource" uid="uid://b4nx8kqv2mwrt" path="res://resources/builds/BuildThrow_B_008.tres" id="56_b008"]
 
 [sub_resource type="Resource" id="ThresholdCurve"]
 script = ExtResource("2")
@@ -48,11 +68,13 @@ metadata/_custom_type_script = "uid://7jkau6kxuvlf"
 script = ExtResource("1")
 ThresholdCurve = SubResource("ThresholdCurve")
 CorePool = Array[ExtResource("3_core")]([ExtResource("22"), ExtResource("23"), ExtResource("24")])
-EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("11_51j2i"), ExtResource("12_hmd15"), ExtResource("13_f1ni1"), ExtResource("14_28q7w"), ExtResource("15_sy28j"), ExtResource("16_o8bjk"), ExtResource("17_k6o6d"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("21_fiv8j"), ExtResource("22_f3soq"), ExtResource("23_a8dc1"), ExtResource("24_qq6bi"), ExtResource("25_y7t65"), ExtResource("26_gaso4"), ExtResource("27_tqvmv"), ExtResource("28_f3soq"), ExtResource("29_qq6bi"), ExtResource("30_y7t65"), ExtResource("31_gaso4"), ExtResource("32_tqvmv"), ExtResource("33_tqvmv"), ExtResource("34_an8ih"), ExtResource("35_hia2b"), ExtResource("36_jnoys")])
+EffectPool = Array[ExtResource("3")]([ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("11_51j2i"), ExtResource("12_hmd15"), ExtResource("13_f1ni1"), ExtResource("14_28q7w"), ExtResource("15_sy28j"), ExtResource("16_o8bjk"), ExtResource("17_k6o6d"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("21_fiv8j"), ExtResource("22_f3soq"), ExtResource("23_a8dc1"), ExtResource("24_qq6bi"), ExtResource("25_y7t65"), ExtResource("26_gaso4"), ExtResource("27_tqvmv"), ExtResource("28_f3soq"), ExtResource("29_qq6bi"), ExtResource("30_y7t65"), ExtResource("31_gaso4"), ExtResource("32_tqvmv"), ExtResource("33_tqvmv"), ExtResource("34_an8ih"), ExtResource("35_hia2b"), ExtResource("36_jnoys"), ExtResource("37_k2m2"), ExtResource("38_k2m3"), ExtResource("39_k2m4"), ExtResource("41_k2m6"), ExtResource("44_k2m9"), ExtResource("45_k2m10"), ExtResource("46_k2m11"), ExtResource("47_k2m12"), ExtResource("42_k2m7"), ExtResource("43_k2m8"), ExtResource("48_k2m13"), ExtResource("49_k2m14"), ExtResource("50_k2m15"), ExtResource("50_q1nqq"), ExtResource("51_fbqki"), ExtResource("52_b003"), ExtResource("53_b005"), ExtResource("54_b006"), ExtResource("55_b007"), ExtResource("56_b008")])
 RarityMultiplier = Dictionary[String, float]({
 "Common": 3.0,
 "Epic": 1.0,
 "Rare": 2.0
 })
+CardsPerSelection = 10
 SkipGoldReward = 5
 CoreSkipGoldReward = 15
+DefaultBuildClass = "Normal"

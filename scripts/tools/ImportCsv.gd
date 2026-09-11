@@ -41,10 +41,13 @@ func import_skills_from_csv() -> void:
 		var path = "%s%s.tres" % [SKILLS_DIR, fname]
 		var res = _load(path)
 		if res == null: continue
+		# 顺序与 ExportCsv skills 列一致（对齐 WeaponSkillDefinition.cs 字段声明顺序）
 		_s_str(res, "SkillId",          row, hm, "SkillId")
 		_s_str(res, "DisplayName",      row, hm, "DisplayName")
+		_s_int(res, "SkillType",        row, hm, "SkillType")
 		_s_str(res, "AnimationName",    row, hm, "AnimationName")
 		_s_float(res, "DamageMultiplier", row, hm, "DamageMultiplier")
+		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
 		_s_float(res, "CooldownSeconds",  row, hm, "CooldownSeconds")
 		_s_bool(res,  "ShowHitboxDebug",  row, hm, "ShowHitboxDebug")
 		_s_str(res, "Description",      row, hm, "Description")
@@ -56,7 +59,6 @@ func import_skills_from_csv() -> void:
 		_s_float(res, "WarmupAnimationSpeed",    row, hm, "WarmupAnimationSpeed")
 		_s_float(res, "ActiveAnimationSpeed",    row, hm, "ActiveAnimationSpeed")
 		_s_float(res, "RecoveryAnimationSpeed",  row, hm, "RecoveryAnimationSpeed")
-		_s_float_neg1(res, "DashDamageMultiplier",       row, hm)
 		_s_str(res, "DashAnimationName",         row, hm, "DashAnimationName")
 		_s_float_neg1(res, "DashWarmupDuration",        row, hm)
 		_s_float_neg1(res, "DashActiveDuration",        row, hm)
@@ -64,6 +66,10 @@ func import_skills_from_csv() -> void:
 		_s_float_neg1(res, "DashWarmupAnimationSpeed",  row, hm)
 		_s_float_neg1(res, "DashActiveAnimationSpeed",  row, hm)
 		_s_float_neg1(res, "DashRecoveryAnimationSpeed", row, hm)
+		_s_int(res,   "DashAttackSpeedSource",       row, hm, "DashAttackSpeedSource")
+		_s_float_neg1(res, "DashAttackFixedSpeed",       row, hm)
+		_s_float_neg1(res, "DashAttackSpeedMultiplier",  row, hm)
+		_s_int(res,   "DashAttackDecayWindow",       row, hm, "DashAttackDecayWindow")
 		if _save(res, path): count += 1
 	_log.info("  → 更新 %d 个" % count)
 
@@ -82,6 +88,7 @@ func import_items_from_csv() -> void:
 		var res = _load(path)
 		if res == null: continue
 		_s_str(res,   "ItemId",      row, hm, "ItemId")
+		_s_str(res,   "Category",    row, hm, "Category")
 		_s_str(res,   "DisplayName", row, hm, "DisplayName")
 		_s_str(res,   "Description", row, hm, "Description")
 		_s_str_array(res, "Tags", row, hm)
@@ -97,6 +104,8 @@ func import_items_from_csv() -> void:
 		_s_float(res, "ThrowHorizontalDistance",     row, hm, "ThrowHorizontalDistance")
 		_s_float(res, "ThrowParabolicLandingYOffset", row, hm, "ThrowParabolicLandingYOffset")
 		_s_float(res, "ThrowWeaponCooldown", row, hm, "ThrowWeaponCooldown")
+		_s_float(res, "UnpickedLifetime", row, hm, "UnpickedLifetime")
+		_s_int(res,   "ThrowTier", row, hm, "ThrowTier")
 		# attack_power 存于 AttributeEntries 子资源
 		var atk = _col(row, hm, "attack_power")
 		if atk != "": _set_attribute(res, "attack_power", float(atk))
@@ -173,9 +182,9 @@ func import_characters_from_csv() -> void:
 		var path = "%s%s.tscn" % [CHARACTERS_DIR, fname]
 		var content = _read_text(path)
 		if content == "": continue
-		content = _set_tscn_root_prop(content, "Speed", _col(row, hm, "Speed"))
-		content = _set_tscn_root_prop(content, "AttackDamage", _col(row, hm, "AttackDamage"))
-		content = _set_tscn_root_prop(content, "AttackCooldown", _col(row, hm, "AttackCooldown"))
+		content = _set_tscn_root_prop(content, "Speed", _float_literal(_col(row, hm, "Speed")))
+		content = _set_tscn_root_prop(content, "AttackDamage", _float_literal(_col(row, hm, "AttackDamage")))
+		content = _set_tscn_root_prop(content, "AttackCooldown", _float_literal(_col(row, hm, "AttackCooldown")))
 		content = _set_tscn_root_prop(content, "MaxHealth", _col(row, hm, "MaxHealth"))
 		content = _set_tscn_root_prop(content, "AiDescription", _col(row, hm, "AiDescription"), true)
 		if _write_text(path, content): count += 1
@@ -285,6 +294,14 @@ func _write_text(path: String, content: String) -> bool:
 	f.close()
 	_log.info("已更新：%s" % path.get_file())
 	return true
+
+## 数值属性强制写成 float 字面量（400 → 400.0）：
+## C# [Export] float 属性（Speed/AttackDamage/AttackCooldown）若在 .tscn 中存为 int 字面量，
+## 运行时加载会隐式转换所以游戏里数值正常，但编辑器编译后重载场景的类型检查更严格，
+## int 值会被拒并回落 C# 默认值（100/1/0）——Inspector 显示默认值、保存时还会把原行丢掉。
+func _float_literal(v: String) -> String:
+	if v == "": return ""
+	return v if v.contains(".") else v + ".0"
 
 ## 在 .tscn 文本中设置根节点的属性值。
 ## quote = true 时按字符串格式写入（tscn 字符串必须带双引号，内部引号/反斜杠转义）——

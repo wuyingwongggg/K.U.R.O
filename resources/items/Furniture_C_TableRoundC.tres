@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://ujei4j2ea008"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=14 format=3 uid="uid://bjlfwejshbj7y"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_wcspc"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_kc1kn"]
@@ -12,7 +12,6 @@
 [sub_resource type="Resource" id="Resource_wcspc"]
 script = ExtResource("1_wcspc")
 AttributeId = "attack_power"
-Value = 100.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_48rr8"]
@@ -20,9 +19,6 @@ script = ExtResource("2_kc1kn")
 Trigger = 1
 EffectScene = ExtResource("3_vxrhq")
 Notes = "大型家具：减速70%"
-PropertyOverrides = Dictionary[String, Variant]({
-"SpeedMultiplierPerStack": 0.3
-})
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_fwe2t"]
@@ -54,14 +50,15 @@ DisplayName = "圆形餐桌"
 Description = "一次性投掷道具：圆形餐桌"
 Icon = ExtResource("7_kc1kn")
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = Array[String](["tag_throw", "furniture", "tier_3"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_wcspc")]([SubResource("Resource_wcspc")])
 EffectEntries = Array[ExtResource("2_kc1kn")]([SubResource("Resource_48rr8"), SubResource("Resource_fwe2t"), SubResource("Resource_27clv"), SubResource("Resource_vxrhq")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.3
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 300.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 3
 WorldScenePath = "uid://b8twfkaisp0mt"

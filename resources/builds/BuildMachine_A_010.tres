@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="Resource_m0so0"]
 script = ExtResource("1_avkbu")
 Scene = ExtResource("2_sihfu")
+EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
 "AttackSpeedPercentPerHeat": 0.75,
 "DamageTakenPercentPerHeat": 2.0,

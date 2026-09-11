@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://dmg1hgmpmsc05"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_paiqs"]
-[ext_resource type="Resource" uid="uid://3otbbdidxw0h" path="res://resources/items/Furniture_B_CoffeeMachineA.tres" id="2_paiqs"]
+[ext_resource type="Resource" uid="uid://c2qdiwp4eaxyo" path="res://resources/items/Furniture_B_CoffeeMachineA.tres" id="2_paiqs"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kf2mp"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_hlil7"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_gm4l1"]
@@ -14,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_gm4l1")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -37,9 +37,7 @@ ItemDefinition = ExtResource("2_paiqs")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
-ThrowDamage = 6.0
 MinDamageVelocity = 0.0
-KnockbackForce = 600.0
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
@@ -55,8 +53,8 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_ukya5")
-position = Vector2(0, 99)
-scale = Vector2(8, 3)
+position = Vector2(0, 60)
+scale = Vector2(7, 4)
 texture = ExtResource("4_hlil7")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]

@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://shaders/materials/canvas_cube_glowing_persp.gdshader" id="1_glow"]
+[ext_resource type="Texture2D" path="res://nothing.png" id="2_tex"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow"]
+shader = ExtResource("1_glow")
+shader_parameter/rotation_x_deg = 25.0
+shader_parameter/rotation_y_deg = 45.0
+shader_parameter/rotation_z_deg = 0.0
+shader_parameter/perspective = 3.0
+shader_parameter/edge_color = Color(0, 1, 0, 1)
+shader_parameter/edge_softness = 0.05
+shader_parameter/alpha = 1.0
+
+[node name="CubeGlowRay" type="Node2D"]
+z_index = 3
+
+[node name="GlowFill" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_glow")
+scale = Vector2(180, 180)
+texture = ExtResource("2_tex")

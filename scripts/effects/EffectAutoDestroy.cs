@@ -21,7 +21,7 @@ namespace Kuros.Fx
 		/// <summary>生成衍生特效时按自身缩放等比缩放衍生特效（fx.Scale ×= 自身 Scale）。默认关闭。</summary>
 		[Export] public bool ScaleSpawnWithSelf { get; set; } = false;
 		/// <summary>衍生特效生成延迟（秒）：0 = 销毁时生成（与销毁同帧）；N&gt;0 = 动画开始 N 秒后生成（不随销毁）。</summary>
-		[Export(PropertyHint.Range, "0,10,0.1")] public float SpawnDelay { get; set; } = 0f;
+		[Export(PropertyHint.Range, "0,10,0.01")] public float SpawnDelay { get; set; } = 0f;
 		/// <summary>延迟销毁秒数。&gt;0 时用定时器销毁（不等动画播完）；0 时等动画播完销毁。</summary>
 		[Export] public float DestroyDelay { get; set; } = 0f;
 		/// <summary>为 true 时销毁 Owner（如挂载的特效根节点）而非自身，生成的子特效挂在 Owner 的父节点下。</summary>
@@ -65,6 +65,10 @@ namespace Kuros.Fx
 		/// <summary>在自身当前位置生成所有衍生特效。</summary>
 		private void SpawnEffects()
 		{
+			// 预热（ParticleEffectWarmer 全透明）时不生成衍生特效：
+			// 衍生脚本（如 FadeInOutDestroy）会每帧驱动 modulate:a 覆盖继承的透明，导致预热时左上角闪现
+			if (Modulate.A <= 0f) return;
+
 			// 生成父节点：QueueFreeOwner 时挂在 Owner 的父级（衍生特效随场景层级走），否则挂自身父级
 			Node? spawnParent = QueueFreeOwner
 				? Owner?.GetParent() ?? GetParent()
@@ -78,6 +82,10 @@ namespace Kuros.Fx
 				var fx = scene.Instantiate<Node2D>();
 				spawnParent?.AddChild(fx);
 				fx.GlobalPosition = spawnPos;
+
+				// 继承自身调制：预热器（ParticleEffectWarmer）全透明预热时，衍生特效同样透明，
+				// 避免预热结束后衍生特效在屏幕左上角闪现；正常游戏（自身 Modulate=1,1,1,1）无变化
+				fx.Modulate *= Modulate;
 
 				// 按自身缩放等比缩放衍生特效（保留衍生特效自身的原始比例，整体放大/缩小）
 				if (ScaleSpawnWithSelf)

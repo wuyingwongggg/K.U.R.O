@@ -163,12 +163,9 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected override void OnActivePhase()
         {
-			// 生成指定时機的特效（OnActive 阯段）
-			if (SpawnTiming == EffectSpawnTiming.OnActive)
-			{
-				SpawnEffectAtEnemy();
-			}
-			
+			// 生成 OnActive 时机的特效（entry 独立时机生效；未配置回退模板 SpawnTiming）
+			SpawnEffectAtEnemy(EffectSpawnTiming.OnActive);
+
 			if (Enemy == null) return;
 			_isDashing = true;
 			Enemy.Velocity = _dashDirection * DashSpeed;
@@ -312,7 +309,6 @@ namespace Kuros.Actors.Enemies.Attacks
 				player,
 				KnockbackDistance,
 				KnockbackDuration,
-				KnockbackSpeed,
 				_dashDirection);
 
 			ApplyStunState(player);
@@ -438,7 +434,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				ApplySmashDamage(Enemy.PlayerTarget);
 				if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 				{
-					TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+					TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, _dashDirection);
 					ApplyStunState(Enemy.PlayerTarget);
 				}
 			}
@@ -474,8 +470,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		protected override void OnAnimationHit()
 		{
-			if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
-				SpawnEffectAtEnemy();
+			// 生成 OnAnimationHit 时机的特效（entry 独立时机生效）
+			SpawnEffectAtEnemy(EffectSpawnTiming.OnAnimationHit);
 
 			if (Enemy?.PlayerTarget == null) return;
 			if (!_canAttemptSmash) return;
@@ -484,7 +480,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			ApplySmashDamage(Enemy.PlayerTarget);
 			if (IsPlayerInsideSmashZone(Enemy.PlayerTarget))
 			{
-				TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, KnockbackSpeed, _dashDirection);
+				TryApplyPlayerKnockback(Enemy.PlayerTarget, KnockbackDistance, KnockbackDuration, _dashDirection);
 				ApplyStunState(Enemy.PlayerTarget);
 			}
 		}

@@ -24,6 +24,9 @@ namespace Kuros.Actors.Heroes
         private readonly List<ActorEffect> _passiveEffects = new();
         /// <summary>主动技能触发时挂载的效果。换武器（ClearSkills）时与被动效果一并清理，防止跨武器污染。</summary>
         private readonly List<ActorEffect> _activeSkillEffects = new();
+        /// <summary>最近一次冲刺攻击施加的效果（每次触发覆盖）——冲刺攻击结束时回收，
+        /// 冲刺专属效果（DashEffects）只在冲刺攻击期间生效，不泄漏到普通攻击。</summary>
+        private List<ActorEffect> _currentDashAttackEffects = new();
         private WeaponSkillDefinition? _defaultActiveSkill;
         private WeaponSkillDefinition? _fallbackUnarmedSkill;
         private ItemDefinition? _fallbackWeaponDefinition;
@@ -48,6 +51,7 @@ namespace Kuros.Actors.Heroes
             Inventory.QuickBarAssigned += OnQuickBarAssigned;
             Inventory.QuickBarSlotChanged += OnQuickBarSelectedSlotChanged;
             Inventory.FurnitureSlotChanged += OnFurnitureSlotChanged;
+            Inventory.CombatWeaponResolutionChanged += OnCombatWeaponResolutionChanged;
             if (Inventory.Backpack != null)
             {
                 Inventory.Backpack.InventoryChanged += OnBackpackInventoryChanged;
@@ -67,6 +71,7 @@ namespace Kuros.Actors.Heroes
                 Inventory.QuickBarAssigned -= OnQuickBarAssigned;
                 Inventory.QuickBarSlotChanged -= OnQuickBarSelectedSlotChanged;
                 Inventory.FurnitureSlotChanged -= OnFurnitureSlotChanged;
+                Inventory.CombatWeaponResolutionChanged -= OnCombatWeaponResolutionChanged;
                 if (Inventory.Backpack != null)
                 {
                     Inventory.Backpack.InventoryChanged -= OnBackpackInventoryChanged;
@@ -111,17 +116,17 @@ namespace Kuros.Actors.Heroes
             return !string.IsNullOrEmpty(skillId) && _skills.ContainsKey(skillId);
         }
 
-        public bool TriggerDefaultSkill(GameActor? target = null)
+        public bool TriggerDefaultSkill(GameActor? target = null, bool isDashAttack = false)
         {
             if (_defaultActiveSkill == null)
             {
                 return false;
             }
 
-            return TriggerSkill(_defaultActiveSkill.SkillId, target);
+            return TriggerSkill(_defaultActiveSkill.SkillId, target, isDashAttack);
         }
 
-        public bool TriggerSkill(string skillId, GameActor? target = null)
+        public bool TriggerSkill(string skillId, GameActor? target = null, bool isDashAttack = false)
         {
             if (!_skills.TryGetValue(skillId, out var skill) || _actor == null)
             {
@@ -133,14 +138,37 @@ namespace Kuros.Actors.Heroes
                 return false;
             }
 
-            if (!IsSkillOffCooldown(skill))
+            // 冷却门只拦普通路径：冲刺攻击必须始终施加专属效果配置——
+            // 否则冷却中触发被跳过，上一击的常驻实例（如 20% 暴击）继续生效，
+            // 冲刺专属配置（100%）永远不生效。冲刺路径仍武装冷却（ArmCooldown 在下方）
+            if (!isDashAttack && !IsSkillOffCooldown(skill))
             {
                 return false;
             }
 
-            ApplySkillEffects(skill, ItemEffectTrigger.OnEquip, target);
+            var applied = ApplySkillEffects(skill, ItemEffectTrigger.OnEquip, target, isDashAttack);
+            if (isDashAttack)
+                _currentDashAttackEffects = applied;
             ArmCooldown(skill);
             return true;
+        }
+
+        /// <summary>
+        /// 回收冲刺攻击施加的效果（冲刺攻击结束/被打断时调用）。
+        /// DashEffects 只在冲刺攻击期间生效；PersistOnWeaponSwitch 的效果保留（与换武器清理同语义）。
+        /// </summary>
+        public void CleanupDashAttackEffects()
+        {
+            if (_actor?.EffectController == null) return;
+
+            foreach (var effect in _currentDashAttackEffects)
+            {
+                if (effect == null || !GodotObject.IsInstanceValid(effect)) continue;
+                if (effect.PersistOnWeaponSwitch) continue;
+                _actor.EffectController.RemoveEffect(effect);
+                _activeSkillEffects.Remove(effect);
+            }
+            _currentDashAttackEffects.Clear();
         }
 
         public bool TryTriggerActionSkill(string actionName, GameActor? target = null)
@@ -181,6 +209,12 @@ namespace Kuros.Actors.Heroes
             ApplyFallbackIfNoWeapon();
         }
 
+        private void OnCombatWeaponResolutionChanged()
+        {
+            // 投掷 CD 开始/结束：槽位内容不变但"手中武器"语义变了，重新评估武器/空手技能
+            ApplyFallbackIfNoWeapon();
+        }
+
         private void InitializeFallbackSkill()
         {
             _fallbackWeaponDefinition = Inventory?.UnarmedWeaponDefinition;
@@ -206,6 +240,13 @@ namespace Kuros.Actors.Heroes
             if (activeWeapon != null)
             {
                 LoadSkills(activeWeapon);
+                // 选中武器没有近战技能（投掷武器等）→ 回退空手技能：
+                // 保证空手近战（含冲刺攻击 attack_runAttack/DashEffects）在持握无技能武器
+                // 与投掷 CD 期间与真·空手一致可用
+                if (_defaultActiveSkill == null)
+                {
+                    ApplyUnarmedFallback();
+                }
                 return;
             }
 
@@ -340,21 +381,42 @@ namespace Kuros.Actors.Heroes
             }
         }
 
-        private void ApplySkillEffects(WeaponSkillDefinition skill, ItemEffectTrigger trigger, GameActor? target = null)
+        /// <summary>施加技能效果，返回本次实际挂载的效果列表（供冲刺攻击结束回收）。</summary>
+        private List<ActorEffect> ApplySkillEffects(WeaponSkillDefinition skill, ItemEffectTrigger trigger, GameActor? target = null, bool isDashAttack = false)
         {
+            var applied = new List<ActorEffect>();
             if (_actor?.EffectController == null)
             {
-                return;
+                return applied;
             }
 
-            foreach (var entry in skill.Effects)
+            // 冲刺攻击效果分流：isDashAttack 且技能配置了 DashEffects 时用专属列表，否则共用 Effects（向后兼容）
+            var entries = isDashAttack && skill.DashEffects.Count > 0
+                ? skill.DashEffects
+                : skill.Effects;
+
+            foreach (var entry in entries)
             {
                 if (entry == null) continue;
                 var effect = entry.InstantiateEffect();
                 if (effect == null) continue;
                 if (trigger != ItemEffectTrigger.OnPickup)
                 {
+                    // 冲刺攻击路径：同 EffectId 的旧实例（如普通攻击的 15% 概率实例）会让
+                    // EffectController 按 EffectId 去重刷新旧实例、丢弃新配置（100% 不生效）——
+                    // 先移除旧实例，让冲刺专属配置真正生效；普通攻击下次触发会重新施加原配置
+                    if (isDashAttack)
+                    {
+                        var existing = _actor.EffectController.GetEffect(effect.EffectId);
+                        if (existing != null && existing != effect)
+                        {
+                            _actor.EffectController.RemoveEffect(existing);
+                            _activeSkillEffects.Remove(existing);
+                        }
+                    }
+
                     _actor.ApplyEffect(effect);
+                    applied.Add(effect);
                     if (skill.SkillType == WeaponSkillType.Passive)
                     {
                         _passiveEffects.Add(effect);
@@ -365,6 +427,8 @@ namespace Kuros.Actors.Heroes
                     }
                 }
             }
+
+            return applied;
         }
 
         private bool IsSkillOffCooldown(WeaponSkillDefinition skill)
@@ -420,7 +484,8 @@ namespace Kuros.Actors.Heroes
 
         private static bool IsUsableWeaponStack(InventoryItemStack? stack)
         {
-            return stack != null && !stack.IsEmpty && stack.Item.ItemId != "empty_item";
+            // CD 中的堆叠不可用作战斗武器（武器在飞行中）→ 跳过，回退空手技能
+            return stack != null && !stack.IsEmpty && !stack.IsThrowOnCooldown && stack.Item.ItemId != "empty_item";
         }
 
         private void SubscribeToQuickBarSignals()

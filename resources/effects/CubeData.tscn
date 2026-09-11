@@ -59,6 +59,7 @@ BuildDuration = 1.0
 DespawnDuration = 0.1
 DestroyEffect = ExtResource("2_uj88d")
 TargetableFactions = 1
+KnockbackDuration = 0.25
 
 [node name="Visual" type="Node2D" parent="."]
 position = Vector2(0, -200)

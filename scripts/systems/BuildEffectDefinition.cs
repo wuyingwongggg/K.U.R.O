@@ -77,6 +77,32 @@ namespace Kuros.Systems
             return GetOverrideFloatArray("TierValues");
         }
 
+        /// <summary>效果族键 = 首个 EffectEntry 的效果场景路径（正反向卡对共用同一场景即同族）。无场景 → null = 不参与取代。</summary>
+        public string? FamilyKey
+        {
+            get
+            {
+                if (EffectEntries == null || EffectEntries.Count == 0) return null;
+                return EffectEntries[0]?.Scene?.ResourcePath;
+            }
+        }
+
+        /// <summary>数值方向：首个非零 TierValues 符号（+1 增益系 / -1 减益系）；无 TierValues 或全零 → 0 = 不参与取代。</summary>
+        public int Direction
+        {
+            get
+            {
+                var values = GetTierValues();
+                if (values == null) return 0;
+                foreach (float v in values)
+                {
+                    if (v > 0f) return 1;
+                    if (v < 0f) return -1;
+                }
+                return 0;
+            }
+        }
+
         private static readonly System.Text.RegularExpressions.Regex TierTokenRegex = new(
             @"{([A-Za-z_][A-Za-z0-9_]*)?:?(\d+)}");
 

@@ -1017,9 +1017,7 @@
 			}
 		},
 		"events": [
-			{ "time": 1.0, "name": "hit" },
-			{ "time": 1.02, "name": "hit" },
-			{ "time": 1.04, "name": "hit" }
+			{ "time": 1.05, "name": "hit" }
 		]
 	},
 	"stun": {

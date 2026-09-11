@@ -56,8 +56,6 @@ namespace Kuros.Fx
         /// <summary>击退持续时间（秒）。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
-        /// <summary>命中时施加的击退速度（像素/秒，0 = 不击退）。</summary>
-        [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 0f;
         /// <summary>
         /// 若为 true，首帧自动查找玩家并计算朝向：
         /// 水平方向由玩家相对位置决定（左/右），
@@ -232,7 +230,7 @@ namespace Kuros.Fx
         private void TryDamagePlayer()
         {
             if (_hasDamaged) return;
-            if (Damage <= 0 && KnockbackSpeed <= 0f && KnockbackDistance <= 0f) return;
+            if (Damage <= 0 && KnockbackDistance <= 0f) return;
             if (_cachedPlayer == null) return;
 
             // 取 HitArea 的 CollisionShape2D 世界坐标作为检测中心
@@ -278,15 +276,11 @@ namespace Kuros.Fx
                 DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage);
             if (!dealt) return;
 
-            // 仅在命中前玩家尚未处于无敌帧时才施加击退，避免覆盖已有的击退速度。
-            // 速度优先：KnockbackSpeed > 0 直接使用；否则由 KnockbackDistance / KnockbackDuration 推算（与 EnemyAttackTemplate 一致）。
+            // 仅在命中前玩家尚未处于无敌帧时才施加击退，避免覆盖已有的击退。
             if (!alreadyInvincible)
             {
-                float knockSpeed = KnockbackSpeed > 0f
-                    ? KnockbackSpeed
-                    : (KnockbackDistance > 0f ? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f) : 0f);
-                if (knockSpeed > 0f)
-                    actor.ApplyKnockback(beamDir, knockSpeed);
+                if (KnockbackDistance > 0f)
+                    actor.ApplyKnockbackDisplacement(beamDir, KnockbackDistance, KnockbackDuration);
             }
         }
 

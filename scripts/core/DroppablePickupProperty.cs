@@ -14,7 +14,6 @@ namespace Kuros.Core
 		/// </summary>
 		protected virtual void OnPutDown(GameActor actor)
 		{
-			GD.Print($"{Name} put down by {actor.Name}");
 		}
 
 		/// <summary>

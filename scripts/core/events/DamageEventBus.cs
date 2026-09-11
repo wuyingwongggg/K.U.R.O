@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Godot;
 using Kuros.Core;
 
 namespace Kuros.Core.Events
@@ -138,12 +139,20 @@ namespace Kuros.Core.Events
 
             foreach (var handler in snapshot)
             {
-                handler?.Invoke(attacker, target, damage);
+                try { handler?.Invoke(attacker, target, damage); }
+                catch (System.Exception ex)
+                {
+                    GD.PushWarning($"[DamageEventBus] 订阅者异常（已隔离，不影响其他订阅者）: {ex.Message}");
+                }
             }
 
             foreach (var handler in sourcedSnapshot)
             {
-                handler?.Invoke(attacker, target, damage, source);
+                try { handler?.Invoke(attacker, target, damage, source); }
+                catch (System.Exception ex)
+                {
+                    GD.PushWarning($"[DamageEventBus] 带来源订阅者异常（已隔离，不影响其他订阅者）: {ex.Message}");
+                }
             }
         }
     }

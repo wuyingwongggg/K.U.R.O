@@ -51,7 +51,8 @@ namespace Kuros.Fx
         [Export(PropertyHint.Layers2DPhysics)] public uint TargetCollisionMask = 7u;
 
         [ExportCategory("Knockback")]
-        [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 400f;
+        /// <summary>击退位移距离（像素），0 不击退。位移在 KnockbackDuration 内匀减速滑完。</summary>
+        [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 80f; // 原速度400×0.2s折算
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
         // 三层渲染 Sprite
@@ -315,7 +316,7 @@ namespace Kuros.Fx
             // 传 null 跳过 IsHitByArea 二次重叠检测：信号已确认碰撞，
             // 高速飞行时二次查询可能与物理状态错开导致漏伤害
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null, _velocity);
             if (!dealt)
             {
                 // 仅 AirWall（空气墙）拦截销毁，其他物理体（地面/障碍/投掷物）不拦截
@@ -351,7 +352,7 @@ namespace Kuros.Fx
             bool alreadyInvincible = area.Owner is Actors.Heroes.MainCharacter mc && mc.IsHitInvincible;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null, _velocity);
             if (!dealt) return;
 
             if (!alreadyInvincible && area.Owner is GameActor hitActor)
@@ -367,8 +368,8 @@ namespace Kuros.Fx
         /// </summary>
         private void ApplyKnockback(GameActor actor)
         {
-            if (KnockbackSpeed > 0f && _velocity.LengthSquared() > 0.01f)
-                actor.ApplyKnockback(_velocity.Normalized(), KnockbackSpeed);
+            if (KnockbackDistance > 0f && _velocity.LengthSquared() > 0.01f)
+                actor.ApplyKnockbackDisplacement(_velocity.Normalized(), KnockbackDistance, KnockbackDuration);
         }
 
         /// <summary>

@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://0r4xtgl2qyg4"]
+
+[ext_resource type="Script" uid="uid://b5bbsp1g6rp2d" path="res://scripts/builds/throw/ThrowShieldTransformEffect.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://femgcn3uq40c" path="res://resources/effects/ShieldRingEffect.tscn" id="2"]
+
+[node name="ThrowShieldTransformEffect" type="Node"]
+script = ExtResource("1")
+ShieldVisualScene = ExtResource("2")
+EffectId = "b17b3a28-3c82-45c2-bbb8-f48b04ecec7d"
+Description = "对象转型：举起乱码块时短按核心技能,把手中件转化为次数盾"

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=8 format=3 uid="uid://dip678pe3wgkx"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=8 format=3 uid="uid://b06fjiu5600l5"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_b7h5n"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_2ih1g"]
@@ -31,6 +31,11 @@ EffectEntries = Array[ExtResource("2_2ih1g")]([SubResource("Resource_b7h5n")])
 IsThrowable = true
 IsThrowWeapon = true
 PreventDropDuringCooldown = true
+UnpickedLifetime = 30.0
 SpawnEffectOnThrow = true
+ThrowStartOffset = Vector2(0, -250)
+ThrowParabolicPeakHeight = 100.0
+ThrowHorizontalDistance = 1500.0
+ThrowParabolicLandingYOffset = 250.0
 ThrowWeaponCooldown = 15.0
 WorldScenePath = "uid://dbp28lqhfd5dq"

@@ -175,14 +175,13 @@ namespace Kuros.Fx
             }
 
             if (KnockbackDistance <= 0f) return;
-            if (target is not CharacterBody2D body) return;
             if (target.ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
 
             Vector2 dir = target.GlobalPosition - GlobalPosition;
             if (dir == Vector2.Zero) dir = Vector2.Right;
 
-            float speed = 2f * KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f);
-            KnockbackDriver.Attach(body, dir.Normalized(), speed, KnockbackDuration);
+            // 位移请求（与武器击退同通道——受击动画随位移锁定）
+            target.ApplyKnockbackDisplacement(dir.Normalized(), KnockbackDistance, KnockbackDuration);
         }
     }
 }

@@ -52,6 +52,17 @@ namespace Kuros.Fx
 			QueueFree();
 		}
 
+		/// <summary>生成全部 SpawnEntries 到指定 Marker（动画 method track 单次调用生成所有条目，
+		/// 避免多个 method 调用在编辑器保存时被覆盖丢失）。</summary>
+		public void SpawnAllEntries(string markerName)
+		{
+			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
+			if (marker == null) return;
+
+			for (int i = 0; i < SpawnEntries.Count; i++)
+				SpawnEntryAtMarker(i, marker);
+		}
+
 		public void SpawnAtMarker(string encoded)
 		{
 			int entryIndex = 0;
@@ -63,15 +74,24 @@ namespace Kuros.Fx
 				entryIndex = idx;
 			}
 
+			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
+			if (marker == null) return;
+
+			SpawnEntryAtMarker(entryIndex, marker);
+		}
+
+		private void SpawnEntryAtMarker(int entryIndex, Marker2D marker)
+		{
 			if (entryIndex < 0 || entryIndex >= SpawnEntries.Count) return;
 			var entry = SpawnEntries[entryIndex];
 			if (entry?.Scene == null) return;
 
-			var marker = FindChild(markerName, recursive: true, owned: false) as Marker2D;
-			if (marker == null) return;
-
 			var instance = entry.Scene.Instantiate();
 			entry.ApplyOverrides(instance);
+			// 唯一性组标记（同 EnemyAttackTemplate.SpawnSingleEffect）：生成的子场景（如召唤的敌人）入组，
+			// 供"场上已有该组存活成员"检测（BlockedByFxGroup/UniqueGroup 阻塞重复召唤）
+			if (!string.IsNullOrEmpty(entry.UniqueGroup))
+				instance.AddToGroup(entry.UniqueGroup);
 			GetParent()?.AddChild(instance);
 			if (instance is Node2D node)
 				node.GlobalPosition = marker.GlobalPosition;

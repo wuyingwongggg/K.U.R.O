@@ -1,7 +1,7 @@
-[gd_scene load_steps=36 format=3 uid="uid://wrebd662va23"]
+[gd_scene load_steps=37 format=3 uid="uid://wrebd662va23"]
 
 [ext_resource type="Script" uid="uid://dklt5k3rq7qjb" path="res://scripts/actors/enemies/EnemyB2Fat02.cs" id="1_gvrrx"]
-[ext_resource type="Resource" uid="uid://cxoksd62s5rbw" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
+[ext_resource type="Resource" uid="uid://biq1vqy017vmi" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_s42mu"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="3_6yc1u"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_xrpf5"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="5_3u4qs"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="15_3ftbl"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="15_3u4qs"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="16_23m8e"]
+[ext_resource type="PackedScene" uid="uid://o8811jaji330" path="res://scenes/actors/etc/WarmingA.tscn" id="17_kl8y6"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="17_oq0qc"]
 [ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="18_qelwu"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://dekq4qj6eyk0j" path="res://animations/spine/Enemy_B2_fat02.tres" id="19_gvrrx"]
@@ -32,39 +33,53 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ooggc"]
-radius = 1024.0
+radius = 20000.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gvrrx"]
-radius = 1024.0
+radius = 15000.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e04yg"]
 size = Vector2(700, 300)
 
-[sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(1600, 400)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kl8y6"]
+radius = 300.0
+height = 1600.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3u4qs"]
 radius = 800.0
 height = 1800.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_kl8y6"]
-radius = 1026.4
-
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_s42mu"]
 radius = 150.0
 height = 600.0
 
-[sub_resource type="Resource" id="Resource_kl8y6"]
+[sub_resource type="Resource" id="Resource_s42mu"]
 script = ExtResource("13_s42mu")
 Scene = ExtResource("14_6yc1u")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
-[sub_resource type="Resource" id="Resource_y4iv0"]
+[sub_resource type="Resource" id="Resource_3u4qs"]
 script = ExtResource("13_s42mu")
 Scene = ExtResource("15_3u4qs")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 1.0,
-"ShakeStrength": 15.0
+"ShakeStrength": 18.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_kl8y6"]
+script = ExtResource("13_s42mu")
+Scene = ExtResource("17_kl8y6")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 0
+SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D2")]
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.7
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -80,9 +95,9 @@ DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-Speed = 300
-AttackDamage = 15
-AttackCooldown = 1
+Speed = 300.0
+AttackDamage = 15.0
+AttackCooldown = 1.0
 MaxHealth = 180
 AiDescription = "红色机器人，普通敌人，似乎错误的把我们识别为非法入侵对象，使用大范围阵地攻击眩晕客户"
 StateMachine = NodePath("StateMachine")
@@ -148,7 +163,7 @@ script = ExtResource("20_ooggc")
 [node name="SpineSprite" type="SpineSprite" parent="."]
 skeleton_data_res = ExtResource("19_gvrrx")
 preview_skin = "Default"
-preview_animation = "skill"
+preview_animation = "-- Empty --"
 preview_frame = true
 preview_time = 2.0
 script = ExtResource("20_ooggc")
@@ -171,7 +186,6 @@ collision_mask = 4
 monitorable = false
 
 [node name="ControllerDetectionShape" type="CollisionShape2D" parent="Sprite2D/ControllerDetectionArea"]
-scale = Vector2(20, 20)
 shape = SubResource("CircleShape2D_ooggc")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
@@ -181,7 +195,6 @@ collision_mask = 4
 monitorable = false
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-scale = Vector2(3.6, 3.6)
 shape = SubResource("CircleShape2D_gvrrx")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
@@ -195,7 +208,8 @@ monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
 position = Vector2(800, 0)
-shape = SubResource("2")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_kl8y6")
 
 [node name="SmashArea" type="Area2D" parent="Sprite2D"]
 
@@ -204,21 +218,25 @@ position = Vector2(900, 0)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_3u4qs")
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("5_3u4qs")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
-[node name="VisualEffectArea" type="Area2D" parent="Sprite2D2"]
-visible = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D2/VisualEffectArea"]
+[node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
 position = Vector2(0, -1100)
-shape = SubResource("CircleShape2D_kl8y6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_s42mu")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="Marker2D" type="Marker2D" parent="Node2D"]
+position = Vector2(900, 0)
+
+[node name="Marker2D2" type="Marker2D" parent="Node2D"]
+position = Vector2(0, -2200)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("6_5fjrf")
@@ -235,32 +253,35 @@ script = ExtResource("9_rbnx7")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("9_ooggc")
-MeleeCountBeforeCharge = 3
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
+MinInterAttackDelay = 1.0
+QueuedAttackTimeout = 3.0
 
 [node name="SmashAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("10_6yc1u")
 DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 SmashAreaPath = NodePath("../../../../Sprite2D/SmashArea")
-DashDuration = 1.05
+DashSpeedMultiplier = 5.0
+DashDuration = 0.6
 SnapshotDelaySeconds = 0.5
 AppliedStunDuration = 1.0
 AttackName = "SmashAttack"
 WarmupDuration = 0.7
-ActiveDuration = 0.4
-RecoveryDuration = 0.9
-DamageMultiplier = 1.2
+ActiveDuration = 0.5
+RecoveryDuration = 0.8
+CooldownDurationMultiplier = 8.0
+DamageMultiplier = 1.5
 AttackAreaPath = NodePath("../../../../Sprite2D/SmashArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 26
 StunInterruptOnDamage = true
+DamageTakenFrozenDuration = 5.0
 InterruptDamageSources = 2
+EnableInterruptSlowMo = true
 IgnoreEnemyCollisionDuringAttack = true
-Effects = Array[ExtResource("13_s42mu")]([SubResource("Resource_kl8y6"), SubResource("Resource_y4iv0")])
-EffectOffset = Vector2(250, 0)
-SpawnTiming = 1
-metadata/attack_weight = 60.0
+Effects = Array[ExtResource("13_s42mu")]([SubResource("Resource_s42mu"), SubResource("Resource_3u4qs"), SubResource("Resource_kl8y6")])
+metadata/attack_weight = 20.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("12_daw10")
@@ -271,14 +292,14 @@ RecoveryDuration = 0.39
 DamageMultiplier = 1.5
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 KnockbackDistance = 200.0
-KnockbackDuration = 0.09
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
-metadata/attack_weight = 40.0
+metadata/attack_weight = 80.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("13_ey01n")
+RecoverDuration = 0.3
 
 [node name="Frozen" type="Node" parent="StateMachine"]
 script = ExtResource("14_rru7p")

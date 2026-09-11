@@ -52,6 +52,12 @@ namespace Kuros.Managers
         [Export] public string PlayerGroupName { get; set; } = "player";
         [Export] public string EnemyGroupName { get; set; } = "enemies";
         [Export(PropertyHint.Range, "0,0.5,0.005")] public float HitStopDelay { get; set; } = 0.0f; // 顿帧触发延迟
+
+        [ExportCategory("焦点覆盖")]
+        /// <summary>聚焦期间的镜头平滑速度（受伤眩晕打断聚焦敌人时使用，可大于 FollowSpeed 快速就位）。</summary>
+        [Export(PropertyHint.Range, "0.1,50,0.1")] public float FocusFollowSpeed { get; set; } = 10f;
+        /// <summary>聚焦拉近的过渡时长（真实秒）。</summary>
+        [Export(PropertyHint.Range, "0,0.5,0.01")] public float FocusZoomDuration { get; set; } = 0.15f;
         #endregion
 
         #region Private Fields
@@ -64,6 +70,13 @@ namespace Kuros.Managers
         private float _pendingHitStopDuration = 0f;
         private ulong _lastHitStopTriggerTimeMs = 0;
         private readonly Dictionary<ulong, FrozenNodeState> _frozenNodes = new();
+
+        // 焦点覆盖（受伤眩晕打断）：聚焦敌人 + 轻微拉近，到期瞬时恢复
+        private Node2D? _focusTarget;
+        private float _focusRemaining;
+        private Vector2 _preFocusZoom;
+        private bool _focusZoomActive;
+        private Tween? _focusZoomTween;
         #endregion
 
         #region Frozen State Model
@@ -118,17 +131,33 @@ namespace Kuros.Managers
             // 检查视口大小是否变化（处理窗口大小调整）
             UpdateViewportSizeIfNeeded();
 
-            // 计算目标位置（玩家位置 + 偏移量）
-            Vector2 targetPosition = Target.GlobalPosition + Offset;
-            
+            bool focusing = _focusTarget != null && IsInstanceValid(_focusTarget);
+            if (focusing && _focusRemaining > 0f)
+            {
+                // 聚焦期间按真实时间倒计时（时间减缓下不拖长聚焦窗口）
+                _focusRemaining -= (float)delta / Mathf.Max((float)Engine.TimeScale, 0.05f);
+            }
+            else if (focusing)
+            {
+                // 到期：瞬时恢复 zoom + 立即切回玩家
+                EndFocus();
+                focusing = false;
+            }
+
+            // 计算目标位置（聚焦敌人 / 玩家 + 偏移量）
+            Vector2 targetPosition = (focusing ? _focusTarget!.GlobalPosition : Target.GlobalPosition) + Offset;
+
             // 获取视口大小的一半，用于计算摄像机边界
             Vector2 halfViewport = _cachedViewportSize / 2.0f;
-            
+
             // 计算摄像机应该到达的位置，考虑地图边界
             Vector2 desiredPosition = CalculateClampedPosition(targetPosition, halfViewport);
-            
-            // 平滑移动到目标位置
-            GlobalPosition = GlobalPosition.Lerp(desiredPosition, (float)delta * FollowSpeed);
+
+            // 平滑移动到目标位置（聚焦期间用真实时间速度，保证减缓窗口内快速就位）
+            float lerpFactor = focusing
+                ? ((float)delta / Mathf.Max((float)Engine.TimeScale, 0.05f)) * FocusFollowSpeed
+                : (float)delta * FollowSpeed;
+            GlobalPosition = GlobalPosition.Lerp(desiredPosition, lerpFactor);
 
             // 应用镜头抖动
             if (_shakeStrength > 0f)
@@ -408,6 +437,42 @@ namespace Kuros.Managers
             {
                 SnapToTarget();
             }
+        }
+
+        /// <summary>
+        /// 聚焦指定节点 durationSeconds 真实秒（受伤眩晕打断的敌人），到期后瞬时恢复原 Zoom 并切回玩家。
+        /// focusZoom &gt; 0 时轻微拉近（结束恢复触发瞬间的 Zoom——当前相机区域的值，如 0.43，不硬编码）。
+        /// </summary>
+        public void FocusOn(Node2D target, float durationSeconds, float focusZoom)
+        {
+            if (target == null || !IsInstanceValid(target)) return;
+
+            _focusTarget = target;
+            _focusRemaining = Mathf.Max(durationSeconds, 0.1f);
+
+            if (focusZoom > 0f)
+            {
+                _preFocusZoom = Zoom;
+                _focusZoomActive = true;
+                _focusZoomTween?.Kill();
+                _focusZoomTween = CreateTween();
+                _focusZoomTween.SetIgnoreTimeScale(true);   // 拉近按真实时间（减缓期间快速就位）
+                _focusZoomTween.TweenProperty(this, "zoom", new Vector2(focusZoom, focusZoom), FocusZoomDuration);
+            }
+        }
+
+        /// <summary>结束聚焦：瞬时恢复触发前的 Zoom，聚焦目标立即切回玩家。</summary>
+        private void EndFocus()
+        {
+            _focusZoomTween?.Kill();
+            _focusZoomTween = null;
+            if (_focusZoomActive)
+            {
+                Zoom = _preFocusZoom;
+                _focusZoomActive = false;
+            }
+            _focusTarget = null;
+            _focusRemaining = 0f;
         }
 
         /// <summary>

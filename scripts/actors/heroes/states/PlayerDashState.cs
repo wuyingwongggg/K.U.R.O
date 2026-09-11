@@ -147,6 +147,9 @@ namespace Kuros.Actors.Heroes.States
             _inBurst = true;
             _totalDuration = BurstDuration + RecoveryDuration;
 
+            // 冲刺动量快照：冲刺攻击（含宽限窗口）起步继承 Burst 峰值速度，与打断时机无关
+            Actor.LastDashBurstSpeed = BurstSpeed;
+
             // 同帧攻击输入（dash+attack 同时按下）：缓冲供 Burst 打断分支消费——
             // 否则 attack 的 just pressed 在下一帧已过期，攻击被吞（最终从 Idle/Run 进导致冲刺速度 0/奔跑速度）
             if (IsActionJustPressed("attack") || IsAttackTriggered())
@@ -267,6 +270,7 @@ namespace Kuros.Actors.Heroes.States
             Actor.Velocity = _dashDirection * speed;
             Actor.CurrentMoveSpeed = speed;
             Actor.CurrentMoveDirection = _dashDirection;
+            Actor.LastDashFrameMs = Time.GetTicksMsec(); // 冲刺中每帧刷新时间戳（宽限窗口起点）
             Actor.MoveAndSlide();
             Actor.ClampPositionToScreen();
         }

@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://b8mshxkaapuvd"]
+
+[ext_resource type="Script" uid="uid://wrevkqwjlpr2" path="res://scripts/effects/PulseRingVisual.cs" id="1"]
+[ext_resource type="Shader" uid="uid://s54ijicysl3j" path="res://shaders/materials/pulse_ring.gdshader" id="2"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="3_mkgt7"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
+shader = ExtResource("2")
+shader_parameter/ring_color = Color(0, 0.5664601, 0, 1)
+shader_parameter/progress = 0.0
+shader_parameter/thickness = 0.08
+shader_parameter/cull_backface = false
+shader_parameter/fov = 45.0
+shader_parameter/rot_x_deg = 45.00001068750001
+shader_parameter/rot_y_deg = 0.0
+
+[node name="PulseRingVisual" type="Node2D"]
+z_index = 1
+script = ExtResource("1")
+
+[node name="Ring" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_ring")
+texture = ExtResource("3_mkgt7")

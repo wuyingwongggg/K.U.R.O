@@ -1,12 +1,25 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=3 format=3 uid="uid://bqhxf76eimm70"]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://bqhxf76eimm70"]
 
-[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_47ipb"]
-[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_lesqx"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" uid="uid://b3org6xdpko2v" path="res://scenes/builds/throw/ThrowLinkObstacleEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://c78y2wpptp8vi" path="res://assets/BuildIcon/Throw_A_003_节点串联.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_A003"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([1000.0, 1500.0, 2000.0])
+})
 
 [resource]
-script = ExtResource("2_lesqx")
+script = ExtResource("2_def")
 EffectId = "BuildThrow_A_003"
-DisplayName = "投掷_武器强化_003"
-Description = "效果：投掷_武器强化_003"
+DisplayName = "节点串联"
+Description = "{0}px/{1}px/{2}px范围内的乱码块彼此链接形成障碍区,对穿过的敌人造成10伤害并减速50%持续3秒"
 BuildClass = "Throw"
-metadata/_custom_type_script = "uid://3bb6nng4vb53"
+MaxStacks = 3
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_A003")])

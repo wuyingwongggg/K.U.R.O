@@ -1,69 +1,14 @@
-using Godot;
-using System;
-
 namespace Kuros.Actors.Enemies.Attacks
 {
-    public partial class EnemyB1ThinAttackController : EnemyAttackController
+    /// <summary>
+    /// Enemy_B1_thin 攻击控制器：疲劳权重法（继承基类）——连续同攻击降权、切攻击恢复。
+    /// 技能名默认 KickAttack（场景未配置时生效）。
+    /// </summary>
+    public partial class EnemyB1ThinAttackController : EnemyFatigueAttackControllerBase
     {
-        [Export] public string SkillAttackName { get; set; } = "KickAttack";
-        [Export] public string MeleeAttackName { get; set; } = "SimpleMeleeAttack";
-        [Export(PropertyHint.Range, "1,10,1")] public int MeleeCountBeforeCharge { get; set; } = 2;
-
-        public string CurrentAttackName { get; private set; } = string.Empty;
-
-        private int _meleeCountSinceCharge;
-
-        public override void Initialize(SampleEnemy enemy)
+        public EnemyB1ThinAttackController()
         {
-            base.Initialize(enemy);
-            _meleeCountSinceCharge = 0;
-            ConfigureNextAttack(forceCharge: false);
-        }
-
-        protected override void OnChildAttackStarted(EnemyAttackTemplate attack)
-        {
-            base.OnChildAttackStarted(attack);
-            CurrentAttackName = attack.Name;
-
-            if (IsAttack(attack.Name, MeleeAttackName))
-            {
-                _meleeCountSinceCharge++;
-                int threshold = Mathf.Max(1, MeleeCountBeforeCharge);
-                ConfigureNextAttack(forceCharge: _meleeCountSinceCharge >= threshold);
-                return;
-            }
-
-            if (IsAttack(attack.Name, SkillAttackName))
-            {
-                _meleeCountSinceCharge = 0;
-                ConfigureNextAttack(forceCharge: false);
-            }
-        }
-
-        protected override void OnAttackFinished()
-        {
-            base.OnAttackFinished();
-            CurrentAttackName = string.Empty;
-        }
-
-        private void ConfigureNextAttack(bool forceCharge)
-        {
-            if (forceCharge)
-            {
-                TrySetAttackWeight(SkillAttackName, 1f);
-                TrySetAttackWeight(MeleeAttackName, 0f);
-                return;
-            }
-
-            TrySetAttackWeight(SkillAttackName, 0f);
-            TrySetAttackWeight(MeleeAttackName, 1f);
-        }
-
-        private static bool IsAttack(string attackName, string expectedName)
-        {
-            return attackName.Equals(expectedName, StringComparison.OrdinalIgnoreCase);
+            SkillAttackName = "KickAttack";
         }
     }
 }
-
-

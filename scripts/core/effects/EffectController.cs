@@ -48,6 +48,25 @@ namespace Kuros.Core.Effects
             return _effects.Find(e => e is T) as T;
         }
 
+        /// <summary>按接口查找效果(供 items 等下层组件查询玩家身上的构筑能力,避免依赖具体卡类型)。</summary>
+        public T? GetEffectByInterface<T>() where T : class
+        {
+            foreach (var effect in _effects)
+            {
+                if (effect is T match) return match;
+            }
+            return null;
+        }
+
+        /// <summary>遍历所有实现接口 T 的效果(供多来源聚合查询,如玩家投掷修饰逐卡叠加)。</summary>
+        public void ForEachEffect<T>(System.Action<T> action) where T : class
+        {
+            foreach (var effect in _effects)
+            {
+                if (effect is T match) action(match);
+            }
+        }
+
         public void AddEffect(ActorEffect effect)
         {
             if (effect == null) return;

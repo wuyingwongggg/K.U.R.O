@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -51,6 +52,61 @@ namespace Kuros.Actors.Enemies.Animation
 			}
 
 			OnControllerReady();
+		}
+
+		// ── 受击动画管线（由 EnemyHitState 双时间轴驱动；子类 case "Hit" 调 DriveHitPhaseAnimation）──
+
+		private EnemyHitState.HitPhase _lastHitPhase;
+		private int _lastHitPhaseTick;
+		private bool _animHoldApplied;
+
+		/// <summary>
+		/// 受击动画驱动（完整播放 hit + time_scale 停帧/续播——与玩家 Hit 同机制，不依赖 partial）：
+		///   Impact：重入/阶段变化时从头完整播放；位移未完（NeedsAnimHold）→ 停帧在受击段末帧
+		///   Recover：解除定格续播回正段
+		/// </summary>
+		protected void DriveHitPhaseAnimation(string hitAnimation, float hitMixDuration)
+		{
+			if (Enemy?.StateMachine?.CurrentState is not EnemyHitState hitState)
+			{
+				return;
+			}
+
+			bool reentered = hitState.PhaseTick != _lastHitPhaseTick;
+
+			if (hitState.CurrentPhase == EnemyHitState.HitPhase.Impact)
+			{
+				if (reentered || _lastHitPhase != EnemyHitState.HitPhase.Impact)
+				{
+					// 受击段从头完整播放（强制重播——连击重入时 PlayOnceIfNeeded 的 key 去重会跳过）
+					PlayOnceForced("Hit", hitAnimation, hitMixDuration);
+					_animHoldApplied = false;
+				}
+
+				// 位移未完 → 动画播完受击段后定格；到位/无位移 → 动画正常播
+				if (hitState.NeedsAnimHold && !_animHoldApplied)
+				{
+					SetSpineTimeScale(0f);
+					_animHoldApplied = true;
+				}
+				else if (!hitState.NeedsAnimHold && _animHoldApplied)
+				{
+					SetSpineTimeScale(1f);
+					_animHoldApplied = false;
+				}
+			}
+			else if (hitState.CurrentPhase == EnemyHitState.HitPhase.Recover)
+			{
+				// 回正：解除定格，续播剩余回正段（动画此刻在受击段末帧，无缝续播）
+				if (_lastHitPhase != EnemyHitState.HitPhase.Recover || reentered)
+				{
+					SetSpineTimeScale(1f);
+					_animHoldApplied = false;
+				}
+			}
+
+			_lastHitPhase = hitState.CurrentPhase;
+			_lastHitPhaseTick = hitState.PhaseTick;
 		}
 
 		/// <summary>
@@ -180,6 +236,21 @@ namespace Kuros.Actors.Enemies.Animation
 			}
 		}
 
+		/// <summary>统一设置全部 Spine 节点当前动画的时间缩放（0 = 停帧保持当前帧）。</summary>
+		protected void SetSpineTimeScale(float timeScale)
+		{
+			if (_spineHelper == null) return;
+			Node targetRoot = Owner ?? (Node?)Enemy ?? this;
+			try
+			{
+				_spineHelper.Call("change_time_scale_all", targetRoot, timeScale);
+			}
+			catch (Exception ex)
+			{
+				GD.PushWarning($"[{Name}] SetSpineTimeScale Failed: {ex.Message}");
+			}
+		}
+
 		protected bool UpdatePartialLoop(float loopStart, float loopEnd)
 		{
 			if (_spineHelper == null || loopEnd <= loopStart)
@@ -198,6 +269,24 @@ namespace Kuros.Actors.Enemies.Animation
 				GD.PushWarning($"[{Name}] UpdatePartialLoop Failed: {ex.Message}");
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// 强制从头播放一次性动画并登记 key（忽略去重——连击重入时受击动画必须重播；
+		/// 播放后 _currentKey=_key，后续 PlayOnceIfNeeded 正常去重不再重播）。
+		/// </summary>
+		protected bool PlayOnceForced(string key, string animationName, float mixDuration, float timeScale = 1f)
+		{
+			if (string.IsNullOrEmpty(animationName))
+				return false;
+
+			if (PlayOnce(animationName, mixDuration, timeScale, string.Empty))
+			{
+				_currentKey = key;
+				_currentMode = SpineAnimationPlaybackMode.Once;
+				return true;
+			}
+			return false;
 		}
 
 		/// <summary>

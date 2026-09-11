@@ -31,6 +31,9 @@ BuildSelectionManager="res://scenes/managers/BuildSelectionManager.tscn"
 DialogicBridge="*res://scripts/utils/DialogicBridge.gd"
 WeaponBatteryManager="*res://scripts/managers/WeaponBatteryManager.cs"
 GameMemoryService="*res://scripts/systems/memory/GameMemoryService.cs"
+ParticleEffectWarmer="res://scenes/managers/ParticleEffectWarmer.tscn"
+EnemyStageWarmer="res://scenes/managers/EnemyStageWarmer.tscn"
+#EnemyStageWarmer="res://scenes/managers/EnemyStageWarmer.tscn"
 
 [dialogic]
 

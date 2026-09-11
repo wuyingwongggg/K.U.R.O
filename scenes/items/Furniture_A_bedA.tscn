@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://dqb7hct2obgg5"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_31t47"]
-[ext_resource type="Resource" uid="uid://dbpy5yjy8gluw" path="res://resources/items/Furniture_A_BedA.tres" id="2_31t47"]
+[ext_resource type="Resource" uid="uid://k66k844xlti7" path="res://resources/items/Furniture_A_BedA.tres" id="2_31t47"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_xtxhf"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_etmhp"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_ayus4"]
@@ -14,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_ayus4")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -37,9 +37,7 @@ ItemDefinition = ExtResource("2_31t47")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
-ThrowDamage = 10.0
 MinDamageVelocity = 0.0
-KnockbackForce = 800.0
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true

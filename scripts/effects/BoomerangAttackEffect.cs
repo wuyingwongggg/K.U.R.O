@@ -16,7 +16,7 @@ namespace Kuros.Fx
     ///   - 伤害逻辑：AttackArea 范围内每 DamageInterval 秒造成一次伤害并使目标速度归零。
     ///   - 基础逻辑和规范严格按照 EFFECT_STANDARD.md
     /// </summary>
-    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional, IAttackerProvider
+    public partial class BoomerangAttackEffect : Node2D, IFacingDirectional, IAttackerProvider, IThrowFlightDistance
     {
         [ExportCategory("Movement")]
         [Export(PropertyHint.Range, "50,5000,10")] public float Speed = 1800f;
@@ -88,6 +88,12 @@ namespace Kuros.Fx
         private ShaderMaterial? _pseudo3DMaterial;
         private Node2D? _pseudo3DTarget;
         private float _pseudo3DZAccum;
+
+        /// <summary>生成侧注入的本次投掷飞行距离（px,0=未注入 → 使用 Speed 导出）。</summary>
+        private float _flightDistance;
+
+        /// <summary>生成侧注入本次投掷距离（与预览同一解析真源;见 IThrowFlightDistance）。</summary>
+        public void SetThrowFlightDistance(float distance) => _flightDistance = distance;
         private Node? _afterimage;
 
         private readonly Dictionary<GameActor, float> _actorTimers = new();
@@ -168,8 +174,13 @@ namespace Kuros.Fx
                 _afterimage?.Call("start");
 
                 bool faceRight = _attacker?.FacingRight ?? FacingRight;
-                _vx0 = Speed * (faceRight ? 1f : -1f);
-                _ax = -_vx0 / ReturnTime;
+                // 注入距离优先：匀减速模型下最远 = v0×ReturnTime/2 → v0 = 2×距离/ReturnTime；
+                // 未注入回退 Speed（行为不变）
+                float v0 = _flightDistance > 0f && ReturnTime > 0.01f
+                    ? 2f * _flightDistance / ReturnTime
+                    : Speed;
+                _vx0 = v0 * (faceRight ? 1f : -1f);
+                _ax = -_vx0 / Mathf.Max(ReturnTime, 0.01f);
 
                 _currentVelocity = new Vector2(_vx0, 0f);
             }
@@ -315,7 +326,7 @@ namespace Kuros.Fx
                 // WorldItem（DestructibleObject 等 TakeDamage 节点）：一次性结算（不计时、无速度概念）
                 if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
                 DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null);
+                    DamageSource.ThrowImpact, TargetableFactions, AllowSelfDamage, null, _currentVelocity);
                 return;
             }
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
@@ -414,6 +425,7 @@ namespace Kuros.Fx
                     if (stack != null && stack.Item.ItemId == weaponId)
                     {
                         stack.ThrowCooldownRemaining = 0f;
+                        player.InventoryComponent?.NotifyCombatWeaponResolutionChanged();
                         return;
                     }
                 }
@@ -421,7 +433,10 @@ namespace Kuros.Fx
 
             var selectedStack = player.InventoryComponent?.GetSelectedQuickBarStack();
             if (selectedStack != null)
+            {
                 selectedStack.ThrowCooldownRemaining = 0f;
+                player.InventoryComponent?.NotifyCombatWeaponResolutionChanged();
+            }
         }
 
         // ── 私有方法 ──────────────────────────────────────────────

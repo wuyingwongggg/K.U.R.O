@@ -1,17 +1,16 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://dn6b1dhc2enrf"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://clrbop6qko3hq"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_8dmfr"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_i4xrv"]
 [ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_7wwgg"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_8dmfr"]
-[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="5_8dmfr"]
-[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="6_8dmfr"]
+[ext_resource type="PackedScene" uid="uid://duq7gvippbjmp" path="res://scenes/actors/etc/HitI.tscn" id="5_8dmfr"]
+[ext_resource type="Texture2D" uid="uid://b4a6sqs5wpj40" path="res://assets/ui/throw_bar/方块.png" id="6_8dmfr"]
 [ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_ekq4s"]
 
 [sub_resource type="Resource" id="Resource_ab7ls"]
 script = ExtResource("1_8dmfr")
 AttributeId = "attack_power"
-Value = 20.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_6f3qv"]
@@ -35,8 +34,7 @@ Trigger = 4
 EffectScene = ExtResource("5_8dmfr")
 Notes = "破坏特效"
 PropertyOverrides = Dictionary[String, Variant]({
-"EnableCenterEffect": true,
-"EnableParticles": false
+"scale": Vector2(0.5, 0.5)
 })
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
@@ -44,18 +42,20 @@ metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 script = ExtResource("7_ekq4s")
 ItemId = "Furniture_A_CubeA"
 DisplayName = "立方体"
-Description = "一次性投掷道具：立方体A"
+Description = "一次性投掷道具：乱码块(小型)"
 Icon = ExtResource("6_8dmfr")
 HoldScenePath = "uid://fuffcmwrnlqr"
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = Array[String](["tag_throw", "furniture", "tier_1"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_8dmfr")]([SubResource("Resource_ab7ls")])
 EffectEntries = Array[ExtResource("2_i4xrv")]([SubResource("Resource_6f3qv"), SubResource("Resource_1qp51"), SubResource("Resource_i4xrv")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.4
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 700.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowZIndex = 2
+ThrowTier = 1
 WorldScenePath = "uid://bmk5chuwaohte"

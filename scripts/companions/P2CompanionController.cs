@@ -467,10 +467,17 @@ namespace Kuros.Companions
         /// <summary>
         /// 在玩家身上生成动作特效（如护盾/治疗/装备加成），返回生成的实例（供调用方按生命周期销毁）。
         /// effectIndex 对应 ActionEffectScenes 数组约定索引：[0] 护盾、[1] 治疗、[2] 装备加成恢复；
-        /// 越界/空场景/玩家缺失时返回 null。特效挂玩家节点下（跟随移动），
-        /// 位置定位到玩家 GrabArea 中心（拾取交互区域）而非玩家原点；无 GrabArea 时回退玩家原点。
+        /// 越界/空场景/玩家缺失时返回 null。特效挂玩家视觉挂点容器下（跟随移动）：
+        /// 锚点偏移由内部子节点承载（VisualAnchorAttach），根保持原点以正确参与 y-sort
+        /// （画在角色之上,而不是被角色遮挡）——与 A_009 护盾同一体例。
         /// 特效需自带自动销毁（EffectAutoDestroy/FadeInOutDestroy）。
         /// </summary>
+        /// <summary>取动作特效场景(不实例化;供共享控制器如 ChargeShieldController 自管理视觉时使用)。</summary>
+        public PackedScene? GetActionEffectScene(int effectIndex)
+            => ActionEffectScenes != null && effectIndex >= 0 && effectIndex < ActionEffectScenes.Count
+                ? ActionEffectScenes[effectIndex]
+                : null;
+
         public Node? SpawnActionEffect(int effectIndex)
         {
             if (_player == null || ActionEffectScenes == null) return null;
@@ -480,13 +487,13 @@ namespace Kuros.Companions
             if (scene == null) return null;
 
             var instance = scene.Instantiate<Node>();
-            _player.AddChild(instance);
-
             if (instance is Node2D fxNode)
             {
-                // 视觉锚点：VisualEffectArea 优先，回退 HitArea/原点——
-                // 不用 GrabArea（其 offset 在玩家脚下，为俯视角拾取判定设计，护盾出现在脚边不合理）
-                fxNode.GlobalPosition = _player.GetVisualAnchorWorld();
+                Kuros.Fx.VisualAnchorAttach.Attach(fxNode, _player);
+            }
+            else
+            {
+                _player.AddChild(instance);
             }
 
             return instance;

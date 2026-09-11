@@ -492,6 +492,8 @@ namespace Kuros.Actors.Heroes
 			{
 				baseDamage += InventoryComponent.GetSelectedAttributeValue(ItemAttributeIds.AttackPower, 0f);
 			}
+			// 基础伤害倍率（构筑效果如"空载增幅"写入;作用于总基础伤害,技能倍率之前）
+			baseDamage *= BasicAttackMultiplier;
 
 			if (WeaponSkillController != null)
 			{

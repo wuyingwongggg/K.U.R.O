@@ -126,7 +126,6 @@ namespace Kuros.Core
 		/// </summary>
 		protected virtual void OnPicked(GameActor actor)
 		{
-			GD.Print($"{Name} picked up by {actor.Name}");
 		}
 	}
 }

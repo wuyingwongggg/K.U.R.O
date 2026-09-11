@@ -1,29 +1,30 @@
-[gd_scene load_steps=5 format=3 uid="uid://femgcn3uq40c"]
+[gd_scene load_steps=6 format=3 uid="uid://femgcn3uq40c"]
 
-[ext_resource type="Shader" uid="uid://cu3a01aco0kxs" path="res://shaders/materials/ring_of_power.gdshader" id="1_shader"]
+[ext_resource type="Shader" uid="uid://dplanr5qipvoo" path="res://shaders/materials/hexagon_shield.gdshader" id="1_wlahh"]
 [ext_resource type="Texture2D" uid="uid://dpaedwsaacise" path="res://assets/effect/noise/noise_combined.png" id="2_noise"]
+[ext_resource type="Texture2D" uid="uid://ccjk13i0v7vai" path="res://assets/effect/noise/polygon.png" id="2_sh4ay"]
 [ext_resource type="Script" uid="uid://mbol0v4le42t" path="res://scripts/effects/FadeInOutDestroy.cs" id="3_fade"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
-shader = ExtResource("1_shader")
-shader_parameter/radius = 0.7999999821184
-shader_parameter/thickness = 0.03999999910592
-shader_parameter/color = Color(0.35, 0.75, 1, 1)
-shader_parameter/brightness = 1.499999966472
-shader_parameter/angular_speed = 2.5
-shader_parameter/radial_speed = 0.49999987706399995
-shader_parameter/alpha = 0.999999977648
-shader_parameter/noise = ExtResource("2_noise")
+shader = ExtResource("1_wlahh")
+shader_parameter/Color_Shield = Color(0.45, 0.85, 1, 1)
+shader_parameter/Step = 0.70000003325
+shader_parameter/Speed = Vector3(0.2, 0, 0)
+shader_parameter/ShieldTexture = ExtResource("2_sh4ay")
+shader_parameter/Size_Inner = 0.18
+shader_parameter/Size_Outer = 0.400000019
+shader_parameter/Opaticy = 0.70000003325
+shader_parameter/Brightness = 2.000000095
 
 [node name="ShieldRingEffect" type="Node2D"]
 
 [node name="Ring" type="Sprite2D" parent="."]
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_ring")
-scale = Vector2(3.5, 3.5)
+scale = Vector2(3, 3)
 texture = ExtResource("2_noise")
 script = ExtResource("3_fade")
 FadeInDuration = 0.3
-HoldDuration = 6.2
+HoldDuration = 5.0
 FadeOutDuration = 0.6
 TargetPath = NodePath("..")

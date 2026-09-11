@@ -77,8 +77,8 @@ size = Vector2(300, 1000)
 size = Vector2(300, 600)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2405.1875, 1216, -2706.8828, 1216, -2691.2969, -874, 2405.8828, -874)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+vertices = PackedVector2Array(1914, 978, 754, 978, 660, 910, 660, 200, 2405.7734, -544, 1914, 1438, 2405.0781, 1546, -2709.3516, 1546, 754, 1438, -597, 1197, 50, 910, -1068, 1421, -597, 787, 50, 200, -2031, 37, -2698.1016, 37, -2693.7578, -544, -1107, 787, -1107, 1161, -1528, 1161, -2031, 463, -1068, 1197, -2701.2734, 463, -1528, 1421)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(5, 6, 7, 8), PackedInt32Array(9, 10, 2, 1, 8, 11), PackedInt32Array(10, 9, 12, 13), PackedInt32Array(4, 6, 5, 0), PackedInt32Array(14, 15, 16, 4), PackedInt32Array(17, 18, 19, 20, 14), PackedInt32Array(11, 21, 9), PackedInt32Array(7, 22, 20, 19, 23), PackedInt32Array(14, 4, 3, 13), PackedInt32Array(14, 13, 12, 17), PackedInt32Array(8, 7, 23, 11)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2769, -1183, 2486, -1224, 2485, 1762, -2791, 1767)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -113,6 +113,7 @@ shape = SubResource("RectangleShape2D_y44ha")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CameraZone2" type="Area2D" parent="."]
+visible = false
 z_index = 10
 position = Vector2(3940, -249)
 collision_layer = 0
@@ -140,6 +141,7 @@ ShowDebugOverlayInGame = true
 shape = SubResource("RectangleShape2D_mxkb7")
 
 [node name="WaveSpawnManager" type="Node2D" parent="." node_paths=PackedStringArray("TriggerArea")]
+visible = false
 script = ExtResource("5_p5xsj")
 WaveClearDelay = 0.0
 PollInterval = 0.30000000000000004
@@ -157,6 +159,7 @@ shape = SubResource("RectangleShape2D_7mqiy")
 debug_color = Color(1, 0, 0, 0.19607843)
 
 [node name="EnemySpawneManager" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("6_wichh")
@@ -172,10 +175,10 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
+visible = false
 top_level = true
 position = Vector2(0, 356)
 script = ExtResource("6_wichh")
@@ -191,7 +194,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 SpawnDebugColor = Color(1, 0.8509804, 0.2509804, 0)
 DebugLineWidth = 8.0
 
@@ -199,7 +201,7 @@ DebugLineWidth = 8.0
 position = Vector2(3940, -269)
 script = ExtResource("37_6h2kq")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://qd5abd4opeob"
+NextStagePath = "uid://wluyqt2wxlvb"
 LoadDistance = 2000.0
 
 [node name="Environments" type="Node2D" parent="."]
@@ -289,6 +291,11 @@ script = ExtResource("14_o3k7i")
 position = Vector2(-2600, 230)
 shape = SubResource("RectangleShape2D_1gwf8")
 
+[node name="center" type="Sprite2D" parent="."]
+z_index = 10
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("40_21m0k")
+
 [node name="WeaponBrawlDiscoBall" parent="." instance=ExtResource("17_oobfl")]
 position = Vector2(-2146, -1036)
 
@@ -372,8 +379,3 @@ position = Vector2(793, -689)
 
 [node name="FurnitureChairOfficeB" parent="." instance=ExtResource("41_y44s2")]
 position = Vector2(-730, 746)
-
-[node name="center" type="Sprite2D" parent="."]
-z_index = 10
-scale = Vector2(0.1, 0.1)
-texture = ExtResource("40_21m0k")

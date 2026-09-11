@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Kuros.Actors.Enemies.States;
 using Kuros.Core;
@@ -11,9 +12,39 @@ namespace Kuros.Actors.Enemies.Attacks
     /// </summary>
     public enum EffectSpawnTiming
     {
+        /// <summary>继承模板级 SpawnTiming（AttackEffectEntry 未显式配置时）。注意：-1 不影响已序列化的 0/1/2 旧值。</summary>
+        Inherit = -1,
+        /// <summary>进入 Warmup（预热开始）时生成。追加在末尾：不改变已有 0/1/2 的序列化值。</summary>
+        OnWarmup,
         OnActive,
         OnAnimationHit,
         OnRecovery
+    }
+
+    /// <summary>
+    /// 特效朝向翻转模式（AttackEffectEntry 配置用）：Inherit = 继承模板 FlipEffectWithFacing（bool 无法表达"未配置"）。
+    /// </summary>
+    public enum FacingFlipMode
+    {
+        Inherit = 0,
+        Flip = 1,
+        NoFlip = 2
+    }
+
+    /// <summary>
+    /// 特效生命周期绑定（AttackEffectEntry 配置用）：由攻击模板在对应阶段结束时销毁特效，
+    /// 替代固定 Duration——适配阶段时长不固定（Hold 挂起等）的场景。None = 特效自行管理（默认）。
+    /// 攻击被打断（Cancel）时所有绑定特效统一销毁。
+    /// </summary>
+    public enum EffectLifecycleBinding
+    {
+        None,
+        /// <summary>Warmup 结束（进 Active）时销毁——如蓄力预警在出手瞬间消失。</summary>
+        OnWarmupEnd,
+        /// <summary>Active 结束（进 Recovery）时销毁——如挥击光效在收招时消失。</summary>
+        OnActiveEnd,
+        /// <summary>Recovery 结束（回 Idle）时销毁——如收招残留特效在攻击结束时消失。</summary>
+        OnRecoveryEnd,
     }
 
     /// <summary>
@@ -50,9 +81,10 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export] public bool AllowSelfDamage { get; set; } = false;
 
         [ExportCategory("Knockback")]
+        /// <summary>击退位移距离（像素）——位移在 KnockbackDuration 内匀减速滑完。</summary>
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
+        /// <summary>击退位移时长（秒）——由攻击方决定，不受受击方动画时序影响。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
-        [Export(PropertyHint.Range, "0,6000,1")] public float KnockbackSpeed = 0f;
         [Export] public bool KnockbackFromHitPosition = false;
 
         [ExportCategory("Animation Sync")]
@@ -89,6 +121,16 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Flags, "直接攻击,投掷类,区域效果,暴击追加,效果追加")]
         public DamageSourceFilter InterruptDamageSources { get; set; } = DamageSourceFilter.All;
 
+        [ExportCategory("Damage Interrupt Slow-Mo")]
+        /// <summary>受伤眩晕打断触发时开启全场时间减缓（Engine.TimeScale）并把镜头聚焦到被眩晕的敌人。仅 StunInterruptOnDamage=true 时生效。</summary>
+        [Export] public bool EnableInterruptSlowMo = false;
+        /// <summary>时间减缓倍率（1 = 正常；0.3 = 30%）。</summary>
+        [Export(PropertyHint.Range, "0.05,1,0.05")] public float SlowMoTimeScale = 0.3f;
+        /// <summary>减缓持续时长（真实秒，眩晕计时随 TimeScale 同步减缓不会跑完）。</summary>
+        [Export(PropertyHint.Range, "0.1,5,0.1")] public float SlowMoDuration = 1.0f;
+        /// <summary>聚焦期间的镜头缩放（轻微拉近；0 = 只平移不拉近）。结束瞬时恢复触发瞬间的区域 Zoom（如 0.43）。</summary>
+        [Export(PropertyHint.Range, "0,1,0.01")] public float InterruptFocusZoom = 0.6f;
+
         [ExportCategory("Collision Override")]
         [Export] public bool IgnoreEnemyCollisionDuringAttack = false;
         [Export(PropertyHint.Range, "1,32,1")] public int EnemyCollisionLayerIndex = 2;
@@ -100,18 +142,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
         [ExportCategory("Effect")]
         [Export] public Godot.Collections.Array<AttackEffectEntry> Effects { get; set; } = new();
-
-        /// <summary>阻塞特效组：场上（全局，含其他同类敌人）存在该组的存活特效实例时，本攻击不可被选中。
-        /// 通常填 Effects 中特效条目的 UniqueGroup（同组名）。空 = 不按特效阻塞。</summary>
-        [Export] public string BlockedByFxGroup { get; set; } = string.Empty;
-        [Export] public Vector2 EffectOffset = Vector2.Zero;
-        [Export] public EffectSpawnTiming SpawnTiming = EffectSpawnTiming.OnActive;
-        /// <summary>
-        /// 特效生成锚点（Marker2D 必须放在 Node2D 派生节点下，如敌人根节点）。
-        /// 不为空时按数组顺序依次使用 Marker2D.GlobalPosition + EffectOffset，否则用敌人原点。
-        /// </summary>
-        [Export] public Marker2D[] SpawnMarkers = System.Array.Empty<Marker2D>();
-        [Export] public bool FlipEffectWithFacing = false;
 
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
@@ -132,6 +162,8 @@ namespace Kuros.Actors.Enemies.Attacks
         private bool _hasAttackAreaMaskOverride;
         private int _spawnMarkerIndex;
         private readonly System.Collections.Generic.HashSet<Area2D> _customAreaOverrides = new();
+        // 生命周期绑定特效（entry.LifecycleBinding != None）：阶段结束时由模板销毁
+        private readonly List<(Node2D fx, EffectLifecycleBinding binding)> _boundEffects = new();
 
         public bool IsRunning => _phase != AttackPhase.Idle;
         public bool IsOnCooldown => _cooldownTimer > 0.0f;
@@ -237,6 +269,8 @@ namespace Kuros.Actors.Enemies.Attacks
             UnsubscribeDamageInterrupt();
             RestoreEnemyCollisionMask();
             RestoreAttackAreaMask();
+            // 兜底：模板销毁时清理绑定特效（如敌人死亡未走正常攻击结束路径）
+            DestroyAllBoundEffects();
             base._ExitTree();
         }
 
@@ -275,6 +309,14 @@ namespace Kuros.Actors.Enemies.Attacks
             if (frozenState != null)
                 frozenState.FrozenDuration = Mathf.Max(DamageTakenFrozenDuration, 0.1f);
             Enemy.StateMachine?.ChangeState("Frozen");
+
+            // 全场时间减缓 + 镜头聚焦被眩晕的敌人（真实秒窗口，结束自动恢复 TimeScale/Zoom/聚焦目标）
+            if (EnableInterruptSlowMo)
+            {
+                Kuros.Effects.DamageInterruptSlowMo.Trigger(SlowMoTimeScale, SlowMoDuration);
+                if (Enemy.GetViewport().GetCamera2D() is Kuros.Managers.CameraFollow cam)
+                    cam.FocusOn(Enemy, SlowMoDuration, InterruptFocusZoom);
+            }
 
             // 子类追加行为（如恢复攻击期间移动的节点位置）
             OnDamageTakenInterrupt();
@@ -317,15 +359,15 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnWarmupStarted()
         {
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnWarmup);
             Enemy.Velocity = Vector2.Zero;
         }
 
         protected virtual void OnActivePhase()
         {
-            if (SpawnTiming == EffectSpawnTiming.OnActive)
-            {
-                SpawnEffectAtEnemy();
-            }
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnActive);
+            // Warmup 结束（进 Active）：销毁绑定 OnWarmupEnd 的特效（如蓄力预警出手即消失）
+            DestroyBoundEffects(EffectLifecycleBinding.OnWarmupEnd);
 
             if (RequireAnimationHitTrigger)
             {
@@ -338,10 +380,9 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnRecoveryStarted()
         {
-            if (SpawnTiming == EffectSpawnTiming.OnRecovery)
-            {
-                SpawnEffectAtEnemy();
-            }
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnRecovery);
+            // Active 结束（进 Recovery）：销毁绑定 OnActiveEnd 的特效（如挥击光效收招即消失）
+            DestroyBoundEffects(EffectLifecycleBinding.OnActiveEnd);
 
             Enemy.Velocity = Enemy.Velocity.MoveToward(Vector2.Zero, Enemy.Speed);
             _animationHitReady = false;
@@ -349,6 +390,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         protected virtual void OnAttackFinished()
         {
+            // 攻击结束（正常回 Idle 或被打断）：销毁全部剩余绑定特效（含 OnRecoveryEnd）
+            DestroyAllBoundEffects();
             _cooldownTimer = GetCooldown();
             UnsubscribeDamageInterrupt();
 
@@ -614,10 +657,7 @@ namespace Kuros.Actors.Enemies.Attacks
         /// </summary>
         protected virtual void OnAnimationHit()
         {
-            if (SpawnTiming == EffectSpawnTiming.OnAnimationHit)
-            {
-                SpawnEffectAtEnemy();
-            }
+            SpawnEffectAtEnemy(EffectSpawnTiming.OnAnimationHit);
 
             PerformAttackNow();
         }
@@ -677,7 +717,7 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, float configuredSpeed, Vector2 fallbackDirection, Area2D? attackArea = null)
+        protected bool TryApplyPlayerKnockback(SamplePlayer player, float distance, float duration, Vector2 fallbackDirection, Area2D? attackArea = null)
         {
             if (Enemy == null || player == null)
             {
@@ -694,16 +734,9 @@ namespace Kuros.Actors.Enemies.Attacks
                 }
             }
 
-            float clampedDuration = Mathf.Max(duration, 0.01f);
             float clampedDistance = Mathf.Max(0f, distance);
-            float clampedConfiguredSpeed = Mathf.Max(0f, configuredSpeed);
-            if (clampedDistance <= 0f && clampedConfiguredSpeed <= 0f)
-            {
-                return false;
-            }
-
-            float speed = clampedConfiguredSpeed > 0f ? clampedConfiguredSpeed : clampedDistance / clampedDuration;
-            if (speed <= 0f)
+            float clampedDuration = Mathf.Max(duration, 0.01f);
+            if (clampedDistance <= 0f)
             {
                 return false;
             }
@@ -729,9 +762,11 @@ namespace Kuros.Actors.Enemies.Attacks
                     : (Enemy.FacingRight ? Vector2.Right : Vector2.Left);
             }
 
-            Vector2 knockbackVelocity = direction.Normalized() * speed;
-            player.ApplyKnockback(knockbackVelocity.Normalized(), speed);
-            ApplyFrozenExternalDisplacement(player, knockbackVelocity, clampedDuration);
+            Vector2 dirNormalized = direction.Normalized();
+            // 位移驱动击退：受击方 Hit 状态在 clampedDuration 内匀减速滑完 clampedDistance
+            player.ApplyKnockbackDisplacement(dirNormalized, clampedDistance, clampedDuration);
+            // Frozen 外部位移保留原语义（平均速度 = distance/duration）
+            ApplyFrozenExternalDisplacement(player, dirNormalized * (clampedDistance / clampedDuration), clampedDuration);
             return true;
         }
 
@@ -763,12 +798,44 @@ namespace Kuros.Actors.Enemies.Attacks
             frozenState.ApplyExternalDisplacement(velocity, duration);
         }
 
-        protected virtual void SpawnEffectAtEnemy()
+        /// <summary>
+        /// 生成攻击特效。timing 非空时只生成解析时机匹配的 entry（per-entry SpawnTiming 生效）；
+        /// timing 为 null 时全量生成（子类旧调用兼容：它们在模板 timing 匹配时才调用）。
+        /// </summary>
+        /// <summary>销毁指定绑定类型的特效（阶段切换时）。</summary>
+        private void DestroyBoundEffects(EffectLifecycleBinding binding)
+        {
+            for (int i = _boundEffects.Count - 1; i >= 0; i--)
+            {
+                if (_boundEffects[i].binding != binding) continue;
+                var fx = _boundEffects[i].fx;
+                if (GodotObject.IsInstanceValid(fx)) fx.QueueFree();
+                _boundEffects.RemoveAt(i);
+            }
+        }
+
+        /// <summary>销毁全部绑定特效（攻击结束/被打断/模板销毁兜底）。</summary>
+        private void DestroyAllBoundEffects()
+        {
+            foreach (var (fx, _) in _boundEffects)
+            {
+                if (GodotObject.IsInstanceValid(fx))
+                    fx.QueueFree();
+            }
+            _boundEffects.Clear();
+        }
+
+        protected virtual void SpawnEffectAtEnemy(EffectSpawnTiming? timing = null)
         {
             if (Enemy == null) return;
 
             foreach (var entry in Effects)
+            {
+                if (entry == null) continue;
+                // 模板级 SpawnTiming 已随 entry 迁移移除——entry 未显式配置时回退 OnActive
+                if (timing.HasValue && entry.ResolveTiming(EffectSpawnTiming.OnActive) != timing.Value) continue;
                 SpawnSingleEffect(entry.Scene, entry);
+            }
         }
 
         private void SpawnSingleEffect(PackedScene? scene, AttackEffectEntry? entry = null)
@@ -795,20 +862,33 @@ namespace Kuros.Actors.Enemies.Attacks
                         effect.AddToGroup(entry.UniqueGroup);
                 }
 
-                Vector2 adjustedOffset = EffectOffset;
-                if (!Enemy!.FacingRight && EffectOffset.X != 0)
-                    adjustedOffset.X = -EffectOffset.X;
+                // per-entry 配置（模板级字段已随 entry 迁移移除——未配置时用默认常量）。
+                // NodePath 先按模板自身解析，失败按敌人根兜底（兼容两种配置习惯）
+                Vector2 entryOffset = entry?.ResolveOffset(Vector2.Zero) ?? Vector2.Zero;
+                Marker2D[] entryMarkers = entry?.ResolveMarkers(this, Enemy, System.Array.Empty<Marker2D>())
+                    ?? System.Array.Empty<Marker2D>();
+                bool entryFlip = entry?.ResolveFlip(false) ?? false;
 
+                // 跟随类特效（IFollowAnchor）：后续跟随 marker 的原始位置/未镜像 offset——
+                // 生成位置必须与跟随位置一致，否则首帧跳变（marker X≠0 且敌人朝左时）
+                bool isFollowFx = effect is Kuros.Fx.IFollowAnchor;
+
+                Vector2 adjustedOffset = entryOffset;
+                if (!Enemy!.FacingRight && !isFollowFx && entryOffset.X != 0)
+                    adjustedOffset.X = -entryOffset.X;
+
+                Node2D? usedMarker = null;
                 Vector2 basePos;
-                if (SpawnMarkers.Length > 0)
+                if (entryMarkers.Length > 0)
                 {
-                    int idx = _spawnMarkerIndex % SpawnMarkers.Length;
-                    var marker = SpawnMarkers[idx];
+                    int idx = _spawnMarkerIndex % entryMarkers.Length;
+                    var marker = entryMarkers[idx];
                     if (marker != null && GodotObject.IsInstanceValid(marker))
                     {
                         Vector2 rel = marker.GlobalPosition - Enemy.GlobalPosition;
-                        if (!Enemy.FacingRight) rel.X = -rel.X;
+                        if (!Enemy.FacingRight && !isFollowFx) rel.X = -rel.X;
                         basePos = Enemy.GlobalPosition + rel;
+                        usedMarker = marker;
                     }
                     else
                     {
@@ -828,14 +908,23 @@ namespace Kuros.Actors.Enemies.Attacks
                     if (node2D is Kuros.Fx.IFacingDirectional facing)
                         facing.FacingRight = Enemy.FacingRight;
 
-                    if (FlipEffectWithFacing && !Enemy.FacingRight)
+                    if (entryFlip && !Enemy.FacingRight)
                         node2D.Scale = new Vector2(-node2D.Scale.X, node2D.Scale.Y);
 
                     if (node2D is Kuros.Fx.IAttackerProvider attackerProvider)
                         attackerProvider.Attacker = Enemy;
 
+                    // 通用：跟随类特效注入"产生它的锚点节点"（实际使用的 marker，无则敌人根）——
+                    // 特效跟随锚点（marker 是敌人子节点，转向/移动自然跟随），生成方不感知具体类型
+                    if (node2D is Kuros.Fx.IFollowAnchor followAnchor)
+                        followAnchor.FollowAnchor = usedMarker ?? Enemy;
+
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;
+
+                    // 生命周期绑定：模板在对应阶段结束时销毁（替代固定 Duration——适配 Hold 挂起等时长不固定阶段）
+                    if (entry != null && entry.LifecycleBinding != EffectLifecycleBinding.None)
+                        _boundEffects.Add((node2D, entry.LifecycleBinding));
                 }
                 else if (effect is Kuros.Core.Effects.ActorEffect actorEffect)
                 {

@@ -34,6 +34,7 @@ namespace Kuros.UI
         private Action? _onSkipped;
         private int _skipReward;
         private Func<ICollection<string>, List<BuildEffectDefinition>?>? _rerollProvider; // 传入当前显示卡 EffectId，返回新一批（null/空 = 不可刷新）
+        private Func<BuildEffectDefinition, BuildPickCardContext?>? _pickContextProvider; // 候选卡族上下文(反向取代标注),每次填充卡面实时查询
         private int _rerollBaseCost;
         private float _rerollCostGrowth;
         private int _freeRerollCount; // 本窗口可用的免费刷新次数（含局外养成加成）
@@ -72,6 +73,7 @@ namespace Kuros.UI
             IReadOnlyDictionary<string, int>? stacksByEffectId = null,
             int skipReward = 0, Action? onSkipped = null,
             Func<ICollection<string>, List<BuildEffectDefinition>?>? rerollProvider = null,
+            Func<BuildEffectDefinition, BuildPickCardContext?>? pickContextProvider = null,
             int rerollBaseCost = 10, float rerollCostGrowth = 1.5f, int freeRerollCount = 1)
         {
             if (_isOpen) return;
@@ -82,6 +84,7 @@ namespace Kuros.UI
             _onSkipped = onSkipped;
             _skipReward = skipReward;
             _rerollProvider = rerollProvider;
+            _pickContextProvider = pickContextProvider;
             _rerollBaseCost = rerollBaseCost;
             _rerollCostGrowth = rerollCostGrowth;
             _freeRerollCount = Math.Max(0, freeRerollCount);
@@ -328,7 +331,17 @@ namespace Kuros.UI
                 card.NameLabel!.Text = effect.DisplayName;
                 int currentStacks = 0;
                 _stacksByEffectId?.TryGetValue(effect.EffectId, out currentStacks);
-                card.DescLabel!.Text = effect.BuildDescriptionWithValues(currentStacks);
+
+                // 反向候选：按取代规则展示生效层(高亮生效档),并附极简取代说明——
+                // 描述区固定高度且无法自动缩字,附加文案必须尽量短(单行内)
+                var pickContext = _pickContextProvider?.Invoke(effect);
+                string description = effect.BuildDescriptionWithValues(
+                    pickContext != null ? Mathf.Max(0, pickContext.ResultStacks - 1) : currentStacks);
+                if (pickContext != null)
+                {
+                    description += $"\n[color=#E3B341]取代 {pickContext.ResultStacks}级{string.Join("、", pickContext.SupersedeTargets)}[/color]";
+                }
+                card.DescLabel!.Text = description;
                 card.BuildClassLabel!.Text = !string.IsNullOrWhiteSpace(effect.BuildClass)
                     ? $"[{GetBuildClassName(effect.BuildClass)}]"
                     : "";

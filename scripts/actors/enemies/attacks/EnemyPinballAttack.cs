@@ -194,7 +194,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (!_canDealDamage) return;
 
 			bool dealt = DamageDispatcher.DealDamage(body, GetDamage(), enemyPos, Enemy,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea);
+				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea, _dashDirection);
 			if (!dealt) return;
 
 			TryApplyKnockback(body);
@@ -221,7 +221,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			if (!_canDealDamage) return;
 
 			bool dealt = DamageDispatcher.DealDamage(target, GetDamage(), enemyPos, Enemy,
-				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea);
+				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _pinballArea, _dashDirection);
 			if (!dealt) return;
 
 			TryApplyKnockback(area.Owner);
@@ -265,19 +265,16 @@ namespace Kuros.Actors.Enemies.Attacks
 				Enemy.Velocity = _dashDirection * _currentSpeed;
 		}
 
-		// 对被命中目标施加击退速度
+		// 对被命中目标施加位移驱动击退（duration 内滑完 distance，受击方 Hit 状态消费）
 		private void TryApplyKnockback(Node? target)
 		{
 			if (Enemy == null || target is not GameActor actor) return;
+			if (KnockbackDistance <= 0f) return;
 
-			float knockSpeed = KnockbackSpeed > 0f
-				? KnockbackSpeed
-				: (KnockbackDistance > 0f
-					? KnockbackDistance / Mathf.Max(KnockbackDuration, 0.01f)
-					: 0f);
-
-			if (knockSpeed > 0f)
-				actor.ApplyKnockback((actor.GlobalPosition - Enemy.GlobalPosition).Normalized(), knockSpeed);
+			actor.ApplyKnockbackDisplacement(
+				(actor.GlobalPosition - Enemy.GlobalPosition).Normalized(),
+				KnockbackDistance,
+				Mathf.Max(KnockbackDuration, 0.01f));
 		}
 
 		// 结束弹射：停止 dash、进入 Recovery

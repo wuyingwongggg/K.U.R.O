@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://cipwjj7xx121y"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_26ux8"]
-[ext_resource type="Resource" uid="uid://dknruw00xelvv" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="2_0nltr"]
+[ext_resource type="Resource" uid="uid://h3sll18tay3c" path="res://resources/items/Weapon_Throw_SmokeGrenade.tres" id="2_0nltr"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="2_7shqp"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ai6mm"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_26ux8"]
@@ -14,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0nltr"]
 shader = ExtResource("2_7shqp")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.019607844, 0.019607844, 0.019607844, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -29,6 +29,7 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_26ux8"]
 load_path = "res://.godot/imported/镇暴烟雾弹.png-b80efcda555d63963e6d6a6ac6720b90.ctex"
@@ -37,7 +38,7 @@ load_path = "res://.godot/imported/镇暴烟雾弹.png-b80efcda555d63963e6d6a6ac
 size = Vector2(250, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w57jh"]
-size = Vector2(200, 150)
+size = Vector2(200, 200)
 
 [node name="WeaponThrowSmokeGrenade" type="Node2D"]
 z_index = 1
@@ -48,10 +49,11 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
-KnockbackForce = 0.0
-StopOnHit = true
+BounceSpeed = 650.0
+BounceHorizontalRatio = 0.2
+BounceElasticity = 0.25
 DestructionAnimationDuration = 0.0
-LandingHideDelay = 0.5
+LandingHideDelay = 0.25
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
 ShadowPath = NodePath("RigidBody2D/Shadow")
@@ -64,9 +66,8 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_idk0v")
-position = Vector2(0, 45)
-rotation = -0.15707964
-scale = Vector2(2, 1)
+position = Vector2(0, 20)
+scale = Vector2(3.5, 2)
 texture = ExtResource("4_26ux8")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
@@ -88,5 +89,4 @@ shape = SubResource("RectangleShape2D_idk0v")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(0, 50)
 shape = SubResource("RectangleShape2D_w57jh")

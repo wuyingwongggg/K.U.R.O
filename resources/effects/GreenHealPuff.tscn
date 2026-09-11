@@ -47,3 +47,4 @@ texture = ExtResource("3_mssuo")
 lifetime = 10.0
 speed_scale = 7.0
 process_material = SubResource("Material_puff")
+visibility_rect = Rect2(-300, -600, 600, 1200)

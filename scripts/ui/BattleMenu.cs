@@ -161,7 +161,13 @@ namespace Kuros.UI
                     return;
                 }
             }
-            
+
+            // 瞄准模式(投掷 A_010)进行中:ESC 优先取消瞄准模式(由 ThrowAimTargetingController 处理并消费),不开菜单
+            if (Kuros.Builds.Throw.ThrowAimTargetingController.IsAnyActive)
+            {
+                return;
+            }
+
             // 处理Return键（Enter）和ui_cancel（ESC）来打开/关闭菜单
             if (@event.IsActionPressed("Return") || isEscKey)
             {

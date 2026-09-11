@@ -13,8 +13,8 @@ using Kuros.UI;
 using Kuros.Utils;
 using Kuros.Core.Events;
 
-public partial class SamplePlayer : GameActor, IPlayerStatsSource
-{	
+public partial class SamplePlayer : GameActor, IPlayerStatsSource, IThrowableModifierProvider
+{
 	[ExportCategory("Debug")]
 	[Export] public bool EnableStateDebugOverlay = false;
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);
@@ -641,6 +641,16 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		_aiMoveRightQueued = false;
 	}
 
+	/// <summary>攻击输入屏蔽(A_010 瞄准模式:攻击键被征用为"确认放置")——
+	/// 状态机的攻击触发/按住连击查询全部经 IsControlledActionPressed / ConsumeControlledActionJustPressed,
+	/// 置位期间这两处对 "attack" 一律返回 false;瞄准控制器自己用 Input 直读检测确认。</summary>
+	public bool SuppressAttackInput { get; set; }
+
+	/// <summary>拾取/放置输入屏蔽(A_010 瞄准模式:右键被征用为"取消")——
+	/// take_up/place 的全部消费点(Idle/RunHolding 短按拾取、ItemInteraction 长按放置/短按拾取)
+	/// 都经 WasActionShortPressed / WasActionLongPressTriggered,置位期间这两个方法对 take_up/place 返回 false。</summary>
+	public bool SuppressInteractInput { get; set; }
+
 	public Vector2 GetControlledMovementInput()
 	{
 		return AiInputOverrideEnabled
@@ -652,6 +662,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		if (!AiInputOverrideEnabled)
 		{
+			if (actionName == "attack" && SuppressAttackInput)
+				return false;
 			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
 				return false;
 			// 走仲裁器：同键长短按分流（run 等长按动作达阈值后才视为按住）
@@ -669,6 +681,8 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	{
 		if (!AiInputOverrideEnabled)
 		{
+			if (actionName == "attack" && SuppressAttackInput)
+				return false;
 			if (actionName == "attack" && UIManager.IsMouseOverUI && Input.IsMouseButtonPressed(MouseButton.Left) && !Input.IsKeyPressed(Key.Enter) && !Input.IsKeyPressed(Key.F))
 				return false;
 			// 走仲裁器：同键长短按分流（短按动作延迟到松开确认）
@@ -734,8 +748,16 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		return true;
 	}
 	public bool IsActionLongPressHeld(string actionName) => _holdTracker.IsLongPressHeld(actionName);
-	public bool WasActionLongPressTriggered(string actionName) => _holdTracker.WasLongPressTriggered(actionName);
-	public bool WasActionShortPressed(string actionName) => _holdTracker.WasShortPressed(actionName);
+	public bool WasActionLongPressTriggered(string actionName)
+	{
+		if (SuppressInteractInput && (actionName == "take_up" || actionName == "place")) return false;
+		return _holdTracker.WasLongPressTriggered(actionName);
+	}
+	public bool WasActionShortPressed(string actionName)
+	{
+		if (SuppressInteractInput && (actionName == "take_up" || actionName == "place")) return false;
+		return _holdTracker.WasShortPressed(actionName);
+	}
 	public bool WasActionJustPressed(string actionName) => _holdTracker.WasActionJustPressed(actionName);
 	public float GetActionHoldDuration(string actionName) => _holdTracker.GetHoldDuration(actionName);
 
@@ -850,6 +872,17 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		UpdateHandItemVisual();
 	}
 	
+	/// <summary>当前构筑对一次性投掷道具的修饰聚合(IThrowableModifierProvider):
+	/// 由玩家身上实现 IThrowableModifiersContributor 的效果逐层叠加(B_001 轻量化/B_002 重量化等)。
+	/// 投掷与轨迹预览单点消费,无卡时返回 None(原行为)。</summary>
+	public Kuros.Items.ThrowableModifiers GetThrowableModifiers()
+	{
+		Kuros.Items.ThrowableModifiers mods = Kuros.Items.ThrowableModifiers.None;
+		EffectController?.ForEachEffect<Kuros.Items.IThrowableModifiersContributor>(
+			c => mods = c.ModifyThrowableModifiers(mods));
+		return mods;
+	}
+
 	/// <summary>
 	/// 同步左手物品：从当前选中的快捷栏槽位获取物品，确保严格对应
 	/// </summary>
@@ -1170,6 +1203,9 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 	public TargetableFactions CurrentAttackTargetableFactions { get; set; } =
 		TargetableFactions.Enemy | TargetableFactions.WorldItem;
 
+	/// <summary>基础伤害倍率（构筑效果如"空载增幅"写入,条件达成时 ≠1;两处 PerformAttackCheck 共用）。</summary>
+	public float BasicAttackMultiplier { get; set; } = 1f;
+
 	public void PerformAttackCheck()
 	{
 		AttackTimer = AttackCooldown;
@@ -1185,7 +1221,7 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource
 		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Source: {areaSource}, Node: {activeAttackArea.GetPath()}");
 		// GameLogger.Info(nameof(SamplePlayer), $"AttackArea Detail: {DescribeAttackArea(activeAttackArea)}");
 
-		int hitCount = ApplyDamageWithArea(AttackDamage, (target, isFallback) =>
+		int hitCount = ApplyDamageWithArea(AttackDamage * BasicAttackMultiplier, (target, isFallback) =>
 		{
 			// string suffix = isFallback ? " (fallback)" : string.Empty;
 			// GameLogger.Info(nameof(SamplePlayer), $"Hit enemy{suffix}: {target.Name}");

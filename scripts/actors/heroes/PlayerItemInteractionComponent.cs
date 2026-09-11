@@ -13,6 +13,10 @@ namespace Kuros.Actors.Heroes
     /// </summary>
     public partial class PlayerItemInteractionComponent : Node
     {
+        /// <summary>投掷出手事件(实体已生成并 ApplyThrowImpulse 后同步触发)。
+        /// A_008 进程分叉等玩家侧构筑订阅;投掷者侧不做任何构筑逻辑,零耦合。</summary>
+        public static event Action<RigidBodyWorldItemEntity>? PieceThrown;
+
         [Export(PropertyHint.Range, "0,200,1")]
         public float PlacementMargin = 16f;
 
@@ -154,11 +158,6 @@ namespace Kuros.Actors.Heroes
 
             if ((_actor is SamplePlayer sp && sp.IsActionJustPressedArbitrated("throw")) && CanPerformItemAction())
             {
-                GD.Print($"[PlayerItemInteractionComponent] throw 快捷键被按下");
-                GD.Print($"[PlayerItemInteractionComponent] EnableInput={EnableInput}, Backpack={InventoryComponent?.Backpack != null}");
-                GD.Print($"[PlayerItemInteractionComponent] InventoryComponent={InventoryComponent?.Name ?? "null"}");
-                GD.Print($"[PlayerItemInteractionComponent] _actor={_actor?.Name ?? "null"}");
-                GD.Print($"[PlayerItemInteractionComponent] StateMachine={_actor?.StateMachine != null}");
                 TryHandleDrop(DropDisposition.Throw);
             }
 
@@ -179,7 +178,6 @@ namespace Kuros.Actors.Heroes
 
             if (player != null && player.WasActionShortPressed("take_up"))
             {
-                GD.Print($"[PlayerItemInteractionComponent] take_up 短按");
                 TriggerPickupState();
             }
 
@@ -332,6 +330,8 @@ namespace Kuros.Actors.Heroes
             if (isThrowWeapon)
             {
                 selectedStack.ThrowCooldownRemaining = selectedStack.Item.ThrowWeaponCooldown;
+                // CD 开始：战斗武器解析变化（武器飞行中按空手处理，技能控制器切空手回退）
+                InventoryComponent.NotifyCombatWeaponResolutionChanged();
                 extracted = new InventoryItemStack(selectedStack.Item, 1);
                 extractedFromInventory = false;
             }
@@ -360,6 +360,32 @@ namespace Kuros.Actors.Heroes
 
             entity.LastDroppedBy = _actor;
 
+            // 消费件身份(跨拾取恢复):
+            // · 件 + 放置 → 重新入 throwcore 组 → 在场脉冲恢复(投掷不恢复)
+            // · A_007 复制件(任意生成方式)→ 恢复复制身份组 + 乱码块滤镜
+            bool isPiece = extracted.RuntimeSourceTag == Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag;
+            if (isPiece || extracted.RuntimeIsThrowCoreCopy)
+            {
+                if (entity is Node2D spawnedPiece)
+                {
+                    // 件身份(摧毁爆炸依据):放置与投掷都入组;脉冲恢复(ThrowCorePieceTag)仅放置
+                    if (isPiece)
+                    {
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceIdentityTag);
+                        spawnedPiece.SetMeta("throwcore_born_ms", Time.GetTicksMsec()); // A_004 误爆防护
+                    }
+                    if (isPiece && disposition == DropDisposition.Place)
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCorePieceTag);
+                    if (extracted.RuntimeIsThrowCoreCopy)
+                    {
+                        spawnedPiece.AddToGroup(Kuros.Items.World.RigidBodyWorldItemEntity.ThrowCoreCopyTag);
+                        Kuros.Fx.PieceCopyGlitchDecorator.Apply(spawnedPiece);
+                    }
+                }
+                extracted.RuntimeSourceTag = null;
+                extracted.RuntimeIsThrowCoreCopy = false;
+            }
+
             if (entity is RigidBodyWorldItemEntity re && savedCd > 0f)
                 re.ThrowCooldownRemaining = savedCd;
 
@@ -367,11 +393,17 @@ namespace Kuros.Actors.Heroes
             {
                 if (entity is RigidBodyWorldItemEntity rigidEntity)
                 {
+                    // 构筑修饰：投掷者实现 IThrowableModifierProvider 时携带其构筑对投掷参数的修饰
+                    if (_actor is IThrowableModifierProvider modProvider)
+                        rigidEntity.Modifiers = modProvider.GetThrowableModifiers();
+
                     rigidEntity.IsDisposableCopy = isThrowWeapon;
                     rigidEntity.ThrowHoldFrame = PendingThrowFrame;
                     PendingThrowFrame = -1;
                 }
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
+                if (entity is RigidBodyWorldItemEntity thrownRigid)
+                    PieceThrown?.Invoke(thrownRigid); // 出手瞬间钩子(A_008 分裂散射)
                 if (entity is Node2D eNode)
                     eNode.ZIndex = extracted.Item.ThrowZIndex;
             }
@@ -450,8 +482,6 @@ namespace Kuros.Actors.Heroes
 
         private bool TryHandlePickup()
         {
-            GD.Print($"[PlayerItemInteractionComponent] TryHandlePickup 被调用");
-            
             if (_actor == null)
             {
                 GD.PrintErr("[PlayerItemInteractionComponent] _actor 为 null");
@@ -465,50 +495,33 @@ namespace Kuros.Actors.Heroes
             // 方法1: 通过 InteractionArea 检测（如果存在）
             if (_interactionArea != null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 使用 InteractionArea 检测，路径: {_interactionArea.GetPath()}");
-                var overlappingAreas = _interactionArea.GetOverlappingAreas();
-                GD.Print($"[PlayerItemInteractionComponent] InteractionArea 重叠的 Area 数量: {overlappingAreas.Count}");
                 nearestPickable = FindNearestPickableFromArea(_interactionArea, actorPosition, ref nearestDistanceSq);
-            }
-            else
-            {
-                GD.Print($"[PlayerItemInteractionComponent] InteractionArea 为 null，使用距离检测模式");
             }
 
             // 方法2: 通过距离检测（备用方案，支持 RigidBodyWorldItemEntity）
             if (nearestPickable == null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 尝试使用距离检测，范围: {PickupRange} 像素");
                 nearestPickable = FindNearestPickableByDistance(actorPosition, ref nearestDistanceSq);
             }
 
             // 执行拾取
             if (nearestPickable != null)
             {
-                GD.Print($"[PlayerItemInteractionComponent] 找到可拾取物品: {nearestPickable.Name}, 类型: {nearestPickable.GetType().Name}, 距离: {Mathf.Sqrt(nearestDistanceSq):F2}");
-                
                 if (nearestPickable is WorldItemEntity worldItem)
                 {
                     bool result = worldItem.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] WorldItemEntity.TryPickupByActor 结果: {result}");
                     return result;
                 }
                 else if (nearestPickable is RigidBodyWorldItemEntity rigidItem)
                 {
                     bool result = rigidItem.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] RigidBodyWorldItemEntity.TryPickupByActor 结果: {result}");
                     return result;
                 }
                 else if (nearestPickable is PickupProperty pickupProp)
                 {
                     bool result = pickupProp.TryPickupByActor(_actor);
-                    GD.Print($"[PlayerItemInteractionComponent] PickupProperty.TryPickupByActor 结果: {result}");
                     return result;
                 }
-            }
-            else
-            {
-                GD.Print($"[PlayerItemInteractionComponent] 未找到可拾取物品");
             }
 
             return false;
@@ -778,9 +791,7 @@ namespace Kuros.Actors.Heroes
                 return false;
             }
 
-            GD.Print($"[PlayerItemInteractionComponent] 正在改变状态到: {ThrowStateName}");
             _actor.StateMachine.ChangeState(ThrowStateName);
-            GD.Print($"[PlayerItemInteractionComponent] 状态已改变，当前状态: {_actor.StateMachine.CurrentState?.Name ?? "null"}");
             return true;
         }
 

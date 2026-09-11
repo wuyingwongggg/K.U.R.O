@@ -1,17 +1,16 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://cgo40lwxataip"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3]
 
-[ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_l6yrl"]
-[ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_blm3s"]
-[ext_resource type="PackedScene" uid="uid://bi7guxtti6ocl" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_4lcja"]
-[ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="4_lyck1"]
-[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="5_sw6l2"]
-[ext_resource type="Texture2D" uid="uid://cg6kyn7331fer" path="res://assets/furnitures/home_scene1/TableBedsideA.png" id="6_l6yrl"]
-[ext_resource type="Script" uid="uid://dfgtff7mly02w" path="res://scripts/items/ItemDefinition.cs" id="7_yrgjc"]
+[ext_resource type="Script" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_l6yrl"]
+[ext_resource type="Script" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_blm3s"]
+[ext_resource type="PackedScene" path="res://resources/effects/HeavyCarrySlowEffect.tscn" id="3_4lcja"]
+[ext_resource type="PackedScene" path="res://shaders/destroy_somke.tscn" id="4_lyck1"]
+[ext_resource type="PackedScene" path="res://resources/effects/CameraShakeEffect.tscn" id="5_sw6l2"]
+[ext_resource type="Texture2D" path="res://assets/furnitures/home_scene1/TableBedsideA.png" id="6_l6yrl"]
+[ext_resource type="Script" path="res://scripts/items/ItemDefinition.cs" id="7_yrgjc"]
 
 [sub_resource type="Resource" id="Resource_l6yrl"]
 script = ExtResource("1_l6yrl")
 AttributeId = "attack_power"
-Value = 20.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_6f3qv"]
@@ -41,14 +40,15 @@ DisplayName = "床头柜A"
 Description = "一次性投掷道具：床头柜A"
 Icon = ExtResource("6_l6yrl")
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = ["tag_throw", "furniture", "tier_1"]
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_l6yrl")]([SubResource("Resource_l6yrl")])
 EffectEntries = Array[ExtResource("2_blm3s")]([SubResource("Resource_6f3qv"), SubResource("Resource_mqy4i"), SubResource("Resource_1qp51")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.4
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 700.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 1
 WorldScenePath = "uid://c4obvq7v87hkp"

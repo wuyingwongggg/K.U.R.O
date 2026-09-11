@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://dl5ouycvwcoeh"]
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=12 format=3 uid="uid://cn21pfck4kphv"]
 
 [ext_resource type="Script" uid="uid://b4tcdtjy6u7ee" path="res://scripts/items/attributes/ItemAttributeEntry.cs" id="1_3v86n"]
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="2_jr5wg"]
@@ -11,7 +11,6 @@
 [sub_resource type="Resource" id="Resource_3v86n"]
 script = ExtResource("1_3v86n")
 AttributeId = "attack_power"
-Value = 20.0
 metadata/_custom_type_script = "uid://b4tcdtjy6u7ee"
 
 [sub_resource type="Resource" id="Resource_6f3qv"]
@@ -41,14 +40,15 @@ DisplayName = "白色座椅"
 Description = "一次性投掷道具：白色座椅"
 Icon = ExtResource("3_3v86n")
 Category = "Furniture"
-Tags = Array[String](["tag_throw", "furniture"])
+Tags = Array[String](["tag_throw", "furniture", "tier_1"])
 MaxStackSize = 1
 AttributeEntries = Array[ExtResource("1_3v86n")]([SubResource("Resource_3v86n")])
 EffectEntries = Array[ExtResource("2_jr5wg")]([SubResource("Resource_6f3qv"), SubResource("Resource_mqy4i"), SubResource("Resource_1qp51")])
 IsThrowable = true
 ThrowStartOffset = Vector2(0, -250)
-ThrowParabolicDuration = 0.4
+ThrowParabolicDuration = 0.0
 ThrowParabolicPeakHeight = 100.0
-ThrowHorizontalDistance = 700.0
+ThrowHorizontalDistance = 0.0
 ThrowParabolicLandingYOffset = 250.0
+ThrowTier = 1
 WorldScenePath = "uid://kwbg3wy7rik"

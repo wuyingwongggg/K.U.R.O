@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using Godot;
-using Godot.Collections;
 using Kuros.Builds.BuildCore;
+using Kuros.Items;
 using Kuros.Systems;
 
 namespace Kuros.UI
@@ -10,6 +11,20 @@ namespace Kuros.UI
         [Export] public Control? MachinePanel { get; set; }
         [Export] public Control? WaiterPanel { get; set; }
         [Export] public Control? ThrowPanel { get; set; }
+
+        [ExportGroup("Throw Charges")]
+        /// <summary>充能图标（显示生成的家具;素材即物品定义 Icon）。</summary>
+        [Export] public TextureRect? ThrowIconRect { get; set; }
+        /// <summary>等级标签（持有家具时显示 LV1/2/3 = 有效投掷等级;未持有时隐藏;充能计数已由底槽环分段表达）。</summary>
+        [Export] public Label? ThrowCountLabel { get; set; }
+        /// <summary>底槽环（挂 circular_bar.gdshader;代码驱动 segment_count=充能上限、removed_segments=就绪填充比例）。</summary>
+        [Export] public TextureRect? ThrowSlotBaseRect { get; set; }
+        /// <summary>默认件图标 - 小型（方块.png;未升级时;null → 回退核心件图标）。</summary>
+        [Export] public Texture2D? ThrowIconSmall { get; set; }
+        /// <summary>默认件图标 - 中型（方块+.png;A_006 层 1 生成升级时）。</summary>
+        [Export] public Texture2D? ThrowIconMedium { get; set; }
+        /// <summary>默认件图标 - 大型（方块++.png;A_006 层 2 生成升级时）。</summary>
+        [Export] public Texture2D? ThrowIconLarge { get; set; }
 
         [ExportGroup("Machine Heat Bar")]
         [Export] public TextureProgressBar? HeatBar { get; set; }
@@ -33,11 +48,21 @@ namespace Kuros.UI
 
         private readonly Dictionary<string, Control?> _panelMap = new();
         private MachineCoreEffect? _boundMachineCore;
+        private ThrowCoreEffect? _boundThrowCore;
+        private Control? _activePanel; // 当前显示的跟随面板（跟随泛化:Machine/Throw/Waiter 同规则）
         private float _baseFillScaleX = 1f;
         private bool _anchorsReset;
         private Tween? _overflowPulseTween;
         private bool _overflowActive;
         private Vector2 _barBasePosition;
+
+        // Throw 充能运行态（图标缓存 + 底槽环材质实例）
+        private Texture2D? _chargeIcon;
+        private ShaderMaterial? _slotBarMaterial;
+        private int _slotSegmentCount = -1;
+
+        /// <summary>玩家引用(取"当前 holding 道具"的图标;缺失时回退核心默认图标)。SamplePlayer 在全局命名空间。</summary>
+        private global::SamplePlayer? _player;
 
         public override void _Ready()
         {
@@ -59,11 +84,28 @@ namespace Kuros.UI
             _boundMachineCore = effect;
         }
 
+        public void BindThrowCore(ThrowCoreEffect? effect)
+        {
+            _boundThrowCore = effect;
+            _chargeIcon = null; // 图标/数字在下一帧按新核心刷新
+        }
+
         public override void _Process(double delta)
         {
+            // 玩家引用(holding 图标来源;玩家换场景时自动刷新)
+            if (_player == null || !GodotObject.IsInstanceValid(_player))
+                _player = GetTree().GetFirstNodeInGroup("player") as global::SamplePlayer;
+
             // 跟随玩家：将可见核心面板定位到玩家附近（世界坐标 → 屏幕坐标）
             if (FollowPlayer)
                 UpdateFollowPlayer((float)delta);
+
+            // Throw 面板:充能计数驱动（独立于 Machine 热量逻辑）
+            if (_boundThrowCore != null && IsInstanceValid(_boundThrowCore)
+                && ThrowPanel != null && ThrowPanel.Visible)
+            {
+                UpdateThrowCharge();
+            }
 
             if (HeatBar == null || HeatFillBar == null)
                 return;
@@ -138,7 +180,7 @@ namespace Kuros.UI
         /// </summary>
         private void UpdateFollowPlayer(float delta)
         {
-            if (MachinePanel == null) return;
+            if (_activePanel == null) return;
 
             var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
             var camera = GetViewport().GetCamera2D();
@@ -152,25 +194,119 @@ namespace Kuros.UI
             if (!_anchorsReset)
             {
                 _anchorsReset = true;
-                MachinePanel.AnchorLeft = 0;
-                MachinePanel.AnchorTop = 0;
-                MachinePanel.AnchorRight = 0;
-                MachinePanel.AnchorBottom = 0;
-                MachinePanel.Position = targetPos; // 首次直接定位，避免从原点插值飞入
+                _activePanel.AnchorLeft = 0;
+                _activePanel.AnchorTop = 0;
+                _activePanel.AnchorRight = 0;
+                _activePanel.AnchorBottom = 0;
+                _activePanel.Position = targetPos; // 首次直接定位，避免从原点插值飞入
                 return;
             }
 
             // 指数平滑：SmoothSpeed 越大跟得越紧；帧率无关（1 - exp(-speed × delta)）
             float t = 1f - Mathf.Exp(-SmoothSpeed * delta);
-            MachinePanel.Position = MachinePanel.Position.Lerp(targetPos, t);
+            _activePanel.Position = _activePanel.Position.Lerp(targetPos, t);
+        }
+
+        /// <summary>
+        /// Throw 充能驱动（图标 + 数字 + 底槽环）。
+        /// 底槽环挂 circular_bar.gdshader:segment_count = 充能上限（每格一段）,
+        /// removed_segments = 绿色弧段占比 = (就绪充能 + 当前恢复格进度) / 上限。
+        /// 满充能 = 满环;用尽后从空环随 CD 逐格填回（该 shader 参数值即显示弧长比例）。
+        /// </summary>
+        private void UpdateThrowCharge()
+        {
+            var core = _boundThrowCore;
+            if (core == null || !IsInstanceValid(core)) return;
+
+            int ready = core.ReadyCharges;
+            int max = core.EffectiveMaxCharges;
+            bool full = ready >= max;
+
+            var held = _player?.LeftHandItem;
+            Texture2D? heldIcon = held != null && held.IsFurniture ? held.Icon : null;
+
+            if (ThrowIconRect != null)
+            {
+                // 仅家具(IsFurniture = 一次性投掷物)参与:举着家具时显示该件 Icon;
+                // 空手/举投掷武器/其它武器 → 默认件图标(A_006 生成升级时随档切换)。
+                Texture2D? icon = heldIcon ?? ResolveDefaultThrowIcon(core);
+                if (!ReferenceEquals(_chargeIcon, icon))
+                {
+                    _chargeIcon = icon;
+                    ThrowIconRect.Texture = icon;
+                }
+
+                // 充能耗尽的半透明只作用于默认件图标:持有家具的图标保持全亮
+                ThrowIconRect.Modulate = heldIcon != null || ready > 0 ? Colors.White : new Color(1f, 1f, 1f, 0.5f);
+            }
+
+            // 等级徽章 = 持有家具的有效投掷等级(充能计数改由底槽环分段表达);
+            // 未持有家具(或家具无档) → 徽章底图与数字一并隐藏
+            int tierValue = 0;
+            if (held != null && held.IsFurniture)
+                tierValue = (int)held.EffectiveTier(_player?.GetThrowableModifiers() ?? ThrowableModifiers.None, 0);
+
+            if (ThrowCountLabel != null)
+            {
+                ThrowCountLabel.Visible = tierValue > 0;
+                if (tierValue > 0)
+                    ThrowCountLabel.Text = $"LV{tierValue}";
+            }
+
+            // 底槽环:段数 = 充能上限(每格一段);显示弧长占比 = (就绪充能 + 恢复进度) / 上限
+            var mat = GetOrCreateSlotBarMaterial();
+            if (mat == null) return;
+
+            if (_slotSegmentCount != max)
+            {
+                _slotSegmentCount = max;
+                mat.SetShaderParameter("segment_count", max);
+            }
+
+            float progress = full ? 0f : Mathf.Clamp(core.ChargingProgress, 0f, 1f);
+            mat.SetShaderParameter("removed_segments", Mathf.Clamp((ready + progress) / max, 0f, 1f));
+        }
+
+        /// <summary>
+        /// 默认件图标（空手时显示）:A_006 生成升级按档切换 —— 1 = 小型(默认方块),
+        /// 2 = 中型(方块+),3 = 大型(方块++);未配素材或未升级 → 核心件图标。
+        /// </summary>
+        private Texture2D? ResolveDefaultThrowIcon(ThrowCoreEffect core)
+        {
+            Texture2D? tierIcon = core.SpawnTierOverride switch
+            {
+                2 => ThrowIconMedium,
+                3 => ThrowIconLarge,
+                _ => ThrowIconSmall,
+            };
+            return tierIcon ?? core.FurnitureIcon;
+        }
+
+        /// <summary>底槽环材质（取 SlotBase 实例材质的独立副本:参数驱动不污染 .tscn 共享资源）。</summary>
+        private ShaderMaterial? GetOrCreateSlotBarMaterial()
+        {
+            if (_slotBarMaterial != null && IsInstanceValid(_slotBarMaterial))
+                return _slotBarMaterial;
+            if (ThrowSlotBaseRect?.Material is not ShaderMaterial shared)
+                return null;
+
+            _slotBarMaterial = (ShaderMaterial)shared.Duplicate();
+            ThrowSlotBaseRect.Material = _slotBarMaterial;
+            _slotSegmentCount = -1; // 强制下一帧重写分段数
+            return _slotBarMaterial;
         }
 
         public void ShowFor(string buildClass)
         {
             _boundMachineCore = null;
+            _boundThrowCore = null;
             HideAll();
+            _activePanel = null;
             if (_panelMap.TryGetValue(buildClass, out var panel) && panel != null)
+            {
                 panel.Visible = true;
+                _activePanel = panel;
+            }
         }
 
         public void HideAll()

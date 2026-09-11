@@ -1,25 +1,87 @@
-[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=5 format=3 uid="uid://eccmh813ifss"]
+[gd_resource type="Resource" script_class="WeaponSkillDefinition" load_steps=15 format=3 uid="uid://cn5dnmenba4hg"]
 
 [ext_resource type="Script" uid="uid://bv0es4osw3x0r" path="res://scripts/items/effects/ItemEffectEntry.cs" id="1_8bkkx"]
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_itwdm"]
 [ext_resource type="PackedScene" uid="uid://cb63a03x1vhat" path="res://resources/effects/WeaponSlashBaguetteEffect.tscn" id="2_dmijq"]
+[ext_resource type="PackedScene" uid="uid://dqcp2msh4e70y" path="res://shaders/smash_small_effect.tscn" id="2_t013a"]
 [ext_resource type="Script" uid="uid://bp6pwgoj44cuq" path="res://scripts/items/weapons/WeaponSkillDefinition.cs" id="2_uqor0"]
+[ext_resource type="PackedScene" uid="uid://bmhkq2sfgo8a5" path="res://scenes/actors/etc/SmashA.tscn" id="3_l17fu"]
+[ext_resource type="PackedScene" uid="uid://bioknm040r2lo" path="res://resources/effects/KnockbackOnAttackEffect.tscn" id="4_axkj6"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="4_rjjlq"]
+
+[sub_resource type="Resource" id="Resource_05c8l"]
+script = ExtResource("1_itwdm")
+Scene = ExtResource("2_t013a")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_6i2y8"]
+script = ExtResource("1_itwdm")
+Scene = ExtResource("3_l17fu")
+EffectOffset = Vector2(300, 0)
+SpawnTiming = 2
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_j3myv"]
+script = ExtResource("1_itwdm")
+Scene = ExtResource("4_rjjlq")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 10.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_dmijq"]
+script = ExtResource("1_8bkkx")
+Trigger = 1
+EffectScene = ExtResource("2_dmijq")
+PropertyOverrides = Dictionary[String, Variant]({
+"SpawnChance": 40.0
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
+
+[sub_resource type="Resource" id="Resource_itwdm"]
+script = ExtResource("1_8bkkx")
+Trigger = 1
+EffectScene = ExtResource("4_axkj6")
+PropertyOverrides = Dictionary[String, Variant]({
+"KnockbackDistance": 50.0,
+"KnockbackDuration": 0.07,
+"TriggerHitStep": 1
+})
+metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [sub_resource type="Resource" id="Resource_axkj6"]
 script = ExtResource("1_8bkkx")
 Trigger = 1
 EffectScene = ExtResource("2_dmijq")
+PropertyOverrides = Dictionary[String, Variant]({
+"SpawnChance": 20.0
+})
 metadata/_custom_type_script = "uid://bv0es4osw3x0r"
 
 [resource]
 script = ExtResource("2_uqor0")
 SkillId = "WeaponSkill_Slash_Baguette"
 DisplayName = "法棍攻击"
-SkillType = 1
 AnimationName = "Weapon_Slash_Baguette"
+DashDamageMultiplier = 1.2
 ShowHitboxDebug = false
-Description = "手持该武器攻击敌人后，有概率生成接触后恢复生命的面包碎块"
+Description = "手持该武器攻击敌人后，有20%概率生成面包碎块，冲刺攻击概率翻倍，接触后恢复生命"
 Effects = Array[ExtResource("1_8bkkx")]([SubResource("Resource_axkj6")])
-WarmupDuration = 0.17
-ActiveDuration = 0.17
-RecoveryDuration = 0.19
-WarmupAnimationSpeed = 0.4
+DashEffects = Array[ExtResource("1_8bkkx")]([SubResource("Resource_dmijq"), SubResource("Resource_itwdm")])
+DashAttackFxEntries = Array[ExtResource("1_itwdm")]([SubResource("Resource_05c8l"), SubResource("Resource_6i2y8"), SubResource("Resource_j3myv")])
+WarmupDuration = 0.3
+ActiveDuration = 0.2
+RecoveryDuration = 0.17
+DashAnimationName = "Weapon_Slash_Baguette_RunAttack"
+DashWarmupDuration = 0.17
+DashActiveDuration = 0.23
+DashRecoveryDuration = 0.27
+DashWarmupAnimationSpeed = 0.7
+DashActiveAnimationSpeed = 1.0
+DashRecoveryAnimationSpeed = 1.0
+DashAttackSpeedSource = 0
+DashAttackSpeedMultiplier = 1.0

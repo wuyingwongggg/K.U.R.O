@@ -31,8 +31,8 @@ namespace Kuros.Fx
         [Export] public bool AllowSelfDamage;
 
         [ExportCategory("Knockback")]
-        /// <summary>击退速度（像素/秒），0 不击退。</summary>
-        [Export(PropertyHint.Range, "0,3000,1")] public float KnockbackSpeed = 200f;
+        /// <summary>击退位移距离（像素），0 不击退。位移在 KnockbackDuration 内匀减速滑完。</summary>
+        [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 40f; // 原速度200×0.2s折算
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
 
         [ExportCategory("Hit Detection")]
@@ -101,7 +101,7 @@ namespace Kuros.Fx
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(body, _attacker)) return;
 
             bool dealt = DamageDispatcher.DealDamage(body, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox, Direction);
             if (!dealt) return;
 
             if (body is GameActor actor)
@@ -118,7 +118,7 @@ namespace Kuros.Fx
             if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(target, _attacker)) return;
 
             bool dealt = DamageDispatcher.DealDamage(target, Damage, GlobalPosition, _attacker,
-                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox);
+                DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, _hitbox, Direction);
             if (!dealt) return;
 
             if (area.Owner is GameActor actor)
@@ -133,13 +133,13 @@ namespace Kuros.Fx
         /// </summary>
         private void ApplyKnockback(GameActor actor)
         {
-            if (KnockbackSpeed <= 0f) return;
+            if (KnockbackDistance <= 0f) return;
 
             Vector2 dir = Direction;
             if (dir.LengthSquared() < 0.01f)
                 dir = Vector2.Right;
 
-            actor.ApplyKnockback(dir.Normalized(), KnockbackSpeed);
+            actor.ApplyKnockbackDisplacement(dir.Normalized(), KnockbackDistance, KnockbackDuration);
         }
 
         /// <summary>

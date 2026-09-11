@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://c0oyd0psq7fe1"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_kw1ju"]
-[ext_resource type="Resource" uid="uid://bk5qofm73s8f2" path="res://resources/items/Furniture_B_CautionTape_fwd.tres" id="2_kw1ju"]
+[ext_resource type="Resource" uid="uid://csb5yy1f5vrux" path="res://resources/items/Furniture_B_CautionTape_fwd.tres" id="2_kw1ju"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kaxmn"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_jstfe"]
 [ext_resource type="Texture2D" uid="uid://djwqphcob6hvw" path="res://assets/furnitures/hotel_scene2/CautionTape_fwd.png" id="6_kw1ju"]
@@ -19,7 +19,7 @@ load_path = "res://.godot/imported/影子.png-ff14a7a2861f691fc06fc4544603034d.c
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_jstfe")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -42,12 +42,10 @@ ItemDefinition = ExtResource("2_kw1ju")
 GrabAreaPath = NodePath("RigidBody2D/CollisionArea")
 HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
-ThrowDamage = 2.0
 MinDamageVelocity = 0.0
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 Destructible = true
-MaxHP = 20.0
 HitFlashSpritePath = NodePath("RigidBody2D/Outline/Sprite2D")
 RigidBodyPath = NodePath("RigidBody2D")
 HitboxAreaPath = NodePath("RigidBody2D/AttackArea")
@@ -58,16 +56,15 @@ can_sleep = false
 freeze = true
 freeze_mode = 1
 
-[node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
+[node name="Shadow_button" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
 position = Vector2(-22, 376)
 scale = Vector2(2, 1.5)
 texture = SubResource("CompressedTexture2D_qvcvh")
 
-[node name="Shadow" type="Sprite2D" parent="RigidBody2D/Shadow"]
+[node name="Shadow" type="Sprite2D" parent="RigidBody2D/Shadow_button"]
 material = SubResource("ShaderMaterial_aa7cv")
 position = Vector2(-14.999998, -332.00003)
-rotation = -0.12217305
 texture = SubResource("CompressedTexture2D_kw1ju")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]

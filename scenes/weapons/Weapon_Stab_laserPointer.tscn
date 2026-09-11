@@ -4,11 +4,11 @@
 [ext_resource type="Resource" uid="uid://bcl2h4rh8esrx" path="res://resources/items/Weapon_Stab_LaserPointer.tres" id="2_fj6ww"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_kv6fx"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_4pbix"]
-[ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_c8yfh"]
+[ext_resource type="Shader" uid="uid://8m1dqcvm2y7u" path="res://shaders/materials/sprite_outline.gdshader" id="5_c8yfh"]
 [ext_resource type="Texture2D" uid="uid://bqyt30qieseuf" path="res://assets/weapons/激光笔.png" id="6_fj6ww"]
-[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="7_quj7s"]
-[ext_resource type="Shader" uid="uid://b4jsv7id6l412" path="res://shaders/materials/sparkling_star.gdshader" id="8_kv6fx"]
-[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="9_4pbix"]
+[ext_resource type="Shader" uid="uid://cxc1fus7qqfu6" path="res://shaders/materials/sparkling.gdshader" id="7_quj7s"]
+[ext_resource type="Shader" uid="uid://dohrihv500dkc" path="res://shaders/materials/sparkling_star.gdshader" id="8_kv6fx"]
+[ext_resource type="Texture2D" uid="uid://cte5bwtt7ps1d" path="res://assets/art/godot_icon.png" id="9_4pbix"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_m4rsl"]
 shader = ExtResource("3_kv6fx")
@@ -64,7 +64,7 @@ shader_parameter/curve_ci = 0.2000000095
 size = Vector2(320, 90)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kv6fx"]
-radius = 125.0
+radius = 150.0
 height = 6600.0
 
 [node name="WeaponStabLaserPointer" type="CharacterBody2D"]
