@@ -79,6 +79,9 @@ namespace Kuros.Managers
 
         [ExportGroup("Debug")]
         [Export] public bool DebugTrigger { get; set; }
+        /// <summary>调试触发键（默认 B）：每次按下翻转 DebugTrigger（等价于 Inspector 勾选/取消）。
+        /// 置 true 后由 _Process 消费（需已绑定玩家且当前无选择窗）→ 打开一次三选一窗口。</summary>
+        [Export] public Key DebugTriggerKey { get; set; } = Key.B;
 
         private SamplePlayer? _boundPlayer;
         private string? _playerCoreClass;
@@ -123,6 +126,16 @@ namespace Kuros.Managers
                 DebugTrigger = false;
                 TriggerSelection();
             }
+        }
+
+        /// <summary>调试键：翻转 DebugTrigger。窗口打开期间树暂停（INHERIT 输入不触发）——不会误触发连续弹窗。</summary>
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (@event is not InputEventKey key || !key.Pressed || key.Echo) return;
+            if (key.Keycode != DebugTriggerKey) return;
+
+            DebugTrigger = !DebugTrigger;
+            GetViewport().SetInputAsHandled();
         }
 
         private void TryBindPlayer()

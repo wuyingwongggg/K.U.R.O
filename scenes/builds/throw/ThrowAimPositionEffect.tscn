@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://6wax8d17qji7"]
 
-[ext_resource type="Script" path="res://scripts/builds/throw/ThrowAimPositionEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://d0styn7l50epi" path="res://scripts/builds/throw/ThrowAimPositionEffect.cs" id="1"]
 
 [node name="ThrowAimPositionEffect" type="Node"]
 script = ExtResource("1")
+EffectId = "a0ce449d-3ba8-4d60-9997-3744c25aa599"
+Description = " 坐标寻址：乱码块可以在指定位置生成"

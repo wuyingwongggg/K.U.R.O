@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://beup3s3dr4q8h"]
+[gd_scene load_steps=19 format=3 uid="uid://beup3s3dr4q8h"]
 
 [ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="1_csmgr"]
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctuyy"]
@@ -18,7 +18,6 @@
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="14_pvxkr"]
 [ext_resource type="Script" uid="uid://ghxude6q2vj8" path="res://scripts/systems/stage/StageSession.cs" id="16_sess"]
 [ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="17_scfg"]
-[ext_resource type="Resource" uid="uid://ck0oryxrkbkq5" path="res://resources/stages/stage_2.tres" id="18_cfgh"]
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 script = ExtResource("1_ctuyy")
@@ -46,7 +45,7 @@ GenerateOnReady = false
 [node name="StageSession" type="Node" parent="."]
 script = ExtResource("16_sess")
 AllConfigs = Array[ExtResource("17_scfg")]([ExtResource("8_83iw7"), ExtResource("9_5g8wj"), ExtResource("10_axi2i"), ExtResource("11_i2bjf"), ExtResource("12_axi2i"), ExtResource("13_i2bjf"), ExtResource("14_i2bjf")])
-StartStage = ExtResource("18_cfgh")
+StartStage = ExtResource("14_i2bjf")
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("14_pvxkr")]
 
@@ -83,6 +82,7 @@ script = ExtResource("7_drop")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 128
+visible = false
 
 [node name="ColorRectTop" type="ColorRect" parent="CanvasLayer"]
 offset_right = 1920.0

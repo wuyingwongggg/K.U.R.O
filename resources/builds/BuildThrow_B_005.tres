@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://csa572m74owa7"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="Texture2D" uid="uid://y8fkmm0gnrue" path="res://assets/BuildIcon/Throw_B_005_进程锁定.png" id="3_2hw0f"]
+[ext_resource type="PackedScene" path="res://scenes/builds/throw/ThrowProcessLockEffect.tscn" id="3_scene"]
+
+[sub_resource type="Resource" id="Resource_B005"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([15.0, 30.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_B_005"
+DisplayName = "进程锁定"
+Description = "持有投掷道具时获得霸体状态,且持有时获得{0}%/{1}%的伤害减免"
+BuildClass = "Throw"
+MaxStacks = 2
+Icon = ExtResource("3_2hw0f")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B005")])

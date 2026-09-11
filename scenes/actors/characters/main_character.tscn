@@ -425,9 +425,9 @@ script = ExtResource("15_0y6jy")
 
 [node name="Throw" type="Node" parent="StateMachine"]
 script = ExtResource("16_oc5yk")
-ThrowWarmupDuration = 0.2
+ThrowWarmupDuration = 0.23
 ThrowActiveDuration = 0.1
-ThrowRecoveryDuration = 0.37
+ThrowRecoveryDuration = 0.34
 
 [node name="IdleHolding" type="Node" parent="StateMachine"]
 script = ExtResource("20_h3qap")

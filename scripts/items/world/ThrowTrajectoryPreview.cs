@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Godot;
 using Kuros.Actors.Heroes;
-using Kuros.Core;
 using Kuros.Items;
 
 namespace Kuros.Items.World
@@ -289,11 +288,6 @@ namespace Kuros.Items.World
                 }
                 _landingPoints.Add(new Vector2(startLocalX + totalDX, landingY));
             }
-
-            // A_010 坐标寻址:激活时在"指定位置"追加放置标记(与生成点同一解析器,所见即所得)
-            var aim = _player.GetNodeOrNull<AimPointResolver>(AimPointResolver.NodeName);
-            if (aim != null && aim.TryGetAimWorldPoint(out var aimWorld))
-                _landingPoints.Add(ToLocal(aimWorld));
 
             _landingLocalPos = _landingPoints.Count > 0 ? _landingPoints[0] : Vector2.Zero;
         }

@@ -43,6 +43,14 @@ namespace Kuros.Builds.BuildCore
         /// 返回 true = 已消费本次短按(跳过生成/其它处理);null/返回 false = 走默认生成。</summary>
         public System.Func<bool>? HeldPieceCoreSkillHandler { get; set; }
 
+        /// <summary>瞄准模式入口(A_010 坐标寻址注册):短按核心技能(未被 A_009 消费)时调用,
+        /// 返回 true = 已进入瞄准模式(本次不立即生成,确认时由控制器回调 TrySpawnOnce);
+        /// null/返回 false = 走默认立即生成。</summary>
+        public System.Func<bool>? AimModeEnterHandler { get; set; }
+
+        /// <summary>瞄准模式进行中(A_010 控制器置位):短按/长按输入全部交由控制器接管,核心本体不响应。</summary>
+        public bool AimModeActive { get; set; }
+
         /// <summary>指定位置生成半径(0=关闭):生成点改取 AimPointResolver 的设备无关瞄准点
         /// (A_010 坐标寻址写入,默认 600);0 时保持"玩家身侧"生成。</summary>
         public float SpawnAtAimPointRange { get; set; }
@@ -171,6 +179,9 @@ namespace Kuros.Builds.BuildCore
                 _rechargeTimer = 0f;
             }
 
+            // A_010 瞄准模式进行中:输入由 ThrowAimTargetingController 接管(确认/取消),核心不响应长短按
+            if (AimModeActive) return;
+
             // 输入走玩家 InputHoldTracker 的长短按语义（阈值 = GameSettings HoldThresholdSeconds）:
             // 短按(松开 < 阈值) → 消耗 1 充能生成;长按(按住 ≥ 阈值) → 销毁本效果生成的家具
             var player = GetMainCharacter();
@@ -178,8 +189,9 @@ namespace Kuros.Builds.BuildCore
 
             if (player.WasActionShortPressed(Kuros.Core.InputActions.CoreSkill))
             {
-                // A_009 等接管优先(手持件转化);未消费则走默认生成
-                if (HeldPieceCoreSkillHandler?.Invoke() != true)
+                // A_009 接管优先(手持件转化) → A_010 瞄准模式入口 → 默认立即生成
+                if (HeldPieceCoreSkillHandler?.Invoke() != true
+                    && AimModeEnterHandler?.Invoke() != true)
                     TrySpawnOnce();
             }
 
@@ -187,11 +199,14 @@ namespace Kuros.Builds.BuildCore
                 DestroyAllGeneratedFurniture();
         }
 
-        private void TrySpawnOnce()
+        /// <summary>消耗 1 充能生成一件(短按默认路径;A_010 瞄准模式"确认"也走此入口)。
+        /// 返回 false = 未生成(无充能/无场景)。</summary>
+        public bool TrySpawnOnce()
         {
-            if (!CanSpawn) return;
+            if (!CanSpawn) return false;
             SpawnFurniture();
             ReadyCharges--;
+            return true;
         }
 
         /// <summary>长按 F:触发场上本效果生成家具的**正常销毁流程**(OnThrowDestroy 特效/掉落链,非直接
@@ -265,7 +280,8 @@ namespace Kuros.Builds.BuildCore
 
         // ═══════════════════════════ 生成场景聚合(BuildThrow 卡驱动) ═══════════════════════════
         // 优先级:A_007 复制玩家当前高亮家具 > A_006 升级档(中型/大型 export) > 默认 FurnitureScene(小型)
-        private PackedScene? ResolveSpawnScene(out bool isCopy)
+        /// <summary>当前将生成的场景(与 SpawnFurniture 同一逻辑;A_010 瞄准模式幽灵预览也走此入口)。</summary>
+        public PackedScene? ResolveSpawnScene(out bool isCopy)
         {
             isCopy = false;
             if (CopyNearbyFurnitureRange > 0f)
