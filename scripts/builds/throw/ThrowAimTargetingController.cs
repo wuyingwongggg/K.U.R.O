@@ -76,6 +76,8 @@ namespace Kuros.Builds.Throw
             _resolver ??= _player != null ? AimPointResolver.Find(_player) : null;
             if (_player == null || !IsInstanceValid(_player)) return false;
             if (_core == null || !IsInstanceValid(_core) || !_core.CanSpawn) return false;
+            // 投掷/蓄力进行中(B_006)不进入瞄准模式:攻击键语义已归投掷(松手出手),避免左键同时"确认"又出手
+            if (_player.StateMachine?.CurrentState?.Name == "Throw") return false;
 
             IsActive = true;
             _skipInputThisFrame = true;

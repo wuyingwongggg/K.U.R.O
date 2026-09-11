@@ -41,7 +41,7 @@ shader_parameter/alpha = 0.4
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 resource_local_to_scene = true
 shader = ExtResource("5_7qapq")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12

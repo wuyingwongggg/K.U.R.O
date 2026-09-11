@@ -80,13 +80,14 @@ namespace Kuros.Items.World
 
 		[ExportGroup("Physics Mode")]
 		/// <summary>停止后是否回弹（与 StopOnHit 解耦：false = 停止后直接走 LandingHideDelay 销毁流程）。</summary>
-		[Export] public bool BounceAfterStop { get; set; } = false;
-		/// <summary>停止后回弹的向上初速度（像素/秒）。</summary>
-		[Export] public float BounceSpeed { get; set; } = 650f;
-		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。</summary>
-		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0.2f;
+		[Export] public bool BounceAfterStop { get; set; } = true;
+		/// <summary>停止后回弹的向上初速度（像素/秒）。0=未配置 → 家具档位值（越重越不弹）；无档回退 650。</summary>
+		[Export] public float BounceSpeed { get; set; } = 0f;
+		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。
+		/// 0=未配置 → 家具档位值（越重向后弹得越少）；无档回退 0.2。</summary>
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0f;
 		/// <summary>落地反弹弹性（判定层边界反弹衰减系数，0 = 落地即停，1 = 完全弹性）。</summary>
-		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.25f;
+		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.0f;
 		/// <summary>回弹下落的重力倍率（脚本模拟，仅用于回弹上升/回落）。</summary>
 		[Export] public float PhysicsModeGravityScale { get; set; } = 8.0f;
 		/// <summary>回弹水平速度的衰减系数（指数衰减 ≈ 物理阻尼，越大弹开后越快停住）。</summary>
@@ -126,7 +127,10 @@ namespace Kuros.Items.World
 		[ExportGroup("Physics")]
 		[Export] public NodePath RigidBodyPath { get; set; } = new NodePath(".");
 		[Export] public NodePath HitboxAreaPath { get; set; } = new NodePath("Rigidbody2D/Hitbox");
-		[Export] public NodePath ShadowPath { get; set; } = new NodePath("Shadow"); // 阴影节点路径，投掷飞行期间隐藏
+		/// <summary>阴影节点路径（投掷飞行期间影子做地面投影:随视觉 X 水平移动、按离地高度等比缩放）。</summary>
+		[Export] public NodePath ShadowPath { get; set; } = new NodePath("Shadow");
+		/// <summary>飞行中影子最小缩放比例（相对场景原尺寸;1=不缩放）。起步/最高点约取该值，落地还原为 1。</summary>
+		[Export(PropertyHint.Range, "0.1,1,0.05")] public float ShadowMinScaleFactor { get; set; } = 0.5f;
 		[Export] public uint ThrowCollisionLayer { get; set; } = 1u << 2;
 		[Export] public uint ThrowCollisionMask { get; set; } = 0;
 
@@ -185,6 +189,11 @@ namespace Kuros.Items.World
 		private Area2D? _cachedPlayerGrabArea; // 缓存的玩家 GrabArea
 		private bool _isOutlineHighlighted; // 是否正在高亮显示
 		private Node2D? _shadowNode; // 阴影节点缓存
+		private Vector2 _shadowBasePosition;    // 阴影本地变换(飞行结束还原;飞行中影子被覆写为地面投影)
+		private Vector2 _shadowBaseScale = Vector2.One;
+		private float _shadowHeightRef = 1f;    // 飞行起步时的视觉离地高度(影子缩放归一参考)
+		private bool _flightProjectionActive;   // 影子/判定盒处于飞行地面投影中(结束帧统一归位)
+		private Vector2 _hitboxBasePosition;    // 判定盒本地位置(飞行结束还原)
 		private double _throwCooldownTimer = 0.0; // 投掷武器冷却计时器
 		private bool _isInCooldown = false; // 是否在冷却中
 		private double _landingHideTimer = 0.0; // 落点隐藏计时器（LandingHideDelay：到期后隐藏视觉，不销毁节点）
@@ -251,6 +260,18 @@ namespace Kuros.Items.World
 			=> (ItemDefinition != null && ItemDefinition.ThrowStartOffset != Vector2.Zero)
 				? ItemDefinition.ThrowStartOffset
 				: new Vector2(0, -200);
+
+		/// <summary>回弹初速度:场景 export &gt;0 逐件特化覆盖;0 = 家具档位值(越重越不弹);无档(武器)回退 650。</summary>
+		private float GetEffectiveBounceSpeed()
+			=> BounceSpeed > 0f
+				? BounceSpeed
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.BounceSpeed ?? 650f;
+
+		/// <summary>回弹水平分量比例:场景 export &gt;0 逐件特化覆盖;0 = 家具档位值(越重向后弹得越少);无档(武器)回退 0.2。</summary>
+		private float GetEffectiveBounceHorizontalRatio()
+			=> BounceHorizontalRatio > 0f
+				? BounceHorizontalRatio
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.BounceHorizontalRatio ?? 0.2f;
 		
 		/// <summary>
 		/// 检查指定 Actor 是否在 GrabArea 范围内
@@ -462,12 +483,48 @@ namespace Kuros.Items.World
 				_shadowNode = GetNodeOrNull<Node2D>("Shadow")
 					?? _rigidBody?.GetNodeOrNull<Node2D>("Shadow");
 			}
+
+			// 缓存本地变换:飞行中影子被覆写为地面投影,结束帧按此还原
+			if (_shadowNode != null)
+			{
+				_shadowBasePosition = _shadowNode.Position;
+				_shadowBaseScale = _shadowNode.Scale;
+			}
 		}
 
 		private void SetShadowVisible(bool visible)
 		{
 			if (_shadowNode != null && GodotObject.IsInstanceValid(_shadowNode))
 				_shadowNode.Visible = visible;
+		}
+
+		/// <summary>飞行中影子:地面投影(与判定盒同一手法——X 随视觉、Y 取投掷地面行),
+		/// 并按"视觉离地高度"等比缩放:越高越小、落地还原场景原尺寸(伪 3D)。</summary>
+		private void UpdateFlightShadow(float visualX, float groundY)
+		{
+			if (_shadowNode == null || !GodotObject.IsInstanceValid(_shadowNode)) return;
+
+			_shadowNode.GlobalPosition = new Vector2(visualX, groundY);
+
+			// 高度归一:参考 = 起步瞬间离地高度;落地 dist→0 → 1(原尺寸),起步/峰值 → 最小缩放
+			float dist = Mathf.Abs(_rigidBody.GlobalPosition.Y - groundY);
+			float t = Mathf.Clamp(dist / Mathf.Max(_shadowHeightRef, 1f), 0f, 1f);
+			_shadowNode.Scale = _shadowBaseScale * Mathf.Lerp(ShadowMinScaleFactor, 1f, 1f - t);
+		}
+
+		/// <summary>飞行结束统一归位(覆盖落地/撞墙/命中停止/被接住等所有退出路径,
+		/// 由 _PhysicsProcess 的"投影中且不在飞行"检查触发一次):影子与判定盒从地面投影还原为实体本地变换。</summary>
+		private void RestoreFlightProjection()
+		{
+			_flightProjectionActive = false;
+
+			if (_shadowNode != null && GodotObject.IsInstanceValid(_shadowNode))
+			{
+				_shadowNode.Position = _shadowBasePosition;
+				_shadowNode.Scale = _shadowBaseScale;
+			}
+			if (_hitboxArea != null && GodotObject.IsInstanceValid(_hitboxArea))
+				_hitboxArea.Position = _hitboxBasePosition;
 		}
 
 		private void ResolveOutlineHighlight()
@@ -646,6 +703,8 @@ namespace Kuros.Items.World
 			_throwStartY = _rigidBody.GlobalPosition.Y;
 			// 判定层：投掷者站立的地面世界 Y（敌人 HitArea 同层）——不是场景原点 0
 			_throwJudgmentY = origin.Y;
+			// 影子缩放归一参考 = 起步瞬间的视觉离地高度(峰值段超出 → 钳到最小缩放)
+			_shadowHeightRef = Mathf.Max(Mathf.Abs(_throwStartY - _throwJudgmentY), 1f);
 
 				// 激活伤害检测并应用投掷时的碰撞设置
 				if (velocity.LengthSquared() > 0.01f)
@@ -657,8 +716,7 @@ namespace Kuros.Items.World
 					
 						// 家具投掷时关闭 StaticBody2D 碰撞体，避免大碰撞体推开敌人导致 AttackArea 无法命中
 						SetFurnitureStaticBodyCollision(false);
-				// 投掷飞行期间隐藏阴影
-				SetShadowVisible(false);
+						// (影子不再于飞行期间隐藏:改为地面投影,见 UpdateFlightShadow)
 				
 
 					// 构筑效果已在 PlayerItemInteractionComponent.TryHandleDrop 中预注册，此处无需重复注册
@@ -784,6 +842,11 @@ namespace Kuros.Items.World
 				QueryNonActorTargets();
 			}
 
+			// 飞行结束统一归位(覆盖落地/撞墙/命中停止/被接住等所有退出路径):
+			// 影子与判定盒从地面投影还原为实体本地变换;回弹段(_bouncing)继续投影,静止后再归位
+			if (_flightProjectionActive && !_inFlight && !_bouncing)
+				RestoreFlightProjection();
+
 			// 抛物线飞行逻辑：平顺的参数化抛物线轨迹
 			if (_inFlight)
 			{
@@ -843,11 +906,15 @@ namespace Kuros.Items.World
 			// 视觉/判定分离：判定 Hitbox 投影在投掷者地面层（_throwJudgmentY），X 每帧跟随视觉——
 			// 判定与视觉抛物线水平完全同步（同起点、同速度、同距离），垂直分离到敌人 HitArea 所在层。
 			// A_008 散射:判定行从玩家行(0)随 phase 渐变到该枚终点行(LandingOffsetYDelta),与视觉落点同进
+			float groundRowY = _throwJudgmentY + LandingOffsetYDelta * (float)phase;
+			_flightProjectionActive = true; // 标记投影中(含判定盒归位),飞行结束帧统一还原
 			if (_hitboxArea != null)
 			{
-				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X,
-					_throwJudgmentY + LandingOffsetYDelta * (float)phase);
+				_hitboxArea.GlobalPosition = new Vector2(_rigidBody.GlobalPosition.X, groundRowY);
 			}
+
+			// 影子地面投影(与判定盒同一手法):X 随视觉、Y 在投掷地面行;按离地高度等比缩放(伪 3D)
+			UpdateFlightShadow(_rigidBody.GlobalPosition.X, groundRowY);
 
 			// 计算虚拟速度用于碰撞检测（在飞行时维持水平速度）
 			Vector2 simulatedVelocity = new Vector2(
@@ -922,6 +989,10 @@ namespace Kuros.Items.World
 					}
 				}
 				_rigidBody.GlobalPosition = pos;
+
+				// 影子同投影(StopOnHit 后的回弹段;地面 = 判定层,与反弹地面一致):
+				// X 随视觉、Y 在地面行;越接近地面越大,静止归位由顶部统一检查触发
+				UpdateFlightShadow(_rigidBody.GlobalPosition.X, _throwJudgmentY);
 
 				// 静止：已接触判定层、反弹已完全吸收（无上升速度）、水平速度衰减到位
 				if (grounded && _bounceVelY >= 0f && Mathf.Abs(_bounceVelX) < 40f)
@@ -1211,6 +1282,8 @@ namespace Kuros.Items.World
 			_hitboxArea.Monitoring = true;
 			_hitboxArea.Monitorable = false;
 
+			_hitboxBasePosition = _hitboxArea.Position; // 飞行结束还原(飞行中覆写为地面投影)
+
 			_hitboxArea.AreaEntered += OnHitboxAreaEntered;
 		}
 
@@ -1464,7 +1537,8 @@ namespace Kuros.Items.World
 			// 飞行中命中敌人（必须在 StopItemMovement 之前判断，否则 _inFlight 会被提前清除）
 			if (_inFlight)
 			{
-				if (StopOnHit)
+				// B_008 延迟销毁:一次性道具携带穿透修饰时不停留,穿透敌人继续飞向落点(武器不受该卡影响)
+				if (StopOnHit && !(Modifiers.PassThroughEnemies && !IsThrowWeapon))
 				{
 					// StopOnHit=true：立即停止飞行，走与落地相同的 LandingHideDelay 流程。
 					// 停止前沿飞行方向结算贯穿段内的所有敌人——视觉停在第一个敌人，伤害覆盖路径后方敌群
@@ -1769,8 +1843,8 @@ namespace Kuros.Items.World
 		{
 			if (_rigidBody == null || _bouncing) return;
 			_bouncing = true;
-			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * BounceHorizontalRatio;
-			_bounceVelY = -BounceSpeed;
+			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * GetEffectiveBounceHorizontalRatio();
+			_bounceVelY = -GetEffectiveBounceSpeed();
 
 			// 回弹阶段视觉在地面附近，恢复阴影
 			SetShadowVisible(true);
@@ -2430,6 +2504,12 @@ namespace Kuros.Items.World
 						// 如 BriefcaseOpenEffect 延迟生成 FireWall 的翻转）
 						if (node2D is Kuros.Fx.IFacingDirectional facing)
 							facing.FacingRight = _throwHorizontalVelocity >= 0f;
+						// 投掷即效果(回旋镖等):注入本次投掷飞行距离——与 ThrowTrajectoryPreview 同一解析真源
+						// (ItemDefinition.GetEffectiveThrowDistance + 出手快照 Modifiers/单次 Override);
+						// 仅在定义提供了显式距离来源时注入,否则特效使用自有参数
+						if (node2D is Kuros.Fx.IThrowFlightDistance flightDistance
+							&& (OverrideThrowDistance > 0f || ItemDefinition?.ThrowHorizontalDistance > 0f))
+							flightDistance.SetThrowFlightDistance(GetEffectiveThrowHorizontalDistance());
 						GetParent()?.AddChild(node2D);
 						node2D.GlobalPosition = spawnPos;
 						node2D.SetMeta("source_weapon_item_id", ItemDefinition?.ItemId ?? "");

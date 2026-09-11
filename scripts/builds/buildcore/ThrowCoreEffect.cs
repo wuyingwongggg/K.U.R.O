@@ -251,6 +251,39 @@ namespace Kuros.Builds.BuildCore
             var scene = ResolveSpawnScene(out bool isCopy);
             if (scene == null) return;
 
+            var furniture = SpawnPieceFromScene(scene, isCopy, spawnPos);
+            if (furniture == null) return;
+
+            // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)
+            // (指定位置生成时不做身侧校准,直接落在瞄准点)
+            var shape = FindFirstCollisionShape(furniture);
+            if (shape != null && !useAimPoint)
+            {
+                float halfWidth = GetCollisionHalfWidth(shape) + PlacementMargin;
+                float sign = mc.FacingRight ? 1f : -1f;
+                furniture.GlobalPosition = new Vector2(
+                    mc.GlobalPosition.X + sign * halfWidth,
+                    spawnPos.Y);
+            }
+        }
+
+        /// <summary>外部卡牌入口(B_007 故障析出):在指定世界位置生成一件(不走充能/身侧校准/瞄准点),
+        /// 生成内容仍按 ResolveSpawnScene(A_006 升档 / A_007 复制)。返回生成实例(失败 null),
+        /// 调用方可对其追加标记(如 B_007 防链标记)。</summary>
+        public Kuros.Items.World.RigidBodyWorldItemEntity? SpawnPieceAt(Vector2 worldPosition)
+        {
+            var scene = ResolveSpawnScene(out bool isCopy);
+            return scene == null ? null : SpawnPieceFromScene(scene, isCopy, worldPosition);
+        }
+
+        /// <summary>生成管线单点:实例化场景并完成全部入组/标记/滤镜/落位
+        /// (直接生成、放置、B_007 析出共用;调用方负责场景解析与位置)。</summary>
+        private Kuros.Items.World.RigidBodyWorldItemEntity? SpawnPieceFromScene(
+            PackedScene scene, bool isCopy, Vector2 spawnPos)
+        {
+            var mc = GetMainCharacter();
+            if (mc == null) return null;
+
             var furniture = scene.Instantiate<Node2D>();
             // 进换关清场组(换关残留清理) + 本效果专属组(长按 F 销毁)
             furniture.AddToGroup(Kuros.Items.World.WorldItemSpawner.StageWorldItemsGroup);
@@ -264,18 +297,7 @@ namespace Kuros.Builds.BuildCore
             if (isCopy)
                 Kuros.Fx.PieceCopyGlitchDecorator.Apply(furniture);
             furniture.GlobalPosition = spawnPos;
-
-            // 读取家具碰撞形状，沿朝向校准位置：Player.X + FacingSign * (半宽 + margin)
-            // (指定位置生成时不做身侧校准,直接落在瞄准点)
-            var shape = FindFirstCollisionShape(furniture);
-            if (shape != null && !useAimPoint)
-            {
-                float halfWidth = GetCollisionHalfWidth(shape) + PlacementMargin;
-                float sign = mc.FacingRight ? 1f : -1f;
-                furniture.GlobalPosition = new Vector2(
-                    mc.GlobalPosition.X + sign * halfWidth,
-                    spawnPos.Y);
-            }
+            return furniture as Kuros.Items.World.RigidBodyWorldItemEntity;
         }
 
         // ═══════════════════════════ 生成场景聚合(BuildThrow 卡驱动) ═══════════════════════════

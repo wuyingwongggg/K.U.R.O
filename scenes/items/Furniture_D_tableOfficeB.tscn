@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://bah3sya2wxtwv"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_wcskv"]
-[ext_resource type="Resource" uid="uid://c0my6kbwoi2i7" path="res://resources/items/Furniture_D_TableOfficeB.tres" id="2_wcskv"]
+[ext_resource type="Resource" uid="uid://bsv024bmvg7mp" path="res://resources/items/Furniture_D_TableOfficeB.tres" id="2_wcskv"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_n3n3w"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_yrglt"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_otdqr"]
@@ -14,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_otdqr")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -53,7 +53,7 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-position = Vector2(0, 160)
+position = Vector2(0, 200)
 scale = Vector2(10, 6)
 texture = ExtResource("4_yrglt")
 

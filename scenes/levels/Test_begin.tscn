@@ -291,6 +291,11 @@ script = ExtResource("14_o3k7i")
 position = Vector2(-2600, 230)
 shape = SubResource("RectangleShape2D_1gwf8")
 
+[node name="center" type="Sprite2D" parent="."]
+z_index = 10
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("40_21m0k")
+
 [node name="WeaponBrawlDiscoBall" parent="." instance=ExtResource("17_oobfl")]
 position = Vector2(-2146, -1036)
 
@@ -374,8 +379,3 @@ position = Vector2(793, -689)
 
 [node name="FurnitureChairOfficeB" parent="." instance=ExtResource("41_y44s2")]
 position = Vector2(-730, 746)
-
-[node name="center" type="Sprite2D" parent="."]
-z_index = 10
-scale = Vector2(0.1, 0.1)
-texture = ExtResource("40_21m0k")

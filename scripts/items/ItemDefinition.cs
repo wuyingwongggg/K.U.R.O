@@ -265,10 +265,14 @@ namespace Kuros.Items
             => ThrowableTierTable.TryGetSpec(EffectiveTier(mods, paramShift), out var spec) ? spec : null;
 
         /// <summary>投掷飞行时长：原始字段 &gt;0 覆盖档位(特化属原本属性,不受升档影响)；均无 → 内置 0.6。
-        /// 时长跟随整体升档(TierShift),无独立/倍率修饰。</summary>
+        /// 时长跟随整体升档(TierShift),并乘 FlightTimeScale(B_006 蓄力"弧线略增")。</summary>
         public double GetEffectiveThrowDuration(ThrowableModifiers mods = default)
-            => ThrowParabolicDuration > 0 ? ThrowParabolicDuration
+        {
+            double baseDuration = ThrowParabolicDuration > 0 ? ThrowParabolicDuration
                 : GetResolvedTierSpec(mods, 0)?.ThrowDuration ?? 0.6;
+            float scale = mods.FlightTimeScale > 0f ? mods.FlightTimeScale : 1f;
+            return baseDuration * scale;
+        }
 
         /// <summary>投掷水平距离：原始字段 &gt;0 覆盖档位;否则按修饰档取值;增幅(覆盖小型/倍率)作用于其上。</summary>
         /// <summary>投掷水平距离：原始字段 &gt;0 覆盖档位;否则按修饰档取值(距离档 = TierShift + DistanceTierShift);
@@ -287,12 +291,16 @@ namespace Kuros.Items
             return baseDistance * scale;
         }
 
-        /// <summary>撞击伤害：实体已解析的 attack_power &gt;0 优先(逐项特化) → 修饰档伤害 → 调用方场景兜底。
-        /// 伤害升档 = AttackTierShift + 整体 TierShift。</summary>
+        /// <summary>撞击伤害：实体已解析的 attack_power &gt;0 优先(逐项特化) → 修饰档伤害 → 调用方场景兜底,
+        /// 最终乘 AttackPowerScale(B_006 蓄力)。伤害升档 = AttackTierShift + 整体 TierShift。</summary>
         public float ResolveThrowImpactDamage(float attributeDamage, float sceneFallbackDamage,
             ThrowableModifiers mods = default)
-            => attributeDamage > 0f ? attributeDamage
+        {
+            float baseDamage = attributeDamage > 0f ? attributeDamage
                 : GetResolvedTierSpec(mods, mods.AttackTierShift)?.AttackPower ?? sceneFallbackDamage;
+            float scale = mods.AttackPowerScale > 0f ? mods.AttackPowerScale : 1f;
+            return baseDamage * scale;
+        }
 
         public string ResolveWorldScenePath()
         {

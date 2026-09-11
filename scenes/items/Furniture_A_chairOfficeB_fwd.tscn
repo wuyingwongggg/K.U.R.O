@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://diism2n4xtftt"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_hl1qu"]
-[ext_resource type="Resource" uid="uid://3jmtsbw5xh6p" path="res://resources/items/Furniture_A_ChairOfficeB_fwd.tres" id="2_hl1qu"]
+[ext_resource type="Resource" uid="uid://cotwvw5qsl8qy" path="res://resources/items/Furniture_A_ChairOfficeB_fwd.tres" id="2_hl1qu"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_eomtn"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_bymlb"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_logl8"]
@@ -15,7 +15,7 @@ shader_parameter/alpha = 0.4
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 resource_local_to_scene = true
 shader = ExtResource("5_logl8")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12

@@ -1,14 +1,27 @@
-[gd_scene load_steps=6 format=3 uid="uid://blaa7le84meul"]
+[gd_scene load_steps=9 format=3 uid="uid://blaa7le84meul"]
 
 [ext_resource type="Script" uid="uid://b67nukmuom1nm" path="res://scripts/effects/SpikeAttackEffect.cs" id="1_container"]
 [ext_resource type="Texture2D" uid="uid://b1awmq0je57lj" path="res://assets/weapons/金属地刺.png" id="2_dmpqe"]
 [ext_resource type="PackedScene" uid="uid://b1sbiak0xc0k" path="res://resources/effects/SlowHitArea.tscn" id="2_hitarea"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="2_yg33d"]
 [ext_resource type="Script" uid="uid://dee8c1f0yasjj" path="res://scripts/effects/HitTriggerBleedZone.cs" id="3_bleed"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="3_fw3hh"]
 [ext_resource type="PackedScene" uid="uid://dj4nbgnsfr38k" path="res://resources/effects/DotBleedEffect.tscn" id="4_bleedfx"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v2jyj"]
+shader = ExtResource("2_yg33d")
+shader_parameter/softness = 0.5
+shader_parameter/alpha = 0.4
 
 [node name="SpikeAttackEffect" type="Node2D"]
 z_index = 1
 script = ExtResource("1_container")
+
+[node name="Shadow" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_v2jyj")
+position = Vector2(0, 50)
+scale = Vector2(7, 4.5)
+texture = ExtResource("3_fw3hh")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.33, 0.33)

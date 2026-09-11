@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://c1m8vq3xk7tw2"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="PackedScene" path="res://scenes/builds/throw/ThrowGlitchPrecipitationEffect.tscn" id="3_scene"]
+[ext_resource type="Texture2D" uid="uid://c3qssiaqesmw0" path="res://assets/BuildIcon/Throw_B_007_故障析出.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Resource_B007"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 0.0,
+"TierValues": Array[float]([30.0, 50.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_B_007"
+DisplayName = "故障析出"
+Description = "一次性道具销毁后有{0}%/{1}%的概率在销毁点生成一个乱码块"
+BuildClass = "Throw"
+Rarity = 1
+MaxStacks = 2
+Icon = ExtResource("4_icon")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B007")])

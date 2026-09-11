@@ -180,13 +180,18 @@ namespace Kuros.Items.World
             if (_player == null) return false;
 
             var state = _player.StateMachine?.CurrentState?.Name;
-            if (state != "IdleHolding" && state != "RunHolding") return false;
+            bool holdingState = state == "IdleHolding" || state == "RunHolding";
+            // B_006 投掷预载:蓄力窗口内(Throw 状态)也显示——修饰每帧变化触发缓存失效,轨迹随蓄力实时增长
+            bool charging = !holdingState && state == "Throw"
+                && _player.EffectController?.GetEffectByInterface<IThrowChargeModifier>()?.Charging == true;
+            if (!holdingState && !charging) return false;
 
             var stack = _player.InventoryComponent?.GetSelectedQuickBarStack();
             if (stack == null || stack.IsEmpty || !stack.Item.IsThrowable) return false;
 
-            // 投掷即效果武器不飞行（轨迹由效果表现），不显示投掷轨迹预览
-            if (stack.Item.SpawnEffectOnThrow) return false;
+            // 投掷即效果武器(回旋镖等)本体不飞行,轨迹由生成的特效表现——仅当定义提供了显式飞行距离
+            // (ThrowHorizontalDistance>0,与生成侧注入同一真源)时预览该距离;否则不显示
+            if (stack.Item.SpawnEffectOnThrow && stack.Item.ThrowHorizontalDistance <= 0f) return false;
 
             // 确保武器参数已缓存
             EnsureParamsCached(stack.Item);
@@ -266,7 +271,10 @@ namespace Kuros.Items.World
             float startLocalY = (p.ThrowOffset.Y + p.ThrowStartOffset.Y) * scaleComp;
             float baseLandingY = startLocalY + p.LandingYOffset * scaleComp;
 
-            float totalDX = p.HorizontalDistance * facingX * scaleComp * HorizontalDistanceMultiplier;
+            // 投掷即效果武器(回旋镖):特效飞行精确停在 effective distance,预览乘数取 1.0 使落点=真实到达距离;
+            // 普通投掷保持场景调校乘数(2.1)
+            float distanceMultiplier = _cachedItem?.SpawnEffectOnThrow == true ? 1f : HorizontalDistanceMultiplier;
+            float totalDX = p.HorizontalDistance * facingX * scaleComp * distanceMultiplier;
             float peakH = p.PeakHeight * scaleComp;
             float duration = (float)p.Duration;
 

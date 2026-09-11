@@ -15,7 +15,10 @@ namespace Kuros.Items
         bool DistanceAsSmall = false,
         float DistanceScale = 1f,
         int DistanceTierShift = 0,
-        float CarrySlowReduction = 0f)
+        float CarrySlowReduction = 0f,
+        float AttackPowerScale = 1f,
+        float FlightTimeScale = 1f,
+        bool PassThroughEnemies = false)
     {
         /// <summary>整体升档：伤害/距离/时间/击退/HP 跟随(减速除外)。</summary>
         public int TierShift { get; init; } = TierShift;
@@ -38,8 +41,19 @@ namespace Kuros.Items
         /// <summary>持握减速幅度减免比例(B_003 负载减免;0=无,0.5=减速幅度减半)。</summary>
         public float CarrySlowReduction { get; init; } = CarrySlowReduction;
 
-        /// <summary>无修饰(注意:不能用 default——DistanceScale 会为 0,须用此实例)。</summary>
-        public static readonly ThrowableModifiers None = new ThrowableModifiers();
+        /// <summary>撞击伤害倍率(B_006 投掷蓄力;1 = 无)。距离复用 <see cref="DistanceScale"/>。</summary>
+        public float AttackPowerScale { get; init; } = AttackPowerScale;
+
+        /// <summary>飞行时长倍率(B_006 投掷蓄力"弧线略增";1 = 无)。</summary>
+        public float FlightTimeScale { get; init; } = FlightTimeScale;
+
+        /// <summary>命中敌人不停留(B_008 延迟销毁):穿透敌人继续飞,只在落点销毁;仅一次性道具消费。</summary>
+        public bool PassThroughEnemies { get; init; } = PassThroughEnemies;
+
+        /// <summary>无修饰:显式传入倍率类默认值——结构体无参构造不应用位置参数默认值,
+        /// 标量字段会落为 0(消费方有 >0?:1 守卫兜底,但做乘法的贡献者需要真实 1)。</summary>
+        public static readonly ThrowableModifiers None = new ThrowableModifiers(
+            DistanceScale: 1f, AttackPowerScale: 1f, FlightTimeScale: 1f);
     }
 
     /// <summary>投掷物档位(一次性投掷道具分类;无档=投掷武器/普通道具走原始字段)。仅 1/2/3 三档,
@@ -52,7 +66,7 @@ namespace Kuros.Items
         Large = 3,
     }
 
-    /// <summary>单档数值规格(7 参)。改档位数值只动 <see cref="ThrowableTierTable"/> 一处。</summary>
+    /// <summary>单档数值规格(9 参)。改档位数值只动 <see cref="ThrowableTierTable"/> 一处。</summary>
     public readonly record struct ThrowableTierSpec(
         float AttackPower,
         float ThrowDistance,
@@ -60,7 +74,9 @@ namespace Kuros.Items
         float KnockbackDistance,
         float KnockbackDuration,
         float MaxHp,
-        float CarrySlowMultiplier);
+        float CarrySlowMultiplier,
+        float BounceSpeed,
+        float BounceHorizontalRatio);
 
     /// <summary>
     /// 档位静态表。未来 build 修饰(如 +1 档、按档 ±% 伤害)在此单点挂载:
@@ -74,15 +90,18 @@ namespace Kuros.Items
                 [ThrowableTier.Small] = new ThrowableTierSpec(
                     AttackPower: 20f, ThrowDistance: 700f, ThrowDuration: 0.4,
                     KnockbackDistance: 100f, KnockbackDuration: 0.1f,
-                    MaxHp: 20f, CarrySlowMultiplier: 0.7f),
+                    MaxHp: 20f, CarrySlowMultiplier: 0.7f, BounceSpeed: 650f,
+                    BounceHorizontalRatio: 0.3f),
                 [ThrowableTier.Medium] = new ThrowableTierSpec(
                     AttackPower: 60f, ThrowDistance: 500f, ThrowDuration: 0.35,
                     KnockbackDistance: 200f, KnockbackDuration: 0.18f,
-                    MaxHp: 60f, CarrySlowMultiplier: 0.5f),
+                    MaxHp: 60f, CarrySlowMultiplier: 0.5f, BounceSpeed: 550f,
+                    BounceHorizontalRatio: 0.2f),
                 [ThrowableTier.Large] = new ThrowableTierSpec(
                     AttackPower: 100f, ThrowDistance: 300f, ThrowDuration: 0.3,
                     KnockbackDistance: 300f, KnockbackDuration: 0.36f,
-                    MaxHp: 100f, CarrySlowMultiplier: 0.3f),
+                    MaxHp: 100f, CarrySlowMultiplier: 0.3f, BounceSpeed: 450f,
+                    BounceHorizontalRatio: 0.1f),
             };
 
         public static bool TryGetSpec(ThrowableTier tier, out ThrowableTierSpec spec)

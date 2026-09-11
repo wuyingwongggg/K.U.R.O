@@ -1,5 +1,6 @@
-[gd_scene load_steps=11 format=3 uid="uid://duq7gvippbjmp"]
+[gd_scene load_steps=13 format=3 uid="uid://duq7gvippbjmp"]
 
+[ext_resource type="Shader" uid="uid://33ra4ty3whq3" path="res://shaders/materials/pseudo_3d_rotate.gdshader" id="1_3gom2"]
 [ext_resource type="Texture2D" uid="uid://bx37ocy10x3w5" path="res://assets/effect/AttackEffect/hit_h/HIT_H0001.png" id="1_iasuy"]
 [ext_resource type="Texture2D" uid="uid://cp3ywoxk4lkxi" path="res://assets/effect/AttackEffect/hit_h/HIT_H0002.png" id="2_j67bp"]
 [ext_resource type="Texture2D" uid="uid://dpgcn3rnubo12" path="res://assets/effect/AttackEffect/hit_h/HIT_H0003.png" id="3_3gom2"]
@@ -9,6 +10,16 @@
 [ext_resource type="Texture2D" uid="uid://dne85b3ejnuok" path="res://assets/effect/AttackEffect/hit_h/HIT_H0007.png" id="7_sdc4u"]
 [ext_resource type="Texture2D" uid="uid://bh1pwlpwr1hc8" path="res://assets/effect/AttackEffect/hit_h/HIT_H0008.png" id="8_kvy5s"]
 [ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="9_j67bp"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y00m4"]
+shader = ExtResource("1_3gom2")
+shader_parameter/isInRadians = false
+shader_parameter/xDegrees = 35.0000016625
+shader_parameter/yDegrees = 0.0
+shader_parameter/zDegrees = 0.0
+shader_parameter/xRadians = 0.0
+shader_parameter/yRadians = 0.0
+shader_parameter/zRadians = 0.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_to6ee"]
 animations = [{
@@ -46,6 +57,7 @@ animations = [{
 modulate = Color(0, 1, 0, 1)
 self_modulate = Color(0, 1, 0, 1)
 z_index = 3
+material = SubResource("ShaderMaterial_y00m4")
 scale = Vector2(1.25, 1.25)
 sprite_frames = SubResource("SpriteFrames_to6ee")
 autoplay = "default"

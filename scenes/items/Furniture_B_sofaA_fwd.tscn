@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bkxqiwlgdq03s"]
+[gd_scene load_steps=12 format=3 uid="uid://bkxqiwlgdq03s"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_pynux"]
-[ext_resource type="Resource" uid="uid://cw8r0qohfelka" path="res://resources/items/Furniture_B_SofaA_fwd.tres" id="2_pynux"]
+[ext_resource type="Resource" uid="uid://doj4malx7ttoc" path="res://resources/items/Furniture_B_SofaA_fwd.tres" id="2_pynux"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_b5et6"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_pynux"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_mn3ns"]
 [ext_resource type="Texture2D" uid="uid://c3ef1oinnbpsf" path="res://assets/furnitures/hotel_scene2/SofaA_fwd.png" id="6_pynux"]
 
@@ -13,7 +14,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5sin4"]
 shader = ExtResource("5_mn3ns")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -52,9 +53,9 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_aa7cv")
-position = Vector2(15, 0)
-scale = Vector2(0.28, 0.28)
-texture = ExtResource("6_pynux")
+position = Vector2(-15, 0)
+scale = Vector2(8, 13)
+texture = ExtResource("4_pynux")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_5sin4")

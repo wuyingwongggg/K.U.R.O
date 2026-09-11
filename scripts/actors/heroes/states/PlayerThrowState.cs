@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Items;
 using Kuros.Items.World;
 
 namespace Kuros.Actors.Heroes.States
@@ -14,6 +15,14 @@ namespace Kuros.Actors.Heroes.States
 
         public string ThrowAnimation = "throw_holding_item";
         public float ThrowAnimationSpeed = 1f;
+
+        [ExportGroup("Throw Animation Speeds")]
+        /// <summary>Warmup 阶段动画速度（参照 WeaponSkillDefinition 分阶段速度；蓄力模式下按蓄力窗自动再折算放慢）。</summary>
+        [Export(PropertyHint.Range, "0.05,3,0.05")] public float WarmupAnimationSpeed = 1f;
+        /// <summary>Active（出手）阶段动画速度。</summary>
+        [Export(PropertyHint.Range, "0.05,3,0.05")] public float ActiveAnimationSpeed = 1f;
+        /// <summary>Recovery（后摇）阶段动画速度。</summary>
+        [Export(PropertyHint.Range, "0.05,3,0.05")] public float RecoveryAnimationSpeed = 1f;
         /// <summary>蓄力时长（秒）：Warmup 结束后触发投掷。</summary>
         [Export(PropertyHint.Range, "0,2,0.01")] public float ThrowWarmupDuration = 0.3f;
         /// <summary>出手时长（秒）：投掷触发后的出手保护窗口（不可闪避打断）。</summary>
@@ -39,6 +48,11 @@ namespace Kuros.Actors.Heroes.States
         private Vector2 _momentumDir;      // 投掷移动方向（投掷前移动方向/面朝）
         private float _momentumElapsed;    // Warmup 衰减计时
 
+        // B_006 投掷预载:蓄力模式(按住攻击键进入;松手/满窗出手)
+        private IThrowChargeModifier? _chargeEffect;
+        private bool _chargeMode;
+        private float _chargeSeconds;
+
         protected override void _ReadyState()
         {
             base._ReadyState();
@@ -59,7 +73,26 @@ namespace Kuros.Actors.Heroes.States
             _animationFinished = false;
             _phase = ThrowPhase.Warmup;
             _phaseRemaining = ThrowWarmupDuration;
-            PlayThrowAnimation();
+
+            // B_006 投掷预载:按住攻击键进入蓄力模式——warmup 段动画按蓄力窗折算放慢,
+            // 松手/满窗出手时从 warmup 段末跳帧常速播放 Active 段(减慢严格只覆盖 warmup 阶段)
+            // (判定用 IsActionHeldArbitrated:IsControlledActionPressed 在鼠标悬停 UI 时会误判松手)
+            _chargeEffect = Player.EffectController?.GetEffectByInterface<IThrowChargeModifier>();
+            _chargeSeconds = 0f;
+            _chargeMode = _chargeEffect != null && Player.IsActionHeldArbitrated("attack");
+            if (_chargeMode)
+            {
+                _chargeEffect!.Charging = true;
+                _chargeEffect.ChargeSeconds = 0f;
+                // warmup 段内容时长(ThrowWarmupDuration)拉伸到整个蓄力窗口:速度 = 基础 × 段时长/窗口
+                float chargeWindow = Mathf.Max(_chargeEffect.MaxChargeSeconds, 0.01f);
+                float chargeWarmupSpeed = Mathf.Max(WarmupAnimationSpeed * ThrowWarmupDuration / chargeWindow, 0.01f);
+                PlayThrowAnimation(ThrowAnimationSpeed * chargeWarmupSpeed);
+            }
+            else
+            {
+                PlayThrowAnimation(ThrowAnimationSpeed * WarmupAnimationSpeed);
+            }
 
             // 投掷开始：标记投掷物未出手（ItemHoldingAttachment 显示投掷物）
             Player.GetNodeOrNull<PlayerItemAttachment>("ItemHoldingAttachment")?.SetThrowInProgress(true);
@@ -76,6 +109,16 @@ namespace Kuros.Actors.Heroes.States
         {
             base.Exit();
             _hasRequestedThrow = false;
+
+            // B_006 蓄力状态清零(出手/取消/被打断均无残留)——贡献只在 ChargeSeconds>0 时生效
+            if (_chargeEffect != null)
+            {
+                _chargeEffect.Charging = false;
+                _chargeEffect.ChargeSeconds = 0f;
+            }
+            _chargeEffect = null;
+            _chargeMode = false;
+            _chargeSeconds = 0f;
 
             if (Actor.AnimPlayer != null)
             {
@@ -128,8 +171,11 @@ namespace Kuros.Actors.Heroes.States
         }
 
         /// <summary>
-        /// 投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度线性衰减到 0（Active 前归零）——出手时已无位移惯性。
-        /// Warmup 阶段跟随移动输入翻转面朝（蓄力期间可转向）——惯性方向同步跟随面朝，投掷出手自动朝新方向。
+        /// 投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度沿**Enter 捕获的投掷前移动方向**
+        /// 线性衰减到 0（Active 前归零）——出手时已无位移惯性。衰减窗口固定为基础 ThrowWarmupDuration，
+        /// 不随蓄力窗延长（B_006 蓄力不放大冲刺惯性）。
+        /// 有移动输入时随转向更新惯性方向（蓄力期间可转向，投掷出手自动朝新方向）；
+        /// 无输入则保持捕获方向——后撤投掷延续后撤滑行，不按面朝强制反向（后撤不翻面，面朝≠移动方向）。
         /// </summary>
         private void UpdateMomentum(float delta)
         {
@@ -141,12 +187,17 @@ namespace Kuros.Actors.Heroes.States
                 // Warmup：跟随移动输入翻转面朝（蓄力期间可转向）
                 Vector2 moveInput = GetMovementInput();
                 if (Mathf.Abs(moveInput.X) > 0.01f)
+                {
                     Player.FlipFacing(moveInput.X > 0);
+                    // 有输入:惯性方向随转向
+                    _momentumDir = Player.FacingRight ? Vector2.Right : Vector2.Left;
+                }
+                // 无输入:保持 Enter 捕获的投掷前方向(后撤投掷=延续后撤滑行)
 
                 _momentumElapsed += delta;
-                float t = ThrowWarmupDuration > 0f ? Mathf.Clamp(_momentumElapsed / ThrowWarmupDuration, 0f, 1f) : 1f;
-                // 惯性方向跟随当前面朝（翻转后投掷/惯性向新方向）
-                _momentumDir = Player.FacingRight ? Vector2.Right : Vector2.Left;
+                float t = ThrowWarmupDuration > 0f
+                    ? Mathf.Clamp(_momentumElapsed / ThrowWarmupDuration, 0f, 1f)
+                    : 1f;
                 Player.Velocity = _momentumDir * (_momentumSpeed * (1f - t));
             }
             else
@@ -159,9 +210,16 @@ namespace Kuros.Actors.Heroes.States
             Player.ClampPositionToScreen();
         }
 
-        /// <summary>阶段推进：Warmup 结束触发投掷 → Active 出手保护 → Recovery 后摇（动画播完即结束）。</summary>
+        /// <summary>阶段推进：Warmup 结束触发投掷 → Active 出手保护 → Recovery 后摇（动画播完即结束）。
+        /// B_006 蓄力模式:Warmup 不按固定时长递减,由蓄力窗口驱动(见 UpdateChargeThrow)。</summary>
         private void UpdatePhase(float delta)
         {
+            if (_phase == ThrowPhase.Warmup && _chargeMode)
+            {
+                UpdateChargeThrow(delta);
+                return;
+            }
+
             _phaseRemaining -= delta;
             if (_phaseRemaining > 0f) return;
 
@@ -179,6 +237,7 @@ namespace Kuros.Actors.Heroes.States
                     // 出手完成：进入后摇（可闪避取消窗口）
                     _phase = ThrowPhase.Recovery;
                     _phaseRemaining = ThrowRecoveryDuration;
+                    ApplyPhaseAnimationSpeed(RecoveryAnimationSpeed);
                     break;
 
                 case ThrowPhase.Recovery:
@@ -188,12 +247,69 @@ namespace Kuros.Actors.Heroes.States
             }
         }
 
-        private void PlayThrowAnimation()
+        /// <summary>B_006 蓄力窗口推进:逐帧把蓄力秒数写入效果(预览实时增长按此值结算);
+        /// 攻击键松开或满 MaxChargeSeconds → 出手。
+        /// 出手 = warmup 阶段结束:立即取消减慢,从 warmup 段末(ThrowWarmupDuration)跳帧常速播放
+        /// 出手动作(Active 段),剩余动画时长供 Active/Recovery 结束判定。</summary>
+        private void UpdateChargeThrow(float delta)
+        {
+            var effect = _chargeEffect;
+            if (effect == null || _interaction == null) return;
+
+            _chargeSeconds += delta;
+            // 逐帧写入(连续比例):预览/其它查询随时读到当前蓄力,出手快照即最新值
+            effect.ChargeSeconds = Mathf.Min(_chargeSeconds, effect.MaxChargeSeconds);
+
+            bool released = !Player.IsActionHeldArbitrated("attack");
+            bool full = _chargeSeconds >= effect.MaxChargeSeconds;
+            if (!released && !full) return;
+
+            effect.Charging = false;
+
+            // 出手:warmup 段结束——从 warmup 段末跳帧、按 Active 段速度播放(减慢立即取消)
+            float activeSpeed = Mathf.Max(ThrowAnimationSpeed * ActiveAnimationSpeed, 0.01f);
+            if (Player is MainCharacter mainChar)
+                mainChar.PlaySpineAnimationFrom(ThrowAnimation, ThrowWarmupDuration,
+                    loop: false, timeScale: activeSpeed);
+            else if (Actor.AnimPlayer != null && Actor.AnimPlayer.HasAnimation(ThrowAnimation))
+            {
+                Actor.AnimPlayer.Play(ThrowAnimation);
+                Actor.AnimPlayer.SpeedScale = activeSpeed;
+            }
+            _animRemaining = Mathf.Max((ThrowAnimationTotalTime - ThrowWarmupDuration) / activeSpeed, 0f);
+
+            if (_interaction.TryTriggerThrowAfterAnimation())
+            {
+                _hasRequestedThrow = true;
+                _phase = ThrowPhase.Active;
+                _phaseRemaining = ThrowActiveDuration;
+            }
+            else
+            {
+                // 件已失效(转化/移除):按取消处理,直接走收尾
+                _phase = ThrowPhase.Recovery;
+                _phaseRemaining = ThrowRecoveryDuration;
+            }
+        }
+
+        /// <summary>阶段切换时应用该阶段动画速度（参照 PlayerAttackTemplate.ApplyPhaseAnimationSpeed：
+        /// 动态改速不重启动画）。</summary>
+        private void ApplyPhaseAnimationSpeed(float phaseSpeed)
+        {
+            float speed = ThrowAnimationSpeed * phaseSpeed;
+            if (Player is MainCharacter mainChar)
+                mainChar.SetSpineAnimationSpeed(speed);
+            else if (Actor.AnimPlayer != null)
+                Actor.AnimPlayer.SpeedScale = speed;
+        }
+
+        /// <summary>播放投掷动画。speed = 绝对播放速度(ThrowAnimationSpeed × 阶段速度)。</summary>
+        private void PlayThrowAnimation(float speed)
         {
             if (Player is MainCharacter mainChar)
             {
-                mainChar.PlaySpineAnimation(ThrowAnimation, loop: false, timeScale: ThrowAnimationSpeed);
-                _animRemaining = ThrowAnimationTotalTime / ThrowAnimationSpeed;
+                mainChar.PlaySpineAnimation(ThrowAnimation, loop: false, timeScale: speed);
+                _animRemaining = ThrowAnimationTotalTime / Mathf.Max(speed, 0.0001f);
             }
             else if (Actor.AnimPlayer != null)
             {
@@ -201,10 +317,10 @@ namespace Kuros.Actors.Heroes.States
                 {
                     _originalSpeedScale = Actor.AnimPlayer.SpeedScale;
                     Actor.AnimPlayer.Play(ThrowAnimation);
-                    Actor.AnimPlayer.SpeedScale = ThrowAnimationSpeed;
+                    Actor.AnimPlayer.SpeedScale = speed;
 
-                    var speed = Mathf.Max(Actor.AnimPlayer.SpeedScale, 0.0001f);
-                    _animRemaining = (float)Actor.AnimPlayer.CurrentAnimationLength / speed;
+                    var actualSpeed = Mathf.Max(Actor.AnimPlayer.SpeedScale, 0.0001f);
+                    _animRemaining = (float)Actor.AnimPlayer.CurrentAnimationLength / actualSpeed;
                 }
                 else
                 {
@@ -219,6 +335,9 @@ namespace Kuros.Actors.Heroes.States
 
         private void UpdateAnimationState()
         {
+            // 蓄力窗口期间动画由蓄力进度驱动(拉伸播放),不参与状态结束判定
+            if (_chargeMode && _phase == ThrowPhase.Warmup) return;
+
             float delta = (float)GetPhysicsProcessDeltaTime();
 
             if (!_animationFinished)

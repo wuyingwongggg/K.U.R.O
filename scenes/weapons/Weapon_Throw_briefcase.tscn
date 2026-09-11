@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://dco3a60ge2arj"]
 
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_df6x7"]
-[ext_resource type="Resource" uid="uid://t836cltal7m" path="res://resources/items/Weapon_Throw_Briefcase.tres" id="2_df6x7"]
+[ext_resource type="Resource" uid="uid://b0ftnaoboqxnr" path="res://resources/items/Weapon_Throw_Briefcase.tres" id="2_df6x7"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_x26gv"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_mie5h"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="5_60i88"]
@@ -15,7 +15,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4hafc"]
 shader = ExtResource("5_60i88")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.019607844, 0.019607844, 0.019607844, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -27,9 +27,10 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wnlg"]
-size = Vector2(400, 250)
+size = Vector2(250, 180)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ec1yi"]
 size = Vector2(200, 250)
@@ -43,8 +44,9 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
-KnockbackForce = 0.0
-BounceAfterStop = true
+BounceSpeed = 650.0
+BounceHorizontalRatio = 0.2
+BounceElasticity = 0.2
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
@@ -59,8 +61,8 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_df6x7")
-position = Vector2(0, 66)
-scale = Vector2(4, 0.3)
+position = Vector2(0, 5)
+scale = Vector2(5, 3)
 texture = ExtResource("4_mie5h")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
@@ -81,7 +83,6 @@ region_rect = Rect2(-110, -50, 1400, 1200)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/CollisionArea"]
 z_index = 10
-position = Vector2(0, 30)
 shape = SubResource("RectangleShape2D_0wnlg")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]

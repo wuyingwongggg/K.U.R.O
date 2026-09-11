@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b1awmq0je57lj" path="res://assets/weapons/金属地刺.png" id="1_0wnlg"]
 [ext_resource type="Script" uid="uid://dhfq2rrha0awm" path="res://scripts/items/world/RigidBodyWorldItemEntity.cs" id="1_owowg"]
-[ext_resource type="Resource" uid="uid://j6kveph5wqjm" path="res://resources/items/Weapon_Throw_MetalSpike.tres" id="2_ussve"]
+[ext_resource type="Resource" uid="uid://7y3qrmtyscor" path="res://resources/items/Weapon_Throw_MetalSpike.tres" id="2_ussve"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_8av3o"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_4hafc"]
 [ext_resource type="Shader" uid="uid://cgt8onjsoqr12" path="res://shaders/materials/sprite_outline.gdshader" id="6_8av3o"]
@@ -15,7 +15,7 @@ shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4hafc"]
 shader = ExtResource("6_8av3o")
-shader_parameter/outline_color = Color(0.02, 0.02, 0.02, 1)
+shader_parameter/outline_color = Color(0.019607844, 0.019607844, 0.019607844, 0)
 shader_parameter/outline_size = 32.0
 shader_parameter/alpha_threshold = 0.5
 shader_parameter/edge_softness = 0.12
@@ -27,6 +27,7 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 1.00000002375
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wnlg"]
 size = Vector2(400, 250)
@@ -43,8 +44,9 @@ HighlightSpritePath = NodePath("RigidBody2D/Outline")
 DefaultOutlineColor = Color(0, 0, 0, 0)
 ThrowDamage = 0.0
 MinDamageVelocity = 0.0
-KnockbackForce = 0.0
-BounceAfterStop = true
+BounceSpeed = 650.0
+BounceHorizontalRatio = 0.2
+BounceElasticity = 0.2
 DestructionAnimationDuration = 0.0
 LandingHideDelay = 0.01
 RigidBodyPath = NodePath("RigidBody2D")
@@ -59,8 +61,8 @@ freeze_mode = 1
 
 [node name="Shadow" type="Sprite2D" parent="RigidBody2D"]
 material = SubResource("ShaderMaterial_nkmmx")
-position = Vector2(0, 152)
-scale = Vector2(6, 0.067)
+position = Vector2(0, 50)
+scale = Vector2(7, 4.5)
 texture = ExtResource("4_4hafc")
 
 [node name="Outline" type="Sprite2D" parent="RigidBody2D"]
@@ -83,6 +85,7 @@ position = Vector2(0, 30)
 shape = SubResource("RectangleShape2D_0wnlg")
 
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
+z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
 shape = SubResource("RectangleShape2D_ec1yi")
