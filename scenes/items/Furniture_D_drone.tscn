@@ -203,7 +203,6 @@ shape = SubResource("RectangleShape2D_2omr6")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(-20, 10)
 shape = SubResource("RectangleShape2D_gy46y")
 
 [node name="DroneContactHandler" type="Node" parent="RigidBody2D/AttackArea"]

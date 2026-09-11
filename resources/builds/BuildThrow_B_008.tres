@@ -20,6 +20,5 @@ DisplayName = "延迟销毁"
 Description = "投掷一次性道具后不再被敌人阻挡,穿透敌人继续飞行,只在落点销毁"
 BuildClass = "Throw"
 Rarity = 1
-MaxStacks = 1
 Icon = ExtResource("4_icon")
 EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B008")])
