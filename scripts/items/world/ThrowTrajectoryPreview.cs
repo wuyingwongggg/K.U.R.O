@@ -79,8 +79,8 @@ namespace Kuros.Items.World
         // 落地指示器实例池:与 _landingPoints 等量(分裂时每个落点各一个)
         private readonly List<Node2D> _landingIndicators = new();
 
-        // 飞行阻挡预测运行态:阻挡相位(1 = 无阻挡;轨迹/指示器按此截断)
-        private float _blockPhase = 1f;
+        // 飞行阻挡预测运行态:逐枚阻挡相位(与 offsets 同序;1 = 无阻挡;轨迹/指示器按各自相位截断)
+        private readonly List<float> _blockPhases = new();
         private ulong _lastBlockScanMs;
         private ItemDefinition? _blockScanItem; // 道具切换 → 立即重扫(不受间隔节流)
 
@@ -196,6 +196,16 @@ namespace Kuros.Items.World
 
             for (int i = 0; i < need && i < _landingPoints.Count; i++)
                 _landingIndicators[i].Position = _landingPoints[i];
+
+            // [临时诊断] A_008 分裂落点对质:预览指示器的本地/全局坐标与节点缩放链
+            if (_landingPoints.Count > 1 && _landingIndicators.Count > 0)
+            {
+                var p0 = _landingIndicators[0].GlobalPosition;
+                var pLast = _landingIndicators[^1].GlobalPosition;
+                GD.Print($"[A_008预览] 指示器数={_landingPoints.Count}, local[0]={_landingPoints[0]}, local[末]={_landingPoints[^1]}, " +
+                    $"global[0]={p0}, global[末]={pLast}, 全局Y差={Mathf.Abs(pLast.Y - p0.Y):F1}, " +
+                    $"节点全局缩放={GlobalScale}, playerScale={_player?.Scale.X:F3}");
+            }
         }
         private bool CheckShouldDraw()
         {
@@ -303,16 +313,18 @@ namespace Kuros.Items.World
             // 分裂预览:主轨迹(原件落点偏移)+ 各克隆落点偏移;无分裂卡 → 仅主轨迹(偏移 0)
             var offsets = CollectSplitOffsets();
 
-            // 飞行阻挡预测:扫描"绘制路径"本身(与画出的轨迹点同一坐标)——截断点即玩家屏幕上
-            // 看到的接触位置;若按真实路径扫描,预览乘数(2.1)会让截断落点与画面严重错位
+            // 飞行阻挡预测:逐枚独立扫描——各枚偏移行不同,一枚被挡不应截断其它枚;
+            // 扫描"绘制路径"本身(与画出的轨迹点同一坐标)——截断点即玩家屏幕上看到的接触位置
             float worldSpeed = duration > 0.01f ? (float)(p.HorizontalDistance / duration) : 0f;
-            UpdateBlockPhase(_cachedItem, totalDX, worldSpeed, startLocalX, startLocalY,
-                baseLandingY + offsets[0] * scaleComp, peakH, duration, distanceMultiplier);
-            int maxSample = Mathf.RoundToInt(Mathf.Clamp(_blockPhase, 0f, 1f) * TotalSamples);
+            UpdateBlockPhases(_cachedItem, offsets, baseLandingY, scaleComp, totalDX, worldSpeed,
+                startLocalX, startLocalY, peakH, duration, distanceMultiplier);
 
-            foreach (float offset in offsets)
+            for (int k = 0; k < offsets.Count; k++)
             {
-                float landingY = baseLandingY + offset * scaleComp;
+                float landingY = baseLandingY + offsets[k] * scaleComp;
+                float blockPhase = k < _blockPhases.Count ? _blockPhases[k] : 1f;
+                int maxSample = Mathf.RoundToInt(Mathf.Clamp(blockPhase, 0f, 1f) * TotalSamples);
+
                 for (int i = 0; i <= maxSample; i++)
                 {
                     float phase = (float)i / TotalSamples;
@@ -325,17 +337,13 @@ namespace Kuros.Items.World
                     _trailPoints.Add(new Vector2(x, y));
                 }
 
-                // 阻挡:指示器 X = 屏上接触位(绘制路径的截断相位),Y 保持在该枚的落点行
-                // (与无障碍时同一行,即玩家 Y/判定行——实体停下后回弹/落定也回判定行,不会悬在弧线高度)
-                if (_blockPhase < 1f)
-                {
-                    float bp = Mathf.Clamp(_blockPhase, 0f, 1f);
-                    _landingPoints.Add(new Vector2(startLocalX + totalDX * bp, landingY));
-                }
-                else
-                {
-                    _landingPoints.Add(new Vector2(startLocalX + totalDX, landingY));
-                }
+                // 落点:不直接取最终 ±delta 行,而按"飞行到达该点时的实际 y 演化"——
+                // 判定行随 phase 从玩家行斜移至 row+delta(镜像实体 _throwJudgmentY + delta×phase):
+                // 未挡(到达 phase=1)→ 最终行,等同原行为;被挡 → 接触瞬间的中间 y(斜带上的实际位置)
+                float reach = blockPhase < 1f ? Mathf.Clamp(blockPhase, 0f, 1f) : 1f;
+                _landingPoints.Add(new Vector2(
+                    startLocalX + totalDX * reach,
+                    baseLandingY + offsets[k] * reach * scaleComp));
             }
 
             _landingLocalPos = _landingPoints.Count > 0 ? _landingPoints[0] : Vector2.Zero;
@@ -343,22 +351,23 @@ namespace Kuros.Items.World
 
         // ═══════════════════ 飞行阻挡预测(镜像实体两套碰撞) ═══════════════════
 
-        /// <summary>阻挡预测节流入口:道具切换立即重扫;同道具按 BlockScanInterval 周期重扫(敌人会移动)。
-        /// 投掷即效果武器、StopOnHit=false 道具、编辑器环境一律不扫描(相位恒 1)。</summary>
-        private void UpdateBlockPhase(ItemDefinition? item, float totalDX, float worldSpeed,
-            float startLocalX, float startLocalY, float mainLandingY,
+        /// <summary>阻挡预测节流入口(逐枚独立):道具切换立即重扫;同道具按 BlockScanInterval 周期重扫(敌人会移动)。
+        /// 投掷即效果武器、StopOnHit=false 道具、编辑器环境一律不扫描(全部相位恒 1)。</summary>
+        private void UpdateBlockPhases(ItemDefinition? item, List<float> offsets, float baseLandingY, float scaleComp,
+            float totalDX, float worldSpeed, float startLocalX, float startLocalY,
             float peakH, float duration, float distanceMultiplier)
         {
             if (!BlockScanEnabled || item == null || Engine.IsEditorHint() || item.SpawnEffectOnThrow)
             {
-                _blockPhase = 1f;
+                SetAllPhasesUnblocked(offsets.Count);
                 return;
             }
 
             ulong now = Time.GetTicksMsec();
             bool itemChanged = !ReferenceEquals(_blockScanItem, item);
-            if (!itemChanged && now - _lastBlockScanMs < (ulong)Mathf.Max(BlockScanInterval * 1000f, 30f))
-                return; // 节流内:复用上次相位(蓄力期 mods 每帧变也不逐帧重扫)
+            if (!itemChanged && _blockPhases.Count == offsets.Count
+                && now - _lastBlockScanMs < (ulong)Mathf.Max(BlockScanInterval * 1000f, 30f))
+                return; // 节流内:复用上轮各枚相位(蓄力期 mods 每帧变也不逐帧重扫)
 
             _blockScanItem = item;
             _lastBlockScanMs = now;
@@ -366,21 +375,34 @@ namespace Kuros.Items.World
             var profile = ResolveBlockProfile(item);
             if (profile == null || !profile.StopOnHit || profile.Shape == null)
             {
-                _blockPhase = 1f;
+                SetAllPhasesUnblocked(offsets.Count);
                 return;
             }
 
-            _blockPhase = ScanBlockPhase(profile, item, totalDX, worldSpeed,
-                startLocalX, startLocalY, mainLandingY, peakH, duration, distanceMultiplier);
+            _blockPhases.Clear();
+            for (int k = 0; k < offsets.Count; k++)
+            {
+                _blockPhases.Add(ScanBlockPhase(profile, item, offsets[k],
+                    baseLandingY + offsets[k] * scaleComp,
+                    totalDX, worldSpeed, startLocalX, startLocalY, peakH, duration, distanceMultiplier));
+            }
         }
 
-        /// <summary>沿"绘制路径"(与画出的轨迹点同坐标)扫描最早阻挡,返回阻挡相位(0-1;无阻挡 = 1)。
+        private void SetAllPhasesUnblocked(int count)
+        {
+            _blockPhases.Clear();
+            for (int k = 0; k < count; k++)
+                _blockPhases.Add(1f);
+        }
+
+        /// <summary>沿单枚的"绘制路径"(与画出的轨迹点同坐标)扫描最早阻挡,返回该枚阻挡相位(0-1;无阻挡 = 1)。
         /// 镜像实体侧:<br/>
-        /// ① 墙 = CheckWallHit 同款前视射线(|v|×0.05+20px,只认名 AirWall,排除 GameActor);<br/>
-        /// ② 敌人/障碍 = 判定盒形状查询(mask=1)在判定行(投掷者站位 Y)上——绝不用弧线 y;<br/>
+        /// ① 墙 = CheckWallHit 同款前视射线(|v|×0.05+20px,只认名 AirWall,排除 GameActor)——按该枚弧线(视觉位);<br/>
+        /// ② 敌人/障碍 = 判定盒形状查询(mask=1)按该枚判定行(投掷者站位 Y + 该枚偏移×phase,镜像实体漂移)——绝不用弧线 y;<br/>
         /// 敌人受 B_008 穿透门控(镜像实体命中停留门控),障碍(IBarrier)恒阻挡(方向性屏障无法预览,近似)。</summary>
-        private float ScanBlockPhase(BlockProfile profile, ItemDefinition item, float totalDX, float worldSpeed,
-            float startLocalX, float startLocalY, float mainLandingY,
+        private float ScanBlockPhase(BlockProfile profile, ItemDefinition item, float offsetWorld,
+            float landingYLocal, float totalDX, float worldSpeed,
+            float startLocalX, float startLocalY,
             float peakH, float duration, float distanceMultiplier)
         {
             var space = GetWorld2D()?.DirectSpaceState;
@@ -388,7 +410,7 @@ namespace Kuros.Items.World
 
             float travelSign = totalDX >= 0f ? 1f : -1f;
             float lookAhead = worldSpeed * 0.05f + 20f; // 复刻 CheckWallHit 的提前量
-            float rowWorldY = _player.GlobalPosition.Y;  // 判定行:投掷者站位(实体 origin = LastDroppedBy.GlobalPosition)
+            float rowWorldY = _player.GlobalPosition.Y;  // 判定行基准:投掷者站位(实体 origin = LastDroppedBy.GlobalPosition)
 
             // 步长 ≈ 实机每帧位移(|v|/60)换算到绘制路径(×预览乘数);细采样防漏(判定盒可能仅 10px 宽)
             int steps = Mathf.Clamp(
@@ -398,7 +420,7 @@ namespace Kuros.Items.World
             {
                 float phase = (float)i / steps;
                 float lx = startLocalX + totalDX * phase;
-                float ly = Mathf.Lerp(startLocalY, mainLandingY, phase) - Mathf.Sin(phase * Mathf.Pi) * peakH;
+                float ly = Mathf.Lerp(startLocalY, landingYLocal, phase) - Mathf.Sin(phase * Mathf.Pi) * peakH;
                 Vector2 worldPoint = ToGlobal(new Vector2(lx, ly));
 
                 // ① 墙:前视射线(视觉弧位),镜像 CheckWallHit 过滤
@@ -418,11 +440,13 @@ namespace Kuros.Items.World
                         return phase;
                 }
 
-                // ② 敌人/障碍:判定盒形状查询(层1;判定行 Y + 形状局部偏移)
+                // ② 敌人/障碍:判定盒形状查询(层1)——判定行逐枚漂移(rowBase + 该枚偏移×phase,
+                // 镜像实体 _throwJudgmentY + LandingOffsetYDelta×phase)+ 形状局部偏移
+                float pieceRowWorldY = rowWorldY + offsetWorld * phase;
                 var query = new PhysicsShapeQueryParameters2D
                 {
                     Shape = profile.Shape,
-                    Transform = new Transform2D(0f, new Vector2(worldPoint.X, rowWorldY) + profile.ShapeOffset),
+                    Transform = new Transform2D(0f, new Vector2(worldPoint.X, pieceRowWorldY) + profile.ShapeOffset),
                     CollisionMask = 1u,
                     CollideWithAreas = true,
                     CollideWithBodies = true

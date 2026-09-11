@@ -933,6 +933,9 @@ namespace Kuros.Items.World
 					
 					// 确保最终位置精确在落点
 					_rigidBody.GlobalPosition = new Vector2(newX, landingY);
+					// [临时诊断] A_008 分裂落点对质:实体实际落地 Y 与判定行关系
+					if (LandingOffsetYDelta != 0f)
+						GD.Print($"[A_008实体] {Name}: 落地Y={landingY:F0}, 判定行={_throwJudgmentY:F0}, delta={LandingOffsetYDelta}");
 
 					// 落点砸地 AoE（仅一次性投掷物）：飞尽未中敌时按碰撞体积结算一次范围伤害，
 					// 必须在关闭判定臂之前执行（命中过的敌人已在 _hitActors,不会重复结算）

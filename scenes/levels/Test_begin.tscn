@@ -71,10 +71,10 @@ size = Vector2(300, 2704)
 size = Vector2(300, 2957)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l1dlm"]
-size = Vector2(300, 1000)
+size = Vector2(300, 1803)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jy3vb"]
-size = Vector2(300, 600)
+size = Vector2(300, 943)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
 vertices = PackedVector2Array(1914, 978, 754, 978, 660, 910, 660, 200, 2405.7734, -544, 1914, 1438, 2405.0781, 1546, -2709.3516, 1546, 754, 1438, -597, 1197, 50, 910, -1068, 1421, -597, 787, 50, 200, -2031, 37, -2698.1016, 37, -2693.7578, -544, -1107, 787, -1107, 1161, -1528, 1161, -2031, 463, -1068, 1197, -2701.2734, 463, -1528, 1421)
@@ -266,11 +266,11 @@ position = Vector2(2780, 2108.5)
 shape = SubResource("RectangleShape2D_trswo")
 
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2880, -304)
+position = Vector2(-2880, -705.5)
 shape = SubResource("RectangleShape2D_l1dlm")
 
 [node name="CollisionShape2D6" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2880, 1190)
+position = Vector2(-2880, 1361.5)
 shape = SubResource("RectangleShape2D_jy3vb")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
