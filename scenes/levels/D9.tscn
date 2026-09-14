@@ -140,6 +140,7 @@ offset = Vector2(0, -200)
 position = Vector2(0, 340)
 
 [node name="BG" type="Sprite2D" parent="Environments"]
+z_index = -1
 position = Vector2(0, -1200)
 texture = ExtResource("9_857wi")
 script = ExtResource("10_u4tg5")

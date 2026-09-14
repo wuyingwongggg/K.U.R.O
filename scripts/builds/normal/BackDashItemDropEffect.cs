@@ -3,6 +3,7 @@ using Kuros.Actors.Heroes;
 using Kuros.Actors.Heroes.States;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Items;
 using Kuros.Items.World;
 using Kuros.Systems.Inventory;
 
@@ -46,65 +47,13 @@ namespace Kuros.Builds.Normal
             }
         }
 
-        /// <summary>快捷栏排序最靠前的可用投掷武器,做一次攻击性投掷(与普通投掷同构)。</summary>
+        /// <summary>快捷栏排序最靠前的可用投掷武器,做一次攻击性投掷（与普通投掷同构；
+        /// 实现抽到 <see cref="ThrowWeaponLauncher"/>，与 B_010 连锁响应同源）。
+        /// 该次飞行按固定短抛覆盖（200px/0.25s），不读武器自身投掷参数。</summary>
         private void ThrowFirstThrowableWeapon()
         {
-            var inventory = _player?.InventoryComponent;
-            if (inventory?.QuickBar == null) return;
-
-            var quickBar = inventory.QuickBar;
-            InventoryItemStack? picked = null;
-            int slotIndex = -1;
-
-            for (int i = 0; i < quickBar.Slots.Count; i++)
-            {
-                var stack = quickBar.GetStack(i);
-                if (stack == null || stack.IsEmpty) continue;
-                if (stack.Item.ItemId == "empty_item") continue;
-                if (!stack.Item.IsThrowWeapon) continue; // 投掷武器(背包内投掷物本体)
-                if (stack.IsThrowOnCooldown) continue;    // 冷却中(与手动投掷同可投性)
-                picked = stack;
-                slotIndex = i;
-                break;
-            }
-
-            if (picked == null) return;
-
-            // 原槽进入投掷冷却(普通投掷同款)
-            picked.ThrowCooldownRemaining = picked.Item.ThrowWeaponCooldown;
-            inventory.NotifyCombatWeaponResolutionChanged();
-
-            // 投掷武器投掷 = 生成副本(不扣原槽数量),与 PlayerItemInteractionComponent 同构
-            var extracted = new InventoryItemStack(picked.Item, 1);
-            var spawned = WorldItemSpawner.SpawnFromStack(this, extracted, _player!.GlobalPosition);
-            if (spawned == null)
-                return;
-
-            spawned.LastDroppedBy = Actor;
-            if (spawned is RigidBodyWorldItemEntity rigidEntity)
-            {
-                rigidEntity.IsDisposableCopy = true;
-                // 固定短抛重载:该次飞行按 200px/0.3s,不读武器自身投掷参数
-                rigidEntity.OverrideThrowDistance = OverrideThrowDistancePx;
-                rigidEntity.OverrideThrowDuration = OverrideThrowDurationSec;
-                Vector2 facing = _player.FacingRight ? Vector2.Right : Vector2.Left;
-                float impulse = ResolveThrowImpulse();
-                rigidEntity.ApplyThrowImpulse(facing * impulse);
-                rigidEntity.ZIndex = picked.Item.ThrowZIndex;
-            }
-            else if (spawned is Node2D node)
-            {
-                node.QueueFree(); // 非 RigidBody 实体无法投掷:放弃(不扣槽)
-                picked.ThrowCooldownRemaining = 0f;
-            }
-        }
-
-        private float ResolveThrowImpulse()
-        {
-            var interaction = _player?.GetNodeOrNull<PlayerItemInteractionComponent>("ItemInteraction");
-            if (interaction != null && interaction.ThrowImpulse > 0f)
-                return interaction.ThrowImpulse;
-            return 800f;
+            if (_player == null) return;
+            ThrowWeaponLauncher.LaunchFrontmost(_player, OverrideThrowDistancePx, OverrideThrowDurationSec);
         }
     }
 }

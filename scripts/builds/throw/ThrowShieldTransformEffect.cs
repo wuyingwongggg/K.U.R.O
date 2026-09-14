@@ -4,13 +4,14 @@ using Kuros.Actors.Heroes;
 using Kuros.Builds.BuildCore;
 using Kuros.Core;
 using Kuros.Core.Effects;
+using Kuros.Items;
 using Kuros.Items.World;
 
 namespace Kuros.Builds.Throw
 {
     /// <summary>
     /// 对象转型（BuildThrow_A_009）：举起乱码块时短按核心技能,把手中件转化为次数盾,
-    /// 护盾按该件的投掷等级(ThrowTier 1/2/3)抵挡 1/2/3 次伤害。
+    /// 护盾按该件的**有效投掷等级**(含 B_001 轻量化 / B_002 重量化的档位偏移;1/2/3)抵挡 1/2/3 次伤害。
     /// 抵挡语义 = 1 秒免疫窗口(首次受击开启,窗口结束才消耗一次);
     /// 次数/窗口/视觉由 <see cref="ChargeShieldController"/> 统一管理——与 P2 护盾**互相覆盖**:
     /// 后施加者覆盖前者(不叠加),因此本卡只负责"转化"入口与参数注入。
@@ -77,7 +78,12 @@ namespace Kuros.Builds.Throw
                         || stack.RuntimeIsThrowCoreCopy;
             if (!isPiece) return false;
 
-            int charges = Mathf.Clamp(stack.Item.ThrowTier, 1, 3); // 投掷等级 → 抵挡 1/2/3 次
+            // 投掷等级 → 抵挡 1/2/3 次：必须取**有效档**（含构筑的 TierShift，越界自动回退最近档），
+            // 直接读 stack.Item.ThrowTier(原始档) 会让 B_001 轻量化 / B_002 重量化不生效。
+            ThrowableModifiers mods = Actor is IThrowableModifierProvider provider
+                ? provider.GetThrowableModifiers()
+                : ThrowableModifiers.None;
+            int charges = Mathf.Clamp((int)stack.Item.EffectiveTier(mods, 0), 1, 3);
             inventory!.ClearFurnitureSlot(Actor); // 消耗手中件(手部视觉经 FurnitureSlotChanged 自动清)
 
             // 覆盖语义:新护盾按当前件等级重设次数(不累加),连同视觉/配色一起覆盖

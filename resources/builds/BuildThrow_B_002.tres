@@ -10,6 +10,7 @@ script = ExtResource("1_entry")
 Scene = ExtResource("3_scene")
 EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
+"AttackPowerPerTier": Array[float]([20.0]),
 "Duration": 0.0,
 "TierValues": Array[float]([1.0, 2.0])
 })
@@ -18,7 +19,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 script = ExtResource("2_def")
 EffectId = "BuildThrow_B_002"
 DisplayName = "重量化"
-Description = "所有一次性投掷道具投掷等级上升{0}/{1}个等级,但投掷距离不变"
+Description = "一次性投掷道具投掷等级上升{0}/{1}个等级,每升一级伤害提升{AttackPowerPerTier:0}点，最高三级"
 BuildClass = "Throw"
 MaxStacks = 2
 Icon = ExtResource("4_icon")

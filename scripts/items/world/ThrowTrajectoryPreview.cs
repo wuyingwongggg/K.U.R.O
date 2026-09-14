@@ -213,7 +213,7 @@ namespace Kuros.Items.World
 
             var state = _player.StateMachine?.CurrentState?.Name;
             bool holdingState = state == "IdleHolding" || state == "RunHolding";
-            // B_006 投掷预载:蓄力窗口内(Throw 状态)也显示——修饰每帧变化触发缓存失效,轨迹随蓄力实时增长
+            // B_004 投掷预载:蓄力窗口内(Throw 状态)也显示——修饰每帧变化触发缓存失效,轨迹随蓄力实时增长
             bool charging = !holdingState && state == "Throw"
                 && _player.EffectController?.GetEffectByInterface<IThrowChargeModifier>()?.Charging == true;
             if (!holdingState && !charging) return false;

@@ -5,7 +5,7 @@ using Kuros.Items;
 namespace Kuros.Builds.Throw
 {
     /// <summary>
-    /// 投掷预载（BuildThrow_B_006）：投掷蓄力——持物时按住攻击键蓄力,每蓄 1 秒投掷伤害**固定** +20/+30(层1/层2)、
+    /// 投掷预载（BuildThrow_B_004）：投掷蓄力——持物时按住攻击键蓄力,每蓄 1 秒投掷伤害**固定** +20/+30(层1/层2)、
     /// 投掷距离与击退 +25%/40%(连续比例),满 MaxChargeSeconds 秒自动投掷。
     /// 伤害用固定加值而非倍率:档位基础伤害 20/60/100(1×/3×/5×),倍率会按档位把收益差放大(+120% 时 +24/+72/+120),
     /// 固定值让各档收益一致(满蓄 +60/+90),也避免与 B_002 重量化/A_006 数据升级的档位类加成叠乘失控;
@@ -17,10 +17,10 @@ namespace Kuros.Builds.Throw
     [GlobalClass]
     public partial class ThrowChargeEffect : ActorEffect, IThrowableModifiersContributor, IThrowChargeModifier
     {
-        /// <summary>各层每秒**固定伤害**加值(B_006 注入 [20,30])。</summary>
+        /// <summary>各层每秒**固定伤害**加值(B_004 注入 [20,30])。</summary>
         [Export] public float[] TierValues { get; set; } = { 20f, 30f };
 
-        /// <summary>各层每秒距离提升百分比(B_006 注入 [25,40])。</summary>
+        /// <summary>各层每秒距离提升百分比(B_004 注入 [25,40])。</summary>
         [Export] public float[] DistanceIncreasePercents { get; set; } = { 25f, 40f };
 
         /// <summary>蓄力上限(秒):达到即自动投掷。</summary>

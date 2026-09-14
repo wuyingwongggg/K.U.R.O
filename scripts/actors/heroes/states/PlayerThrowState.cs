@@ -48,7 +48,7 @@ namespace Kuros.Actors.Heroes.States
         private Vector2 _momentumDir;      // 投掷移动方向（投掷前移动方向/面朝）
         private float _momentumElapsed;    // Warmup 衰减计时
 
-        // B_006 投掷预载:蓄力模式(按住攻击键进入;松手/满窗出手)
+        // B_004 投掷预载:蓄力模式(按住攻击键进入;松手/满窗出手)
         private IThrowChargeModifier? _chargeEffect;
         private bool _chargeMode;
         private float _chargeSeconds;
@@ -74,7 +74,7 @@ namespace Kuros.Actors.Heroes.States
             _phase = ThrowPhase.Warmup;
             _phaseRemaining = ThrowWarmupDuration;
 
-            // B_006 投掷预载:按住攻击键进入蓄力模式——warmup 段动画按蓄力窗折算放慢,
+            // B_004 投掷预载:按住攻击键进入蓄力模式——warmup 段动画按蓄力窗折算放慢,
             // 松手/满窗出手时从 warmup 段末跳帧常速播放 Active 段(减慢严格只覆盖 warmup 阶段)
             // (判定用 IsActionHeldArbitrated:IsControlledActionPressed 在鼠标悬停 UI 时会误判松手)
             _chargeEffect = Player.EffectController?.GetEffectByInterface<IThrowChargeModifier>();
@@ -110,7 +110,7 @@ namespace Kuros.Actors.Heroes.States
             base.Exit();
             _hasRequestedThrow = false;
 
-            // B_006 蓄力状态清零(出手/取消/被打断均无残留)——贡献只在 ChargeSeconds>0 时生效
+            // B_004 蓄力状态清零(出手/取消/被打断均无残留)——贡献只在 ChargeSeconds>0 时生效
             if (_chargeEffect != null)
             {
                 _chargeEffect.Charging = false;
@@ -173,7 +173,7 @@ namespace Kuros.Actors.Heroes.States
         /// <summary>
         /// 投掷惯性（类似攻击模板 EnableDashMovement）：Warmup 内从起步速度沿**Enter 捕获的投掷前移动方向**
         /// 线性衰减到 0（Active 前归零）——出手时已无位移惯性。衰减窗口固定为基础 ThrowWarmupDuration，
-        /// 不随蓄力窗延长（B_006 蓄力不放大冲刺惯性）。
+        /// 不随蓄力窗延长（B_004 蓄力不放大冲刺惯性）。
         /// 有移动输入时随转向更新惯性方向（蓄力期间可转向，投掷出手自动朝新方向）；
         /// 无输入则保持捕获方向——后撤投掷延续后撤滑行，不按面朝强制反向（后撤不翻面，面朝≠移动方向）。
         /// </summary>
@@ -211,7 +211,7 @@ namespace Kuros.Actors.Heroes.States
         }
 
         /// <summary>阶段推进：Warmup 结束触发投掷 → Active 出手保护 → Recovery 后摇（动画播完即结束）。
-        /// B_006 蓄力模式:Warmup 不按固定时长递减,由蓄力窗口驱动(见 UpdateChargeThrow)。</summary>
+        /// B_004 蓄力模式:Warmup 不按固定时长递减,由蓄力窗口驱动(见 UpdateChargeThrow)。</summary>
         private void UpdatePhase(float delta)
         {
             if (_phase == ThrowPhase.Warmup && _chargeMode)
@@ -247,7 +247,7 @@ namespace Kuros.Actors.Heroes.States
             }
         }
 
-        /// <summary>B_006 蓄力窗口推进:逐帧把蓄力秒数写入效果(预览实时增长按此值结算);
+        /// <summary>B_004 蓄力窗口推进:逐帧把蓄力秒数写入效果(预览实时增长按此值结算);
         /// 攻击键松开或满 MaxChargeSeconds → 出手。
         /// 出手 = warmup 阶段结束:立即取消减慢,从 warmup 段末(ThrowWarmupDuration)跳帧常速播放
         /// 出手动作(Active 段),剩余动画时长供 Active/Recovery 结束判定。</summary>

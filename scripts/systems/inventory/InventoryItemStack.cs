@@ -26,6 +26,10 @@ namespace Kuros.Systems.Inventory
         public string? RuntimeSourceTag { get; set; }
         /// <summary>是否投掷核心的 A_007 复制件(跨拾取携带;重新生成时恢复乱码滤镜与复制身份)。</summary>
         public bool RuntimeIsThrowCoreCopy { get; set; }
+        /// <summary>投掷耐久已用次数（B_006 对象撤回）：随件跨"拾取→放置→投掷"传递——
+        /// 出手时 +1 并带到实体，落地保留/拾取时带回栈；达到卡上限后落地即销毁。
+        /// 存"已用"而非"剩余"：卡上限改动时已有件无需迁移。</summary>
+        public int RuntimeThrowCountUsed { get; set; }
         private readonly Dictionary<string, float> _runtimeAttributeAdditions = new(StringComparer.OrdinalIgnoreCase);
 
         public InventoryItemStack(ItemDefinition item, int quantity)
@@ -51,6 +55,7 @@ namespace Kuros.Systems.Inventory
             ThrowCooldownRemaining = other.ThrowCooldownRemaining;
             RuntimeSourceTag = other.RuntimeSourceTag;
             RuntimeIsThrowCoreCopy = other.RuntimeIsThrowCoreCopy;
+            RuntimeThrowCountUsed = other.RuntimeThrowCountUsed;
             if (other.DurabilityState != null)
             {
                 DurabilityState = new ItemDurabilityState(other.DurabilityState.Config);

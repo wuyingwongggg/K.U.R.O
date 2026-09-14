@@ -265,7 +265,7 @@ namespace Kuros.Items
             => ThrowableTierTable.TryGetSpec(EffectiveTier(mods, paramShift), out var spec) ? spec : null;
 
         /// <summary>投掷飞行时长：原始字段 &gt;0 覆盖档位(特化属原本属性,不受升档影响)；均无 → 内置 0.6。
-        /// 时长跟随整体升档(TierShift),并乘 FlightTimeScale(B_006 蓄力"弧线略增")。</summary>
+        /// 时长跟随整体升档(TierShift),并乘 FlightTimeScale(B_004 蓄力"弧线略增")。</summary>
         public double GetEffectiveThrowDuration(ThrowableModifiers mods = default)
         {
             double baseDuration = ThrowParabolicDuration > 0 ? ThrowParabolicDuration
@@ -292,13 +292,23 @@ namespace Kuros.Items
         }
 
         /// <summary>撞击伤害：实体已解析的 attack_power &gt;0 优先(逐项特化) → 修饰档伤害 → 调用方场景兜底,
-        /// 最终乘 AttackPowerScale 并加 AttackPowerFlat(B_006 蓄力固定值——加在倍率之后,不受档位基础值放大)。
+        /// 再叠加两路平坦加值：AttackPowerPerTierFlat × **实际生效的档数**（B_001/B_002 改档卡，
+        /// 档位夹取 1~3 后与基础档相减，越界为 0）与 AttackPowerFlat（B_004 蓄力固定值），
+        /// 最后乘 AttackPowerScale。改档卡的伤害**每次都以基础档/基础伤害重算**，不累计。
         /// 伤害升档 = AttackTierShift + 整体 TierShift。</summary>
         public float ResolveThrowImpactDamage(float attributeDamage, float sceneFallbackDamage,
             ThrowableModifiers mods = default)
         {
             float baseDamage = attributeDamage > 0f ? attributeDamage
                 : GetResolvedTierSpec(mods, mods.AttackTierShift)?.AttackPower ?? sceneFallbackDamage;
+
+            if (mods.AttackPowerPerTierFlat != 0f && IsFurniture && ThrowTier > 0)
+            {
+                int effectiveTier = (int)ThrowableTierTable.ResolveTier(ThrowTier + mods.TierShift);
+                float effectiveLevels = effectiveTier - ThrowTier;
+                baseDamage += mods.AttackPowerPerTierFlat * effectiveLevels;
+            }
+
             float scale = mods.AttackPowerScale > 0f ? mods.AttackPowerScale : 1f;
             return baseDamage * scale + mods.AttackPowerFlat;
         }

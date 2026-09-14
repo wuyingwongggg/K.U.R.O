@@ -34,6 +34,11 @@ namespace Kuros.Actors.Heroes
         [Export] public string ThrowStateName { get; set; } = "Throw";
         [Export] public NodePath? InteractionAreaPath { get; set; }
         [Export(PropertyHint.Range, "50,500,10")] public float PickupRange = 150f; // 拾取范围（像素）
+
+        /// <summary>隔空抓取（BuildThrow_B_009）：>0 时拾取（含高亮）以**瞄准点（鼠标指针世界坐标）**为目标——
+        /// 抓取瞄准点该半径内最近一件；瞄准点附近没有可拾取物时回落常规拾取。
+        /// 由卡效果在 OnApply 置位、OnRemoved 清零（0 = 关闭，行为与未持卡完全一致）。</summary>
+        public float AimInteractRadius { get; set; } = 0f;
         public int PendingThrowFrame { get; set; } = -1;
 
         private GameActor? _actor;
@@ -191,6 +196,17 @@ namespace Kuros.Actors.Heroes
         /// </summary>
         private void UpdateClosestHighlight()
         {
+            // 隔空抓取（BuildThrow_B_009）：瞄准点**有目标时**高亮它（与拾取用同一选取函数，
+            // 保证"看到的就是抓到的"）；瞄准点没目标时**不接管**，落回下面的常规 GrabArea 高亮——
+            // 否则持卡后鼠标指向空地会把周围可拾取道具的高亮一起清掉。
+            if (AimInteractRadius > 0f && TryResolveAimWorldPoint(out var aimPoint)
+                && FindNearestPickableNearPoint(aimPoint, AimInteractRadius) is Node2D aimTarget)
+            {
+                RigidBodyWorldItemEntity.CurrentHighlightedEntity = aimTarget as RigidBodyWorldItemEntity;
+                WorldItemEntity.CurrentHighlightedEntity = aimTarget as WorldItemEntity;
+                return;
+            }
+
             RigidBodyWorldItemEntity? closestRigid = null;
             WorldItemEntity? closestWorld = null;
             float minDistRigid = float.MaxValue;
@@ -389,6 +405,10 @@ namespace Kuros.Actors.Heroes
             if (entity is RigidBodyWorldItemEntity re && savedCd > 0f)
                 re.ThrowCooldownRemaining = savedCd;
 
+            // 投掷耐久(B_006)：已用次数随件跨"拾取→放置→投掷"传递——放置不计数，出手 +1
+            if (entity is RigidBodyWorldItemEntity spawnCount)
+                spawnCount.ThrowCountUsed = extracted.RuntimeThrowCountUsed;
+
             if (disposition == DropDisposition.Throw)
             {
                 if (entity is RigidBodyWorldItemEntity rigidEntity)
@@ -400,6 +420,7 @@ namespace Kuros.Actors.Heroes
                     rigidEntity.IsDisposableCopy = isThrowWeapon;
                     rigidEntity.ThrowHoldFrame = PendingThrowFrame;
                     PendingThrowFrame = -1;
+                    rigidEntity.ThrowCountUsed++;
                 }
                 entity.ApplyThrowImpulse(GetFacingDirection() * ThrowImpulse);
                 if (entity is RigidBodyWorldItemEntity thrownRigid)
@@ -488,6 +509,14 @@ namespace Kuros.Actors.Heroes
                 return false;
             }
 
+            // 隔空抓取（BuildThrow_B_009）：优先抓"瞄准点(鼠标指针)附近"的最近一件；
+            // 瞄准点附近没有可拾取物时回落到常规拾取（持卡也不会破坏原有手感）。
+            if (AimInteractRadius > 0f && TryResolveAimWorldPoint(out var aimPoint)
+                && FindNearestPickableNearPoint(aimPoint, AimInteractRadius) is Node2D aimTarget)
+            {
+                return TryPickupNode(aimTarget);
+            }
+
             var actorPosition = _actor.GlobalPosition;
             Node2D? nearestPickable = null;
             float nearestDistanceSq = float.MaxValue;
@@ -504,27 +533,87 @@ namespace Kuros.Actors.Heroes
                 nearestPickable = FindNearestPickableByDistance(actorPosition, ref nearestDistanceSq);
             }
 
-            // 执行拾取
-            if (nearestPickable != null)
+            return nearestPickable != null && TryPickupNode(nearestPickable);
+        }
+
+        /// <summary>按节点类型分派拾取（常规拾取与隔空抓取共用）。</summary>
+        private bool TryPickupNode(Node2D target)
+        {
+            if (_actor == null) return false;
+
+            return target switch
             {
-                if (nearestPickable is WorldItemEntity worldItem)
+                WorldItemEntity worldItem => worldItem.TryPickupByActor(_actor),
+                RigidBodyWorldItemEntity rigidItem => rigidItem.TryPickupByActor(_actor),
+                PickupProperty pickupProp => pickupProp.TryPickupByActor(_actor),
+                _ => false,
+            };
+        }
+
+        /// <summary>隔空抓取的选取：瞄准点半径内最近一件可拾取物（不要求靠近玩家，与常规拾取相反）。
+        /// 过滤规则与常规路径一致：IsPickupAvailable（投掷生命周期中的件不参与）+ 遮挡过滤。</summary>
+        private Node2D? FindNearestPickableNearPoint(Vector2 point, float radius)
+        {
+            var tree = GetTree();
+            if (tree == null) return null;
+
+            float rangeSq = radius * radius;
+            var candidates = new System.Collections.Generic.List<Node2D>();
+
+            foreach (var node in tree.GetNodesInGroup("world_items"))
+            {
+                if (node is RigidBodyWorldItemEntity rigid)
                 {
-                    bool result = worldItem.TryPickupByActor(_actor);
-                    return result;
+                    if (rigid.IsPickupAvailable && point.DistanceSquaredTo(rigid.GlobalPosition) <= rangeSq)
+                        candidates.Add(rigid);
                 }
-                else if (nearestPickable is RigidBodyWorldItemEntity rigidItem)
+                else if (node is WorldItemEntity world)
                 {
-                    bool result = rigidItem.TryPickupByActor(_actor);
-                    return result;
-                }
-                else if (nearestPickable is PickupProperty pickupProp)
-                {
-                    bool result = pickupProp.TryPickupByActor(_actor);
-                    return result;
+                    if (point.DistanceSquaredTo(world.GlobalPosition) <= rangeSq && !candidates.Contains(world))
+                        candidates.Add(world);
                 }
             }
 
-            return false;
+            foreach (var node in tree.GetNodesInGroup("pickables"))
+            {
+                if (node is PickupProperty pickup
+                    && point.DistanceSquaredTo(pickup.GlobalPosition) <= rangeSq
+                    && !candidates.Contains(pickup))
+                {
+                    candidates.Add(pickup);
+                }
+            }
+
+            var occlusionList = BuildOcclusionCheckList(candidates);
+            Node2D? nearest = null;
+            float bestDistSq = float.MaxValue;
+            foreach (var candidate in candidates)
+            {
+                if (IsBlockedByOtherItem(candidate, occlusionList)) continue;
+                float distSq = point.DistanceSquaredTo(candidate.GlobalPosition);
+                if (distSq < bestDistSq)
+                {
+                    bestDistSq = distSq;
+                    nearest = candidate;
+                }
+            }
+
+            return nearest;
+        }
+
+        /// <summary>瞄准点世界坐标：优先 A_010 的 AimPointResolver（设备无关：鼠标/手柄/键盘回退，
+        /// 且不会因本卡而创建它）；未装解析器时直接用鼠标世界坐标。</summary>
+        private bool TryResolveAimWorldPoint(out Vector2 point)
+        {
+            point = Vector2.Zero;
+            if (_actor == null || !GodotObject.IsInstanceValid(_actor)) return false;
+
+            var resolver = AimPointResolver.Find(_actor);
+            if (resolver != null && GodotObject.IsInstanceValid(resolver))
+                return resolver.TryGetAimWorldPoint(out point);
+
+            point = _actor.GetGlobalMousePosition();
+            return true;
         }
         
         /// <summary>
@@ -689,10 +778,15 @@ namespace Kuros.Actors.Heroes
                 if (parent is WorldItemEntity entity)
                     candidates.Add(entity);
                 else if (parent is RigidBodyWorldItemEntity rigidEntity)
-                    candidates.Add(rigidEntity);
+                {
+                    // 投掷生命周期中的道具不参与候选（否则会抢占"最近"位置 → 拾取静默失败）
+                    if (rigidEntity.IsPickupAvailable)
+                        candidates.Add(rigidEntity);
+                }
                 else if (parent is RigidBody2D rigidBody)
                 {
-                    if (rigidBody.GetParent() is RigidBodyWorldItemEntity rigidEntityFromBody)
+                    if (rigidBody.GetParent() is RigidBodyWorldItemEntity rigidEntityFromBody
+                        && rigidEntityFromBody.IsPickupAvailable)
                         candidates.Add(rigidEntityFromBody);
                 }
                 else if (parent is PickupProperty pickup)
@@ -759,6 +853,8 @@ namespace Kuros.Actors.Heroes
                 {
                     if (node is RigidBodyWorldItemEntity rigidItem)
                     {
+                        // 投掷生命周期中的道具不参与候选（否则会抢占"最近"位置，TryPickupByActor 再拒绝 → 按了没反应）
+                        if (!rigidItem.IsPickupAvailable) continue;
                         float distanceSq = actorPosition.DistanceSquaredTo(rigidItem.GlobalPosition);
                         bool inRange = rigidItem.IsActorInRange(_actor!);
                         if (inRange && distanceSq < rangeSq)
