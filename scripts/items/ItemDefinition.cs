@@ -292,14 +292,15 @@ namespace Kuros.Items
         }
 
         /// <summary>撞击伤害：实体已解析的 attack_power &gt;0 优先(逐项特化) → 修饰档伤害 → 调用方场景兜底,
-        /// 最终乘 AttackPowerScale(B_006 蓄力)。伤害升档 = AttackTierShift + 整体 TierShift。</summary>
+        /// 最终乘 AttackPowerScale 并加 AttackPowerFlat(B_006 蓄力固定值——加在倍率之后,不受档位基础值放大)。
+        /// 伤害升档 = AttackTierShift + 整体 TierShift。</summary>
         public float ResolveThrowImpactDamage(float attributeDamage, float sceneFallbackDamage,
             ThrowableModifiers mods = default)
         {
             float baseDamage = attributeDamage > 0f ? attributeDamage
                 : GetResolvedTierSpec(mods, mods.AttackTierShift)?.AttackPower ?? sceneFallbackDamage;
             float scale = mods.AttackPowerScale > 0f ? mods.AttackPowerScale : 1f;
-            return baseDamage * scale;
+            return baseDamage * scale + mods.AttackPowerFlat;
         }
 
         public string ResolveWorldScenePath()

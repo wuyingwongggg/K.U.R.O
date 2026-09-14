@@ -300,6 +300,7 @@ DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 KickAttackAreaPath = NodePath("../../../../Sprite2D/KickArea")
 DashSpeedMultiplier = 3.75
 SnapshotDelaySeconds = 0.5
+DestroyFurnitureDuringDash = true
 WarmupDuration = 0.5
 ActiveDuration = 1.2
 RecoveryDuration = 0.4

@@ -241,6 +241,7 @@ DetectionAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 GrabAreaPath = NodePath("../../../../Sprite2D/GrabArea")
 DashDistance = 800.0
 SnapshotDelaySeconds = 0.9
+DestroyFurnitureDuringDash = true
 AppliedFrozenDuration = 3.0
 EscapeWindowSeconds = 3.0
 EscapeInvincibilityDuration = 1.5

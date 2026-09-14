@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://ovl8slaub3c2"]
 
-[ext_resource type="Script" path="res://scripts/builds/throw/ThrowGlitchPrecipitationEffect.cs" id="1"]
+[ext_resource type="Script" uid="uid://dxo15ryv5hf1a" path="res://scripts/builds/throw/ThrowGlitchPrecipitationEffect.cs" id="1"]
 
 [node name="ThrowGlitchPrecipitationEffect" type="Node"]
 script = ExtResource("1")
+EffectId = "9a7a4066-48a2-4cf9-8a27-e34c4b6004f0"
+Description = " 故障析出：一次性道具被摧毁时,有概率在销毁点生成一件乱码块"

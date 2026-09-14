@@ -94,6 +94,9 @@ namespace Kuros.Actors.Enemies.Attacks
             // 朝向死区：X 分量过小（轨道左右两端的竖直切向段）不翻转，避免朝向来回抽搐
             if (LockFacingDuringDash && Mathf.Abs(dashDir.X) > 0.3f)
                 Enemy.FlipFacing(dashDir.X > 0);
+            // 清障用本帧合成方向(环绕=切向扫掠/背刺=冲刺向),不走基类 _dashDirection(本重写不维护)
+            if (DestroyFurnitureDuringDash)
+                EnemyDashPropClearer.ClearAhead(Enemy, dashDir, PropClearLength, PropClearHeight);
             Enemy.Velocity = dashDir * DashSpeed;
         }
     }

@@ -26,6 +26,14 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "0,500,1")] public float MinDashDistanceBeforeGrab = 24f;
 		[Export(PropertyHint.Range, "0,5,0.1")] public float SnapshotDelaySeconds = 0f; // 冲刺前等待一段时间再记录玩家位置
 
+		[ExportCategory("Dash Prop Clear")]
+		/// <summary>冲刺期间销毁沿路经过的一次性投掷道具(家具类:天然家具与乱码块件都清,不含投掷武器)。</summary>
+		[Export] public bool DestroyFurnitureDuringDash { get; set; } = false;
+		/// <summary>清障探测盒长度(世界像素):自敌人中心沿冲刺方向向前延伸。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearLength { get; set; } = 140f;
+		/// <summary>清障探测盒高度(世界像素):以敌人原点垂直居中。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearHeight { get; set; } = 220f;
+
         [ExportCategory("Effects")]
 		[Export(PropertyHint.Range, "0,10,0.1")] public float AppliedFrozenDuration = 5.0f;
 		[Export] public StringName CooldownStateName = "CooldownFrozen";
@@ -629,6 +637,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		{
 			if (!_isDashing || Enemy == null) return;
 
+			ClearFurnitureAhead();
 			UpdateDashTravelProgress();
 
 			if (_canAttemptGrab && Enemy.PlayerTarget != null && IsPlayerInsideGrabZone(Enemy.PlayerTarget))
@@ -654,6 +663,12 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			Enemy.Velocity = _dashDirection * DashSpeed;
+		}
+
+		private void ClearFurnitureAhead()
+		{
+			if (!DestroyFurnitureDuringDash) return;
+			EnemyDashPropClearer.ClearAhead(Enemy, _dashDirection, PropClearLength, PropClearHeight);
 		}
 
 		private void FinishDash(bool forceGrab = false)

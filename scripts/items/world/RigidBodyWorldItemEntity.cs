@@ -1748,17 +1748,36 @@ namespace Kuros.Items.World
 				dirX = 1f;
 			var knockbackDirection = new Vector2(Mathf.Sign(dirX), 0f);
 
-			target.ApplyKnockbackDisplacement(knockbackDirection, distance, ResolveKnockbackDuration());
+			target.ApplyKnockbackDisplacement(knockbackDirection, distance, ResolveKnockbackDuration(distance));
 		}
 
-		// 击退与血量解析：场景 export >0 优先；否则按修饰档(整体+击退专属 shift / 整体 shift)取档位值。
+		// 击退与血量解析：场景 export >0 优先；否则按修饰档(整体+击退专属 shift / 整体 shift)取档位值；
+		// 最后乘击退倍率(B_006 蓄力——距离与投掷距离同比例、初速与飞行时长同处理)。
+		// 倍率按 >0?:1 守卫(聚合链起点标量可为 0,直接乘会把数值乘穿)
 		private float ResolveKnockbackDistance()
-			=> KnockbackDistance > 0f ? KnockbackDistance
+		{
+			float baseDistance = KnockbackDistance > 0f ? KnockbackDistance
 				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDistance ?? 0f;
+			float scale = Modifiers.KnockbackDistanceScale > 0f ? Modifiers.KnockbackDistanceScale : 1f;
+			return baseDistance * scale;
+		}
 
-		private float ResolveKnockbackDuration()
-			=> KnockbackDuration > 0f ? KnockbackDuration
-				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDuration ?? 0.2f;
+		/// <summary>击退初速(px/s)：档位初速(高档更快——"砸得更凶") × 初速倍率(B_006 蓄力)。</summary>
+		private float ResolveKnockbackSpeed()
+		{
+			float baseSpeed = ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackSpeed ?? 0f;
+			float scale = Modifiers.KnockbackSpeedScale > 0f ? Modifiers.KnockbackSpeedScale : 1f;
+			return baseSpeed * scale;
+		}
+
+		/// <summary>击退时长由"距离 + 初速"派生(受击方匀减速滑完 d = v0×t/2 → t = 2d/v0);
+		/// 场景 export KnockbackDuration >0 仍优先(逐件特化,不参与倍率);初速缺失回退 0.2s。</summary>
+		private float ResolveKnockbackDuration(float distance)
+		{
+			if (KnockbackDuration > 0f) return KnockbackDuration;
+			float speed = ResolveKnockbackSpeed();
+			return speed > 0f ? 2f * distance / speed : 0.2f;
+		}
 
 		private float ResolveMaxHP()
 			=> MaxHP > 0f ? MaxHP

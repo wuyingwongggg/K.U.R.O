@@ -31,6 +31,14 @@ namespace Kuros.Actors.Enemies.Attacks
         /// </summary>
         [Export] public bool UseNavDuringDash = true;
 
+		[ExportCategory("Dash Prop Clear")]
+		/// <summary>冲刺期间销毁沿路经过的一次性投掷道具(家具类:天然家具与乱码块件都清,不含投掷武器)。</summary>
+		[Export] public bool DestroyFurnitureDuringDash { get; set; } = false;
+		/// <summary>清障探测盒长度(世界像素):自敌人中心沿冲刺方向向前延伸。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearLength { get; set; } = 140f;
+		/// <summary>清障探测盒高度(世界像素):以敌人原点垂直居中。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearHeight { get; set; } = 220f;
+
         [ExportCategory("Effects")]
 		[Export] public StringName CooldownStateName = "CooldownFrozen";
 		[Export(PropertyHint.Range, "0,10,0.1")] public float DashEndSelfFrozenDuration = 3f;
@@ -521,6 +529,9 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 
 			// 持续冲刺，直到 DashDuration 到期由基类切入 Recovery
+			// 清障置于方向刷新之后:取其当帧导航方向(NavDuringDash 下逐帧变向)
+			if (DestroyFurnitureDuringDash)
+				EnemyDashPropClearer.ClearAhead(Enemy, _dashDirection, PropClearLength, PropClearHeight);
 			Enemy.Velocity = _dashDirection * (Enemy.Speed * DashSpeedMultiplier);
 		}
 

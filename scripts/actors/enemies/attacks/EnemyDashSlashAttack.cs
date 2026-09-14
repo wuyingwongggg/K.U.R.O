@@ -22,6 +22,14 @@ namespace Kuros.Actors.Enemies.Attacks
 		[ExportCategory("Dash Curve")]
 		[Export(PropertyHint.Range, "50,500,10")] public float DashCurveOffset = 200f;
 
+		[ExportCategory("Dash Prop Clear")]
+		/// <summary>冲刺期间销毁沿路经过的一次性投掷道具(家具类:天然家具与乱码块件都清,不含投掷武器)。</summary>
+		[Export] public bool DestroyFurnitureDuringDash { get; set; } = false;
+		/// <summary>清障探测盒长度(世界像素):自敌人中心沿冲刺方向向前延伸。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearLength { get; set; } = 140f;
+		/// <summary>清障探测盒高度(世界像素):以敌人原点垂直居中。</summary>
+		[Export(PropertyHint.Range, "0,600,5")] public float PropClearHeight { get; set; } = 220f;
+
 		[ExportCategory("Slash")]
 
 		private const float PostCooldownDuration = 1.0f;
@@ -248,6 +256,8 @@ namespace Kuros.Actors.Enemies.Attacks
 				EvaluateBezier(t, out Vector2 bezierDir);
 
 				_dashDirection = bezierDir;
+				if (DestroyFurnitureDuringDash)
+					EnemyDashPropClearer.ClearAhead(Enemy, _dashDirection, PropClearLength, PropClearHeight);
 				Enemy.Velocity = _dashDirection * DashSpeed * EaseInOut(t);
 
 				if (LockFacingDuringDash && _dashDirection.X != 0)
@@ -298,6 +308,8 @@ namespace Kuros.Actors.Enemies.Attacks
 				}
 			}
 
+			if (DestroyFurnitureDuringDash)
+				EnemyDashPropClearer.ClearAhead(Enemy, _dashDirection, PropClearLength, PropClearHeight);
 			Enemy.Velocity = _dashDirection * DashSpeed * ApproachDecel();
 		}
 

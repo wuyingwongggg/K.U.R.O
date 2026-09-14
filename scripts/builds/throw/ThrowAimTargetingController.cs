@@ -258,7 +258,8 @@ namespace Kuros.Builds.Throw
         {
             Node2D? holder = null;
 
-            var scene = _core?.ResolveSpawnScene(out _);
+            bool isCopy = false;
+            var scene = _core?.ResolveSpawnScene(out isCopy);
             if (scene != null)
             {
                 var inst = scene.Instantiate();
@@ -275,9 +276,19 @@ namespace Kuros.Builds.Throw
                 inst.Free();
             }
 
+            bool usedIconFallback = false;
             holder ??= new Node2D { Name = "Visual" };
             if (holder.GetChildCount() == 0 && _core?.FurnitureIcon != null)
+            {
                 holder.AddChild(new Sprite2D { Texture = _core.FurnitureIcon });
+                usedIconFallback = true;
+            }
+
+            // A_007 复制件(含 B_007 经复制路径析出):幽灵同步挂乱码滤镜——所见即所得,
+            // 与实际生成(SpawnPieceFromScene 的 isCopy 分支)一致;
+            // 图标回退时纹理路径不固定(furnitures 路径判定不适用)→ requireFurnitureArt:false
+            if (isCopy)
+                Kuros.Fx.PieceCopyGlitchDecorator.Apply(holder, requireFurnitureArt: !usedIconFallback);
 
             return holder;
         }

@@ -572,14 +572,16 @@ namespace Kuros.Actors.Heroes
             return aabbA.Intersects(aabbB, true);
         }
 
+        /// <summary>遮挡判定（叠层拾取）：家具类候选若被"Y 更大（更靠前）"且形状重叠的另一件家具压住,
+        /// 则不参与高亮/拾取——模拟"先拿桌子上的苹果,而不是先拿桌子"。仅家具参与（武器无 StaticBody2D）；
+        /// 形状用**拿取判定区**（CollisionArea）而非 StaticBody2D 底座：底座是导航用的大盒子,
+        /// 相邻两件仅一个角相碰就会互相遮挡,叠层意图被误伤。</summary>
         private static bool IsBlockedByOtherItem(Node2D candidate, System.Collections.Generic.List<Node2D> allCandidates)
         {
-            // 只有家具类物品（IsThrowable && !IsThrowWeapon）参与遮挡过滤，
-            // 武器类道具没有 StaticBody2D，会导致拾取异常
             if (!IsFurnitureItem(candidate))
                 return false;
 
-            var candidateShape = GetPickableCollisionShape(candidate);
+            var candidateShape = GetOcclusionShape(candidate);
             if (candidateShape == null) return false;
 
             float candidateY = candidate.GlobalPosition.Y;
@@ -589,7 +591,7 @@ namespace Kuros.Actors.Heroes
                 if (other == candidate) continue;
                 if (!IsFurnitureItem(other)) continue;
 
-                var otherShape = GetPickableCollisionShape(other);
+                var otherShape = GetOcclusionShape(other);
                 if (otherShape == null) continue;
 
                 // 只检查 Y 轴在 candidate 之下的物品（更靠前）
@@ -600,6 +602,38 @@ namespace Kuros.Actors.Heroes
             }
 
             return false;
+        }
+
+        /// <summary>遮挡判定专用形状：拿取判定区（CollisionArea）的形状——精确表达"可拿取的那一层"；
+        /// 缺拿取区时回退实体底座（StaticBody2D），再回退物品触发区。
+        /// 与 <see cref="GetPickableCollisionShape"/> 分开：后者供放置落点计算用（需按物理底座留出间距）。</summary>
+        private static CollisionShape2D? GetOcclusionShape(Node2D pickable)
+        {
+            if (pickable is RigidBodyWorldItemEntity rigidItem)
+            {
+                var grabArea = rigidItem.GrabArea;
+                if (grabArea != null)
+                {
+                    var grabShape = FindFirstShape(grabArea);
+                    if (grabShape != null) return grabShape;
+                }
+                var parent = grabArea?.GetParent();
+                return parent?.GetNodeOrNull<CollisionShape2D>("StaticBody2D/CollisionShape2D");
+            }
+            return GetPickableCollisionShape(pickable);
+        }
+
+        /// <summary>区域内首个可用碰撞形状（子节点命名不统一时的兜底：先找默认名 CollisionShape2D）。</summary>
+        private static CollisionShape2D? FindFirstShape(Node area)
+        {
+            var named = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+            if (named?.Shape != null) return named;
+            foreach (var child in area.GetChildren())
+            {
+                if (child is CollisionShape2D cs && cs.Shape != null)
+                    return cs;
+            }
+            return null;
         }
 
         /// <summary>
@@ -618,9 +652,10 @@ namespace Kuros.Actors.Heroes
         }
 
         /// <summary>
-        /// 获取可拾取物品的物理碰撞形状（用于遮挡检测）。
-        /// RigidBodyWorldItemEntity 使用 StaticBody2D 的碰撞形状，
+        /// 获取可拾取物品的物理底座形状（放置落点计算用：按底座宽度留出与玩家的间距）。
+        /// RigidBodyWorldItemEntity 使用 StaticBody2D 的碰撞形状（导航底座，比视觉大），
         /// WorldItemEntity/PickupProperty 使用 TriggerArea 的碰撞形状。
+        /// 遮挡判定不要用这个（底座过大会误判叠层）——见 <see cref="GetOcclusionShape"/>。
         /// </summary>
         private static CollisionShape2D? GetPickableCollisionShape(Node2D pickable)
         {

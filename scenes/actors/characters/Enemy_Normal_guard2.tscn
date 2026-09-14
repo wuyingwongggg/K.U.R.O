@@ -250,6 +250,7 @@ DashSpeedMultiplier = 1.0
 DashDuration = 3.0
 LockFacingDuringDash = false
 SnapshotDelaySeconds = 1.0
+DestroyFurnitureDuringDash = true
 WarmupDuration = 1.0
 ActiveDuration = 2.8
 RecoveryDuration = 0.1

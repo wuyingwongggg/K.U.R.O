@@ -201,7 +201,7 @@ DebugLineWidth = 8.0
 position = Vector2(3940, -269)
 script = ExtResource("37_6h2kq")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://wluyqt2wxlvb"
+NextStagePath = "uid://beup3s3dr4q8h"
 LoadDistance = 2000.0
 
 [node name="Environments" type="Node2D" parent="."]

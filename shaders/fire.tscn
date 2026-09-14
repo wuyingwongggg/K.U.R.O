@@ -1,34 +1,28 @@
-[gd_scene load_steps=6 format=3 uid="uid://13dlp2v8e313"]
+[gd_scene load_steps=4 format=3 uid="uid://dl8g1g7j0yo05"]
 
-[sub_resource type="Gradient" id="Gradient_lis77"]
-offsets = PackedFloat32Array(0.15857606, 0.42880258, 0.6343042)
-colors = PackedColorArray(0.5963008, 0.1992622, 9.62615e-08, 1, 1, 0.88235295, 0.18039216, 1, 0, 0, 0, 1)
+[ext_resource type="Shader" uid="uid://d252dovkeug8w" path="res://shaders/materials/furniture_glitch.gdshader" id="1_r2t82"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="2_cr37j"]
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_xdgfk"]
-gradient = SubResource("Gradient_lis77")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7y0j4"]
+shader = ExtResource("1_r2t82")
+shader_parameter/seed = 0.0
+shader_parameter/intensity = 0.6
+shader_parameter/speed = 2.000000095
+shader_parameter/max_shift = 12.0
+shader_parameter/band_px = 24.0
+shader_parameter/block_px = 20.000000855
+shader_parameter/persistent_glitch = true
+shader_parameter/band_strength = 0.30000001425
+shader_parameter/block_strength = 0.750000035625
+shader_parameter/rgb_shift_strength = 1.0
+shader_parameter/flash_strength = 1.0
+shader_parameter/body_color = Color(0.07, 0.28, 0.12, 1)
+shader_parameter/body_strength = 0.350000016625
+shader_parameter/glitch_tint = Color(0, 0.36862746, 0, 1)
+shader_parameter/tint_strength = 0.5
 
-[sub_resource type="Curve" id="Curve_r2t82"]
-_data = [Vector2(0, 0.9999999), 0.0, 0.0, 0, 0, Vector2(0.99847555, 0.4521693), 0.0, 0.0, 0, 0]
-point_count = 2
+[node name="Node2D" type="Node2D"]
 
-[sub_resource type="CurveTexture" id="CurveTexture_cr37j"]
-curve = SubResource("Curve_r2t82")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_7y0j4"]
-particle_flag_disable_z = true
-spread = 180.0
-gravity = Vector3(0, -98, 0)
-scale_curve = SubResource("CurveTexture_cr37j")
-color_ramp = SubResource("GradientTexture1D_xdgfk")
-turbulence_enabled = true
-turbulence_noise_strength = 14.49
-turbulence_noise_scale = 0.0
-turbulence_noise_speed_random = 1.28
-turbulence_influence_max = 0.2
-
-[node name="GPUParticles2D" type="GPUParticles2D"]
-amount = 13
-preprocess = 0.63
-speed_scale = 1.34
-randomness = 0.16
-process_material = SubResource("ParticleProcessMaterial_7y0j4")
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_7y0j4")
+texture = ExtResource("2_cr37j")

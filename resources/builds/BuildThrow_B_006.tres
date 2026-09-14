@@ -10,15 +10,16 @@ script = ExtResource("1_entry")
 Scene = ExtResource("3_scene")
 EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
+"DistanceIncreasePercents": Array[float]([25.0, 40.0]),
 "Duration": 0.0,
-"TierValues": Array[float]([25.0, 40.0])
+"TierValues": Array[float]([20.0, 30.0])
 })
 
 [resource]
 script = ExtResource("2_def")
 EffectId = "BuildThrow_B_006"
 DisplayName = "投掷预载"
-Description = "允许投掷时蓄力,每蓄力1秒投掷伤害与距离提升{0}%/{1}%,最多3秒"
+Description = "允许投掷时蓄力,每蓄力1秒投掷伤害+{0}/+{1}、距离与击退提升{DistanceIncreasePercents:0}%/{DistanceIncreasePercents:1}%,最多3秒"
 BuildClass = "Throw"
 Rarity = 1
 MaxStacks = 2

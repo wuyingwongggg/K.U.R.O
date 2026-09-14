@@ -264,6 +264,7 @@ SmashAreaPath = NodePath("../../../../Sprite2D/SmashArea")
 DashSpeedMultiplier = 5.0
 DashDuration = 0.6
 SnapshotDelaySeconds = 0.5
+DestroyFurnitureDuringDash = true
 AppliedStunDuration = 1.0
 AttackName = "SmashAttack"
 WarmupDuration = 0.7
