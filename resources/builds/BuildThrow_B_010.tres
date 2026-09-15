@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://4fn2rhqxbu8s"]
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]

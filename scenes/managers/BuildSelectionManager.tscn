@@ -58,7 +58,7 @@
 [ext_resource type="Resource" uid="uid://c1m8vq3xk7tw2" path="res://resources/builds/BuildThrow_B_007.tres" id="55_b007"]
 [ext_resource type="Resource" uid="uid://b4nx8kqv2mwrt" path="res://resources/builds/BuildThrow_B_008.tres" id="56_b008"]
 [ext_resource type="Resource" uid="uid://bafrepxbd1b37" path="res://resources/builds/BuildThrow_B_009.tres" id="57_b009"]
-[ext_resource type="Resource" path="res://resources/builds/BuildThrow_B_010.tres" id="58_b010"]
+[ext_resource type="Resource" uid="uid://4fn2rhqxbu8s" path="res://resources/builds/BuildThrow_B_010.tres" id="58_b010"]
 
 [sub_resource type="Resource" id="ThresholdCurve"]
 script = ExtResource("2")

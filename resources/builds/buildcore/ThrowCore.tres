@@ -9,5 +9,5 @@ CoreId = "ThrowCore"
 DisplayName = "投掷协议核心"
 Description = "投掷：投掷状态拥有投掷指示器，按下核心技能键生成一个一次性投掷类道具乱码块，长按核心技能键则销毁"
 BuildClass = "Throw"
-AllowedEffectClasses = Array[String](["Throw"])
+AllowedEffectClasses = Array[String](["Throw", "Normal"])
 CoreEffectScene = ExtResource("2")
