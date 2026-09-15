@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://cx332v8gr3ytf"]
+[gd_scene load_steps=33 format=3 uid="uid://cx332v8gr3ytf"]
 
 [ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_5fg3o"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_wbml2"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://04usu0butu18" path="res://scripts/actors/enemies/attacks/EnemyD1DroneAttackController.cs" id="13_gs7ri"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="14_dn2fu"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_aym2x"]
+[ext_resource type="PackedScene" uid="uid://b42ur4dxdhjmx" path="res://scenes/actors/etc/enemy_spawn_box.tscn" id="16_5fg3o"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="17_fsm10"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="18_ns1qj"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="19_57mhe"]
@@ -48,6 +49,7 @@ height = 300.0
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("15_aym2x")
+Scene = ExtResource("16_5fg3o")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 0
 SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
@@ -69,7 +71,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_F1_rogueAI_Magnet" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
-z_index = 2
+z_index = 4
 y_sort_enabled = true
 scale = Vector2(0.66, 0.66)
 collision_layer = 2
@@ -94,7 +96,6 @@ DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
-position = Vector2(0, 1500)
 scale = Vector2(12, 6)
 texture = ExtResource("5_km4wm")
 script = ExtResource("6_hlqjr")
@@ -102,6 +103,7 @@ TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
+position = Vector2(0, -1500)
 
 [node name="OutlineSpineSprite_Left" type="SpineSprite" parent="OutlineLayer"]
 modulate = Color(0.02, 0.02, 0.02, 0.85)
@@ -148,6 +150,7 @@ preview_time = 0.0
 script = ExtResource("8_ujjrj")
 
 [node name="SpineSprite" type="SpineSprite" parent="."]
+position = Vector2(0, -1500)
 skeleton_data_res = ExtResource("7_5fg3o")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
@@ -157,10 +160,10 @@ script = ExtResource("8_ujjrj")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(4.5134983, -467.54443)
-rotation = 1.5809997
+position = Vector2(0.80973047, -1039.7668)
+rotation = 1.5643237
 scale = Vector2(0.99999994, 0.99999994)
-bone_name = "bone3"
+bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
@@ -191,7 +194,6 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(0, 1500)
 shape = SubResource("RectangleShape2D_attack")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
@@ -207,13 +209,14 @@ TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
 [node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
-position = Vector2(0, -1300)
+position = Vector2(0, -2800)
 
 [node name="Marker2D" type="Marker2D" parent="VisualEffectPosition"]
+position = Vector2(0, -1500)
+gizmo_extents = 0.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 z_index = 10
-position = Vector2(0, -1300)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_2csbb")
 disabled = true

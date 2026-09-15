@@ -20,7 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://6q7k85h5kvvg" path="res://scenes/actors/characters/Enemy_D1_drone.tscn" id="14_8ri3c"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="14_qj5ja"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="15_qnjvr"]
-[ext_resource type="PackedScene" uid="uid://duryvwia2gyyc" path="res://scenes/actors/characters/Enemy_F1_rogueAI_Cannon.tscn" id="16_w4w1u"]
+[ext_resource type="PackedScene" uid="uid://cx332v8gr3ytf" path="res://scenes/actors/characters/Enemy_F1_rogueAI_Magnet.tscn" id="16_w4w1u"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nmbao"]
 shader = ExtResource("1_bllfa")

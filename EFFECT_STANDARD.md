@@ -214,6 +214,9 @@ public void ApplyKnockback(Vector2 direction, float speed)
 
 `KnockbackDriver`（`KnockbackOnAttackEffect` 内部）保留，因其需要 `MoveAndCollide` 做碰撞响应，但 `Attach` 入口也加 `ForcedMovement` 检查。
 
+> 生死门例外：致死一击本身仍会放行击退。血量归零时死亡标记立即置位，但受击反馈（Hit 状态：后仰动画 + 击退位移）
+> 尚未走完，此窗口内 `IsDyingDeferred == true` 放行击退写入；Hit 结束转入 Dying 后门即关闭。
+
 ---
 
 ## 五、效果应用：只走 GameActor.ApplyEffect

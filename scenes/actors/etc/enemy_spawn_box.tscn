@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://b42ur4dxdhjmx"]
+
+[ext_resource type="Texture2D" uid="uid://c163w8koq7vqe" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0020.png" id="21_kj3m2"]
+
+[node name="Spawnbox" type="Node2D"]
+z_index = 2
+y_sort_enabled = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 3
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("21_kj3m2")
+offset = Vector2(0, 800)

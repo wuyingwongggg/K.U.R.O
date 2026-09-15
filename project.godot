@@ -230,10 +230,6 @@ logging/enable_file_logging=true
 2d/navigation/3d/geometry_face_color=Color(0.5019608, 0.16862746, 1, 0.39215687)
 2d/navigation/3d/geometry_edge_color=Color(0.5019608, 0.16862746, 1, 1)
 
-[physics]
-
-common/physics_interpolation=true
-
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

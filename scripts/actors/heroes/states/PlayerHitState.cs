@@ -206,6 +206,9 @@ namespace Kuros.Actors.Heroes.States
                     _recoverRemaining -= dt;
                     if (_recoverRemaining <= 0f)
                     {
+                        // 致死伤害：受击反馈（后仰 + 击退）已完整走完，转入死亡流程（Dying）
+                        if (Actor.TryEnterDeferredDeath()) return;
+
                         ChangeState("Idle");
                         return;
                     }
