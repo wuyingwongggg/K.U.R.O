@@ -1,4 +1,4 @@
-[gd_scene load_steps=54 format=3 uid="uid://dstgcw0tto5oa"]
+[gd_scene load_steps=68 format=3 uid="uid://dstgcw0tto5oa"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_7ummj"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_bn434"]
@@ -12,18 +12,32 @@
 [ext_resource type="Texture2D" uid="uid://7bbxtr7o4uuf" path="res://assets/environments/scene_1_home/房间1 隔断墙1.png" id="11_wichh"]
 [ext_resource type="Texture2D" uid="uid://dme4jeu32g0kg" path="res://assets/environments/scene_1_home/房间2洞洞板.png" id="12_0qijd"]
 [ext_resource type="PackedScene" uid="uid://mwpdlx1yup0k" path="res://scenes/actors/etc/EnemySpawnConsole.tscn" id="13_2vmef"]
+[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="14_nr150"]
 [ext_resource type="Script" uid="uid://5obw65hewcve" path="res://scripts/builds/buildcore/CorePickupZone.cs" id="14_o3k7i"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="15_qipqx"]
+[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="16_aurgl"]
+[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="17_d37ep"]
 [ext_resource type="PackedScene" uid="uid://dmqi6co8gtn0l" path="res://scenes/weapons/Weapon_Brawl_discoBall.tscn" id="17_oobfl"]
 [ext_resource type="PackedScene" uid="uid://ctpw5uqly3yu5" path="res://scenes/weapons/Weapon_Brawl_mechGlove.tscn" id="18_4812a"]
+[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="18_e0l6p"]
+[ext_resource type="PackedScene" uid="uid://wqcdwpyo1nji" path="res://scenes/actors/characters/Enemy_B1_thin.tscn" id="19_1daij"]
 [ext_resource type="PackedScene" uid="uid://bhjc0grsl76ep" path="res://scenes/weapons/Weapon_Brawl_riotBracer.tscn" id="19_lu3nq"]
 [ext_resource type="PackedScene" uid="uid://blwgkboyojmcq" path="res://scenes/weapons/Weapon_Brawl_riotGlove.tscn" id="20_o6peg"]
+[ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="20_uhgxd"]
+[ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="21_cgmc7"]
 [ext_resource type="PackedScene" uid="uid://caapdem6qh6k8" path="res://scenes/weapons/Weapon_Slash_baguette.tscn" id="21_e5wt5"]
 [ext_resource type="PackedScene" uid="uid://2pny8f8vuu3j" path="res://scenes/weapons/Weapon_Slash_barrierGate.tscn" id="22_bsvo7"]
+[ext_resource type="PackedScene" uid="uid://8ce54l6083nt" path="res://scenes/actors/characters/Enemy_C1_waiterB.tscn" id="22_l6k0d"]
 [ext_resource type="PackedScene" uid="uid://cnh6afaayr0iy" path="res://scenes/weapons/Weapon_Slash_bunnySword.tscn" id="23_5frih"]
+[ext_resource type="PackedScene" uid="uid://cpcvmvf2n5ahe" path="res://scenes/actors/characters/Enemy_D1_printerMachine.tscn" id="23_avsrj"]
 [ext_resource type="PackedScene" uid="uid://csjvahh6hev8k" path="res://scenes/weapons/Weapon_Slash_expandBaton.tscn" id="24_7r2as"]
+[ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="24_7ysab"]
+[ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="25_2h5mv"]
 [ext_resource type="PackedScene" uid="uid://3d7hnjx31f45" path="res://scenes/weapons/Weapon_Slash_violinBow.tscn" id="25_nr150"]
+[ext_resource type="PackedScene" uid="uid://6q7k85h5kvvg" path="res://scenes/actors/characters/Enemy_D1_drone.tscn" id="26_6h2kq"]
 [ext_resource type="PackedScene" uid="uid://d0x0oxhsokka0" path="res://scenes/weapons/Weapon_Stab_corkscrew.tscn" id="26_qipqx"]
 [ext_resource type="PackedScene" uid="uid://cdnitqquebaw6" path="res://scenes/weapons/Weapon_Stab_drill.tscn" id="27_aurgl"]
+[ext_resource type="PackedScene" uid="uid://bpjv2iuy8x0hw" path="res://scenes/actors/characters/Enemy_D1_netAdmin.tscn" id="27_fdxhs"]
 [ext_resource type="PackedScene" uid="uid://6ghjqyjkk37w" path="res://scenes/weapons/Weapon_Stab_umbrella.tscn" id="28_d37ep"]
 [ext_resource type="PackedScene" uid="uid://daek68pd4nvyr" path="res://scenes/weapons/Weapon_Stab_laserPointer.tscn" id="29_e0l6p"]
 [ext_resource type="PackedScene" uid="uid://bvvyo3wubh12j" path="res://scenes/weapons/Weapon_Throw_gravityGrenade.tscn" id="30_1daij"]
@@ -281,6 +295,7 @@ navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 position = Vector2(-1972, 347)
 SpawnParentPath = NodePath("..")
 PlayerRespawnPointPath = NodePath("../PlayerSpawnPoint")
+EnemyScenes = Array[PackedScene]([ExtResource("14_nr150"), ExtResource("15_qipqx"), ExtResource("16_aurgl"), ExtResource("17_d37ep"), ExtResource("18_e0l6p"), ExtResource("19_1daij"), ExtResource("20_uhgxd"), ExtResource("21_cgmc7"), ExtResource("22_l6k0d"), ExtResource("23_avsrj"), ExtResource("24_7ysab"), ExtResource("25_2h5mv"), ExtResource("26_6h2kq"), ExtResource("27_fdxhs")])
 
 [node name="CorePickupZone" type="Area2D" parent="."]
 position = Vector2(0, 344)

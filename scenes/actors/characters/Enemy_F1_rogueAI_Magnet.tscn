@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://cx332v8gr3ytf"]
+[gd_scene load_steps=32 format=3 uid="uid://cx332v8gr3ytf"]
 
 [ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_5fg3o"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_wbml2"]
@@ -15,7 +15,6 @@
 [ext_resource type="Script" uid="uid://04usu0butu18" path="res://scripts/actors/enemies/attacks/EnemyD1DroneAttackController.cs" id="13_gs7ri"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="14_dn2fu"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_aym2x"]
-[ext_resource type="PackedScene" uid="uid://ccnppsi6ofeip" path="res://resources/effects/CubeDataBoom.tscn" id="16_h21dh"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="17_fsm10"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="18_ns1qj"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="19_57mhe"]
@@ -38,10 +37,10 @@ radius = 20000.0
 radius = 3072.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(4000, 2000)
+size = Vector2(1000, 1000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
-size = Vector2(500, 300)
+size = Vector2(300, 300)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
 radius = 100.0
@@ -49,10 +48,10 @@ height = 300.0
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("15_aym2x")
-Scene = ExtResource("16_h21dh")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 1
-SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
+SpawnTiming = 0
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
+LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
 "Damage": 10,
@@ -72,7 +71,7 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 [node name="Enemy_F1_rogueAI_Magnet" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 2
 y_sort_enabled = true
-scale = Vector2(0.33, 0.33)
+scale = Vector2(0.66, 0.66)
 collision_layer = 2
 collision_mask = 15
 motion_mode = 1
@@ -95,6 +94,7 @@ DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
+position = Vector2(0, 1500)
 scale = Vector2(12, 6)
 texture = ExtResource("5_km4wm")
 script = ExtResource("6_hlqjr")
@@ -152,14 +152,15 @@ skeleton_data_res = ExtResource("7_5fg3o")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 1.0
 script = ExtResource("8_ujjrj")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(11.222676, -1287.5016)
+position = Vector2(4.5134983, -467.54443)
+rotation = 1.5809997
 scale = Vector2(0.99999994, 0.99999994)
-bone_name = "bone"
+bone_name = "bone3"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
@@ -190,13 +191,14 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-position = Vector2(2000, 0)
+position = Vector2(0, 1500)
 shape = SubResource("RectangleShape2D_attack")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
+position = Vector2(0, -1300)
 shape = SubResource("RectangleShape2D_hit")
 
 [node name="VisualEffectPosition" type="Node2D" parent="."]
@@ -205,16 +207,16 @@ TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 FollowBoneY = true
 
 [node name="VisualEffectMarker2D" type="Marker2D" parent="VisualEffectPosition"]
-position = Vector2(0, -300)
+position = Vector2(0, -1300)
+
+[node name="Marker2D" type="Marker2D" parent="VisualEffectPosition"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+z_index = 10
+position = Vector2(0, -1300)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_2csbb")
-
-[node name="Node2D" type="Node2D" parent="."]
-
-[node name="Marker2D" type="Marker2D" parent="Node2D"]
-position = Vector2(620, 350)
+disabled = true
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("InitialState")]
 script = ExtResource("9_svpm1")
