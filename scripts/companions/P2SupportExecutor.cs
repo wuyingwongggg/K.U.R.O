@@ -45,8 +45,8 @@ namespace Kuros.Companions
         [Export(PropertyHint.Range, "100,2000,50")] public float MoveAwayDistance { get; set; } = 600f;
 
         [ExportCategory("Shield VFX")]
-        /// <summary>护盾等级（次数盾的抵挡次数，默认 2——后期可由 SetShieldChargeLevel 钩子升级）。</summary>
-        [Export(PropertyHint.Range, "1,5,1")] public int _shieldChargeLevel = 2;
+        /// <summary>护盾等级（次数盾的抵挡次数，默认 1——后期可由 SetShieldChargeLevel 钩子升级）。</summary>
+        [Export(PropertyHint.Range, "1,5,1")] public int _shieldChargeLevel = 1;
         /// <summary>按等级(1/2/3)的护盾配色（RGB=颜色，A=整体透明度）：高等级更深更实、低等级更浅更透。
         /// 长度不足按末档取值；A_009 同款视觉分级。</summary>
         [Export] public Color[] ShieldTierColors { get; set; } =

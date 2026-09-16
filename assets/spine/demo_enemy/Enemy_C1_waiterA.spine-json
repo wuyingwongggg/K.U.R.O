@@ -1,7 +1,7 @@
 {
 "skeleton": {
-	"hash": "wZQqcS1XzoQ",
-	"spine": "4.2-from-4.3.23",
+	"hash": "FodO1hyt8EE",
+	"spine": "4.2-from-4.3.26",
 	"x": -423.8666,
 	"y": -119.62968,
 	"width": 911.4785,
@@ -14,14 +14,30 @@
 	{ "name": "bone", "parent": "root", "x": 13.578918, "y": 669.3324 },
 	{ "name": "bone2", "parent": "bone", "length": 185.7646, "rotation": 87.29207, "x": 5.84903, "y": 62.55737 },
 	{ "name": "bone3", "parent": "bone2", "length": 230.72346, "rotation": 3.642016, "x": 185.76465 },
-	{ "name": "bone4", "parent": "bone", "length": 211.24617, "rotation": -57.82878, "x": 138.5494, "y": 58.52252 },
-	{ "name": "bone5", "parent": "bone4", "length": 198.37723, "rotation": -13.077714, "x": 211.2462 },
-	{ "name": "bone6", "parent": "bone5", "length": 198.66533, "rotation": -9.90468, "x": 198.3772 },
-	{ "name": "bone7", "parent": "bone6", "length": 173.19357, "rotation": -6.802908, "x": 198.66527 },
-	{ "name": "bone8", "parent": "bone", "length": 217.2109, "rotation": -134.19307, "x": -108.03755, "y": 78.71094 },
-	{ "name": "bone9", "parent": "bone8", "length": 201.85316, "rotation": 17.44495, "x": 217.2109 },
-	{ "name": "bone10", "parent": "bone9", "length": 205.0167, "rotation": 11.24558, "x": 201.8532 },
-	{ "name": "bone11", "parent": "bone10", "length": 176.14014, "rotation": 12.68698, "x": 205.0167 },
+	{
+		"name": "bone4",
+		"parent": "bone",
+		"length": 211.24617,
+		"rotation": -57.82878,
+		"x": 138.5494,
+		"y": 58.52252,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone5", "parent": "bone4", "length": 198.37723, "rotation": -13.077714, "x": 211.2462, "color": "d8e323ff" },
+	{ "name": "bone6", "parent": "bone5", "length": 198.66533, "rotation": -9.90468, "x": 198.3772, "color": "d8e323ff" },
+	{ "name": "bone7", "parent": "bone6", "length": 173.19357, "rotation": -6.802908, "x": 198.66527, "color": "d8e323ff" },
+	{
+		"name": "bone8",
+		"parent": "bone",
+		"length": 217.2109,
+		"rotation": -134.19307,
+		"x": -108.03755,
+		"y": 78.71094,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone9", "parent": "bone8", "length": 201.85316, "rotation": 17.44495, "x": 217.2109, "color": "d8e323ff" },
+	{ "name": "bone10", "parent": "bone9", "length": 205.0167, "rotation": 11.24558, "x": 201.8532, "color": "d8e323ff" },
+	{ "name": "bone11", "parent": "bone10", "length": 176.14014, "rotation": 12.68698, "x": 205.0167, "color": "d8e323ff" },
 	{ "name": "bone16", "parent": "bone3", "length": 295.4511, "rotation": 163.34894, "x": 161.30457, "y": 159.04607 },
 	{ "name": "bone17", "parent": "bone16", "length": 363.3379, "rotation": 36.93247, "x": 295.064, "y": 1.375702 },
 	{ "name": "bone18", "parent": "bone17", "length": 142.53047, "rotation": 41.96249, "x": 363.855, "y": 1.3323593 },
@@ -32,20 +48,52 @@
 	{ "name": "bone23", "parent": "bone22", "length": 75.35287, "rotation": -3.802865, "x": 93.7973, "y": -0.02760315 },
 	{ "name": "bone24", "parent": "bone23", "length": 67.60686, "rotation": -3.6123836, "x": 75.35278 },
 	{ "name": "bone25", "parent": "bone3", "length": 174.04874, "rotation": -90.30448, "x": 298.2476, "y": -25.458664 },
-	{ "name": "bone26", "parent": "bone3", "length": 89.7783, "rotation": 72.42705, "x": 216.15112, "y": 158.08025 },
-	{ "name": "bone27", "parent": "bone26", "length": 79.49248, "rotation": 10.92828, "x": 89.77826 },
-	{ "name": "bone28", "parent": "bone3", "length": 79.8974, "rotation": -78.78976, "x": 215.4879, "y": -120.35565 },
-	{ "name": "bone29", "parent": "bone28", "length": 58.36831, "rotation": -10.202723, "x": 79.89734 },
+	{
+		"name": "bone26",
+		"parent": "bone3",
+		"length": 89.7783,
+		"rotation": 72.42705,
+		"x": 216.15112,
+		"y": 158.08025,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone27", "parent": "bone26", "length": 79.49248, "rotation": 10.92828, "x": 89.77826, "color": "d8e323ff" },
+	{
+		"name": "bone28",
+		"parent": "bone3",
+		"length": 79.8974,
+		"rotation": -78.78976,
+		"x": 215.4879,
+		"y": -120.35565,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone29", "parent": "bone28", "length": 58.36831, "rotation": -10.202723, "x": 79.89734, "color": "d8e323ff" },
 	{ "name": "bone30", "parent": "bone25", "length": 95.49257, "rotation": -0.006884794, "x": 5.525394, "y": 131.97205 },
 	{ "name": "bone31", "parent": "bone25", "length": 82.02912, "rotation": -179.55884, "x": 5.59412, "y": 131.72913 },
-	{ "name": "bone32", "parent": "bone", "length": 139.3726, "rotation": -111.80138, "x": -110.7204, "y": 53.35864 },
-	{ "name": "bone33", "parent": "bone32", "length": 160.0641, "rotation": 7.76512, "x": 139.37256 },
-	{ "name": "bone34", "parent": "bone33", "length": 156.96684, "rotation": 3.438927, "x": 160.0642 },
-	{ "name": "bone35", "parent": "bone34", "length": 120.94212, "rotation": 5.402938, "x": 156.96683 },
-	{ "name": "bone37", "parent": "bone", "length": 156.2805, "rotation": -57.22092, "x": 129.5927, "y": 44.3999 },
-	{ "name": "bone38", "parent": "bone37", "length": 161.5062, "rotation": -13.33904, "x": 156.2805 },
-	{ "name": "bone39", "parent": "bone38", "length": 152.60747, "rotation": -11.94418, "x": 161.5062 },
-	{ "name": "bone40", "parent": "bone39", "length": 109.53658, "rotation": -5.933642, "x": 152.6074 },
+	{
+		"name": "bone32",
+		"parent": "bone",
+		"length": 139.3726,
+		"rotation": -111.80138,
+		"x": -110.7204,
+		"y": 53.35864,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone33", "parent": "bone32", "length": 160.0641, "rotation": 7.76512, "x": 139.37256, "color": "d8e323ff" },
+	{ "name": "bone34", "parent": "bone33", "length": 156.96684, "rotation": 3.438927, "x": 160.0642, "color": "d8e323ff" },
+	{ "name": "bone35", "parent": "bone34", "length": 120.94212, "rotation": 5.402938, "x": 156.96683, "color": "d8e323ff" },
+	{
+		"name": "bone37",
+		"parent": "bone",
+		"length": 156.2805,
+		"rotation": -57.22092,
+		"x": 129.5927,
+		"y": 44.3999,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone38", "parent": "bone37", "length": 161.5062, "rotation": -13.33904, "x": 156.2805, "color": "d8e323ff" },
+	{ "name": "bone39", "parent": "bone38", "length": 152.60747, "rotation": -11.94418, "x": 161.5062, "color": "d8e323ff" },
+	{ "name": "bone40", "parent": "bone39", "length": 109.53658, "rotation": -5.933642, "x": 152.6074, "color": "d8e323ff" },
 	{ "name": "bone12", "parent": "root", "x": -327.2057, "y": -1272.5085 },
 	{ "name": "bone13", "parent": "bone3", "length": 361.355, "rotation": -90, "x": 185.0707, "y": -138.65807 },
 	{ "name": "bone14", "parent": "bone3", "length": 361.355, "rotation": -90, "x": 182.36133, "y": 201.9335 },
@@ -5803,5 +5851,187 @@
 			}
 		}
 	}
-}
+},
+"physics": [
+	{
+		"name": "bone4",
+		"bone": "bone4",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 0
+	},
+	{
+		"name": "bone5",
+		"bone": "bone5",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 5
+	},
+	{
+		"name": "bone6",
+		"bone": "bone6",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 6
+	},
+	{
+		"name": "bone7",
+		"bone": "bone7",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 7
+	},
+	{
+		"name": "bone8",
+		"bone": "bone8",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 8
+	},
+	{
+		"name": "bone9",
+		"bone": "bone9",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 9
+	},
+	{
+		"name": "bone10",
+		"bone": "bone10",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 10
+	},
+	{
+		"name": "bone11",
+		"bone": "bone11",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 11
+	},
+	{
+		"name": "bone26",
+		"bone": "bone26",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 16
+	},
+	{
+		"name": "bone27",
+		"bone": "bone27",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 17
+	},
+	{
+		"name": "bone28",
+		"bone": "bone28",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 18
+	},
+	{
+		"name": "bone29",
+		"bone": "bone29",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 19
+	},
+	{
+		"name": "bone32",
+		"bone": "bone32",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 12
+	},
+	{
+		"name": "bone33",
+		"bone": "bone33",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 13
+	},
+	{
+		"name": "bone34",
+		"bone": "bone34",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 14
+	},
+	{
+		"name": "bone35",
+		"bone": "bone35",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 15
+	},
+	{
+		"name": "bone37",
+		"bone": "bone37",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 1
+	},
+	{
+		"name": "bone38",
+		"bone": "bone38",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 2
+	},
+	{
+		"name": "bone39",
+		"bone": "bone39",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 3
+	},
+	{
+		"name": "bone40",
+		"bone": "bone40",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 300,
+		"damping": 0.7,
+		"order": 4
+	}
+]
 }

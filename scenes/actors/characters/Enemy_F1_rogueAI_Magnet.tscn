@@ -1,7 +1,6 @@
-[gd_scene load_steps=33 format=3 uid="uid://cx332v8gr3ytf"]
+[gd_scene load_steps=31 format=3 uid="uid://cx332v8gr3ytf"]
 
 [ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_5fg3o"]
-[ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_wbml2"]
 [ext_resource type="PackedScene" uid="uid://cvdv22giw51s8" path="res://scenes/items/Furniture_D_drone.tscn" id="3_3dshq"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_isjex"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_km4wm"]
@@ -19,7 +18,6 @@
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="17_fsm10"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="18_ns1qj"]
 [ext_resource type="Script" uid="uid://fpfidsmcwy6w" path="res://scripts/actors/enemies/states/EnemyCooldownFrozenState.cs" id="19_57mhe"]
-[ext_resource type="Script" uid="uid://c8wsdmavv5uk7" path="res://scripts/actors/enemies/states/EnemyKeepDistanceState.cs" id="20_c5fxn"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="21_prmff"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="22_yovaw"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="23_tfb65"]
@@ -28,8 +26,8 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_isjex")
-shader_parameter/softness = 0.5
-shader_parameter/alpha = 0.4
+shader_parameter/softness = 0.1
+shader_parameter/alpha = 0.6
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_controller_detect"]
 radius = 20000.0
@@ -78,7 +76,6 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_5fg3o")
-BehaviorConfig = ExtResource("2_wbml2")
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -96,7 +93,7 @@ DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
 [node name="Shadow" type="Sprite2D" parent="."]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_shadow")
-scale = Vector2(12, 6)
+scale = Vector2(10, 4.5)
 texture = ExtResource("5_km4wm")
 script = ExtResource("6_hlqjr")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
@@ -263,9 +260,6 @@ script = ExtResource("18_ns1qj")
 
 [node name="CooldownFrozen" type="Node" parent="StateMachine"]
 script = ExtResource("19_57mhe")
-
-[node name="KeepDistance" type="Node" parent="StateMachine"]
-script = ExtResource("20_c5fxn")
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("21_prmff")

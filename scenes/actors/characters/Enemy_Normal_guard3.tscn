@@ -79,6 +79,7 @@ Scene = ExtResource("15_u8m7i")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 2
 SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D")]
+FlipMode = 1
 metadata/_custom_type_script = "uid://8eqj514nqogw"
 
 [sub_resource type="Resource" id="Resource_r1mbi"]
@@ -176,7 +177,7 @@ skeleton_data_res = ExtResource("5_wjvmm")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 0.75
 script = ExtResource("6_ks25x")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]

@@ -202,15 +202,15 @@ script = ExtResource("21_8xfgw")
 skeleton_data_res = ExtResource("20_5i0uy")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
+preview_frame = false
 preview_time = 0.9
 script = ExtResource("21_8xfgw")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(5.4499846, -328.82996)
-rotation = -1.5865043
-scale = Vector2(0.99999976, 0.99999976)
+position = Vector2(5.45005, -328.83005)
+rotation = -1.5864197
+scale = Vector2(0.9999998, 0.9999998)
 bone_name = "bone2"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
