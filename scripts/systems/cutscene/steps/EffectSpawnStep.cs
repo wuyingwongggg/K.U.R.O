@@ -56,6 +56,14 @@ namespace Kuros.Systems.Cutscene
         /// <summary>目标节点路径（SpawnType=RelativeToNode 时使用）</summary>
         [Export] public NodePath TargetNodePath { get; set; } = new NodePath();
 
+        [ExportCategory("Overrides")]
+        /// <summary>
+        /// 生成时属性覆盖（属性名 → 值），在 AddChild 之前应用——同一个通用场景可以借此生成出
+        /// 不同配置的多份实例（如左右两条 SlideRail：分别覆盖 FlipCarriageEnds / CarriagePrefab / 限位路径），
+        /// 不必复制出多个变体场景。属性名写错会打警告。
+        /// </summary>
+        [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
+
         [ExportCategory("Cleanup")]
         /// <summary>
         /// 是否在指定秒数后自动销毁生成的特效。
@@ -105,6 +113,10 @@ namespace Kuros.Systems.Cutscene
 
                 // 计算生成位置
                 Vector2 spawnPos = CalculateSpawnPosition(ctx);
+
+                // 属性覆盖必须在入树之前：节点 _Ready 里读取的配置（如滑槽的 FlipCarriageEnds /
+                // CarriagePrefab / 限位 Marker 路径）必须已是覆盖后的值
+                CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, PropertyOverrides, nameof(EffectSpawnStep));
 
                 // 添加到场景树
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;

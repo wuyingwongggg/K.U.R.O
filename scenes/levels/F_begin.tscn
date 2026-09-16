@@ -1,8 +1,10 @@
-[gd_scene load_steps=36 format=3 uid="uid://b534tt4n3wr42"]
+[gd_scene load_steps=41 format=3 uid="uid://b534tt4n3wr42"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_mbxjs"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_neu0b"]
+[ext_resource type="Resource" uid="uid://xag881d6vxpv" path="res://resources/cutscene/F_begin_intro.tres" id="3_xart7"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_k4mpr"]
+[ext_resource type="Resource" uid="uid://ttehlcct8cgr" path="res://resources/cutscene/F_begin_2_intro.tres" id="4_xart7"]
 [ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_du163"]
 [ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="6_lbll7"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="7_ri2xm"]
@@ -17,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://cipblep2h0krc" path="res://assets/environments/scene_6_hotel/走廊栏杆上.png" id="14_anorx"]
 [ext_resource type="Texture2D" uid="uid://v7px27xvrgws" path="res://assets/environments/scene_6_hotel/走廊栏杆下.png" id="15_1yie0"]
 [ext_resource type="PackedScene" uid="uid://dw1xkbpfrwstb" path="res://scenes/environments/lifting_platform.tscn" id="17_s4rg7"]
+[ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="19_7rmla"]
 [ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="23_5ka2g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -25,8 +28,11 @@ size = Vector2(7000, 3060)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5prnb"]
 size = Vector2(7000, 3000)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_q7nkw"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1d5w0"]
 size = Vector2(1000, 1000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxjs"]
+size = Vector2(300, 2000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mxkb7"]
 size = Vector2(5000, 2800)
@@ -61,81 +67,6 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Arr
 outlines = Array[PackedVector2Array]([PackedVector2Array(-2641, -1344, 2512, -1360, 2495, 1543, -2616, 1546)])
 source_geometry_mode = 2
 agent_radius = 80.0
-
-[sub_resource type="Animation" id="Animation_put05"]
-resource_name = "up"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Environments/BG:position:y")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [-1000.0, -650.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Environments/BG_frame:position")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector2(1245, -1800), Vector2(1245, 47)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Environments/Floor:position")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector2(-1735, 220), Vector2(-1735, 2500)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Environments/Floor:visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [true, false]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("Environments/ElevatorGateF_filp:position")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector2(-2581, 370), Vector2(-2581, 2650)]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("Environments/ElevatorGateF_filp:visible")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [true, false]
-}
 
 [sub_resource type="Animation" id="Animation_7rmla"]
 length = 0.001
@@ -223,6 +154,105 @@ tracks/6/keys = {
 "update": 0,
 "values": [Vector2(-2581, 370)]
 }
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Environments/BG2:position:x")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-200.0]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Environments/BG3:position:x")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2300.0]
+}
+
+[sub_resource type="Animation" id="Animation_put05"]
+resource_name = "up"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Environments/BG:position:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-1000.0, -650.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Environments/BG_frame:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1245, -1800), Vector2(1245, 47)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Environments/Floor:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-1735, 220), Vector2(-1735, 2500)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Environments/Floor:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Environments/ElevatorGateF_filp:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-2581, 370), Vector2(-2581, 2650)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Environments/ElevatorGateF_filp:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
 
 [sub_resource type="Animation" id="Animation_s4rg7"]
 resource_name = "up_loop"
@@ -276,9 +306,38 @@ tracks/3/keys = {
 "values": [false, false]
 }
 
+[sub_resource type="Animation" id="Animation_xart7"]
+resource_name = "opening"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Environments/BG2:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-200.0, -2000.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Environments/BG3:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [2300.0, 4100.0]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_s4rg7"]
 _data = {
 &"RESET": SubResource("Animation_7rmla"),
+&"opening": SubResource("Animation_xart7"),
 &"up": SubResource("Animation_put05"),
 &"up_loop": SubResource("Animation_s4rg7")
 }
@@ -287,7 +346,7 @@ _data = {
 y_sort_enabled = true
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2408, 524)
+position = Vector2(-2370, 889)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false
@@ -306,7 +365,6 @@ script = ExtResource("1_mbxjs")
 ZoneName = "Room_Zone_F_Begin"
 CameraLimitTop = -1400
 CameraLimitBottom = 1400
-ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -315,15 +373,27 @@ shape = SubResource("RectangleShape2D_5prnb")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
-visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_neu0b")
+Sequence = ExtResource("3_xart7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 position = Vector2(-2070, 763)
-shape = SubResource("RectangleShape2D_q7nkw")
+shape = SubResource("RectangleShape2D_1d5w0")
+debug_color = Color(1, 0, 1, 0.41960785)
+
+[node name="CutsceneTrigger2" type="Area2D" parent="."]
+z_index = 10
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("2_neu0b")
+Sequence = ExtResource("4_xart7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger2"]
+position = Vector2(1200, 279)
+shape = SubResource("RectangleShape2D_mbxjs")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="BattleArena" type="Area2D" parent="." node_paths=PackedStringArray("TriggerArea")]
@@ -379,24 +449,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 DebugLineWidth = 8.0
 
-[node name="EnemySpawneManager2" type="Node2D" parent="."]
-visible = false
-top_level = true
-z_index = 10
-position = Vector2(0, 356)
-script = ExtResource("6_lbll7")
-MultiEnemySelectionMode = 1
-SpawnInterval = 0.0
-SpawnParentPath = NodePath("..")
-SimultaneousSpawn = true
-EnableTrigger = false
-SpawnAreaExtents = Vector2(2400, 800)
-EnemySpawnOffset = Vector2(0, 100)
-ObstacleCheckMask = 7
-EnemyAppearDelay = 1.0
-AutoLowerFrontEffectAfterEnemySpawn = true
-DebugLineWidth = 8.0
-
 [node name="Environments" type="Node2D" parent="."]
 position = Vector2(0, 340)
 
@@ -414,13 +466,15 @@ position = Vector2(1245, -1800)
 texture = ExtResource("11_7rmla")
 
 [node name="BG2" type="Sprite2D" parent="Environments"]
-position = Vector2(-1668, -177)
-scale = Vector2(1, 2)
+modulate = Color(1, 1, 1, 0.9411765)
+position = Vector2(-200, 0)
+scale = Vector2(3, 2)
 texture = ExtResource("11_86bts")
 
 [node name="BG3" type="Sprite2D" parent="Environments"]
-position = Vector2(4171, -168)
-scale = Vector2(1, 2)
+modulate = Color(1, 1, 1, 0.9411765)
+position = Vector2(2300, 0)
+scale = Vector2(3, 2)
 texture = ExtResource("11_86bts")
 flip_h = true
 
@@ -488,6 +542,12 @@ debug_color = Color(1, 0, 0, 0.21568628)
 visible = false
 position = Vector2(1297, 31)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
+
+[node name="SlideRail" parent="." instance=ExtResource("19_7rmla")]
+position = Vector2(-1605, 340)
+
+[node name="SlideRail2" parent="." instance=ExtResource("19_7rmla")]
+position = Vector2(4095, 340)
 
 [node name="AnimationCharacter" parent="." instance=ExtResource("23_5ka2g")]
 

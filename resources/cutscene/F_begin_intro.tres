@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=11 format=3 uid="uid://xag881d6vxpv"]
+
+[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_011l4"]
+[ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_6ps0p"]
+[ext_resource type="Script" uid="uid://b4pd4ynf4k04p" path="res://scripts/systems/cutscene/steps/CameraMoveStep.cs" id="3_h5d84"]
+[ext_resource type="Script" uid="uid://5xu2sir0yhv1" path="res://scripts/systems/cutscene/steps/PlayAnimationStep.cs" id="4_tbcgo"]
+[ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="5_fbltc"]
+
+[sub_resource type="Resource" id="Resource_bcybp"]
+script = ExtResource("2_6ps0p")
+Duration = 1.5
+TransitionDuration = 1.0
+metadata/_custom_type_script = "uid://cjl1hjmndwvcg"
+
+[sub_resource type="Resource" id="Resource_n13f1"]
+script = ExtResource("3_h5d84")
+TargetPath = NodePath("../World/FBegin/PlayerSpawnPoint")
+TargetZoom = 0.6
+Duration = 0.5
+Ease = 0
+StayAtTargetAfterFollow = false
+metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
+
+[sub_resource type="Resource" id="Resource_kdt07"]
+script = ExtResource("4_tbcgo")
+AnimationPlayerPath = NodePath("../World/FBegin/Environments/ElevatorGateF_filp/AnimationPlayer")
+AnimationName = "open"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_wih2s"]
+script = ExtResource("4_tbcgo")
+AnimationPlayerPath = NodePath("../World/FBegin/AnimationCharacter/AnimationPlayer")
+AnimationName = "F_begin_run"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_4mijq"]
+script = ExtResource("4_tbcgo")
+AnimationPlayerPath = NodePath("../World/FBegin/Environments/ElevatorGateF_filp/AnimationPlayer")
+AnimationName = "close"
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[resource]
+script = ExtResource("5_fbltc")
+SequenceId = "F_begin_intro"
+Steps = Array[ExtResource("1_011l4")]([SubResource("Resource_bcybp"), SubResource("Resource_n13f1"), SubResource("Resource_kdt07"), SubResource("Resource_wih2s"), SubResource("Resource_4mijq")])
+metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

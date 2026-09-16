@@ -32,6 +32,12 @@ namespace Kuros.Systems.Cutscene
 
         /// <summary>自动销毁时长（秒）。0 = 不自动销毁</summary>
         [Export(PropertyHint.Range, "0,30,0.1")] public float DestroyAfterDuration { get; set; } = 0f;
+
+        /// <summary>
+        /// 生成时属性覆盖（属性名 → 值），在 AddChild 之前应用——同一个通用场景可借此生成出不同配置的多份实例
+        /// （如左右两条 SlideRail：分别覆盖 FlipCarriageEnds / CarriagePrefab / 限位 Marker 路径）。
+        /// </summary>
+        [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
     }
 
     /// <summary>
@@ -196,6 +202,9 @@ namespace Kuros.Systems.Cutscene
 
                 // 计算生成位置
                 Vector2 spawnPos = CalculateSpawnPosition(ctx, config);
+
+                // 属性覆盖必须在入树之前（节点 _Ready 里读取的配置必须已是覆盖后的值）
+                CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, config.PropertyOverrides, nameof(EffectGroupSpawnStep));
 
                 // 添加到场景树
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;

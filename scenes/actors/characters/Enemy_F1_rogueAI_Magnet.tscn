@@ -1,18 +1,16 @@
-[gd_scene load_steps=31 format=3 uid="uid://cx332v8gr3ytf"]
+[gd_scene load_steps=29 format=3 uid="uid://cx332v8gr3ytf"]
 
-[ext_resource type="Script" uid="uid://dl48n86nqoplv" path="res://scripts/actors/enemies/EnemyD1Drone.cs" id="1_5fg3o"]
-[ext_resource type="PackedScene" uid="uid://cvdv22giw51s8" path="res://scenes/items/Furniture_D_drone.tscn" id="3_3dshq"]
+[ext_resource type="Script" uid="uid://b07adjcfmpta5" path="res://scripts/actors/enemies/EnemyF1RogueAIMagnet.cs" id="1_5fg3o"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_isjex"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_km4wm"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_hlqjr"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://dd252i0dhdhj6" path="res://animations/spine/Enemy_F1_rogueAI_Magnet.tres" id="7_5fg3o"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="8_ujjrj"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="9_svpm1"]
-[ext_resource type="Script" uid="uid://dy6nxg6ncc1dl" path="res://scripts/actors/enemies/states/EnemyWaiterAIdleState.cs" id="10_uoco6"]
-[ext_resource type="Script" uid="uid://ca6my22csxkmt" path="res://scripts/actors/enemies/states/EnemyWaiterAWalkState.cs" id="11_yj78d"]
+[ext_resource type="Script" uid="uid://d344e0lq5h5mj" path="res://scripts/actors/enemies/states/MagnetRailState.cs" id="10_uoco6"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="12_bf0m4"]
-[ext_resource type="Script" uid="uid://04usu0butu18" path="res://scripts/actors/enemies/attacks/EnemyD1DroneAttackController.cs" id="13_gs7ri"]
-[ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="14_dn2fu"]
+[ext_resource type="PackedScene" uid="uid://b5rh3kfbsbo18" path="res://scenes/actors/etc/enemy_spawn_box_destroy.tscn" id="13_2oxxs"]
+[ext_resource type="Script" uid="uid://bkvfkn8jrvyis" path="res://scripts/actors/enemies/attacks/EnemyMagnetJarAttack.cs" id="14_dn2fu"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_aym2x"]
 [ext_resource type="PackedScene" uid="uid://b42ur4dxdhjmx" path="res://scenes/actors/etc/enemy_spawn_box.tscn" id="16_5fg3o"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="17_fsm10"]
@@ -21,8 +19,7 @@
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="21_prmff"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="22_yovaw"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="23_tfb65"]
-[ext_resource type="Script" uid="uid://dasv6eyuks8yq" path="res://scripts/actors/enemies/movement/EnemyFreezeOnTurnMovement.cs" id="24_p0y7v"]
-[ext_resource type="Script" uid="uid://cmotujoew8bvf" path="res://scripts/actors/enemies/animation/EnemyD1DroneSpineAnimationController.cs" id="25_dru4q"]
+[ext_resource type="Script" uid="uid://bvwi1kxcb4uon" path="res://scripts/actors/enemies/animation/EnemyF1RogueAIMagnetSpineAnimationController.cs" id="25_dru4q"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_isjex")
@@ -33,10 +30,11 @@ shader_parameter/alpha = 0.6
 radius = 20000.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
-radius = 3072.0
+radius = 20000.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(1000, 1000)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2oxxs"]
+radius = 180.0
+height = 500.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
 size = Vector2(300, 300)
@@ -50,8 +48,8 @@ script = ExtResource("15_aym2x")
 Scene = ExtResource("16_5fg3o")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 0
-SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
-LifecycleBinding = 2
+SpawnMarkerPaths = [NodePath("../../../VisualEffectPosition/Marker2D")]
+LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
 "Damage": 10,
@@ -68,6 +66,13 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
+[sub_resource type="Resource" id="Resource_78oi3"]
+script = ExtResource("15_aym2x")
+Scene = ExtResource("13_2oxxs")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
 [node name="Enemy_F1_rogueAI_Magnet" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 4
 y_sort_enabled = true
@@ -76,16 +81,17 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_5fg3o")
+ApproachTimeoutSeconds = 7.0
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
-DebugOverlayFontSize = 128
+DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-DeathEffect = ExtResource("3_3dshq")
 Speed = 400.0
-AttackDamage = 10.0
+AttackDamage = 20.0
 AttackCooldown = 1.0
 MaxHealth = 80
-AiDescription = "无人机，普通敌人，由网络管理员召唤，会朝客户喷吐垃圾信息，被破坏后露出核心，注意需要使用核心才能让网络管理员冷静下来"
+AiDescription = "磁铁机械臂：大型敌人的部件。固定在滑槽内沿轨道横向移动、随滑槽纵向升降，循环退场与进场；进场时携带罐子，抵达玩家位置后投落罐子。不攻击，无法被摧毁。"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
@@ -177,12 +183,12 @@ monitorable = false
 shape = SubResource("CircleShape2D_controller_detect")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
 collision_layer = 0
 collision_mask = 4
 monitorable = false
 
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
-visible = false
 shape = SubResource("CircleShape2D_attack_detect")
 
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
@@ -191,14 +197,16 @@ collision_layer = 0
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea"]
-shape = SubResource("RectangleShape2D_attack")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_2oxxs")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
-position = Vector2(0, -1300)
+position = Vector2(0, -2800)
 shape = SubResource("RectangleShape2D_hit")
+disabled = true
 
 [node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("6_hlqjr")
@@ -209,7 +217,7 @@ FollowBoneY = true
 position = Vector2(0, -2800)
 
 [node name="Marker2D" type="Marker2D" parent="VisualEffectPosition"]
-position = Vector2(0, -1500)
+position = Vector2(0, -1550)
 gizmo_extents = 0.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -226,28 +234,27 @@ InitialState = NodePath("Idle")
 script = ExtResource("10_uoco6")
 
 [node name="Walk" type="Node" parent="StateMachine"]
-script = ExtResource("11_yj78d")
+script = ExtResource("10_uoco6")
+
+[node name="MagnetRetreat" type="Node" parent="StateMachine"]
+script = ExtResource("10_uoco6")
 
 [node name="Attack" type="Node" parent="StateMachine"]
 script = ExtResource("12_bf0m4")
 
-[node name="AttackController" type="Node" parent="StateMachine/Attack"]
-script = ExtResource("13_gs7ri")
-PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-
-[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("14_dn2fu")
 AttackName = "SimpleMeleeAttack"
-WarmupDuration = 0.5
-ActiveDuration = 0.3
-RecoveryDuration = 0.53
-CooldownDurationMultiplier = 3.0
-DamageMultiplier = 0.0
-AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-RequireAnimationHitTrigger = true
-AllowMultipleAnimationHits = true
-GrantedImmunities = 16
-Effects = Array[ExtResource("15_aym2x")]([SubResource("Resource_v1b7h")])
+WarmupDuration = 0.9
+ActiveDuration = 0.05
+RecoveryDuration = 0.05
+CooldownDurationMultiplier = 0.0
+AttackAreaPath = NodePath("../../../Sprite2D/AttackArea")
+TargetableFactions = 7
+KnockbackDistance = 300.0
+KnockbackDuration = 0.25
+GrantedImmunities = 447
+Effects = Array[ExtResource("15_aym2x")]([SubResource("Resource_v1b7h"), SubResource("Resource_78oi3")])
 metadata/attack_weight = 100.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
@@ -271,18 +278,12 @@ script = ExtResource("22_yovaw")
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("23_tfb65")
 
-[node name="FreezeOnTurnMovement" type="Node" parent="."]
-script = ExtResource("24_p0y7v")
-
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("25_dru4q")
-AttackMixDuration = 0.2
-SkillMixDuration = 0.2
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-target_desired_distance = 50.0
-path_max_distance = 500.0
-avoidance_enabled = true
-radius = 100.0
-max_speed = 350.0
-debug_path_custom_line_width = 2.0
+DefaultLoopAnimation = "walk"
+IdleMixDuration = 0.0
+WalkMixDuration = 0.0
+HitMixDuration = 0.0
+DieMixDuration = 0.0
+AttackMixDuration = 0.0
+SkillMixDuration = 0.0
