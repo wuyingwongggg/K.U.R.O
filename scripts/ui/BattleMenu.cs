@@ -34,8 +34,19 @@ namespace Kuros.UI
         private CompendiumWindow? _cachedCompendiumWindow;
         private SkillDetailWindow? _cachedSkillDetailWindow;
         private EnemySpawnConsoleWindow? _cachedEnemySpawnConsoleWindow;
+        private Kuros.Systems.Cutscene.CutsceneManager? _cutsceneManager;
 
         public bool IsOpen => _isOpen;
+
+        /// <summary>是否有过场正在播放——过场期间 Esc 被用作"长按跳过"，菜单不该响应开关输入
+        /// （弹出菜单还会连带把过场暂停住）。</summary>
+        private bool IsCutscenePlaying()
+        {
+            if (_cutsceneManager == null || !GodotObject.IsInstanceValid(_cutsceneManager))
+                _cutsceneManager = GetTree().GetFirstNodeInGroup("cutscene_manager")
+                    as Kuros.Systems.Cutscene.CutsceneManager;
+            return _cutsceneManager != null && _cutsceneManager.IsPlaying;
+        }
 
         /// <summary>
         /// 使用 Godot 原生 Connect 方法连接按钮信号
@@ -164,6 +175,14 @@ namespace Kuros.UI
 
             // 瞄准模式(投掷 A_010)进行中:ESC 优先取消瞄准模式(由 ThrowAimTargetingController 处理并消费),不开菜单
             if (Kuros.Builds.Throw.ThrowAimTargetingController.IsAnyActive)
+            {
+                return;
+            }
+
+            // 过场播放中:ESC/Return 不打开菜单。
+            // 过场把 Esc 当作"长按跳过"键（CutsceneManager），弹出菜单还会连带把过场暂停住，
+            // 所以过场期间菜单不响应开关输入。
+            if (IsCutscenePlaying())
             {
                 return;
             }

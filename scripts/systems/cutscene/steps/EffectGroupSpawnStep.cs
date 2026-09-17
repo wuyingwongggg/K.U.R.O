@@ -107,14 +107,9 @@ namespace Kuros.Systems.Cutscene
 
         private async Task ExecuteSequential(CutsceneContext ctx)
         {
+            // 跳过时不再中断剩余条目：由每条 config.GenerateOnSkip 决定是否生成（生成后不等待时长）
             for (int i = 0; i < Effects.Count; i++)
             {
-                if (ctx.IsSkipping)
-                {
-                    GD.Print("[Cutscene] EffectGroupSpawnStep: 跳过请求，中断剩余特效");
-                    break;
-                }
-
                 var config = Effects[i];
                 if (config == null || config.EffectScene == null)
                 {
@@ -142,9 +137,9 @@ namespace Kuros.Systems.Cutscene
                         await ctx.NextFrame();
                 }
 
-                if (ctx.IsSkipping)
+                if (ctx.IsSkipping && !config.GenerateOnSkip)
                 {
-                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效生成被跳过（{config.EffectScene?.ResourcePath}）");
+                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 跳过过场且 GenerateOnSkip=false，不生成（{config.EffectScene?.ResourcePath}）");
                     return;
                 }
 

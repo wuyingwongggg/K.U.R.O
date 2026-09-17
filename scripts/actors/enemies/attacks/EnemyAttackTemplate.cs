@@ -664,10 +664,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public void TriggerAnimationHit()
         {
-            GD.Print($"[TriggerAnimationHit] RequireAnimationHitTrigger={RequireAnimationHitTrigger}, _animationHitReady={_animationHitReady}, AllowMultipleAnimationHits={AllowMultipleAnimationHits}");
             if (!RequireAnimationHitTrigger)
             {
-                GD.Print("[TriggerAnimationHit] RequireAnimationHitTrigger is false, skip");
                 return;
             }
 
@@ -676,21 +674,17 @@ namespace Kuros.Actors.Enemies.Attacks
                 if (_phase == AttackPhase.Warmup)
                 {
                     _pendingAnimationHitFromWarmup = true;
-                    GD.Print("[TriggerAnimationHit] _animationHitReady is false during Warmup, buffer this hit");
                     return;
                 }
 
-                GD.Print("[TriggerAnimationHit] _animationHitReady is false, skip");
                 return;
             }
 
-            GD.Print("[TriggerAnimationHit] Calling OnAnimationHit()");
             OnAnimationHit();
 
             if (!AllowMultipleAnimationHits)
             {
                 _animationHitReady = false;
-                GD.Print("[TriggerAnimationHit] Set _animationHitReady = false");
             }
         }
 
@@ -707,7 +701,6 @@ namespace Kuros.Actors.Enemies.Attacks
                 return;
             }
 
-            GD.Print("[TriggerAnimationHit] Consume buffered warmup hit");
             OnAnimationHit();
             _pendingAnimationHitFromWarmup = false;
 

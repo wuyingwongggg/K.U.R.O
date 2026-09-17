@@ -23,7 +23,7 @@ Player = NodePath("../World/MainCharacter")
 
 [node name="CutsceneManager" type="Node" parent="."]
 script = ExtResource("3_pja2j")
-SkipActionName = "run"
+SkipActionName = "cutscene_skip"
 CameraPath = NodePath("../World/Camera2D")
 TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
 BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")

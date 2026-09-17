@@ -458,7 +458,7 @@ DebugLineWidth = 8.0
 position = Vector2(0, 340)
 
 [node name="BG" type="Sprite2D" parent="Environments"]
-z_index = -1
+z_index = -10
 position = Vector2(380, -1000)
 texture = ExtResource("10_x26y1")
 offset = Vector2(0, -200)
@@ -467,17 +467,20 @@ ScrollSpeed = 0.7
 AreaPath = NodePath("../../AreaSize")
 
 [node name="BG_frame" type="Sprite2D" parent="Environments"]
+z_index = -9
 position = Vector2(1245, -1800)
 texture = ExtResource("11_7rmla")
 
 [node name="BG2" type="Sprite2D" parent="Environments"]
 modulate = Color(1, 1, 1, 0.9411765)
+z_index = -8
 position = Vector2(-200, 0)
 scale = Vector2(3, 2)
 texture = ExtResource("11_86bts")
 
 [node name="BG3" type="Sprite2D" parent="Environments"]
 modulate = Color(1, 1, 1, 0.9411765)
+z_index = -8
 position = Vector2(2300, 0)
 scale = Vector2(3, 2)
 texture = ExtResource("11_86bts")

@@ -33,6 +33,10 @@ namespace Kuros.Systems.Cutscene
         /// <summary>自动销毁时长（秒）。0 = 不自动销毁</summary>
         [Export(PropertyHint.Range, "0,30,0.1")] public float DestroyAfterDuration { get; set; } = 0f;
 
+        /// <summary>跳过过场时是否仍然生成（默认 true）。关键生成（道具/轨道等）保持 true；
+        /// 纯视觉（爆炸/烟雾）可设 false，避免按跳过时闪现一下。</summary>
+        [Export] public bool GenerateOnSkip { get; set; } = true;
+
         /// <summary>
         /// 生成时属性覆盖（属性名 → 值），在 AddChild 之前应用——同一个通用场景可借此生成出不同配置的多份实例
         /// （如左右两条 SlideRail：分别覆盖 FlipCarriageEnds / CarriagePrefab / 限位 Marker 路径）。

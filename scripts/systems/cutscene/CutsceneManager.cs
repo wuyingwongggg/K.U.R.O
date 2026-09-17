@@ -26,8 +26,9 @@ namespace Kuros.Systems.Cutscene
         [Signal] public delegate void CutsceneFinishedEventHandler(string sequenceId);
 
         // ── 导出属性 ──────────────────────────────────────────────────────
-        /// <summary>跳过按键动作名称（Project Settings → Input Map 中定义）。</summary>
-        [Export] public string SkipActionName { get; set; } = "ui_cancel";
+        /// <summary>跳过按键动作名（Input Map 中定义；默认 = 专用动作 cutscene_skip，可在设置菜单改键）。
+        /// 按住它 <see cref="SkipHoldSeconds"/> 秒才触发跳过。</summary>
+        [Export] public string SkipActionName { get; set; } = Kuros.Core.InputActions.CutsceneSkip;
 
         [Export] public NodePath PlayerPath        { get; set; } = new NodePath();
         [Export] public NodePath CameraPath        { get; set; } = new NodePath();
@@ -56,6 +57,19 @@ namespace Kuros.Systems.Cutscene
         /// </summary>
         [Export] public NodePath BattleSceneManagerPath { get; set; } = new NodePath();
 
+        [ExportCategory("Skip 跳过（长按）")]
+        /// <summary>长按多久才触发跳过（秒）。0 = 立刻跳过（旧行为）。</summary>
+        [Export(PropertyHint.Range, "0,3,0.05")] public float SkipHoldSeconds { get; set; } = 1.0f;
+
+        /// <summary>松开后进度倒退的倍率（1 = 与填充同速）。</summary>
+        [Export(PropertyHint.Range, "0.5,5,0.1")] public float SkipRewindMultiplier { get; set; } = 1.0f;
+
+        /// <summary>承载跳过 HUD 的 CanvasLayer 层级——必须高于电影黑条所在层（各 Stage 为 128）。</summary>
+        [Export(PropertyHint.Range, "0,200,1")] public int SkipHudLayer { get; set; } = 129;
+
+        /// <summary>跳过 HUD 场景（空 = 默认加载 res://scenes/ui/hud/CutsceneSkipHUD.tscn）。</summary>
+        [Export] public PackedScene? SkipHudScene { get; set; }
+
         // ── 公开状态 ──────────────────────────────────────────────────────
         public bool IsPlaying { get; private set; } = false;
 
@@ -74,10 +88,21 @@ namespace Kuros.Systems.Cutscene
         private readonly System.Collections.Generic.List<CanvasItem> _hiddenNodes = new();
         private Kuros.Scenes.BattleSceneManager? _battleSceneManager;
         private CameraZoneManager? _cameraZoneManager;
+        // 长按跳过累加器（秒）与 HUD
+        private float _skipHold = 0f;
+        private CanvasLayer? _skipHudLayer;
+        private Kuros.UI.CutsceneSkipHUD? _skipHud;
+
+        /// <summary>长按跳过进度 0..1（供 HUD 驱动环形进度）。</summary>
+        public float SkipHoldProgress => SkipHoldSeconds > 0f
+            ? Mathf.Clamp(_skipHold / SkipHoldSeconds, 0f, 1f)
+            : 0f;
         // ── 生命周期 ──────────────────────────────────────────────────────
         public override void _Ready()
         {
             AddToGroup("cutscene_manager");
+
+            SetupSkipHud();
 
             if (!PlayerPath.IsEmpty)
                 Player = GetNodeOrNull<Node2D>(PlayerPath);
@@ -128,11 +153,58 @@ namespace Kuros.Systems.Cutscene
             GD.Print($"[Cutscene] LateInit — Player: {(Player != null ? Player.Name : "null")}, Camera: {(Camera != null ? Camera.Name : "null")}, BattleSceneManager: {(_battleSceneManager != null ? _battleSceneManager.Name : "null")}");
         }
 
-        public override void _Input(InputEvent @event)
+        public override void _Process(double delta)
         {
-            if (!IsPlaying) return;
-            if (@event.IsActionPressed(SkipActionName))
+            UpdateSkipHold((float)delta);
+        }
+
+        /// <summary>
+        /// 长按跳过：按住跳过键（或鼠标按住 HUD 环）开始累加，松手按 <see cref="SkipRewindMultiplier"/> 倒退；
+        /// 累计满 <see cref="SkipHoldSeconds"/> 才真正置 IsSkipRequested（"快进到终态"的语义由各 Step 处理）。
+        /// 注意：不复用 SamplePlayer 的 InputHoldTracker —— 过场期间玩家节点是 ProcessMode.Disabled，那个 tracker 不推进。
+        /// </summary>
+        private void UpdateSkipHold(float delta)
+        {
+            if (!IsPlaying || SkipHoldSeconds <= 0f)
+            {
+                _skipHold = 0f;
+                return;
+            }
+
+            bool holding = Input.IsActionPressed(SkipActionName) || (_skipHud?.IsButtonHeld ?? false);
+            _skipHold = holding
+                ? Mathf.Min(_skipHold + delta, SkipHoldSeconds)
+                : Mathf.Max(_skipHold - delta * Mathf.Max(0.01f, SkipRewindMultiplier), 0f);
+
+            if (_skipHold >= SkipHoldSeconds)
+            {
+                _skipHold = 0f;
                 IsSkipRequested = true;
+                GD.Print("[Cutscene] 长按跳过触发");
+            }
+        }
+
+        /// <summary>建立跳过 HUD（自建 CanvasLayer，层级必须高于电影黑条）。</summary>
+        private void SetupSkipHud()
+        {
+            PackedScene? scene = SkipHudScene;
+            if (scene == null)
+            {
+                const string defaultPath = "res://scenes/ui/hud/CutsceneSkipHUD.tscn";
+                if (ResourceLoader.Exists(defaultPath))
+                    scene = GD.Load<PackedScene>(defaultPath);
+            }
+
+            if (scene == null)
+            {
+                GD.PushWarning("[Cutscene] 跳过 HUD 场景未配置且默认路径不存在，长按跳过按钮不可用");
+                return;
+            }
+
+            _skipHudLayer = new CanvasLayer { Name = "CutsceneSkipLayer", Layer = SkipHudLayer };
+            AddChild(_skipHudLayer);
+            _skipHud = scene.Instantiate<Kuros.UI.CutsceneSkipHUD>();
+            _skipHudLayer.AddChild(_skipHud);
         }
 
         // ── 公开 API ──────────────────────────────────────────────────────
@@ -150,6 +222,7 @@ namespace Kuros.Systems.Cutscene
 
             IsPlaying       = true;
             IsSkipRequested = false;
+            _skipHold       = 0f;   // 每段过场从零开始的长按进度
 
             EmitSignal(SignalName.CutsceneStarted, sequence.SequenceId);
 
@@ -212,6 +285,8 @@ namespace Kuros.Systems.Cutscene
                     stepIndex++;
                     continue;
                 }
+                // 跳过请求：默认仍会执行该步骤（各步骤在 Execute 里对 ctx.IsSkipping 做"瞬时落终态"），
+                // 只有显式覆写 ExecuteOnSkip=false 的步骤才被整步取消。
                 if (IsSkipRequested && !step.ExecuteOnSkip)
                 {
                     GD.Print($"[Cutscene] 跳过请求，跳过第 {stepIndex} 步: {step.GetType().Name}");

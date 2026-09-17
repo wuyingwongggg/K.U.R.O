@@ -64,6 +64,11 @@ namespace Kuros.Systems.Cutscene
         /// </summary>
         [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
 
+        [ExportCategory("Skip 跳过")]
+        /// <summary>跳过过场时是否仍然生成（默认 true = 快进到最终状态，关键生成用它）。
+        /// 纯视觉（爆炸/烟雾）可设 false，避免按跳过时闪现一下。</summary>
+        [Export] public bool GenerateOnSkip { get; set; } = true;
+
         [ExportCategory("Cleanup")]
         /// <summary>
         /// 是否在指定秒数后自动销毁生成的特效。
@@ -87,6 +92,12 @@ namespace Kuros.Systems.Cutscene
             if (EffectScene == null)
             {
                 GD.PrintErr($"[Cutscene] EffectSpawnStep: EffectScene 未配置");
+                return;
+            }
+
+            if (ctx.IsSkipping && !GenerateOnSkip)
+            {
+                GD.Print("[Cutscene] EffectSpawnStep: 跳过过场且 GenerateOnSkip=false，不生成");
                 return;
             }
 

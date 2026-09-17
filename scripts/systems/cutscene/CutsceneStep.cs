@@ -31,10 +31,18 @@ namespace Kuros.Systems.Cutscene
     public abstract partial class CutsceneStep : Resource
     {
         /// <summary>
-        /// 若为 true，即使过场被 skip，该步骤仍会执行。
-        /// 用于必须完成的关键步骤（如场景切换），默认 false。
+        /// 跳过时是否仍调用本步骤，默认 **true**。
+        ///
+        /// 语义：**跳过 = 快进到最终状态**——被跳过的过场会把剩余步骤逐个执行一遍，
+        /// 每个步骤需在 `Execute` 里自行处理 `ctx.IsSkipping`（瞬时落终态 / 立即完成 / 什么都不做），
+        /// 而不是进入等待循环。例如：
+        ///   · PlayAnimationStep → 直接 Play + Seek 到末帧
+        ///   · CameraMoveStep / FadeStep → 直接设到目标位置 / 目标透明度
+        ///   · DialogueStep / DialogicStep → 直接 return（跳过时不该弹对话）
+        ///   · EffectSpawnStep / EffectGroupSpawnStep → 照常生成但不等待（纯视觉可用 GenerateOnSkip 关掉生成）
+        /// 想被管理器**整步取消**的步骤，覆写本属性为 false 即可。
         /// </summary>
-        public virtual bool ExecuteOnSkip => false;
+        public virtual bool ExecuteOnSkip => true;
 
         public abstract Task Execute(CutsceneContext ctx);
     }

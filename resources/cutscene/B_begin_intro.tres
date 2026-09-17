@@ -37,6 +37,7 @@ metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 script = ExtResource("5_ref6e")
 EffectScene = ExtResource("6_effect")
 Position = Vector2(0, -200)
+GenerateOnSkip = false
 metadata/_custom_type_script = "uid://boec8wbtajskl"
 
 [resource]

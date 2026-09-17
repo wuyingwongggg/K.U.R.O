@@ -215,7 +215,9 @@ namespace Kuros.Managers
 			EmitSignal(SignalName.InputBindingsChanged);
 		}
 
-		/// <summary>获取动作当前绑定的物理键（自定义优先，否则回退 InputMap 默认首个键盘事件；无返回 0）。</summary>
+		/// <summary>获取动作当前绑定的键（自定义优先，否则回退 InputMap 默认首个键盘事件；无返回 0）。
+		/// 物理键优先（与布局无关），但项目里部分动作只配了 keycode（如 cutscene_skip = Q，physical_keycode 为 0）
+		/// ——此时回退读 Keycode，否则按键提示会显示成 "?"。</summary>
 		public int GetActionKeycode(string action)
 		{
 			if (_inputBindings.TryGetValue(action, out int custom))
@@ -227,7 +229,8 @@ namespace Kuros.Managers
 			{
 				if (e is InputEventKey keyEvent)
 				{
-					return (int)keyEvent.PhysicalKeycode;
+					if (keyEvent.PhysicalKeycode != Key.None) return (int)keyEvent.PhysicalKeycode;
+					if (keyEvent.Keycode != Key.None) return (int)keyEvent.Keycode;
 				}
 			}
 			return 0;
