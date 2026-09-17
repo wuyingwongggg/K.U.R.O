@@ -191,6 +191,14 @@ namespace Kuros.Actors.Enemies
 						}
 					}
 
+					// 自愈：进场相位里 Attack 状态被别的规则踢走时补回来。
+					// 已知触发场景：机械臂刚生成那一帧，Area2D 与玩家的重叠数据还没建立，
+					// EnemyAttackState 会判"没检测到玩家"并切 Idle；若不补，整段进场都会没有攻击状态
+					// （罐子不会生成、也不会投放），只能等 7 秒超时收场。
+					if (!_releaseRequested && StateMachine != null
+						&& (StateMachine.CurrentState?.Name ?? string.Empty) != "Attack")
+						StateMachine.ChangeState("Attack");
+
 					// 投放前悬停：机械臂与滑槽都已冻结（TickMovement 见 _releaseRequested 即原地不动）
 					if (_releaseRequested && _hoverRemaining > 0f)
 						_hoverRemaining -= delta;

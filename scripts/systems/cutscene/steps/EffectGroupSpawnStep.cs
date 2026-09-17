@@ -5,42 +5,6 @@ using Godot;
 namespace Kuros.Systems.Cutscene
 {
     /// <summary>
-    /// 单个特效配置（用于 EffectGroupSpawnStep）
-    /// </summary>
-    [GlobalClass]
-    public partial class EffectConfig : Resource
-    {
-        /// <summary>特效场景路径</summary>
-        [Export] public string EffectScene { get; set; } = "";
-
-        /// <summary>生成方式</summary>
-        [Export] public EffectSpawnStep.SpawnTypeEnum SpawnType { get; set; } = EffectSpawnStep.SpawnTypeEnum.PlayerPosition;
-
-        /// <summary>
-        /// 位置参数，含义根据 SpawnType 改变：
-        /// - PlayerPosition：相对于玩家的偏移
-        /// - GlobalPosition：绝对全局坐标
-        /// - RelativeToNode：相对于目标节点的偏移
-        /// </summary>
-        [Export] public Vector2 Position { get; set; } = Vector2.Zero;
-
-        /// <summary>目标节点路径（SpawnType=RelativeToNode 时使用）</summary>
-        [Export] public NodePath TargetNodePath { get; set; } = new NodePath();
-
-        /// <summary>生成延迟（秒）。0 = 立即生成</summary>
-        [Export(PropertyHint.Range, "0,30,0.1")] public float SpawnDelay { get; set; } = 0f;
-
-        /// <summary>自动销毁时长（秒）。0 = 不自动销毁</summary>
-        [Export(PropertyHint.Range, "0,30,0.1")] public float DestroyAfterDuration { get; set; } = 0f;
-
-        /// <summary>
-        /// 生成时属性覆盖（属性名 → 值），在 AddChild 之前应用——同一个通用场景可借此生成出不同配置的多份实例
-        /// （如左右两条 SlideRail：分别覆盖 FlipCarriageEnds / CarriagePrefab / 限位 Marker 路径）。
-        /// </summary>
-        [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
-    }
-
-    /// <summary>
     /// 过场动画中生成多个特效的 Step。
     /// 
     /// 用法：
@@ -118,7 +82,7 @@ namespace Kuros.Systems.Cutscene
 
             foreach (var config in Effects)
             {
-                if (config == null || string.IsNullOrEmpty(config.EffectScene))
+                if (config == null || config.EffectScene == null)
                 {
                     GD.PushWarning("[Cutscene] EffectGroupSpawnStep: 特效配置无效，跳过");
                     continue;
@@ -152,7 +116,7 @@ namespace Kuros.Systems.Cutscene
                 }
 
                 var config = Effects[i];
-                if (config == null || string.IsNullOrEmpty(config.EffectScene))
+                if (config == null || config.EffectScene == null)
                 {
                     GD.PushWarning($"[Cutscene] EffectGroupSpawnStep: 第 {i} 个特效配置无效，跳过");
                     continue;
@@ -180,22 +144,20 @@ namespace Kuros.Systems.Cutscene
 
                 if (ctx.IsSkipping)
                 {
-                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效生成被跳过（{config.EffectScene}）");
+                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效生成被跳过（{config.EffectScene?.ResourcePath}）");
                     return;
                 }
 
-                // 加载并实例化特效
-                var scene = GD.Load<PackedScene>(config.EffectScene);
-                if (scene == null)
+                if (config.EffectScene == null)
                 {
-                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 无法加载特效 {config.EffectScene}");
+                    GD.PrintErr("[Cutscene] EffectGroupSpawnStep: EffectScene 未配置");
                     return;
                 }
 
-                var effect = scene.Instantiate();
+                var effect = config.EffectScene.Instantiate();
                 if (effect is not Node2D effectNode2D)
                 {
-                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 特效必须是 Node2D（{config.EffectScene}）");
+                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 特效必须是 Node2D（{config.EffectScene.ResourcePath}）");
                     effect?.QueueFree();
                     return;
                 }

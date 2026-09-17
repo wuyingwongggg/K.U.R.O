@@ -32,7 +32,7 @@ scale = Vector2(0.66, 0.66)
 texture = ExtResource("2_track")
 
 [node name="SlotStartMarker" type="Marker2D" parent="."]
-position = Vector2(0, -500)
+position = Vector2(0, -1000)
 
 [node name="SlotEndMarker" type="Marker2D" parent="."]
 position = Vector2(0, 500)

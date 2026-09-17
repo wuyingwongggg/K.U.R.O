@@ -135,9 +135,13 @@ area.BodyEntered += OnBodyEntered;
 |---------|--------|------|---------|
 | 逻辑效果（眩晕/DOT/Buff/击退） | `Node` | `ActorEffect` | `ApplyEffect` → EffectController |
 | 世界生成效果（爆炸/投射物/区域） | `Node2D` | `Node2D` 或子类 | `SpawnSingleEffect` → world |
+| **全局反馈（震屏/全屏闪烁/时间缩放）** | `Node2D` | `Node2D` | `SpawnSingleEffect` → world（不需要定位，落点无所谓） |
 
 - `Node` 根的效果不需要世界坐标，挂载在 GameActor 下由 `EffectController` 管理生命周期
 - `Node2D` 根的效果需要 `GlobalPosition` 定位，走 `SpawnSingleEffect` 的世界生成路径
+- 全局反馈虽然不需要坐标，但**必须与"世界效果"同族（`Node2D` 自管理）**：它天然是"一次性指令"，
+  挂在 `ActorEffect` 下会吃到 `EffectController` 的 **EffectId 去重**（同一时间窗内多次震屏只生效一次）
+  与 **Actor 生命周期绑定**（施放者的生死不该取消已安排的反馈）。参考实现：`CameraShakeEffect`
 - **禁止混用**：`ActorEffect` 子类用 `Node2D` 根会导致坐标失效，`Node2D` 脚本用 `Node` 根会导致 Godot 类型错误
 
 ### 世界效果规范（2026-08 已实施，取代原 WorldActorEffect 规划）

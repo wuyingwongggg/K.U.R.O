@@ -38,8 +38,8 @@ namespace Kuros.Systems.Cutscene
         // ── 导出属性 ──────────────────────────────────────────────
 
         [ExportCategory("Effect")]
-        /// <summary>要生成的特效场景资源路径（.tscn）</summary>
-        [Export] public string EffectScene { get; set; } = "";
+        /// <summary>要生成的特效场景（直接拖场景资源进来）</summary>
+        [Export] public PackedScene? EffectScene { get; set; }
 
         [ExportCategory("Spawning")]
         /// <summary>生成方式</summary>
@@ -84,26 +84,18 @@ namespace Kuros.Systems.Cutscene
 
         public override async Task Execute(CutsceneContext ctx)
         {
-            if (string.IsNullOrEmpty(EffectScene))
+            if (EffectScene == null)
             {
                 GD.PrintErr($"[Cutscene] EffectSpawnStep: EffectScene 未配置");
                 return;
             }
 
-            GD.Print($"[Cutscene] EffectSpawnStep 开始，特效: {EffectScene}, 生成方式: {SpawnType}");
+            GD.Print($"[Cutscene] EffectSpawnStep 开始，特效: {EffectScene.ResourcePath}, 生成方式: {SpawnType}");
 
             try
             {
-                // 加载特效场景
-                var scene = GD.Load<PackedScene>(EffectScene);
-                if (scene == null)
-                {
-                    GD.PrintErr($"[Cutscene] EffectSpawnStep: 无法加载特效场景 {EffectScene}");
-                    return;
-                }
-
                 // 实例化特效
-                var effect = scene.Instantiate();
+                var effect = EffectScene.Instantiate();
                 if (effect is not Node2D effectNode2D)
                 {
                     GD.PrintErr($"[Cutscene] EffectSpawnStep: 特效必须是 Node2D");

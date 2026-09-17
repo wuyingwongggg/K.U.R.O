@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://cx332v8gr3ytf"]
+[gd_scene load_steps=31 format=3 uid="uid://cx332v8gr3ytf"]
 
 [ext_resource type="Script" uid="uid://b07adjcfmpta5" path="res://scripts/actors/enemies/EnemyF1RogueAIMagnet.cs" id="1_5fg3o"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_isjex"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://d344e0lq5h5mj" path="res://scripts/actors/enemies/states/MagnetRailState.cs" id="10_uoco6"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="12_bf0m4"]
 [ext_resource type="PackedScene" uid="uid://b5rh3kfbsbo18" path="res://scenes/actors/etc/enemy_spawn_box_destroy.tscn" id="13_2oxxs"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="14_78oi3"]
 [ext_resource type="Script" uid="uid://bkvfkn8jrvyis" path="res://scripts/actors/enemies/attacks/EnemyMagnetJarAttack.cs" id="14_dn2fu"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_aym2x"]
 [ext_resource type="PackedScene" uid="uid://b42ur4dxdhjmx" path="res://scenes/actors/etc/enemy_spawn_box.tscn" id="16_5fg3o"]
@@ -27,10 +28,10 @@ shader_parameter/softness = 0.1
 shader_parameter/alpha = 0.6
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_controller_detect"]
-radius = 20000.0
+radius = 15000.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
-radius = 20000.0
+radius = 15000.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2oxxs"]
 radius = 180.0
@@ -73,6 +74,16 @@ EffectOffset = Vector2(nan, nan)
 SpawnTiming = 1
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
+[sub_resource type="Resource" id="Resource_14s8i"]
+script = ExtResource("15_aym2x")
+Scene = ExtResource("14_78oi3")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+PropertyOverrides = Dictionary[String, Variant]({
+"ShakeStrength": 20.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
 [node name="Enemy_F1_rogueAI_Magnet" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 z_index = 4
 y_sort_enabled = true
@@ -82,7 +93,6 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_5fg3o")
 ApproachTimeoutSeconds = 7.0
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -254,7 +264,7 @@ TargetableFactions = 7
 KnockbackDistance = 300.0
 KnockbackDuration = 0.25
 GrantedImmunities = 447
-Effects = Array[ExtResource("15_aym2x")]([SubResource("Resource_v1b7h"), SubResource("Resource_78oi3")])
+Effects = Array[ExtResource("15_aym2x")]([SubResource("Resource_v1b7h"), SubResource("Resource_78oi3"), SubResource("Resource_14s8i")])
 metadata/attack_weight = 100.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
