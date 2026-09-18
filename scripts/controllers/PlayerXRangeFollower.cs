@@ -23,6 +23,11 @@ namespace Kuros.Controllers
 		/// <summary>行程两端的 Marker2D（相对本节点）；顺序无所谓，内部按 X 排序取区间。</summary>
 		[Export] public NodePath MarkerAPath { get; set; } = new();
 		[Export] public NodePath MarkerBPath { get; set; } = new();
+		/// <summary>抵达 <see cref="MarkerBPath"/> 后**停止追踪玩家**：锁定在 B 端不再随玩家移动（一次性，
+		/// 之后玩家再走近/走远都不会恢复）。B 是哪一侧都成立——它就是"终点"标记。</summary>
+		[Export] public bool StopAtMarkerB { get; set; } = true;
+		/// <summary>抵达判定死区（像素）：指数平滑只会无限趋近、不会精确到达，需要一个死区来判定"已抵达"。</summary>
+		[Export(PropertyHint.Range, "0,64,1")] public float ArriveDeadzone { get; set; } = 8f;
 
 		/// <summary>找不到玩家时的宽限时长（秒）：玩家可能比关卡晚一两帧才生成，过了宽限再打一次提示。</summary>
 		private const float PlayerMissingWarnDelay = 1f;
@@ -49,6 +54,18 @@ namespace Kuros.Controllers
 			// 只写 X：Y 不碰（场景摆放高度即"锁死"），也不会抹掉父级（如 Environments）的摆放
 			var pos = GlobalPosition;
 			pos.X = Mathf.Lerp(pos.X, targetX, t);
+
+			// 抵达 B 端 → 对齐到 B 并停止追踪（一次性；之后玩家怎么走都不再跟随）
+			if (StopAtMarkerB && _markerB != null
+				&& Mathf.Abs(pos.X - _markerB.GlobalPosition.X) <= ArriveDeadzone)
+			{
+				pos.X = _markerB.GlobalPosition.X;
+				GlobalPosition = pos;
+				SetProcess(false);
+				GD.Print($"{Name}: 已抵达 MarkerBPath，停止追踪玩家");
+				return;
+			}
+
 			GlobalPosition = pos;
 		}
 

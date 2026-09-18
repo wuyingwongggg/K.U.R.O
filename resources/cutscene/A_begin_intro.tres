@@ -28,5 +28,6 @@ metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 script = ExtResource("2_gqujs")
 SequenceId = "A_begin_intro"
 Steps = Array[ExtResource("1_84lnv")]([SubResource("Resource_84lnv"), SubResource("Resource_egs0q"), SubResource("Resource_mlsay")])
+HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
 TakeOverCamera = true
 metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

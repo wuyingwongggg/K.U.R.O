@@ -15,8 +15,10 @@ namespace Kuros.Systems.Cutscene
     /// FadeOverlayPath  → 可选，指向全屏黑幕 CanvasItem
     /// TopBlackBarPath → 可选，指向电影式黑幕上方 ColorRect
     /// BottomBlackBarPath → 可选，指向电影式黑幕下方 ColorRect
-    /// HideNodePaths    → 可选，过场期间隐藏并禁用 ProcessMode 的节点路径列表（如 P2、UI 根节点）
     /// BattleSceneManagerPath → 可选，过场开始时自动调用 HideAllUI()，结束时调用 ShowAllUI()，指向 BattleSceneManager 节点
+    ///
+    /// 注意：过场期间"隐藏哪些节点 / 是否隐藏玩家"是**每段过场的配置**，不在本节点上——
+    /// 见 CutsceneSequence.HideNodePaths / HidePlayer（同一舞台里不同过场可以各不相同）。
     /// </summary>
     [GlobalClass]
     public partial class CutsceneManager : Node
@@ -44,12 +46,6 @@ namespace Kuros.Systems.Cutscene
         /// 电影式黑幕：下方黑色 ColorRect 的节点路径（用于 FadeStep 电影模式）
         /// </summary>
         [Export] public NodePath BottomBlackBarPath { get; set; } = new NodePath();
-
-        /// <summary>
-        /// 过场期间隐藏并禁用 ProcessMode 的节点（如 P2、UI 根节点）。
-        /// 结束后自动恢复显示和 ProcessMode。
-        /// </summary>
-        [Export] public Godot.Collections.Array<NodePath> HideNodePaths { get; set; } = new();
 
         /// <summary>
         /// 指向 BattleSceneManager 节点的路径。
@@ -85,7 +81,11 @@ namespace Kuros.Systems.Cutscene
         // ── 私有字段 ──────────────────────────────────────────────────────
         private bool    _cameraWasTopLevel = false;
         private bool    _playerWasVisible  = false;
+        private bool    _playerProcessDisabled = false;
         private readonly System.Collections.Generic.List<CanvasItem> _hiddenNodes = new();
+        /// <summary>本次过场被本管理器改成 ProcessMode.Disabled 的节点（含切换前就不可见的）——
+        /// 恢复必须按这份清单走，否则"本来就不可见"的节点会永久停在 Disabled。</summary>
+        private readonly System.Collections.Generic.List<CanvasItem> _processDisabledNodes = new();
         private Kuros.Scenes.BattleSceneManager? _battleSceneManager;
         private CameraZoneManager? _cameraZoneManager;
         // 长按跳过累加器（秒）与 HUD
@@ -229,29 +229,34 @@ namespace Kuros.Systems.Cutscene
             // 隐藏 BattleSceneManager 管理的 UI
             _battleSceneManager?.HideAllUI();
 
-            // 禁用玩家输入，并同时隐藏玩家（Shadow 等子节点随父节点一起消失）
+            // 玩家：禁用输入 与 隐藏 各自独立（序列的 DisablePlayerInput / HidePlayer）
             _playerWasVisible = false;
+            _playerProcessDisabled = false;
             if (sequence.DisablePlayerInput)
             {
                 if (Player != null)
                 {
                     Player.ProcessMode = ProcessModeEnum.Disabled;
-                    if (Player.Visible)
-                    {
-                        Player.Hide();
-                        _playerWasVisible = true;
-                    }
-                    GD.Print($"[Cutscene] 禁用+隐藏: {Player.Name}");
+                    _playerProcessDisabled = true;
+                    GD.Print($"[Cutscene] 禁用玩家输入: {Player.Name}");
                 }
                 else
                 {
                     GD.PrintErr("[Cutscene] DisablePlayerInput=true 但 Player 节点为 null，请检查 PlayerPath");
                 }
             }
+            if (sequence.HidePlayer && Player != null && Player.Visible)
+            {
+                Player.Hide();   // Shadow 等子节点随父节点一起消失
+                _playerWasVisible = true;
+                GD.Print($"[Cutscene] 隐藏玩家: {Player.Name}");
+            }
 
-            // 隐藏节点并同时禁用其 ProcessMode（防止角色仍在移动/运算）
+            // 隐藏节点并同时禁用其 ProcessMode（防止角色仍在移动/运算）。
+            // 清单来自**本段序列**（CutsceneSequence.HideNodePaths），逐段过场独立。
             _hiddenNodes.Clear();
-            foreach (var path in HideNodePaths)
+            _processDisabledNodes.Clear();
+            foreach (var path in sequence.HideNodePaths ?? new Godot.Collections.Array<NodePath>())
             {
                 var node = GetNodeOrNull<CanvasItem>(path);
                 if (node != null)
@@ -262,6 +267,7 @@ namespace Kuros.Systems.Cutscene
                         _hiddenNodes.Add(node);
                     }
                     node.ProcessMode = ProcessModeEnum.Disabled;
+                    _processDisabledNodes.Add(node);   // 无论原本可见与否都要还原
                     GD.Print($"[Cutscene] 隐藏+禁用: {node.Name}");
                 }
                 else
@@ -312,26 +318,37 @@ namespace Kuros.Systems.Cutscene
             if (sequence.TakeOverCamera)
                 EndCameraOverride();
 
-            // 恢复玩家输入与可见性
-            if (sequence.DisablePlayerInput && Player != null && GodotObject.IsInstanceValid(Player))
+            // 恢复玩家输入与可见性（各自独立，只还原本次真的改过的项）
+            if (Player != null && GodotObject.IsInstanceValid(Player) && (_playerProcessDisabled || _playerWasVisible))
             {
-                Player.ProcessMode = ProcessModeEnum.Inherit;
+                if (_playerProcessDisabled)
+                    Player.ProcessMode = ProcessModeEnum.Inherit;
                 if (_playerWasVisible)
                     Player.Show();
-                GD.Print($"[Cutscene] 恢复输入+显示: {Player.Name}");
+                GD.Print($"[Cutscene] 恢复玩家: {Player.Name}（输入={_playerProcessDisabled} 显示={_playerWasVisible}）");
             }
 
-            // 恢复隐藏节点的显示和 ProcessMode
+            // 恢复显示（只还原本次真的隐藏过的）
             foreach (var node in _hiddenNodes)
             {
                 if (GodotObject.IsInstanceValid(node))
                 {
                     node.Show();
-                    node.ProcessMode = ProcessModeEnum.Inherit;
-                    GD.Print($"[Cutscene] 恢复显示+启用: {node.Name}");
+                    GD.Print($"[Cutscene] 恢复显示: {node.Name}");
                 }
             }
             _hiddenNodes.Clear();
+
+            // 恢复 ProcessMode（按"本次被我禁用的节点"清单走——含切换前就不可见的，否则它们会永久停在 Disabled）
+            foreach (var node in _processDisabledNodes)
+            {
+                if (GodotObject.IsInstanceValid(node))
+                {
+                    node.ProcessMode = ProcessModeEnum.Inherit;
+                    GD.Print($"[Cutscene] 恢复启用: {node.Name}");
+                }
+            }
+            _processDisabledNodes.Clear();
 
             DialoguePanel?.HidePanel();
 
