@@ -81,6 +81,9 @@ namespace Kuros.Fx
         private void AddTarget(Node collider, Vector2 origin, Vector2 beamDir)
         {
             if (DamageDispatcher.ResolveDamageReceiver(collider, TargetableFactions) is not Node receiver) return;
+            // 常态免疫的目标既不吃伤害、也不该遮挡：整条跳过 → 截断距离自动落到后面第一个真正吃伤害的目标上
+            // （只认 CanBeAffected 这道闸；无敌帧、伤害拦截类状态必须照常被命中）
+            if (receiver is GameActor immuneTarget && !immuneTarget.CanBeAffected(null)) return;
             // 方向性目标（FireWallA 等屏障）拒收本方向时视为未命中 → 穿透：不伤害、也不构成遮挡
             if (!DamageDispatcher.AcceptsAttackDirection(collider, beamDir, TargetableFactions, origin)) return;
             float nearEdge = DistanceAlongAxisToNearEdge(collider, origin, beamDir);

@@ -291,6 +291,32 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 
 **不采用 `FactionType` 枚举方案**：项目无 PvP / 友伤 / 队友 NPC，`TargetableFactions` Flags 已覆盖"可命中谁"的全部需求；若未来需要玩家打玩家/队友，在现有 Flags 上扩展即可，无需引入新枚举。
 
+### 目标筛选：免疫目标不参与瞄准、也不构成遮挡（2026-09）
+
+自动选目标 / "首个目标截断"类效果（追踪弹幕、浮游炮、非穿透光束）在挑目标时必须跳过
+`CanBeAffected(null) == false` 的敌人（rogueAI 本体 / 磁铁臂 / netAdmin 这类"常态免伤"的部件）——
+否则**最近的那个免疫目标会把攻击全部吃掉**：弹幕瞄准偏航、光束被它截断、浮游炮对它空放。
+
+```csharp
+// 最近目标扫描：RotatingCube.ResolveAimTarget / BunnySwardFloatingCannon.FindNearestEnemy
+if (!enemy.CanBeAffected(null)) continue;
+
+// 首个目标截断：LaserBeamPlayerWeapon.AddTarget —— 跳过它 = 不进目标表也不设截断距离
+if (receiver is GameActor immune && !immune.CanBeAffected(null)) return;
+```
+
+**只认 `CanBeAffected` 这一道闸，不要拿"当前能不能掉血"当筛子。**
+`IsHitInvincible`（玩家受伤无敌帧）、`DamageIntercepted`（延迟损伤 / 护盾 / 方向格挡）都是
+"伤害照常到达、只是被改写或延后"——这些效果**必须**继续被选中并收到伤害事件
+（`MachineDelayedDamageEffect` 正是靠收到事件记账、buff 结束时统一结算）。
+反例写法：`if (enemy.IsHitInvincible) continue;`、`if (enemy.CurrentHealth <= 0) continue;`
+
+**不要靠关闭 HitArea 来实现"无视"**：HitArea 同时是效果与受击通道——netAdmin 正是靠它接收
+`drone_stun_` 前缀的眩晕（`CanBeAffected` 只放行该前缀）。"不可伤害" ≠ "不可交互"。
+
+- 落点参考：`RotatingCube.ResolveAimTarget()`、`LaserBeamPlayerWeapon.AddTarget()`、`BunnySwardFloatingCannon.FindNearestEnemy()`
+- 不适用：敌→玩家方向的效果（`LaserBeamA` / `EnemyFloatingCannon` 等）——玩家从不覆写 `CanBeAffected`（恒 `true`），加筛选是空转
+
 ---
 
 ## 九、新效果开发检查清单
@@ -304,6 +330,7 @@ public TargetableFactions TargetableFactions = TargetableFactions.Enemy;
 - [ ] 效果内部不判断目标阵营/身份
 - [ ] 世界效果（区域/爆炸/落点）：根节点 `Node2D`，继承 `Node2D` + `IAttackerProvider`（不继承 `ActorEffect`），`Duration` 自管理、`_ExitTree` 兜底清理
 - [ ] 阵营过滤：配置 `TargetableFactions` + `AllowSelfDamage`，不写死目标
+- [ ] 自动选目标 / 首个目标截断：跳过 `CanBeAffected(null) == false` 的目标（见第八节），不用无敌帧 / 伤害拦截 / 血量当筛选条件
 - [ ] 生成在目标身上的视觉：`target.GetVisualAnchorWorld()`，不用 `target.GlobalPosition` / 写死 y 偏移
 - [ ] 数值加成效果：用基础值（`BaseMaxHealth` 等）做叠加基数，不用当前属性值（防场景切换快照污染重复叠加，见第十一节）
 

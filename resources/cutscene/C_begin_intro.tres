@@ -31,7 +31,7 @@ metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 [sub_resource type="Resource" id="Resource_wih2s"]
 script = ExtResource("4_wih2s")
 AnimationPlayerPath = NodePath("../World/CBegin/AnimationCharacter/AnimationPlayer")
-AnimationName = "C_begin_run"
+AnimationName = "run_normal"
 WaitForCompletion = true
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 

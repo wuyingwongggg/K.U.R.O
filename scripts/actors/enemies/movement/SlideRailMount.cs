@@ -12,6 +12,9 @@ public partial class SlideRailMount : Node2D
 {
 	public enum RailAxis { X, Y }
 
+	/// <summary>机械出生锚点：Far/Near 是**角色语义**（勾了 FlipCarriageEnds 会自动互换）。</summary>
+	public enum SpawnAnchor { Far, Near, Origin }
+
 	[ExportCategory("Rail 滑槽")]
 	/// <summary>滑槽自身滑动的轴（默认 Y = 纵向升降；设 X 则为横向滑槽）。</summary>
 	[Export] public RailAxis Axis { get; set; } = RailAxis.Y;
@@ -30,6 +33,10 @@ public partial class SlideRailMount : Node2D
 	[Export] public bool FlipCarriageEnds { get; set; }
 	/// <summary>被挂载的机械场景：配了就自动实例化进 Mount（"机械固定在滑槽内"的父子结构）。</summary>
 	[Export] public PackedScene? CarriagePrefab { get; set; }
+	/// <summary>机械出生锚点：Far = 场外/待命端（默认）、Near = 贴玩家端、Origin = 滑槽原点（关卡摆放点/轨道中点）。
+	/// Far/Near 与限位解释同源，勾了 <see cref="FlipCarriageEnds"/> 时自动跟着互换。
+	/// 过场生成的 PropertyOverrides 会在入树前写好这个值，正好赶得上 <see cref="_Ready"/> 里的摆位。</summary>
+	[Export] public SpawnAnchor CarriageSpawn { get; set; } = SpawnAnchor.Far;
 	/// <summary>滑槽自身滑动速度（px/s）。</summary>
 	[Export(PropertyHint.Range, "10,2000,1")] public float Speed { get; set; } = 200f;
 	[Export(PropertyHint.Range, "0,64,1")] public float ArriveDeadzone { get; set; } = 4f;
@@ -77,12 +84,7 @@ public partial class SlideRailMount : Node2D
 		{
 			var carriage = CarriagePrefab.Instantiate<Node2D>();
 			mount.AddChild(carriage);
-
-			// 出生在"远端"（角色 Far，= 待命位/场外端），避免从轨道中间冒出来再滑走；
-			// 取 Marker 的**局部坐标**：与滑槽在关卡里的摆放位置无关，所以 _Ready 阶段就能算准。
-			// 勾了 FlipCarriageEnds 时角色互换 → 自动改用另一个 Marker，与 ResolveNow 的判定保持一致。
-			var farMarker = ResolveFarMarker();
-			carriage.Position = farMarker?.Position ?? Vector2.Zero;
+			carriage.Position = ResolveSpawnPosition();
 		}
 	}
 
@@ -105,10 +107,20 @@ public partial class SlideRailMount : Node2D
 		SetCoordinate(Mathf.Clamp(CurrentRailCoordinate, _slotStart, _slotEnd));
 	}
 
-	/// <summary>角色上的"远端"（场外/待命端）Marker：勾了 <see cref="FlipCarriageEnds"/> 时角色互换。
-	/// 与 <see cref="ResolveNow"/> 的判定同源——翻转开关对"出生点"和"限位解释"同时生效。</summary>
-	private Marker2D? ResolveFarMarker()
-		=> GetNodeOrNull<Marker2D>(FlipCarriageEnds ? CarriageNearMarkerPath : CarriageFarMarkerPath);
+	/// <summary>机械出生位置（**局部坐标**——与滑槽在关卡里的摆放位置无关，_Ready 阶段就能算准）。
+	/// 默认 Far（待命位/场外端），避免从轨道中间冒出来再滑走。</summary>
+	private Vector2 ResolveSpawnPosition()
+	{
+		if (CarriageSpawn == SpawnAnchor.Origin) return Vector2.Zero;
+
+		var marker = ResolveEndMarker(wantFar: CarriageSpawn == SpawnAnchor.Far);
+		return marker?.Position ?? Vector2.Zero;
+	}
+
+	/// <summary>角色端点 Marker：wantFar = 要"场外/待命端"、false = 要"贴玩家端"。
+	/// 与 <see cref="ResolveNow"/> 的判定同源——FlipCarriageEnds 对"出生点"和"限位解释"同时生效。</summary>
+	private Marker2D? ResolveEndMarker(bool wantFar)
+		=> GetNodeOrNull<Marker2D>(wantFar != FlipCarriageEnds ? CarriageFarMarkerPath : CarriageNearMarkerPath);
 
 	/// <summary>设置滑槽滑动目标（世界坐标，滑动轴）。无 Slot 限位时忽略（滑槽静止）。</summary>
 	public void SetTarget(float coordinate)

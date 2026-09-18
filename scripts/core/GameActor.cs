@@ -57,6 +57,14 @@ namespace Kuros.Core
 		/// 初始朝向。true=朝右，false=朝左。在 _Ready 时应用，不影响行为逻辑。
 		/// </summary>
 		[Export] public bool InitialFacingRight = true;
+		/// <summary>
+		/// 锁朝向：true = 运行期的翻转请求一律忽略（<see cref="FlipFacing"/> 变 no-op），
+		/// 角色固定在 <see cref="InitialFacingRight"/> 指定的朝向上。
+		/// 只拦运行期（移动/AI/攻击里的 FlipFacing）；_Ready 的初始朝向应用与 FaceLeftByDefault 的
+		/// 符号补偿都照常生效——所以锁朝向**不会**把初始朝向或朝左美术吞掉。
+		/// 适用：挂在滑槽/轨道上不该左右转的机械（rogueAI 本体、磁铁臂）。
+		/// </summary>
+		[Export] public bool LockFacing = false;
 		
 		
 		[ExportCategory("Components")]
@@ -350,11 +358,9 @@ namespace Kuros.Core
 			ApplyStatProfile();
 			NotifyHealthChanged();
 			
-			// 应用初始朝向（必须在所有子节点初始化之后）
-			if (FacingRight != InitialFacingRight)
-			{
-				FlipFacing(InitialFacingRight);
-			}
+			// 应用初始朝向（必须在所有子节点初始化之后）。走 ApplyFacing 而不是 FlipFacing：
+			// LockFacing 只该拦运行期的翻转请求，不该把初始朝向也吞掉。
+			ApplyFacing(InitialFacingRight);
 		}
 
 		public void SetShieldValue(int shield)
@@ -913,10 +919,19 @@ public void ApplyEffect(ActorEffect effect)
 			}
 		}
 
+		/// <summary>对外请求翻转：锁朝向（<see cref="LockFacing"/>）时直接忽略。
+		/// 真正应用朝向的是 <see cref="ApplyFacing"/>——初始朝向不走这道闸，
+		/// 否则"锁朝向 + InitialFacingRight=false"会把初始朝向一起吞掉。</summary>
 		public virtual void FlipFacing(bool faceRight)
 		{
+			if (LockFacing) return;
+			ApplyFacing(faceRight);
+		}
+
+		private void ApplyFacing(bool faceRight)
+		{
 			if (FacingRight == faceRight) return;
-			
+
 			FacingRight = faceRight;
 			
 			float sign = faceRight ? 1.0f : -1.0f;

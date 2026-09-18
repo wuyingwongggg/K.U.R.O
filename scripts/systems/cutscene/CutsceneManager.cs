@@ -294,8 +294,17 @@ namespace Kuros.Systems.Cutscene
                     continue;
                 }
                 GD.Print($"[Cutscene] 执行第 {stepIndex} 步: {step.GetType().Name}");
-                await step.Execute(ctx);
-                GD.Print($"[Cutscene] 第 {stepIndex} 步完成: {step.GetType().Name}");
+                // 单步异常不得中断整段过场：否则循环之后的还原代码（相机 / 玩家输入与可见性 / IsPlaying）
+                // 全被跳过 → 过场彻底卡死。典型来源：步骤等待的节点在动画里自毁（method 轨道 DestroySelf）。
+                try
+                {
+                    await step.Execute(ctx);
+                    GD.Print($"[Cutscene] 第 {stepIndex} 步完成: {step.GetType().Name}");
+                }
+                catch (System.Exception ex)
+                {
+                    GD.PushError($"[Cutscene] 第 {stepIndex} 步 ({step.GetType().Name}) 抛异常，跳过该步继续: {ex.Message}");
+                }
                 stepIndex++;
             }
 
