@@ -1,17 +1,17 @@
 [gd_scene load_steps=32 format=3 uid="uid://rvea6qogvof2"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_d7xky"]
-[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="2_74xkr"]
-[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_83c24"]
-[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_nctn4"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_d7xky"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="2_74xkr"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="3_83c24"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="4_nctn4"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="5_j0yh1"]
 [ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="6_roowh"]
 [ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="7_66te4"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="8_83c24"]
-[ext_resource type="Texture2D" uid="uid://g8g1uq14i6rc" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_gqn04"]
+[ext_resource type="Texture2D" uid="uid://bd5p3dbno4dai" path="res://assets/environments/scene_4_hotel/wall2.png" id="8_gqn04"]
 [ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="8_j0yh1"]
 [ext_resource type="Texture2D" uid="uid://b2vbxff8qbwlw" path="res://assets/environments/scene_3_hotel/窗外远景.png" id="9_yktwe"]
-[ext_resource type="Script" uid="uid://blrupwolbou73" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_0arsr"]
+[ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="10_0arsr"]
 [ext_resource type="Texture2D" uid="uid://brk1t88wdisc" path="res://assets/environments/scene_3_hotel/窗户玻璃反射.png" id="11_mm3qn"]
 [ext_resource type="Texture2D" uid="uid://beh5ya8u5t3lx" path="res://assets/environments/scene_4_hotel/floor1.png" id="12_omi6f"]
 [ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="13_16lwb"]
@@ -179,6 +179,7 @@ offset = Vector2(0, -200)
 position = Vector2(0, 340)
 
 [node name="BG" type="Sprite2D" parent="Environments"]
+z_index = -10
 position = Vector2(0, -1200)
 texture = ExtResource("9_yktwe")
 script = ExtResource("10_0arsr")

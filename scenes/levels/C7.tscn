@@ -147,6 +147,7 @@ DebugLineWidth = 8.0
 position = Vector2(0, 340)
 
 [node name="background" type="Sprite2D" parent="Environments"]
+z_index = -10
 position = Vector2(0, -1288)
 texture = ExtResource("11_7vw4o")
 script = ExtResource("12_4qif7")

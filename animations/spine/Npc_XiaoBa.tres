@@ -1,0 +1,8 @@
+[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 uid="uid://2lsnwvq38jlp"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://5oqaxg8iee74" path="res://assets/spine/npc/Npc_XiaoBa_Idle.atlas" id="1_jgjoh"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://g7f60wy8p1dt" path="res://assets/spine/npc/Npc_XiaoBa_Idle.spine-json" id="2_lbx2j"]
+
+[resource]
+atlas_res = ExtResource("1_jgjoh")
+skeleton_file_res = ExtResource("2_lbx2j")

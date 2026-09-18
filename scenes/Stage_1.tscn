@@ -25,11 +25,10 @@ Player = NodePath("../World/MainCharacter")
 
 [node name="CutsceneManager" type="Node" parent="."]
 script = ExtResource("3_31t1p")
-SkipActionName = "run"
+SkipActionName = "cutscene_skip"
 CameraPath = NodePath("../World/Camera2D")
 TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
 BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")
-HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
 BattleSceneManagerPath = NodePath("..")
 
 [node name="StageGeneratorManager" type="Node" parent="."]
@@ -72,7 +71,6 @@ position = Vector2(300, 0)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 128
-visible = false
 
 [node name="ColorRectTop" type="ColorRect" parent="CanvasLayer"]
 offset_right = 1920.0

@@ -249,6 +249,7 @@ DashSpeedMultiplier = 5.0
 DashDistance = 750.0
 MinDashDistanceBeforeSmash = 0.0
 SnapshotDelaySeconds = 0.9
+DestroyFurnitureDuringDash = true
 WarmupDuration = 1.0
 ActiveDuration = 0.2
 RecoveryDuration = 0.45

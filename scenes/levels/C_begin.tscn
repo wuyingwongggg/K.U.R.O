@@ -1,10 +1,10 @@
 [gd_scene load_steps=31 format=3 uid="uid://cg2o6k0etyc25"]
 
-[ext_resource type="Script" uid="uid://b217dd0r612wc" path="res://scripts/managers/CameraZoneArea.cs" id="1_4duw5"]
-[ext_resource type="Script" uid="uid://b5xgtnqb8ifa5" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
-[ext_resource type="Script" uid="uid://dihr45ld5purc" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_7mqiy"]
-[ext_resource type="Script" uid="uid://ccecrbc2x0efo" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_ainwx"]
-[ext_resource type="Script" uid="uid://bma58jc2sp4rh" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_t2fey"]
+[ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_4duw5"]
+[ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="1_lxqj5"]
+[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_7mqiy"]
+[ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="2_ainwx"]
+[ext_resource type="Script" uid="uid://b3iq6dm2pc5y0" path="res://scripts/controllers/EnemySpawnManager.cs" id="2_t2fey"]
 [ext_resource type="Resource" uid="uid://curpr4n4v2tuh" path="res://resources/cutscene/C_begin_intro.tres" id="3_7mqiy"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="4_1mlw7"]
 [ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="5_lxqj5"]
@@ -142,7 +142,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 DebugLineWidth = 8.0
 
 [node name="EnemySpawneManager2" type="Node2D" parent="."]
@@ -161,7 +160,6 @@ EnemyAppearDelay = 1.0
 AutoLowerFrontEffectAfterEnemySpawn = true
 ShowDebugOverlay = false
 ShowDebugOverlayInGame = false
-LogSpawnEffectPositions = false
 SpawnDebugColor = Color(1, 0.8509804, 0.2509804, 0)
 DebugLineWidth = 8.0
 
@@ -263,6 +261,7 @@ position = Vector2(1392, 923)
 position = Vector2(29, 870)
 
 [node name="AnimationCharacter" parent="." instance=ExtResource("24_qm83g")]
+position = Vector2(-2700, 750)
 
 [node name="FountainA" parent="." instance=ExtResource("21_y44ha")]
 position = Vector2(-22, 182)

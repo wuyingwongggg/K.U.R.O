@@ -421,6 +421,7 @@ namespace Kuros.Actors.Heroes
             extracted = new InventoryItemStack(FurnitureSlotStack!.Item, 1);
             extracted.RuntimeSourceTag = FurnitureSlotStack.RuntimeSourceTag;   // 来源身份随栈副本转移(放置出口消费)
             extracted.RuntimeIsThrowCoreCopy = FurnitureSlotStack.RuntimeIsThrowCoreCopy;
+            extracted.RuntimeThrowCountUsed = FurnitureSlotStack.RuntimeThrowCountUsed; // 投掷耐久已用次数(B_006)随件转移
             if (owner != null)
             {
                 FurnitureSlotStack.Item.RemoveEffects(owner, ItemEffectTrigger.OnEquip);

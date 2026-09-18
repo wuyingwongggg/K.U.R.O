@@ -547,7 +547,7 @@ scale = Vector2(6, 6)
 sprite_frames = SubResource("SpriteFrames_5y1q6")
 autoplay = "default"
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+[node name="CharacterBody2D" type="StaticBody2D" parent="."]
 collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]

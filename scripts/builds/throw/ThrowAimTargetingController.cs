@@ -76,7 +76,7 @@ namespace Kuros.Builds.Throw
             _resolver ??= _player != null ? AimPointResolver.Find(_player) : null;
             if (_player == null || !IsInstanceValid(_player)) return false;
             if (_core == null || !IsInstanceValid(_core) || !_core.CanSpawn) return false;
-            // 投掷/蓄力进行中(B_006)不进入瞄准模式:攻击键语义已归投掷(松手出手),避免左键同时"确认"又出手
+            // 投掷/蓄力进行中(B_004)不进入瞄准模式:攻击键语义已归投掷(松手出手),避免左键同时"确认"又出手
             if (_player.StateMachine?.CurrentState?.Name == "Throw") return false;
 
             IsActive = true;
@@ -258,7 +258,8 @@ namespace Kuros.Builds.Throw
         {
             Node2D? holder = null;
 
-            var scene = _core?.ResolveSpawnScene(out _);
+            bool isCopy = false;
+            var scene = _core?.ResolveSpawnScene(out isCopy);
             if (scene != null)
             {
                 var inst = scene.Instantiate();
@@ -275,9 +276,19 @@ namespace Kuros.Builds.Throw
                 inst.Free();
             }
 
+            bool usedIconFallback = false;
             holder ??= new Node2D { Name = "Visual" };
             if (holder.GetChildCount() == 0 && _core?.FurnitureIcon != null)
+            {
                 holder.AddChild(new Sprite2D { Texture = _core.FurnitureIcon });
+                usedIconFallback = true;
+            }
+
+            // A_007 复制件(含 B_007 经复制路径析出):幽灵同步挂乱码滤镜——所见即所得,
+            // 与实际生成(SpawnPieceFromScene 的 isCopy 分支)一致;
+            // 图标回退时纹理路径不固定(furnitures 路径判定不适用)→ requireFurnitureArt:false
+            if (isCopy)
+                Kuros.Fx.PieceCopyGlitchDecorator.Apply(holder, requireFurnitureArt: !usedIconFallback);
 
             return holder;
         }

@@ -38,8 +38,8 @@ namespace Kuros.Systems.Cutscene
         // ── 导出属性 ──────────────────────────────────────────────
 
         [ExportCategory("Effect")]
-        /// <summary>要生成的特效场景资源路径（.tscn）</summary>
-        [Export] public string EffectScene { get; set; } = "";
+        /// <summary>要生成的特效场景（直接拖场景资源进来）</summary>
+        [Export] public PackedScene? EffectScene { get; set; }
 
         [ExportCategory("Spawning")]
         /// <summary>生成方式</summary>
@@ -55,6 +55,19 @@ namespace Kuros.Systems.Cutscene
 
         /// <summary>目标节点路径（SpawnType=RelativeToNode 时使用）</summary>
         [Export] public NodePath TargetNodePath { get; set; } = new NodePath();
+
+        [ExportCategory("Overrides")]
+        /// <summary>
+        /// 生成时属性覆盖（属性名 → 值），在 AddChild 之前应用——同一个通用场景可以借此生成出
+        /// 不同配置的多份实例（如左右两条 SlideRail：分别覆盖 FlipCarriageEnds / CarriagePrefab / 限位路径），
+        /// 不必复制出多个变体场景。属性名写错会打警告。
+        /// </summary>
+        [Export] public Godot.Collections.Dictionary<string, Variant> PropertyOverrides { get; set; } = new();
+
+        [ExportCategory("Skip 跳过")]
+        /// <summary>跳过过场时是否仍然生成（默认 true = 快进到最终状态，关键生成用它）。
+        /// 纯视觉（爆炸/烟雾）可设 false，避免按跳过时闪现一下。</summary>
+        [Export] public bool GenerateOnSkip { get; set; } = true;
 
         [ExportCategory("Cleanup")]
         /// <summary>
@@ -76,26 +89,24 @@ namespace Kuros.Systems.Cutscene
 
         public override async Task Execute(CutsceneContext ctx)
         {
-            if (string.IsNullOrEmpty(EffectScene))
+            if (EffectScene == null)
             {
                 GD.PrintErr($"[Cutscene] EffectSpawnStep: EffectScene 未配置");
                 return;
             }
 
-            GD.Print($"[Cutscene] EffectSpawnStep 开始，特效: {EffectScene}, 生成方式: {SpawnType}");
+            if (ctx.IsSkipping && !GenerateOnSkip)
+            {
+                GD.Print("[Cutscene] EffectSpawnStep: 跳过过场且 GenerateOnSkip=false，不生成");
+                return;
+            }
+
+            GD.Print($"[Cutscene] EffectSpawnStep 开始，特效: {EffectScene.ResourcePath}, 生成方式: {SpawnType}");
 
             try
             {
-                // 加载特效场景
-                var scene = GD.Load<PackedScene>(EffectScene);
-                if (scene == null)
-                {
-                    GD.PrintErr($"[Cutscene] EffectSpawnStep: 无法加载特效场景 {EffectScene}");
-                    return;
-                }
-
                 // 实例化特效
-                var effect = scene.Instantiate();
+                var effect = EffectScene.Instantiate();
                 if (effect is not Node2D effectNode2D)
                 {
                     GD.PrintErr($"[Cutscene] EffectSpawnStep: 特效必须是 Node2D");
@@ -105,6 +116,10 @@ namespace Kuros.Systems.Cutscene
 
                 // 计算生成位置
                 Vector2 spawnPos = CalculateSpawnPosition(ctx);
+
+                // 属性覆盖必须在入树之前：节点 _Ready 里读取的配置（如滑槽的 FlipCarriageEnds /
+                // CarriagePrefab / 限位 Marker 路径）必须已是覆盖后的值
+                CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, PropertyOverrides, nameof(EffectSpawnStep));
 
                 // 添加到场景树
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;

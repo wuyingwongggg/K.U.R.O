@@ -35,5 +35,6 @@ metadata/_custom_type_script = "uid://cnkygkr74mjs4"
 
 [resource]
 script = ExtResource("4_bmix6")
-SequenceId = "D_end_intro"
+SequenceId = "C_end_intro"
 Steps = Array[ExtResource("1_oy61w")]([SubResource("Resource_hubsw"), SubResource("Resource_oy61w"), SubResource("Resource_1nk62")])
+HideNodePaths = Array[NodePath]([NodePath("../World/P2")])

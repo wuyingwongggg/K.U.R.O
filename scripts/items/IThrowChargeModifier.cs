@@ -1,7 +1,7 @@
 namespace Kuros.Items
 {
     /// <summary>
-    /// 投掷蓄力口（B_006 投掷预载）:PlayerThrowState 蓄力窗口驱动其 Charging/ChargeSeconds——
+    /// 投掷蓄力口（B_004 投掷预载）:PlayerThrowState 蓄力窗口驱动其 Charging/ChargeSeconds——
     /// 出手快照(GetThrowableModifiers)按 ChargeSeconds 结算加成(贡献门槛必须用 ChargeSeconds>0,
     /// 出手时 Charging 已置 false);轨迹预览按 Charging 在 Throw 状态放行显示。
     /// </summary>

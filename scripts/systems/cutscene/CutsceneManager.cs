@@ -15,8 +15,10 @@ namespace Kuros.Systems.Cutscene
     /// FadeOverlayPath  → 可选，指向全屏黑幕 CanvasItem
     /// TopBlackBarPath → 可选，指向电影式黑幕上方 ColorRect
     /// BottomBlackBarPath → 可选，指向电影式黑幕下方 ColorRect
-    /// HideNodePaths    → 可选，过场期间隐藏并禁用 ProcessMode 的节点路径列表（如 P2、UI 根节点）
     /// BattleSceneManagerPath → 可选，过场开始时自动调用 HideAllUI()，结束时调用 ShowAllUI()，指向 BattleSceneManager 节点
+    ///
+    /// 注意：过场期间"隐藏哪些节点 / 是否隐藏玩家"是**每段过场的配置**，不在本节点上——
+    /// 见 CutsceneSequence.HideNodePaths / HidePlayer（同一舞台里不同过场可以各不相同）。
     /// </summary>
     [GlobalClass]
     public partial class CutsceneManager : Node
@@ -26,8 +28,9 @@ namespace Kuros.Systems.Cutscene
         [Signal] public delegate void CutsceneFinishedEventHandler(string sequenceId);
 
         // ── 导出属性 ──────────────────────────────────────────────────────
-        /// <summary>跳过按键动作名称（Project Settings → Input Map 中定义）。</summary>
-        [Export] public string SkipActionName { get; set; } = "ui_cancel";
+        /// <summary>跳过按键动作名（Input Map 中定义；默认 = 专用动作 cutscene_skip，可在设置菜单改键）。
+        /// 按住它 <see cref="SkipHoldSeconds"/> 秒才触发跳过。</summary>
+        [Export] public string SkipActionName { get; set; } = Kuros.Core.InputActions.CutsceneSkip;
 
         [Export] public NodePath PlayerPath        { get; set; } = new NodePath();
         [Export] public NodePath CameraPath        { get; set; } = new NodePath();
@@ -45,16 +48,23 @@ namespace Kuros.Systems.Cutscene
         [Export] public NodePath BottomBlackBarPath { get; set; } = new NodePath();
 
         /// <summary>
-        /// 过场期间隐藏并禁用 ProcessMode 的节点（如 P2、UI 根节点）。
-        /// 结束后自动恢复显示和 ProcessMode。
-        /// </summary>
-        [Export] public Godot.Collections.Array<NodePath> HideNodePaths { get; set; } = new();
-
-        /// <summary>
         /// 指向 BattleSceneManager 节点的路径。
         /// 设置后，过场开始时自动调用 HideAllUI()，结束时调用 ShowAllUI()。
         /// </summary>
         [Export] public NodePath BattleSceneManagerPath { get; set; } = new NodePath();
+
+        [ExportCategory("Skip 跳过（长按）")]
+        /// <summary>长按多久才触发跳过（秒）。0 = 立刻跳过（旧行为）。</summary>
+        [Export(PropertyHint.Range, "0,3,0.05")] public float SkipHoldSeconds { get; set; } = 1.0f;
+
+        /// <summary>松开后进度倒退的倍率（1 = 与填充同速）。</summary>
+        [Export(PropertyHint.Range, "0.5,5,0.1")] public float SkipRewindMultiplier { get; set; } = 1.0f;
+
+        /// <summary>承载跳过 HUD 的 CanvasLayer 层级——必须高于电影黑条所在层（各 Stage 为 128）。</summary>
+        [Export(PropertyHint.Range, "0,200,1")] public int SkipHudLayer { get; set; } = 129;
+
+        /// <summary>跳过 HUD 场景（空 = 默认加载 res://scenes/ui/hud/CutsceneSkipHUD.tscn）。</summary>
+        [Export] public PackedScene? SkipHudScene { get; set; }
 
         // ── 公开状态 ──────────────────────────────────────────────────────
         public bool IsPlaying { get; private set; } = false;
@@ -71,13 +81,28 @@ namespace Kuros.Systems.Cutscene
         // ── 私有字段 ──────────────────────────────────────────────────────
         private bool    _cameraWasTopLevel = false;
         private bool    _playerWasVisible  = false;
+        private bool    _playerProcessDisabled = false;
         private readonly System.Collections.Generic.List<CanvasItem> _hiddenNodes = new();
+        /// <summary>本次过场被本管理器改成 ProcessMode.Disabled 的节点（含切换前就不可见的）——
+        /// 恢复必须按这份清单走，否则"本来就不可见"的节点会永久停在 Disabled。</summary>
+        private readonly System.Collections.Generic.List<CanvasItem> _processDisabledNodes = new();
         private Kuros.Scenes.BattleSceneManager? _battleSceneManager;
         private CameraZoneManager? _cameraZoneManager;
+        // 长按跳过累加器（秒）与 HUD
+        private float _skipHold = 0f;
+        private CanvasLayer? _skipHudLayer;
+        private Kuros.UI.CutsceneSkipHUD? _skipHud;
+
+        /// <summary>长按跳过进度 0..1（供 HUD 驱动环形进度）。</summary>
+        public float SkipHoldProgress => SkipHoldSeconds > 0f
+            ? Mathf.Clamp(_skipHold / SkipHoldSeconds, 0f, 1f)
+            : 0f;
         // ── 生命周期 ──────────────────────────────────────────────────────
         public override void _Ready()
         {
             AddToGroup("cutscene_manager");
+
+            SetupSkipHud();
 
             if (!PlayerPath.IsEmpty)
                 Player = GetNodeOrNull<Node2D>(PlayerPath);
@@ -128,11 +153,58 @@ namespace Kuros.Systems.Cutscene
             GD.Print($"[Cutscene] LateInit — Player: {(Player != null ? Player.Name : "null")}, Camera: {(Camera != null ? Camera.Name : "null")}, BattleSceneManager: {(_battleSceneManager != null ? _battleSceneManager.Name : "null")}");
         }
 
-        public override void _Input(InputEvent @event)
+        public override void _Process(double delta)
         {
-            if (!IsPlaying) return;
-            if (@event.IsActionPressed(SkipActionName))
+            UpdateSkipHold((float)delta);
+        }
+
+        /// <summary>
+        /// 长按跳过：按住跳过键（或鼠标按住 HUD 环）开始累加，松手按 <see cref="SkipRewindMultiplier"/> 倒退；
+        /// 累计满 <see cref="SkipHoldSeconds"/> 才真正置 IsSkipRequested（"快进到终态"的语义由各 Step 处理）。
+        /// 注意：不复用 SamplePlayer 的 InputHoldTracker —— 过场期间玩家节点是 ProcessMode.Disabled，那个 tracker 不推进。
+        /// </summary>
+        private void UpdateSkipHold(float delta)
+        {
+            if (!IsPlaying || SkipHoldSeconds <= 0f)
+            {
+                _skipHold = 0f;
+                return;
+            }
+
+            bool holding = Input.IsActionPressed(SkipActionName) || (_skipHud?.IsButtonHeld ?? false);
+            _skipHold = holding
+                ? Mathf.Min(_skipHold + delta, SkipHoldSeconds)
+                : Mathf.Max(_skipHold - delta * Mathf.Max(0.01f, SkipRewindMultiplier), 0f);
+
+            if (_skipHold >= SkipHoldSeconds)
+            {
+                _skipHold = 0f;
                 IsSkipRequested = true;
+                GD.Print("[Cutscene] 长按跳过触发");
+            }
+        }
+
+        /// <summary>建立跳过 HUD（自建 CanvasLayer，层级必须高于电影黑条）。</summary>
+        private void SetupSkipHud()
+        {
+            PackedScene? scene = SkipHudScene;
+            if (scene == null)
+            {
+                const string defaultPath = "res://scenes/ui/hud/CutsceneSkipHUD.tscn";
+                if (ResourceLoader.Exists(defaultPath))
+                    scene = GD.Load<PackedScene>(defaultPath);
+            }
+
+            if (scene == null)
+            {
+                GD.PushWarning("[Cutscene] 跳过 HUD 场景未配置且默认路径不存在，长按跳过按钮不可用");
+                return;
+            }
+
+            _skipHudLayer = new CanvasLayer { Name = "CutsceneSkipLayer", Layer = SkipHudLayer };
+            AddChild(_skipHudLayer);
+            _skipHud = scene.Instantiate<Kuros.UI.CutsceneSkipHUD>();
+            _skipHudLayer.AddChild(_skipHud);
         }
 
         // ── 公开 API ──────────────────────────────────────────────────────
@@ -150,35 +222,41 @@ namespace Kuros.Systems.Cutscene
 
             IsPlaying       = true;
             IsSkipRequested = false;
+            _skipHold       = 0f;   // 每段过场从零开始的长按进度
 
             EmitSignal(SignalName.CutsceneStarted, sequence.SequenceId);
 
             // 隐藏 BattleSceneManager 管理的 UI
             _battleSceneManager?.HideAllUI();
 
-            // 禁用玩家输入，并同时隐藏玩家（Shadow 等子节点随父节点一起消失）
+            // 玩家：禁用输入 与 隐藏 各自独立（序列的 DisablePlayerInput / HidePlayer）
             _playerWasVisible = false;
+            _playerProcessDisabled = false;
             if (sequence.DisablePlayerInput)
             {
                 if (Player != null)
                 {
                     Player.ProcessMode = ProcessModeEnum.Disabled;
-                    if (Player.Visible)
-                    {
-                        Player.Hide();
-                        _playerWasVisible = true;
-                    }
-                    GD.Print($"[Cutscene] 禁用+隐藏: {Player.Name}");
+                    _playerProcessDisabled = true;
+                    GD.Print($"[Cutscene] 禁用玩家输入: {Player.Name}");
                 }
                 else
                 {
                     GD.PrintErr("[Cutscene] DisablePlayerInput=true 但 Player 节点为 null，请检查 PlayerPath");
                 }
             }
+            if (sequence.HidePlayer && Player != null && Player.Visible)
+            {
+                Player.Hide();   // Shadow 等子节点随父节点一起消失
+                _playerWasVisible = true;
+                GD.Print($"[Cutscene] 隐藏玩家: {Player.Name}");
+            }
 
-            // 隐藏节点并同时禁用其 ProcessMode（防止角色仍在移动/运算）
+            // 隐藏节点并同时禁用其 ProcessMode（防止角色仍在移动/运算）。
+            // 清单来自**本段序列**（CutsceneSequence.HideNodePaths），逐段过场独立。
             _hiddenNodes.Clear();
-            foreach (var path in HideNodePaths)
+            _processDisabledNodes.Clear();
+            foreach (var path in sequence.HideNodePaths ?? new Godot.Collections.Array<NodePath>())
             {
                 var node = GetNodeOrNull<CanvasItem>(path);
                 if (node != null)
@@ -189,6 +267,7 @@ namespace Kuros.Systems.Cutscene
                         _hiddenNodes.Add(node);
                     }
                     node.ProcessMode = ProcessModeEnum.Disabled;
+                    _processDisabledNodes.Add(node);   // 无论原本可见与否都要还原
                     GD.Print($"[Cutscene] 隐藏+禁用: {node.Name}");
                 }
                 else
@@ -212,6 +291,8 @@ namespace Kuros.Systems.Cutscene
                     stepIndex++;
                     continue;
                 }
+                // 跳过请求：默认仍会执行该步骤（各步骤在 Execute 里对 ctx.IsSkipping 做"瞬时落终态"），
+                // 只有显式覆写 ExecuteOnSkip=false 的步骤才被整步取消。
                 if (IsSkipRequested && !step.ExecuteOnSkip)
                 {
                     GD.Print($"[Cutscene] 跳过请求，跳过第 {stepIndex} 步: {step.GetType().Name}");
@@ -219,8 +300,17 @@ namespace Kuros.Systems.Cutscene
                     continue;
                 }
                 GD.Print($"[Cutscene] 执行第 {stepIndex} 步: {step.GetType().Name}");
-                await step.Execute(ctx);
-                GD.Print($"[Cutscene] 第 {stepIndex} 步完成: {step.GetType().Name}");
+                // 单步异常不得中断整段过场：否则循环之后的还原代码（相机 / 玩家输入与可见性 / IsPlaying）
+                // 全被跳过 → 过场彻底卡死。典型来源：步骤等待的节点在动画里自毁（method 轨道 DestroySelf）。
+                try
+                {
+                    await step.Execute(ctx);
+                    GD.Print($"[Cutscene] 第 {stepIndex} 步完成: {step.GetType().Name}");
+                }
+                catch (System.Exception ex)
+                {
+                    GD.PushError($"[Cutscene] 第 {stepIndex} 步 ({step.GetType().Name}) 抛异常，跳过该步继续: {ex.Message}");
+                }
                 stepIndex++;
             }
 
@@ -228,26 +318,37 @@ namespace Kuros.Systems.Cutscene
             if (sequence.TakeOverCamera)
                 EndCameraOverride();
 
-            // 恢复玩家输入与可见性
-            if (sequence.DisablePlayerInput && Player != null && GodotObject.IsInstanceValid(Player))
+            // 恢复玩家输入与可见性（各自独立，只还原本次真的改过的项）
+            if (Player != null && GodotObject.IsInstanceValid(Player) && (_playerProcessDisabled || _playerWasVisible))
             {
-                Player.ProcessMode = ProcessModeEnum.Inherit;
+                if (_playerProcessDisabled)
+                    Player.ProcessMode = ProcessModeEnum.Inherit;
                 if (_playerWasVisible)
                     Player.Show();
-                GD.Print($"[Cutscene] 恢复输入+显示: {Player.Name}");
+                GD.Print($"[Cutscene] 恢复玩家: {Player.Name}（输入={_playerProcessDisabled} 显示={_playerWasVisible}）");
             }
 
-            // 恢复隐藏节点的显示和 ProcessMode
+            // 恢复显示（只还原本次真的隐藏过的）
             foreach (var node in _hiddenNodes)
             {
                 if (GodotObject.IsInstanceValid(node))
                 {
                     node.Show();
-                    node.ProcessMode = ProcessModeEnum.Inherit;
-                    GD.Print($"[Cutscene] 恢复显示+启用: {node.Name}");
+                    GD.Print($"[Cutscene] 恢复显示: {node.Name}");
                 }
             }
             _hiddenNodes.Clear();
+
+            // 恢复 ProcessMode（按"本次被我禁用的节点"清单走——含切换前就不可见的，否则它们会永久停在 Disabled）
+            foreach (var node in _processDisabledNodes)
+            {
+                if (GodotObject.IsInstanceValid(node))
+                {
+                    node.ProcessMode = ProcessModeEnum.Inherit;
+                    GD.Print($"[Cutscene] 恢复启用: {node.Name}");
+                }
+            }
+            _processDisabledNodes.Clear();
 
             DialoguePanel?.HidePanel();
 

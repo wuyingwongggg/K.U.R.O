@@ -171,6 +171,10 @@ namespace Kuros.Actors.Enemies.States
         private void ExitHitState()
         {
             _comboBreaks = 0; // Hit 周期结束：打断计数复位（新一轮从完整打断开始）
+
+            // 致死伤害：受击反馈（后仰 + 击退）已完整走完，直接转入死亡流程（Dying）
+            if (Enemy.TryEnterDeferredDeath()) return;
+
             // 若仍有活跃的 FreezeEffect，Hit 结束后转到该效果配置的目标状态
             var freezeEffect = Enemy.EffectController?.GetEffect<FreezeEffect>();
             if (freezeEffect != null)

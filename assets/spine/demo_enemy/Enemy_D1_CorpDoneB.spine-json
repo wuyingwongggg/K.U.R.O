@@ -1,7 +1,7 @@
 {
 "skeleton": {
-	"hash": "jD/QSVI0TyM",
-	"spine": "4.2-from-4.3.23",
+	"hash": "Q0diuR7V5cc",
+	"spine": "4.2-from-4.3.26",
 	"x": -505.9477,
 	"y": -21.182295,
 	"width": 940.1057,
@@ -45,20 +45,84 @@
 	{ "name": "bone7", "parent": "bone3", "length": 127.3308, "rotation": -167.68057, "x": 128.10443, "y": -130.2672 },
 	{ "name": "bone14", "parent": "bone7", "length": 145.01257, "rotation": -0.1372122, "x": 127.33087 },
 	{ "name": "bone15", "parent": "bone14", "length": 61.4632, "rotation": -1.8948935, "x": 149.8903, "y": 1.3718567 },
-	{ "name": "bone18", "parent": "bone16", "length": 133.6782, "rotation": -91.6349, "x": 296.7766, "y": 322.3477 },
-	{ "name": "bone19", "parent": "bone18", "length": 125.82043, "rotation": -7.214605, "x": 133.6783 },
-	{ "name": "bone20", "parent": "bone19", "length": 107.39185, "rotation": -8.08467, "x": 125.82043 },
-	{ "name": "bone21", "parent": "bone16", "length": 141.60793, "rotation": -89.33515, "x": -217.34496, "y": 345.058 },
-	{ "name": "bone22", "parent": "bone21", "length": 127.33567, "rotation": 9.88812, "x": 141.60797 },
-	{ "name": "bone23", "parent": "bone22", "length": 99.11873, "rotation": 15.9598, "x": 128.4355, "y": -0.22789 },
-	{ "name": "bone24", "parent": "bone16", "length": 126.05088, "rotation": -99.68423, "x": -153.4931, "y": 458.3109 },
-	{ "name": "bone25", "parent": "bone24", "length": 105.95775, "rotation": 8.530774, "x": 126.05096 },
-	{ "name": "bone26", "parent": "bone16", "length": 118.86214, "rotation": -81.49357, "x": 239.24522, "y": 457.8843 },
-	{ "name": "bone27", "parent": "bone26", "length": 114.74481, "rotation": -11.527603, "x": 120.091, "y": -0.2091675 },
-	{ "name": "bone28", "parent": "bone16", "length": 142.56306, "rotation": -116.74196, "x": -273.8178, "y": 567.7395 },
-	{ "name": "bone29", "parent": "bone28", "length": 152.1341, "rotation": 24.90649, "x": 142.563 },
-	{ "name": "bone30", "parent": "bone29", "length": 144.2098, "rotation": 7.896259, "x": 153.94495, "y": 0.021484375 },
-	{ "name": "bone31", "parent": "bone30", "length": 115.73354, "rotation": -27.35054, "x": 144.20984 },
+	{
+		"name": "bone18",
+		"parent": "bone16",
+		"length": 133.6782,
+		"rotation": -91.6349,
+		"x": 296.7766,
+		"y": 322.3477,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone19", "parent": "bone18", "length": 125.82043, "rotation": -7.214605, "x": 133.6783, "color": "d8e323ff" },
+	{ "name": "bone20", "parent": "bone19", "length": 107.39185, "rotation": -8.08467, "x": 125.82043, "color": "d8e323ff" },
+	{
+		"name": "bone21",
+		"parent": "bone16",
+		"length": 141.60793,
+		"rotation": -89.33515,
+		"x": -217.34496,
+		"y": 345.058,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone22", "parent": "bone21", "length": 127.33567, "rotation": 9.88812, "x": 141.60797, "color": "d8e323ff" },
+	{
+		"name": "bone23",
+		"parent": "bone22",
+		"length": 99.11873,
+		"rotation": 15.9598,
+		"x": 128.4355,
+		"y": -0.22789,
+		"color": "d8e323ff"
+	},
+	{
+		"name": "bone24",
+		"parent": "bone16",
+		"length": 126.05088,
+		"rotation": -99.68423,
+		"x": -153.4931,
+		"y": 458.3109,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone25", "parent": "bone24", "length": 105.95775, "rotation": 8.530774, "x": 126.05096, "color": "d8e323ff" },
+	{
+		"name": "bone26",
+		"parent": "bone16",
+		"length": 118.86214,
+		"rotation": -81.49357,
+		"x": 239.24522,
+		"y": 457.8843,
+		"color": "d8e323ff"
+	},
+	{
+		"name": "bone27",
+		"parent": "bone26",
+		"length": 114.74481,
+		"rotation": -11.527603,
+		"x": 120.091,
+		"y": -0.2091675,
+		"color": "d8e323ff"
+	},
+	{
+		"name": "bone28",
+		"parent": "bone16",
+		"length": 142.56306,
+		"rotation": -116.74196,
+		"x": -273.8178,
+		"y": 567.7395,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone29", "parent": "bone28", "length": 152.1341, "rotation": 24.90649, "x": 142.563, "color": "d8e323ff" },
+	{
+		"name": "bone30",
+		"parent": "bone29",
+		"length": 144.2098,
+		"rotation": 7.896259,
+		"x": 153.94495,
+		"y": 0.021484375,
+		"color": "d8e323ff"
+	},
+	{ "name": "bone31", "parent": "bone30", "length": 115.73354, "rotation": -27.35054, "x": 144.20984, "color": "d8e323ff" },
 	{ "name": "bone17", "parent": "bone16", "length": 193.35114, "rotation": 90.56485, "x": 65.21304, "y": 138.5143 },
 	{ "name": "bone32", "parent": "bone3", "length": 167.3392, "rotation": -43.36216, "x": 90.15051, "y": -110.15567 },
 	{ "name": "bone33", "parent": "bone32", "length": 178.1932, "rotation": 1.942392, "x": 167.3391 },
@@ -4647,14 +4711,142 @@
 		"target": "bone10",
 		"bones": [ "bone8", "bone9" ],
 		"bendPositive": false,
-		"order": 0
+		"order": 14
 	},
 	{
 		"name": "bone13",
 		"target": "bone13",
 		"bones": [ "bone11", "bone12" ],
 		"bendPositive": false,
+		"order": 15
+	}
+],
+"physics": [
+	{
+		"name": "bone18",
+		"bone": "bone18",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 7
+	},
+	{
+		"name": "bone19",
+		"bone": "bone19",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 8
+	},
+	{
+		"name": "bone20",
+		"bone": "bone20",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 9
+	},
+	{
+		"name": "bone21",
+		"bone": "bone21",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 0
+	},
+	{
+		"name": "bone22",
+		"bone": "bone22",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 3
+	},
+	{
+		"name": "bone23",
+		"bone": "bone23",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 4
+	},
+	{
+		"name": "bone24",
+		"bone": "bone24",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
 		"order": 1
+	},
+	{
+		"name": "bone25",
+		"bone": "bone25",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 2
+	},
+	{
+		"name": "bone26",
+		"bone": "bone26",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 5
+	},
+	{
+		"name": "bone27",
+		"bone": "bone27",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 6
+	},
+	{
+		"name": "bone28",
+		"bone": "bone28",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 10
+	},
+	{
+		"name": "bone29",
+		"bone": "bone29",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 11
+	},
+	{
+		"name": "bone30",
+		"bone": "bone30",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 12
+	},
+	{
+		"name": "bone31",
+		"bone": "bone31",
+		"rotate": 1,
+		"inertia": 0.3,
+		"strength": 200,
+		"damping": 0.7,
+		"order": 13
 	}
 ]
 }

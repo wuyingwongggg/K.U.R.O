@@ -404,6 +404,9 @@ namespace Kuros.Fx
 
         /// <summary>
         /// 按 TargetableFactions 选择瞄准目标：玩家、最近敌人，或两者中的最近者。
+        /// 跳过**常态免疫**目标（<see cref="GameActor.CanBeAffected"/> 为 false 的敌人，如 rogueAI 本体 /
+        /// 磁铁臂 / netAdmin）——朝它们飞只会白跑一趟；注意只认这一道闸，无敌帧、伤害拦截（延迟损伤/护盾）
+        /// 这类"伤害仍然到达"的状态**不能**当作筛选条件。
         /// 无可用目标时返回 null（纯水平飞行）。
         /// </summary>
         private Node2D? ResolveAimTarget()
@@ -427,6 +430,7 @@ namespace Kuros.Fx
                 {
                     if (node is not GameActor enemy || !GodotObject.IsInstanceValid(enemy)) continue;
                     if (enemy.IsDeathSequenceActive || enemy.IsDead) continue;
+                    if (!enemy.CanBeAffected(null)) continue; // 常态免疫目标不参与瞄准
                     float d = enemy.GlobalPosition.DistanceSquaredTo(GlobalPosition);
                     if (d < bestDistSq) { bestDistSq = d; best = enemy; }
                 }

@@ -76,7 +76,6 @@ shape = SubResource("RectangleShape2D_gy46y")
 [node name="AttackArea" type="Area2D" parent="RigidBody2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D/AttackArea"]
-position = Vector2(-10, 120)
 shape = SubResource("RectangleShape2D_bjrsg")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="RigidBody2D" groups=["navigation_polygon_source_geometry_group"]]

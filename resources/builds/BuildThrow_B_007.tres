@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
 [ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
-[ext_resource type="PackedScene" path="res://scenes/builds/throw/ThrowGlitchPrecipitationEffect.tscn" id="3_scene"]
+[ext_resource type="PackedScene" uid="uid://ovl8slaub3c2" path="res://scenes/builds/throw/ThrowGlitchPrecipitationEffect.tscn" id="3_scene"]
 [ext_resource type="Texture2D" uid="uid://c3qssiaqesmw0" path="res://assets/BuildIcon/Throw_B_007_故障析出.png" id="4_icon"]
 
 [sub_resource type="Resource" id="Resource_B007"]

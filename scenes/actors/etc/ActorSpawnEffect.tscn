@@ -4,8 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://cp223lb06lj4r" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0004.png" id="4_0rdt0"]
 [ext_resource type="Texture2D" uid="uid://biaid6soqpsim" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0005.png" id="5_23nyo"]
 [ext_resource type="Texture2D" uid="uid://5ygkbiwtc0d7" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0006.png" id="6_vb6ms"]
+[ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="6_wsvfp"]
 [ext_resource type="Texture2D" uid="uid://dxuoipece117k" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0007.png" id="7_xqrsv"]
-[ext_resource type="Texture2D" uid="uid://hieghj58smcg" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0008.png" id="8_faehe"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_hhnpg"]
 animations = [{
@@ -39,9 +39,6 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("7_xqrsv")
-}, {
-"duration": 1.0,
-"texture": ExtResource("8_faehe")
 }],
 "loop": false,
 "name": &"default",
@@ -53,3 +50,5 @@ z_index = 2
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_hhnpg")
 autoplay = "default"
+script = ExtResource("6_wsvfp")
+DestroyDelay = 0.4

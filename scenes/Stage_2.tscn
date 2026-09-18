@@ -34,11 +34,10 @@ Player = NodePath("../World/MainCharacter")
 
 [node name="CutsceneManager" type="Node" parent="."]
 script = ExtResource("1_csmgr")
-SkipActionName = "run"
+SkipActionName = "cutscene_skip"
 CameraPath = NodePath("../World/Camera2D")
 TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
 BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")
-HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
 BattleSceneManagerPath = NodePath("..")
 
 [node name="StageGeneratorManager" type="Node" parent="."]

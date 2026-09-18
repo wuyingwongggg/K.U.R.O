@@ -57,6 +57,14 @@ namespace Kuros.Core
 		/// 初始朝向。true=朝右，false=朝左。在 _Ready 时应用，不影响行为逻辑。
 		/// </summary>
 		[Export] public bool InitialFacingRight = true;
+		/// <summary>
+		/// 锁朝向：true = 运行期的翻转请求一律忽略（<see cref="FlipFacing"/> 变 no-op），
+		/// 角色固定在 <see cref="InitialFacingRight"/> 指定的朝向上。
+		/// 只拦运行期（移动/AI/攻击里的 FlipFacing）；_Ready 的初始朝向应用与 FaceLeftByDefault 的
+		/// 符号补偿都照常生效——所以锁朝向**不会**把初始朝向或朝左美术吞掉。
+		/// 适用：挂在滑槽/轨道上不该左右转的机械（rogueAI 本体、磁铁臂）。
+		/// </summary>
+		[Export] public bool LockFacing = false;
 		
 		
 		[ExportCategory("Components")]
@@ -108,6 +116,7 @@ namespace Kuros.Core
 
 		private bool _deathStarted = false;
 		private bool _deathFinalized = false;
+		private bool _dyingDeferred = false;
 		private Area2D? _cachedHitArea;
 		private bool _hitAreaResolved;
 		private ulong _lastDamageTakenAtMs = 0;
@@ -124,6 +133,11 @@ namespace Kuros.Core
 		public bool IsDead => _deathFinalized;
 		/// <summary>死亡流程已开始（Dying 或 Dead）：伤害/治疗/特效作用应在此时立即停止，而非等死亡动画结束。</summary>
 		public bool IsDeadOrDying => _deathStarted;
+		/// <summary>
+		/// 致死伤害已判定但受击反馈（Hit 状态）尚未走完——Dying 被推迟中（顶替 Hit 状态结束时的切换）。
+		/// 此窗口内仅放行致死一击自身的击退（见 ApplyKnockback）；其余生死门语义不受影响。
+		/// </summary>
+		public bool IsDyingDeferred => _dyingDeferred;
 		public bool IgnoreHitStateOnDamage { get; set; } = false;
 		/// <summary>额外速度加成百分比（加法叠加，供超频/动能增幅等共享——各效果增量写入，移动状态统一消费）。</summary>
 		public float SpeedBonusPercent { get; set; } = 0f;
@@ -160,7 +174,9 @@ namespace Kuros.Core
 		/// </summary>
 		public virtual void ApplyKnockback(Vector2 direction, float speed)
 		{
-			if (IsDeadOrDying) return;
+			// 生死门例外：致死一击的受击反馈（Hit 状态）尚未走完时放行本次击退——
+			// 让死亡也走完整的"后仰 + 击退"表现；Hit 结束后 IsDyingDeferred 清空，门恢复关闭。
+			if (IsDeadOrDying && !IsDyingDeferred) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
 
 			// 旧二参 API 保留（fx/爆炸/投掷物）：无时长语义——sentinel duration=0，
@@ -179,7 +195,8 @@ namespace Kuros.Core
 		/// </summary>
 		public virtual void ApplyKnockbackDisplacement(Vector2 direction, float distance, float duration)
 		{
-			if (IsDeadOrDying) return;
+			// 同 ApplyKnockback：致死反馈窗口内放行致死一击自身的击退
+			if (IsDeadOrDying && !IsDyingDeferred) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
 			if (direction == Vector2.Zero || distance <= 0f) return;
 
@@ -341,11 +358,9 @@ namespace Kuros.Core
 			ApplyStatProfile();
 			NotifyHealthChanged();
 			
-			// 应用初始朝向（必须在所有子节点初始化之后）
-			if (FacingRight != InitialFacingRight)
-			{
-				FlipFacing(InitialFacingRight);
-			}
+			// 应用初始朝向（必须在所有子节点初始化之后）。走 ApplyFacing 而不是 FlipFacing：
+			// LockFacing 只该拦运行期的翻转请求，不该把初始朝向也吞掉。
+			ApplyFacing(InitialFacingRight);
 		}
 
 		public void SetShieldValue(int shield)
@@ -608,41 +623,52 @@ namespace Kuros.Core
 			if (!isMergedSettlement)
 				FlashDamageEffect();
 
+			// 受击反馈先行：致死伤害同样进入 Hit，由 Hit 状态播完后仰动画与击退位移，而不是被死亡跳过
+			if (!isMergedSettlement)
+				TryEnterHitState(damage);
+
 			if (CurrentHealth <= 0)
 			{
+				// 受击反馈尚未走完（已进入/正处于 Hit）→ Dying 推迟到 Hit 结束时由 TryEnterDeferredDeath 接手；
+				// 死亡标记仍在 Die() 内立即置位，IsDeadOrDying 的全部语义（免伤/停手/清场判定）与原先一致
+				_dyingDeferred = StateMachine?.CurrentState?.Name == "Hit" && StateMachine.HasState("Dying");
 				Die();
-			}
-			else if (!isMergedSettlement)
-			{
-				// Force state change to Hit unless this actor is in super-armor phase.
-				bool smallHitSuppressed = SuppressSmallDamageHit
-					&& damage <= Mathf.RoundToInt(MaxHealth * SmallDamageHitThresholdRatio);
-				if (!IgnoreHitStateOnDamage && !smallHitSuppressed && StateMachine != null)
-				{
-					if (StateMachine.CurrentState?.Name == "Hit")
-					{
-							// Reentry cap: allow N full hit-breaks (keep hit feel), then suppress
-							// so target recovers; suppressed knockback hits re-apply on K consume (exempt)
-							if (StateMachine.CurrentState is IHitReentrySuppressible suppressible
-								&& !suppressible.OnReentryAttempted())
-							{
-								suppressible.NotifyReentrySuppressed();
-							}
-							else
-							{
-								StateMachine.ReenterState("Hit");
-							}
-					}
-					else
-					{
-						StateMachine.ChangeState("Hit");
-					}
-				}
 			}
 
 			if (attacker != null)
 			{
 				Events.DamageEventBus.Publish(attacker, this, damage, damageSource);
+			}
+		}
+
+		/// <summary>
+		/// 进入受击状态（受击动画 + 击退请求消费入口）。致死伤害同样调用——受击表现完整播放，
+		/// 死亡由 <see cref="TryEnterDeferredDeath"/> 在 Hit 结束时接手。
+		/// </summary>
+		private void TryEnterHitState(int damage)
+		{
+			// Force state change to Hit unless this actor is in super-armor phase.
+			bool smallHitSuppressed = SuppressSmallDamageHit
+				&& damage <= Mathf.RoundToInt(MaxHealth * SmallDamageHitThresholdRatio);
+			if (IgnoreHitStateOnDamage || smallHitSuppressed || StateMachine == null) return;
+
+			if (StateMachine.CurrentState?.Name == "Hit")
+			{
+				// Reentry cap: allow N full hit-breaks (keep hit feel), then suppress
+				// so target recovers; suppressed knockback hits re-apply on K consume (exempt)
+				if (StateMachine.CurrentState is IHitReentrySuppressible suppressible
+					&& !suppressible.OnReentryAttempted())
+				{
+					suppressible.NotifyReentrySuppressed();
+				}
+				else
+				{
+					StateMachine.ReenterState("Hit");
+				}
+			}
+			else
+			{
+				StateMachine.ChangeState("Hit");
 			}
 		}
 
@@ -710,6 +736,16 @@ namespace Kuros.Core
 
 			_deathStarted = true;
 
+			// 致死伤害的受击反馈（Hit 状态）未走完：不立即切 Dying，等 Hit 结束时由
+			// TryEnterDeferredDeath 接手（Hit 期间 FSM 只放行 Dying/Dead，状态不会被其他状态抢走）
+			if (_dyingDeferred) return;
+
+			EnterDyingState();
+		}
+
+		/// <summary>进入死亡流程：有 Dying 状态则切入（死亡动画），否则直接结算。</summary>
+		private void EnterDyingState()
+		{
 			if (StateMachine != null && StateMachine.HasState("Dying"))
 			{
 				StateMachine.ChangeState("Dying");
@@ -718,6 +754,19 @@ namespace Kuros.Core
 			{
 				FinalizeDeath();
 			}
+		}
+
+		/// <summary>
+		/// 受击状态结束时调用：致死伤害的受击反馈已完整走完（后仰 + 击退），转入死亡流程并返回 true；
+		/// 返回 false 表示没有推迟中的死亡，调用方按原逻辑切换后续状态。
+		/// </summary>
+		public bool TryEnterDeferredDeath()
+		{
+			if (!_dyingDeferred) return false;
+
+			_dyingDeferred = false;
+			EnterDyingState();
+			return true;
 		}
 
 		public void FinalizeDeath()
@@ -870,10 +919,19 @@ public void ApplyEffect(ActorEffect effect)
 			}
 		}
 
+		/// <summary>对外请求翻转：锁朝向（<see cref="LockFacing"/>）时直接忽略。
+		/// 真正应用朝向的是 <see cref="ApplyFacing"/>——初始朝向不走这道闸，
+		/// 否则"锁朝向 + InitialFacingRight=false"会把初始朝向一起吞掉。</summary>
 		public virtual void FlipFacing(bool faceRight)
 		{
+			if (LockFacing) return;
+			ApplyFacing(faceRight);
+		}
+
+		private void ApplyFacing(bool faceRight)
+		{
 			if (FacingRight == faceRight) return;
-			
+
 			FacingRight = faceRight;
 			
 			float sign = faceRight ? 1.0f : -1.0f;

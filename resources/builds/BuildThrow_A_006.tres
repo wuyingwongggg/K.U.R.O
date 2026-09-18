@@ -10,6 +10,7 @@ script = ExtResource("1_entry")
 Scene = ExtResource("3_scene")
 EffectOffset = Vector2(nan, nan)
 PropertyOverrides = Dictionary[String, Variant]({
+"CooldownIncreasePercents": Array[float]([35.0, 70.0]),
 "Duration": 0.0,
 "TierValues": Array[float]([2.0, 3.0])
 })
@@ -18,7 +19,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 script = ExtResource("2_def")
 EffectId = "BuildThrow_A_006"
 DisplayName = "数据升级"
-Description = "乱码块升级为{0}级/{1}级投掷道具"
+Description = "乱码块升级为{0}级/{1}级投掷道具,充能恢复CD增加{CooldownIncreasePercents:0}%/{CooldownIncreasePercents:1}%"
 BuildClass = "Throw"
 Rarity = 1
 MaxStacks = 2

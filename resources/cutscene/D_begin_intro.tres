@@ -31,7 +31,7 @@ metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 [sub_resource type="Resource" id="Resource_wih2s"]
 script = ExtResource("3_n13f1")
 AnimationPlayerPath = NodePath("../World/DBegin/AnimationCharacter/AnimationPlayer")
-AnimationName = "D_begin_run"
+AnimationName = "run_normal"
 WaitForCompletion = true
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 
@@ -45,4 +45,5 @@ metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 script = ExtResource("4_3hfet")
 SequenceId = "D_begin_intro"
 Steps = Array[ExtResource("1_yocfk")]([SubResource("Resource_bcybp"), SubResource("Resource_n13f1"), SubResource("Resource_kdt07"), SubResource("Resource_wih2s"), SubResource("Resource_4mijq")])
+HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
 metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

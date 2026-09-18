@@ -1,0 +1,98 @@
+[gd_scene load_steps=5 format=3 uid="uid://ue1f6t0707af"]
+
+[ext_resource type="Script" uid="uid://ci6iclxo4o0hq" path="res://scripts/ui/CutsceneSkipHUD.cs" id="1_hud"]
+[ext_resource type="Shader" uid="uid://c4xl6kwlr83sy" path="res://shaders/materials/circular_bar.gdshader" id="2_ring"]
+[ext_resource type="Texture2D" uid="uid://dabxdflvss2xs" path="res://assets/art/godot_icon.png" id="3_tex"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_skipring"]
+shader = ExtResource("2_ring")
+shader_parameter/removed_segments = 0.0
+shader_parameter/ring_color = Color(1, 1, 1, 1)
+shader_parameter/bg_color = Color(0, 0, 0, 0)
+shader_parameter/bg_line_color = Color(1, 1, 1, 0)
+shader_parameter/empty_cell_color = Color(0.2509804, 0.2509804, 0.2509804, 0)
+shader_parameter/antialias = true
+shader_parameter/pixelFactor = 0.0
+shader_parameter/edge_softness = 0.030000001425
+shader_parameter/radius = 0.70000003325
+shader_parameter/line_width = 0.10000000475
+shader_parameter/bg_width = 0.10000000475
+shader_parameter/inner_radius = -1.0
+shader_parameter/bg_inner_radius = -1.0
+shader_parameter/bg_outer_radius = 0.70000008075
+shader_parameter/start_angle = 0.0
+shader_parameter/segment_spacing = 0.030000001425
+shader_parameter/segment_angle = 0.0
+shader_parameter/segment_count = 1
+
+[node name="CutsceneSkipHUD" type="Control" node_paths=PackedStringArray("Ring", "KeyHintLabel")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+Ring = NodePath("BottomRight/Ring")
+KeyHintLabel = NodePath("BottomRight/KeyHint")
+
+[node name="BottomRight" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -100.0
+offset_right = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Ring" type="TextureRect" parent="BottomRight"]
+material = SubResource("ShaderMaterial_skipring")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SkipLabel" type="Label" parent="BottomRight"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = -0.47
+anchor_right = 1.0
+anchor_bottom = 0.53000003
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 16
+text = "SKIP"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="KeyHint" type="Label" parent="BottomRight"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.27
+anchor_right = 0.50000006
+anchor_bottom = 0.27
+offset_left = -40.0
+offset_right = 39.999996
+offset_bottom = 45.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 32
+text = "Q"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true

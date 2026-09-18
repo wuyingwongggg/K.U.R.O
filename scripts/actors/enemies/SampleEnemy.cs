@@ -24,6 +24,9 @@ public partial class SampleEnemy : GameActor
 	[Export] public Vector2 DebugOverlayOffset = new(-90f, -90f);
 	[Export(PropertyHint.Range, "8,128,1")] public int DebugOverlayFontSize = 14;
 	[Export] public Color DebugOverlayColor = new(1f, 0f, 0f, 1f);
+	/// <summary>调试覆盖层的绘制 z 索引（**绝对**值，默认 10）：不跟敌人自身的 z_index 走。
+	/// 覆盖层由独立子节点绘制（见 <see cref="EnemyStateDebugOverlay"/>），所以敌人再怎么调 z 都不影响可读性。</summary>
+	[Export] public int DebugOverlayZIndex { get; set; } = 10;
 
 	[ExportCategory("Detection")]
 	[Export] public Area2D? DetectionArea { get; private set; }
@@ -43,6 +46,7 @@ public partial class SampleEnemy : GameActor
 	private SamplePlayer? _player;
 	private bool _scoreGranted;
 	private string _debugOverlayText = string.Empty;
+	private EnemyStateDebugOverlay? _debugOverlay;
 	private EnemyAttackController? _cachedAttackController;
 	public float KeepDistanceCooldownRemaining;
 		public float CloseInCooldownRemaining;
@@ -75,8 +79,9 @@ public partial class SampleEnemy : GameActor
 			if (DetectionArea == null) GD.PrintErr("DetectionArea not found at Sprite2D/ControllerDetectionArea");
 		}
 		RefreshPlayerReference();
+		EnsureDebugOverlay();
 		UpdateDebugOverlayText();
-		QueueRedraw();
+		_debugOverlay?.QueueRedraw();
 	}
 
 	public override void _Process(double delta)
@@ -89,26 +94,25 @@ public partial class SampleEnemy : GameActor
 			if (!EnableStateDebugOverlay) return;
 
 		UpdateDebugOverlayText();
-		QueueRedraw();
+		_debugOverlay?.QueueRedraw();
 	}
 
-	public override void _Draw()
+	/// <summary>覆盖层文本（由 <see cref="EnemyStateDebugOverlay"/> 读取绘制）。</summary>
+	public string DebugOverlayText => _debugOverlayText;
+
+	/// <summary>创建调试覆盖层节点：独立 z（ZAsRelative = false）——覆盖层不能被敌人自己的 z_index 决定可见性。</summary>
+	private void EnsureDebugOverlay()
 	{
-		base._Draw();
-		if (!EnableStateDebugOverlay) return;
+		if (!EnableStateDebugOverlay || _debugOverlay != null) return;
 
-		var font = ThemeDB.FallbackFont;
-		if (font == null) return;
-
-		// 多行绘制（按 \n 分段，归类显示状态/攻击/排队/权重）
-		string[] lines = _debugOverlayText.Split('\n');
-		Vector2 pos = DebugOverlayOffset;
-		float lineHeight = DebugOverlayFontSize + 4f;
-		foreach (string line in lines)
+		_debugOverlay = new EnemyStateDebugOverlay
 		{
-			DrawString(font, pos, line, HorizontalAlignment.Left, -1f, DebugOverlayFontSize, DebugOverlayColor);
-			pos.Y += lineHeight;
-		}
+			Name = "StateDebugOverlay",
+			ZAsRelative = false,
+			ZIndex = DebugOverlayZIndex,
+			Enemy = this,
+		};
+		AddChild(_debugOverlay);
 	}
 
 	public SamplePlayer? PlayerTarget => _player;

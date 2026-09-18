@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="BuildEffectDefinition" load_steps=6 format=3 uid="uid://cpuuteemdlpk3"]
+
+[ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="1_entry"]
+[ext_resource type="Script" uid="uid://3bb6nng4vb53" path="res://scripts/systems/BuildEffectDefinition.cs" id="2_def"]
+[ext_resource type="Texture2D" uid="uid://cwc22hwadt87d" path="res://assets/BuildIcon/Throw_B_004_缓存叠层.png" id="3_0vwn4"]
+[ext_resource type="PackedScene" path="res://scenes/builds/throw/ThrowChargeEffect.tscn" id="3_scene"]
+
+[sub_resource type="Resource" id="Resource_B004"]
+script = ExtResource("1_entry")
+Scene = ExtResource("3_scene")
+EffectOffset = Vector2(nan, nan)
+PropertyOverrides = Dictionary[String, Variant]({
+"DistanceIncreasePercents": Array[float]([25.0, 40.0]),
+"Duration": 0.0,
+"TierValues": Array[float]([20.0, 30.0])
+})
+
+[resource]
+script = ExtResource("2_def")
+EffectId = "BuildThrow_B_004"
+DisplayName = "投掷预载"
+Description = "允许投掷时蓄力,每蓄力1秒投掷伤害+{0}/+{1}、距离与击退提升{DistanceIncreasePercents:0}%/{DistanceIncreasePercents:1}%,最多3秒"
+BuildClass = "Throw"
+MaxStacks = 2
+Icon = ExtResource("3_0vwn4")
+EffectEntries = Array[ExtResource("1_entry")]([SubResource("Resource_B004")])

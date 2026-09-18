@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://beup3s3dr4q8h"]
+[gd_scene load_steps=20 format=3 uid="uid://beup3s3dr4q8h"]
 
 [ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="1_csmgr"]
 [ext_resource type="Script" uid="uid://x1ic1ym4ykq8" path="res://scripts/scenes/BattleSceneManager.cs" id="1_ctuyy"]
@@ -14,6 +14,7 @@
 [ext_resource type="Resource" uid="uid://qahny8a0xlvn" path="res://resources/stages/stage_4a.tres" id="11_i2bjf"]
 [ext_resource type="Resource" uid="uid://wc3mrmbaq4g6" path="res://resources/stages/stage_4b.tres" id="12_axi2i"]
 [ext_resource type="Resource" uid="uid://bg57yox7dv4vg" path="res://resources/stages/stage_4c.tres" id="13_i2bjf"]
+[ext_resource type="Resource" uid="uid://beoxjmbyvy6s0" path="res://resources/stages/stage_6.tres" id="13_ohqcc"]
 [ext_resource type="Resource" uid="uid://m2i8t5utuame" path="res://resources/stages/stage_eggA.tres" id="14_i2bjf"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="14_pvxkr"]
 [ext_resource type="Script" uid="uid://ghxude6q2vj8" path="res://scripts/systems/stage/StageSession.cs" id="16_sess"]
@@ -31,11 +32,9 @@ Player = NodePath("../World/MainCharacter")
 
 [node name="CutsceneManager" type="Node" parent="."]
 script = ExtResource("1_csmgr")
-SkipActionName = "run"
 CameraPath = NodePath("../World/Camera2D")
 TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
 BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")
-HideNodePaths = Array[NodePath]([NodePath("../World/P2")])
 BattleSceneManagerPath = NodePath("..")
 
 [node name="StageGeneratorManager" type="Node" parent="."]
@@ -44,8 +43,8 @@ GenerateOnReady = false
 
 [node name="StageSession" type="Node" parent="."]
 script = ExtResource("16_sess")
-AllConfigs = Array[ExtResource("17_scfg")]([ExtResource("8_83iw7"), ExtResource("9_5g8wj"), ExtResource("10_axi2i"), ExtResource("11_i2bjf"), ExtResource("12_axi2i"), ExtResource("13_i2bjf"), ExtResource("14_i2bjf")])
-StartStage = ExtResource("14_i2bjf")
+AllConfigs = Array[ExtResource("17_scfg")]([ExtResource("8_83iw7"), ExtResource("9_5g8wj"), ExtResource("10_axi2i"), ExtResource("11_i2bjf"), ExtResource("12_axi2i"), ExtResource("13_i2bjf"), ExtResource("13_ohqcc"), ExtResource("14_i2bjf")])
+StartStage = ExtResource("13_ohqcc")
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("14_pvxkr")]
 
@@ -82,7 +81,6 @@ script = ExtResource("7_drop")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 128
-visible = false
 
 [node name="ColorRectTop" type="ColorRect" parent="CanvasLayer"]
 offset_right = 1920.0

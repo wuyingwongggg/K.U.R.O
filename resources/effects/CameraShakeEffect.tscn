@@ -2,9 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cx4xf3d3paxdd" path="res://scripts/effects/CameraShakeEffect.cs" id="1_shake"]
 
-[node name="CameraShakeEffect" type="Node"]
+[node name="CameraShakeEffect" type="Node2D"]
 script = ExtResource("1_shake")
-EffectId = "31eaf7d0-f612-4a4d-a41e-fab901ed70d8"
-DisplayName = "镜头震动"
-Description = "镜头震动效果，可设置延时触发"
+ShakeStrength = 12.0
+ShakeDelay = 0.0
 Duration = 0.05

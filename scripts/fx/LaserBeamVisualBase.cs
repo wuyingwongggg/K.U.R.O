@@ -302,6 +302,39 @@ namespace Kuros.Fx
 			}
 		}
 
+		/// <summary>光束视觉截断（供子类"首个目标截断/不可穿透"共用）：把本帧光束长度（含 sprite 缩放）
+		/// 限制到给定距离内。须在 base.UpdateBeam() 之后调用——宽度/生长阶段由基类写好，这里只覆写长度轴。
+		/// 注意判定带仍保持全长：带随视觉一起截断会在下一帧丢失首个目标的遮挡 → 反复伸缩抖动。</summary>
+		protected void TruncateBeamVisual(float stopDistance)
+		{
+			// 截断距离可为负（目标跨在发射点上，如贴脸重叠）→ 长度下限 0，防负缩放把光束翻向反侧
+			float len = Mathf.Clamp(Mathf.Min(stopDistance, MaxLength), 0f, _currentLength);
+			if (len >= _currentLength) return;
+			_currentLength = len;
+			if (_glowSprite != null) _glowSprite.Scale = new Vector2(len / _texWidth, _glowSprite.Scale.Y);
+			if (_beamSprite != null) _beamSprite.Scale = new Vector2(len / _texWidth, _beamSprite.Scale.Y);
+		}
+
+		/// <summary>碰撞体沿光束轴的近边距离（世界坐标投影，供子类"首个目标截断"判遮挡）：
+		/// 取各 CollisionShape2D 形状包围盒角点的最小投影，无形状时回退节点自身位置。
+		/// 用近边而非中心——宽家具的前沿也能正确遮挡其后目标。</summary>
+		protected static float DistanceAlongAxisToNearEdge(Node collider, Vector2 origin, Vector2 beamDir)
+		{
+			float min = float.MaxValue;
+			foreach (var child in collider.GetChildren())
+			{
+				if (child is not CollisionShape2D cs || cs.Disabled || cs.Shape == null) continue;
+				Rect2 r = cs.Shape.GetRect();
+				Transform2D t = cs.GlobalTransform;
+				min = Mathf.Min(min, (t * r.Position).Dot(beamDir));
+				min = Mathf.Min(min, (t * (r.Position + new Vector2(r.Size.X, 0f))).Dot(beamDir));
+				min = Mathf.Min(min, (t * (r.Position + new Vector2(0f, r.Size.Y))).Dot(beamDir));
+				min = Mathf.Min(min, (t * (r.Position + r.Size)).Dot(beamDir));
+			}
+			if (min != float.MaxValue) return min - origin.Dot(beamDir);
+			return collider is Node2D n2 ? (n2.GlobalPosition - origin).Dot(beamDir) : 0f;
+		}
+
 		/// <summary>设置光束 shader fade（1 = 全亮，0 = 灭）。</summary>
 		protected void SetBeamFade(float t)
 		{

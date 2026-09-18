@@ -6,11 +6,12 @@ using Kuros.Items.World;
 namespace Kuros.Builds.Throw
 {
     /// <summary>
-    /// 故障析出（BuildThrow_B_007）：一次性道具(IsFurniture)被摧毁时,有 30%/50%(层1/层2)概率
+    /// 故障析出（BuildThrow_B_007）：**其他家具**(天然家具,非乱码块件)被摧毁时,有 30%/50%(层1/层2)概率
     /// 在销毁点生成一件乱码块(经 ThrowCore 生成管线入组/标记,含 A_006 升档）。
     /// 事件源: RigidBodyWorldItemEntity.Destroyed(在 QueueFree 之前触发,件仍有效可读位置——
     /// 用内部 RigidBody2D 坐标,飞行/回弹中 wrapper 根位置不同步)。
-    /// 析出件同样可被再次摧毁并掷骰(全部销毁路径一致);概率 &lt;1 时链式期望收敛,不会无限增殖。
+    /// 增殖防护:核心键生成件/析出件/分裂件(全带"件身份"组)被摧毁**一律不再析出**——
+    /// 斩断 A_008 分裂×B_007 的无界增殖组合,析出源限定为有限的场景天然家具。
     /// </summary>
     [GlobalClass]
     public partial class ThrowGlitchPrecipitationEffect : ActorEffect
@@ -47,6 +48,9 @@ namespace Kuros.Builds.Throw
 
             // 仅一次性道具(可投掷且非投掷武器)
             if (entity.ItemDefinition?.IsFurniture != true) return;
+            // 增殖防护:仅"其他家具"(天然家具)可析出——核心键生成/析出/分裂的乱码块(件身份组)
+            // 被摧毁一律不再生成(含 B_007 自身析出件与 A_008 分裂件)
+            if (entity.IsInGroup(RigidBodyWorldItemEntity.ThrowCorePieceIdentityTag)) return;
 
             float chance = TierValues.Length > 0
                 ? TierValues[Mathf.Clamp(_tier, 1, TierValues.Length) - 1]

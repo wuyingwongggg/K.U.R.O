@@ -1,0 +1,239 @@
+[gd_scene load_steps=51 format=3 uid="uid://b5rh3kfbsbo18"]
+
+[ext_resource type="Script" uid="uid://d1oj6mf8un18u" path="res://scripts/fx/EnemySpawnBoxDestroy.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="2_76gsl"]
+[ext_resource type="Texture2D" uid="uid://sl13fh0rs07a" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0025.png" id="2_s42u4"]
+[ext_resource type="PackedScene" uid="uid://djio6ojcqw8yf" path="res://scenes/actors/characters/Enemy_Normal_guard2.tscn" id="3_4gwgl"]
+[ext_resource type="Texture2D" uid="uid://deubp73yoy3gd" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0026.png" id="3_mi7s6"]
+[ext_resource type="Texture2D" uid="uid://dvgi5obvtfn06" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0027.png" id="4_a6n1n"]
+[ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="4_fonow"]
+[ext_resource type="Texture2D" uid="uid://bk163h7uxf7rg" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0028.png" id="5_hgu40"]
+[ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="5_roads"]
+[ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="6_n2ego"]
+[ext_resource type="Texture2D" uid="uid://culsp4hnhj4me" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0029.png" id="6_prne0"]
+[ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="7_17hji"]
+[ext_resource type="Texture2D" uid="uid://bj3cysx1id2rt" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0030.png" id="7_te1dd"]
+[ext_resource type="Texture2D" uid="uid://bcdilm8soqdec" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0031.png" id="8_1ain7"]
+[ext_resource type="PackedScene" uid="uid://ba8fktvib2e1o" path="res://scenes/actors/characters/Enemy_C2_waiterA02.tscn" id="8_5q7j8"]
+[ext_resource type="PackedScene" uid="uid://bak7fmcnkgnjm" path="res://scenes/actors/characters/Enemy_D1_corpDoneA.tscn" id="9_83ejs"]
+[ext_resource type="Texture2D" uid="uid://cj1bpp70undux" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0032.png" id="9_a0f1l"]
+[ext_resource type="Texture2D" uid="uid://cpl7fpexruryn" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0033.png" id="10_8e45q"]
+[ext_resource type="PackedScene" uid="uid://b588lubx5fo62" path="res://scenes/actors/characters/Enemy_D1_corpDoneB.tscn" id="10_osu5u"]
+[ext_resource type="PackedScene" uid="uid://cpcvmvf2n5ahe" path="res://scenes/actors/characters/Enemy_D1_printerMachine.tscn" id="11_838ui"]
+[ext_resource type="Texture2D" uid="uid://41d60xqcu6ny" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0034.png" id="11_akoec"]
+[ext_resource type="PackedScene" uid="uid://dsfadn8x6iwkh" path="res://scenes/items/Furniture_B_plantA.tscn" id="12_roads"]
+[ext_resource type="PackedScene" uid="uid://dtnlow2ek5g46" path="res://scenes/items/Furniture_C_chairB.tscn" id="13_n2ego"]
+[ext_resource type="PackedScene" uid="uid://dmg1hgmpmsc05" path="res://scenes/items/Furniture_B_coffeeMachineA.tscn" id="14_5q7j8"]
+[ext_resource type="PackedScene" uid="uid://c6hw6lffbuhlb" path="res://scenes/items/Furniture_D_chairOfficeC.tscn" id="15_83ejs"]
+[ext_resource type="PackedScene" uid="uid://3c5l27vhvwni" path="res://scenes/items/Furniture_B_sofaA.tscn" id="16_osu5u"]
+[ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="17_838ui"]
+[ext_resource type="Texture2D" uid="uid://hieghj58smcg" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0008.png" id="38_ngot0"]
+[ext_resource type="Texture2D" uid="uid://dg1hx2whsy180" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0001.png" id="39_aqdem"]
+[ext_resource type="Texture2D" uid="uid://dfl6pdn2vepc7" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0002.png" id="40_d8t1y"]
+[ext_resource type="Texture2D" uid="uid://j5femibrt312" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0003.png" id="41_m0yr0"]
+[ext_resource type="Texture2D" uid="uid://cp223lb06lj4r" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0004.png" id="42_0silk"]
+[ext_resource type="Texture2D" uid="uid://biaid6soqpsim" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0005.png" id="43_duvlu"]
+[ext_resource type="Texture2D" uid="uid://dxuoipece117k" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0007.png" id="44_6yp84"]
+[ext_resource type="Texture2D" uid="uid://c163w8koq7vqe" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0020.png" id="f0020"]
+[ext_resource type="Texture2D" uid="uid://dt6mmk70nl778" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0021.png" id="f0021"]
+[ext_resource type="Texture2D" uid="uid://d3n0u61it40ot" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0022.png" id="f0022"]
+[ext_resource type="Texture2D" uid="uid://d4ad04ghjqf77" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0023.png" id="f0023"]
+[ext_resource type="Texture2D" uid="uid://cfnmaflvj1dcx" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0024.png" id="f0024"]
+[ext_resource type="Texture2D" uid="uid://cs8l1n0bumld1" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0025.png" id="f0025"]
+[ext_resource type="Texture2D" uid="uid://bnxy72mrl0x1h" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0026.png" id="f0026"]
+[ext_resource type="Texture2D" uid="uid://c8efsow7nbuyn" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0027.png" id="f0027"]
+[ext_resource type="Texture2D" uid="uid://be2qxbyxebrhs" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0029.png" id="f0029"]
+[ext_resource type="Texture2D" uid="uid://5pb6mmocsrhw" path="res://assets/environments/Spawm_Emeny_Pod/front/时间轴 1_0032.png" id="f0032"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_iu1ur"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_s42u4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_mi7s6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_a6n1n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_hgu40")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_prne0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_te1dd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_1ain7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_a0f1l")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_8e45q")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_akoec")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_destroy"]
+resource_name = "Enemy_SpawnBox_Destroy"
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("f0020")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0021")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0022")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0023")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0024")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0025")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0026")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0027")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0029")
+}, {
+"duration": 1.0,
+"texture": ExtResource("f0032")
+}],
+"loop": false,
+"name": &"spawn",
+"speed": 25.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4rjwk"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("38_ngot0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_ngot0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_ngot0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_ngot0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_aqdem")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_d8t1y")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_m0yr0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_0silk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("43_duvlu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("44_6yp84")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[sub_resource type="Animation" id="Animation_n2ego"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SpawnBoxBG:position:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-800.0]
+}
+
+[sub_resource type="Animation" id="Animation_roads"]
+resource_name = "down"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SpawnBoxBG:position:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.16666667, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [-800.0, -300.0, -350.0, -300.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_n2ego"]
+_data = {
+&"RESET": SubResource("Animation_n2ego"),
+&"down": SubResource("Animation_roads")
+}
+
+[node name="EnemySpawnBoxDestroy" type="Node2D"]
+top_level = true
+script = ExtResource("1_script")
+SpawnScenes = Array[PackedScene]([ExtResource("2_76gsl"), ExtResource("3_4gwgl"), ExtResource("4_fonow"), ExtResource("5_roads"), ExtResource("6_n2ego"), ExtResource("7_17hji"), ExtResource("8_5q7j8"), ExtResource("9_83ejs"), ExtResource("10_osu5u"), ExtResource("11_838ui"), ExtResource("12_roads"), ExtResource("13_n2ego"), ExtResource("14_5q7j8"), ExtResource("15_83ejs"), ExtResource("16_osu5u"), ExtResource("17_838ui")])
+SpawnMarkerPath = NodePath("Marker2D")
+AnimatedSpritePath = NodePath("SpawnBoxBG")
+DelayDestroySelf = 1.0
+
+[node name="SpawnBoxBG" type="AnimatedSprite2D" parent="."]
+z_index = 1
+z_as_relative = false
+y_sort_enabled = true
+position = Vector2(0, -800)
+scale = Vector2(0.35, 0.35)
+sprite_frames = SubResource("SpriteFrames_iu1ur")
+autoplay = "default"
+
+[node name="SpawnBox" type="AnimatedSprite2D" parent="SpawnBoxBG"]
+z_index = 2
+z_as_relative = false
+y_sort_enabled = true
+sprite_frames = SubResource("SpriteFrames_destroy")
+animation = &"spawn"
+autoplay = "spawn"
+
+[node name="SpawnEffectA" type="AnimatedSprite2D" parent="SpawnBoxBG"]
+z_index = 2
+z_as_relative = false
+scale = Vector2(5, 5)
+sprite_frames = SubResource("SpriteFrames_4rjwk")
+autoplay = "default"
+offset = Vector2(0, 120)
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(0, 50)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_n2ego")
+}
+autoplay = "down"

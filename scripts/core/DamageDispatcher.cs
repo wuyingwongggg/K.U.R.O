@@ -35,17 +35,10 @@ namespace Kuros.Core
                 }
 
                 // 目标侧方向过滤：非接收方向的攻击拒绝（返回 false → 攻击方视为未命中 → 子弹/光束穿透）。
-                // 优先用攻击方向向量（命中点可能已深入目标内部，位置差丢失来源侧信息）；无则回退 origin 位置差。
                 // bypassDirectionCheck：全方位区域效果（爆炸）无视方向性屏障的方向限制
-                if (!bypassDirectionCheck && current is IDirectionalDamageReceiver dirReceiver)
+                if (!bypassDirectionCheck && RejectsDirection(current, attackDirection, origin))
                 {
-                    bool accepted = attackDirection.HasValue
-                        ? dirReceiver.AcceptsAttackFromDirection(attackDirection.Value)
-                        : origin.HasValue && dirReceiver.AcceptsAttackFrom(origin.Value);
-                    if (!accepted)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
                 if (current is GameActor actor)
@@ -67,6 +60,45 @@ namespace Kuros.Core
             }
 
             return false;
+        }
+
+        /// <summary>单节点方向过滤：该节点是方向性接收者（FireWallA 等屏障）且拒收此方向时返回 true。
+        /// 优先用攻击方向向量（命中点可能已深入目标内部，位置差丢失来源侧信息）；无则回退 origin 位置差。</summary>
+        private static bool RejectsDirection(Node node, Vector2? attackDirection, Vector2? origin)
+        {
+            if (node is not IDirectionalDamageReceiver dirReceiver) return false;
+
+            bool accepted = attackDirection.HasValue
+                ? dirReceiver.AcceptsAttackFromDirection(attackDirection.Value)
+                : origin.HasValue && dirReceiver.AcceptsAttackFrom(origin.Value);
+            return !accepted;
+        }
+
+        /// <summary>方向性接收预判（只读，DealDamage 方向过滤的同款判据）：沿目标父链按
+        /// 阵营过滤 → 方向过滤顺序判定该方向的攻击是否会被接收——false = 攻击方视为未命中 → 穿透
+        /// （不结算伤害、不构成遮挡）。供攻击效果在结算前预判命中/遮挡（如激光束"首个目标截断"），
+        /// 避免"打不动却挡住"。</summary>
+        public static bool AcceptsAttackDirection(Node target, Vector2 attackDirection,
+            TargetableFactions allowedFactions = TargetableFactions.All, Vector2? origin = null)
+        {
+            Node? current = target;
+            while (current != null)
+            {
+                var faction = GetFaction(current);
+                if (faction != TargetableFactions.None && !allowedFactions.HasFlag(faction) && !AcceptsAnyAttack(current))
+                {
+                    current = current.GetParentOrNull<Node>();
+                    continue;
+                }
+
+                if (RejectsDirection(current, attackDirection, origin)) return false;
+
+                // 已到结算点（该节点接管伤害）：其后不再有方向过滤（与 DealDamage 同序）
+                if (current is GameActor || current.HasMethod("TakeDamage")) return true;
+
+                current = current.GetParentOrNull<Node>();
+            }
+            return true;
         }
 
         private static void DealToGameActor(GameActor actor, float damage,

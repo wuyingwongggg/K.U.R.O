@@ -13,11 +13,16 @@ namespace Kuros.Core
     ///   MachineCoreEffect — 监听核心技能键（F 键）触发过热释放
     ///   ThrowCoreEffect  — 监听核心技能键触发家具投掷
     ///   WaiterCoreEffect — 监听核心技能键触发药物使用
+    ///   CutsceneManager  — 监听跳过键（Esc）做"长按跳过"累加
     /// </summary>
     public static class InputActions
     {
         /// <summary>核心技能键，默认映射到 F 键（project.godot 中 physical_keycode=70）。</summary>
         public const string CoreSkill = "core_skill";
+
+        /// <summary>过场跳过键（长按触发）：默认映射到 Esc —— 与系统动作 ui_cancel 同键是刻意的，
+        /// 两者互不干扰：CutsceneManager 只在过场播放期间轮询它做长按累加，而 BattleMenu 在过场期间忽略 Esc。</summary>
+        public const string CutsceneSkip = "cutscene_skip";
 
         /// <summary>
         /// 设置菜单可改键的动作白名单（排除系统动作 ui_cancel / Return / dialogic_default_action）。
@@ -41,6 +46,7 @@ namespace Kuros.Core
             ("item_select_right", "物品栏右选"),
             ("item_use", "使用物品"),
             (CoreSkill, "核心技能"),
+            (CutsceneSkip, "跳过过场"),
         };
 
         /// <summary>获取动作的中文显示名（白名单外返回原动作名）。</summary>

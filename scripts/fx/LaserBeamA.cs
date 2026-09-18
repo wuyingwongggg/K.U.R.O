@@ -8,7 +8,8 @@ namespace Kuros.Fx
 	/// <summary>
 	/// 激光束（敌人通用）：视觉/计时继承 <see cref="LaserBeamVisualBase"/>（光束 Grow→Beam→Fade、
 	/// 光点独立生命周期），本类负责：朝向初始化 + 自动瞄准（AutoAimAtPlayer）、
-	/// 伤害/击退（TargetableFactions 阵营过滤）。
+	/// 伤害/击退（TargetableFactions 阵营过滤）、**首个目标截断（不可穿透）**——
+	/// 光束长度 = 命中带内最近可命中目标沿光束轴的近边距离（玩家躲家具后：只打到家具，不穿透到玩家）。
 	/// </summary>
 	public partial class LaserBeamA : LaserBeamVisualBase, IFacingDirectional, IAttackerProvider
 	{
@@ -35,6 +36,13 @@ namespace Kuros.Fx
 		/// <summary>已伤害目标（跨帧去重）：光束持续阶段每帧检测，每目标每光束最多一次伤害。</summary>
 		private readonly HashSet<ulong> _damaged = new();
 
+		/// <summary>单帧候选目标（阵营过滤后的真实接收者 + 沿光束轴的近边距离）。</summary>
+		private readonly List<(Node Receiver, float NearEdge)> _targets = new();
+		/// <summary>单帧截断距离 = 首个可命中目标的近边；无目标 = 不截断。视觉与伤害共用同一判据。</summary>
+		private float _stopDistance = float.MaxValue;
+		/// <summary>接触线容差（像素）：近边差在此范围内的目标视为"同一排"，一并命中。</summary>
+		private const float StopEdgeTolerance = 2f;
+
 		public override void _Ready()
 		{
 			base._Ready();
@@ -54,11 +62,6 @@ namespace Kuros.Fx
 
 			if (AutoAimAtPlayer && FindAimTarget() is Vector2 aimTarget)
 				AimHorizontalWithVerticalTilt(aimTarget);
-		}
-
-		protected override void OnBeamGrown()
-		{
-			TryDamagePlayer();
 		}
 
 		public void AimHorizontalWithVerticalTilt(Vector2 globalTarget)
@@ -90,46 +93,87 @@ namespace Kuros.Fx
 		}
 
 		/// <summary>
-		/// 伤害检测（Grow 完成瞬间 + Beam 持续阶段每帧）：跨帧去重——每目标每光束最多一次伤害，
-		/// 光束持续期间走进光束的目标也能命中（原只在生长完成瞬间检测一次）。
+		/// 单帧收集：命中带内、通过阵营过滤的真实接收者 + 各自沿光束轴的近边距离，
+		/// 并求出截断距离（最小近边）——本帧视觉截断与伤害筛选共用同一结果（所见即所伤）。
+		/// 判定带保持全长（基类 UpdateBeam），截断只作用于视觉与伤害筛选：
+		/// 若连带一起截断，下一帧带不再覆盖首个目标 → 截断消失 → 反复伸缩抖动。
 		/// </summary>
-		private void TryDamagePlayer()
+		private void RefreshTargets()
 		{
-			if (Damage <= 0 && KnockbackDistance <= 0f) return;
+			_targets.Clear();
+			_stopDistance = float.MaxValue;
 			if (_hitArea == null) return;
+			if (Damage <= 0 && KnockbackDistance <= 0f) return;
 
-			// 俯视角地面判定（Area2D 物理重叠）：判定带 = 光束水平段 × DetectionRadius 垂直容差，
-			// 随光束生长同步扩展（基类 UpdateBeam），方向由判定带旋转（= 瞄准角度）驱动。
-			// 击退沿地面水平分量（俯视角）
-			float beamAngle = _hitArea?.Rotation ?? (FacingRight ? 0f : Mathf.Pi);
-			Vector2 beamDir = new(Mathf.Cos(beamAngle), 0f);
-			if (beamDir == Vector2.Zero) beamDir = new Vector2(FacingRight ? 1f : -1f, 0f);
+			Vector2 beamDir = ResolveBeamDir();
+			Vector2 origin = _hitArea.GlobalPosition;
 
 			// Area 目标：只接受受击判定区（HitArea/TriggerArea），玩家攻击/交互 Area 探入光束不触发
 			foreach (var area in _hitArea.GetOverlappingAreas())
 			{
 				if (area.Name != "HitArea" && area.Name != "TriggerArea") continue;
-				TryDamageReceiver(area, beamDir, _damaged);
+				AddTarget(area, origin, beamDir);
 			}
 			// Body 目标（DestructibleObject 等 StaticBody2D）
 			foreach (var body in _hitArea.GetOverlappingBodies())
-				TryDamageReceiver(body, beamDir, _damaged);
+				AddTarget(body, origin, beamDir);
+		}
+
+		private void AddTarget(Node collider, Vector2 origin, Vector2 beamDir)
+		{
+			if (DamageDispatcher.ResolveDamageReceiver(collider, TargetableFactions) is not Node receiver) return;
+			// 方向性目标（FireWallA 等屏障）拒收本方向时视为未命中 → 穿透：不伤害、也不构成遮挡
+			// （与 DealDamage 同判据；投掷物侧同语义——放行方向继续飞）
+			if (!DamageDispatcher.AcceptsAttackDirection(collider, beamDir, TargetableFactions, origin)) return;
+			float nearEdge = DistanceAlongAxisToNearEdge(collider, origin, beamDir);
+			if (nearEdge < _stopDistance) _stopDistance = nearEdge;
+			_targets.Add((receiver, nearEdge));
+		}
+
+		/// <summary>伤害结算：仅命中截断距离内的目标（首个目标及其同排）——其后的目标被遮挡，不穿透。</summary>
+		private void ApplyDamage()
+		{
+			if (_hitArea == null) return;
+			if (Damage <= 0 && KnockbackDistance <= 0f) return;
+
+			float stop = Mathf.Min(_stopDistance, MaxLength);
+			Vector2 beamDir = ResolveBeamDir();
+			foreach (var (receiver, nearEdge) in _targets)
+			{
+				if (nearEdge > stop + StopEdgeTolerance) continue;
+				TryDamageReceiver(receiver, beamDir);
+			}
+		}
+
+		/// <summary>光束轴向（俯视角取水平分量；判定带旋转 = 瞄准角度驱动）。</summary>
+		private Vector2 ResolveBeamDir()
+		{
+			float beamAngle = _hitArea?.Rotation ?? (FacingRight ? 0f : Mathf.Pi);
+			Vector2 beamDir = new(Mathf.Cos(beamAngle), 0f);
+			return beamDir == Vector2.Zero ? new Vector2(FacingRight ? 1f : -1f, 0f) : beamDir;
+		}
+
+		/// <summary>视觉截断：光束只画到截断距离（首个目标近边）——判定带保持全长，仅视觉层缩短。</summary>
+		protected override void UpdateBeam()
+		{
+			base.UpdateBeam();
+			TruncateBeamVisual(_stopDistance);
 		}
 
 		public override void _Process(double delta)
 		{
+			// 单次物理查询：候选目标 + 截断距离（须在基类之前——UpdateBeam 用本帧数据截断视觉）
+			RefreshTargets();
 			base._Process(delta);
-			// Beam 持续阶段（生长完成后、淡出结束前）每帧检测——走进光束的目标也能造成伤害
+			// Beam 持续阶段（生长完成后、淡出结束前）每帧结算——走进光束的目标也能造成伤害
 			if (_beamPhaseElapsed >= GrowDuration)
-				TryDamagePlayer();
+				ApplyDamage();
 		}
 
-		private void TryDamageReceiver(Node collider, Vector2 beamDir, HashSet<ulong> damaged)
+		private void TryDamageReceiver(Node receiver, Vector2 beamDir)
 		{
-			// 阵营过滤（ResolveDamageReceiver）→ 接收者解析（GameActor 或带 TakeDamage 的节点）+ 去重
-			if (DamageDispatcher.ResolveDamageReceiver(collider, TargetableFactions) is not Node receiver)
-				return;
-			if (!damaged.Add(receiver.GetInstanceId())) return;
+			// 跨帧去重：每目标每光束最多一次伤害
+			if (!_damaged.Add(receiver.GetInstanceId())) return;
 
 			bool dealt = DamageDispatcher.DealDamage(receiver, Damage, GlobalPosition, _attacker,
 				DamageSource.DirectAttack, TargetableFactions, AllowSelfDamage, null, beamDir);

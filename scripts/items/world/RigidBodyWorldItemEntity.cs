@@ -83,8 +83,9 @@ namespace Kuros.Items.World
 		[Export] public bool BounceAfterStop { get; set; } = true;
 		/// <summary>停止后回弹的向上初速度（像素/秒）。0=未配置 → 家具档位值（越重越不弹）；无档回退 650。</summary>
 		[Export] public float BounceSpeed { get; set; } = 0f;
-		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（负号 = 投掷反方向弹开）。
-		/// 0=未配置 → 家具档位值（越重向后弹得越少）；无档回退 0.2。</summary>
+		/// <summary>回弹水平分量 = 飞行水平速度 × 此比例（大小相同，方向分两种情况）：
+		/// 撞击停止（撞墙/撞人）→ 投掷**反方向**弹开；B_006 干净落点 → 顺势**向前**滚。
+		/// 0=未配置 → 家具档位值（越重弹得越少）；无档回退 0.2。</summary>
 		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceHorizontalRatio { get; set; } = 0f;
 		/// <summary>落地反弹弹性（判定层边界反弹衰减系数，0 = 落地即停，1 = 完全弹性）。</summary>
 		[Export(PropertyHint.Range, "0,1,0.05")] public float BounceElasticity { get; set; } = 0.0f;
@@ -109,6 +110,19 @@ namespace Kuros.Items.World
 		[Export] public float DestructionAnimationDuration { get; set; } = 0.5f; // 销毁动画时长（如果动画播放器不存在，使用固定时长）
 		[Export(PropertyHint.Range, "0.01,10,0.01")] public float LandingHideDelay { get; set; } = 2.0f; // 落点处隐藏延迟（秒）：投掷武器落地后隐藏视觉的等待时间；到达 ThrowWeaponCooldown 后才归还背包并销毁节点
 		public int ThrowHoldFrame { get; set; } = -1;
+
+		/// <summary>落地不销毁（BuildThrow_B_006 对象撤回）：由卡在出手瞬间置入——一次性道具到达落点后
+		/// 不进入销毁流程，而是收尾成普通世界物（同步根位置、恢复碰撞），玩家可走过去正常拾取。
+		/// 投掷武器不适用（本就 2s 自动归还）；A_008 分裂件不置入——只认本次投掷的原件，
+		/// 否则一次投掷裂 3 枚、捡回 3 件 = 白给道具。</summary>
+		public bool KeepAfterLanding { get; set; } = false;
+
+		/// <summary>投掷耐久上限（B_006 置入；0 = 不限）：与 <see cref="ThrowCountUsed"/> 比较，
+		/// 达到上限的这一次投掷落地即正常销毁（即"同一件最多投出 N 次"）。</summary>
+		public int KeepThrowLimit { get; set; } = 0;
+
+		/// <summary>本件已投掷次数（跨"拾取→放置→投掷"由栈携带：出手 +1 带到实体、拾取/保留时带回栈）。</summary>
+		public int ThrowCountUsed { get; set; } = 0;
 
 		[ExportCategory("Health")]
 		[Export] public bool Destructible { get; set; } = false;
@@ -159,6 +173,7 @@ namespace Kuros.Items.World
 		private double _flightTimer = 0.0;
 		private float _throwStartY = 0f; // 投掷起始的Y坐标
 		private float _throwJudgmentY = 0f; // 判定层的Y坐标（投掷者地面层——玩家/敌人站立的世界Y，非场景原点 0）
+		private float _bounceGroundY = 0f;  // 回弹模拟的地面行 = 本件自己的落点行（_throwJudgmentY + LandingOffsetYDelta，A_008 分裂件各行不同）
 		private float _throwHorizontalVelocity = 0f; // 投掷的水平速度
 		private bool _bouncing = false; // 停止后脚本回弹中（重力积分 + 判定层反弹）
 		private float _bounceVelX = 0f; // 回弹水平速度（指数衰减）
@@ -169,6 +184,9 @@ namespace Kuros.Items.World
 		private bool _initialMonitoring;
 		private bool _initialMonitorable;
 		private uint _initialCollisionLayer;
+		/// <summary>场景原始 z_index：投掷期会被覆写为 ItemDefinition.ThrowZIndex（默认 3，飞行途中在最上层），
+		/// 落地保留（B_006）时须还原——否则保留件会永远盖在所有家具（场景值 2）之上，图层与放置件不一致。</summary>
+		private int _initialZIndex;
 		private uint _initialCollisionMask;
 		private uint _initialRigidBodyCollisionLayer; // RigidBody2D 的原始碰撞层
 		private uint _initialRigidBodyCollisionMask; // RigidBody2D 的原始碰撞遮罩
@@ -299,6 +317,8 @@ namespace Kuros.Items.World
 		public override void _Ready()
 		{
 			base._Ready();
+
+			_initialZIndex = ZIndex; // 投掷期会被 ThrowZIndex 覆写,落地保留时还原
 
 			// 添加到组，方便通过场景树查找
 			if (!IsInGroup("world_items"))
@@ -588,10 +608,19 @@ namespace Kuros.Items.World
 		}
 
 		/// <summary>
-		/// 检查该实例是否处于投掷生命周期中（飞行、回弹、落地隐藏、等待归还阶段均视为投掷中）
+		/// 检查该实例是否处于投掷生命周期中（飞行、回弹、落地隐藏、等待归还阶段均视为投掷中）。
+		/// 同时是"对象撤回"（BuildThrow_B_006）的可撤回窗口 = 投出后、销毁/归还之前。
 		/// </summary>
-		private bool IsInThrowLifecycle =>
+		internal bool IsInThrowLifecycle =>
 			_isThrown || _inFlight || _bouncing || _landingHideTimer > 0.0 || _inventoryReturnTimer > 0.0;
+
+		/// <summary>
+		/// 当前是否可被拾取：投掷生命周期（飞行/回弹/落点停留/等待归还）中、已拾取、已进销毁流程 → false。
+		/// 供拾取候选筛选（PlayerItemInteractionComponent 两条选取路径）——不过滤的话，
+		/// 飞行/落点停留中的道具会抢占"最近可拾取"位置，TryPickupByActor 再拒绝 → 拾取静默失败（按了没反应）。
+		/// 与 TryPickupByActor 的门控同源：候选筛选用这个，真正拾取仍由 TryPickupByActor 兜底。
+		/// </summary>
+		internal bool IsPickupAvailable => !_isPicked && !_isDestroying && !IsInThrowLifecycle;
 
 		/// <summary>
 		/// 判断此实例是否有资格参与高亮候选（供 PlayerItemInteractionComponent 调用）
@@ -933,6 +962,9 @@ namespace Kuros.Items.World
 					
 					// 确保最终位置精确在落点
 					_rigidBody.GlobalPosition = new Vector2(newX, landingY);
+					// [临时诊断] A_008 分裂落点对质:实体实际落地 Y 与判定行关系
+					if (LandingOffsetYDelta != 0f)
+						GD.Print($"[A_008实体] {Name}: 落地Y={landingY:F0}, 判定行={_throwJudgmentY:F0}, delta={LandingOffsetYDelta}");
 
 					// 落点砸地 AoE（仅一次性投掷物）：飞尽未中敌时按碰撞体积结算一次范围伤害，
 					// 必须在关闭判定臂之前执行（命中过的敌人已在 _hitActors,不会重复结算）
@@ -948,10 +980,25 @@ namespace Kuros.Items.World
 					// 落地时恢复阴影显示
 					SetShadowVisible(true);
 					
-					// 开始落点隐藏计时（LandingHideDelay：到期后隐藏视觉）
+					// 落点收尾：B_006 对象撤回 → 不销毁、留在场上可拾取；否则走隐藏/销毁计时
 					// 归还背包由 _inventoryReturnTimer（ThrowWeaponCooldown）独立控制
 					if (!_isDestroying)
 					{
+						if (ShouldKeepAfterLanding)
+						{
+							// 完整抛物线到落点（途中没碰到任何东西）也补一次回弹物理模拟：
+							// 原本只有"撞到敌人/墙停住"才回弹，干净落点是直接定格。
+							// 向后上方弹开→滑行衰减到停→由回弹停止分支统一收尾（FinalizeKeptAfterLanding）。
+							if (BounceAfterStop)
+							{
+								StartBounce(forwardHorizontal: true); // 干净落点：顺势向前滚/弹（撞击停止才是反方向弹开）
+								return;
+							}
+
+							FinalizeKeptAfterLanding();
+							return;
+						}
+
 						_landingHideTimer = LandingHideDelay;
 
 						if (!IsDisposableCopy && IsThrowWeapon)
@@ -978,9 +1025,9 @@ namespace Kuros.Items.World
 
 				Vector2 pos = _rigidBody.GlobalPosition + new Vector2(_bounceVelX, _bounceVelY) * dt;
 				bool grounded = false;
-				if (pos.Y >= _throwJudgmentY)
+				if (pos.Y >= _bounceGroundY)
 				{
-					pos.Y = _throwJudgmentY;
+					pos.Y = _bounceGroundY;
 					grounded = true;
 					if (_bounceVelY > 0f)
 					{
@@ -992,7 +1039,7 @@ namespace Kuros.Items.World
 
 				// 影子同投影(StopOnHit 后的回弹段;地面 = 判定层,与反弹地面一致):
 				// X 随视觉、Y 在地面行;越接近地面越大,静止归位由顶部统一检查触发
-				UpdateFlightShadow(_rigidBody.GlobalPosition.X, _throwJudgmentY);
+				UpdateFlightShadow(_rigidBody.GlobalPosition.X, _bounceGroundY);
 
 				// 静止：已接触判定层、反弹已完全吸收（无上升速度）、水平速度衰减到位
 				if (grounded && _bounceVelY >= 0f && Mathf.Abs(_bounceVelX) < 40f)
@@ -1001,6 +1048,11 @@ namespace Kuros.Items.World
 					_bounceVelX = 0f;
 					_bounceVelY = 0f;
 					_rigidBody.LinearVelocity = Vector2.Zero;
+					if (ShouldKeepAfterLanding)
+					{
+						FinalizeKeptAfterLanding();
+						return;
+					}
 					_landingHideTimer = LandingHideDelay;
 					if (!IsDisposableCopy && IsThrowWeapon)
 						_inventoryReturnTimer = ThrowWeaponCooldown;
@@ -1054,15 +1106,23 @@ namespace Kuros.Items.World
 				return false;
 			}
 
-			// 投掷核心"件"身份跨拾取携带:实体即将销毁,把标记写到家具槽栈实例上;
-			// 玩家放置该家具时由出口消费,恢复为在场脉冲件。非核心生成物(不在组)不受影响。
-			if (IsInGroup(ThrowCorePieceTag)
-				&& ResolveInventoryComponent(actor) is PlayerInventoryComponent pieceInv
+			// 跨拾取携带(实体即将销毁,状态写到家具槽栈实例上,下次放置/投掷由出口消费):
+			// · "件"身份 → 恢复为在场脉冲件。组判据含"件身份"组:投掷中的件只有身份组(脉冲组仅放置时入),
+			//   对象撤回(B_006)保留的件从此处恢复,否则捡回后再放置会丢掉件身份。
+			// · 投掷耐久已用次数(B_006) → 条件与件身份无关:任何被投出的家具都计数(天然家具扔出后也算)。
+			//   注意目的地是**家具槽**而不是快捷栏/背包——AddItemSmart 对 IsFurniture 一律走 AddFurnitureItem,
+			//   拾取到的家具只可能落在 FurnitureSlotStack 这个新栈上(见 AddFurnitureItem)。
+			if (ResolveInventoryComponent(actor) is PlayerInventoryComponent pieceInv
 				&& pieceInv.FurnitureSlotStack != null
 				&& pieceInv.FurnitureSlotStack.Item == ItemDefinition)
 			{
-				pieceInv.FurnitureSlotStack.RuntimeSourceTag = ThrowCorePieceTag;
-				pieceInv.FurnitureSlotStack.RuntimeIsThrowCoreCopy = IsInGroup(ThrowCoreCopyTag);
+				pieceInv.FurnitureSlotStack.RuntimeThrowCountUsed = ThrowCountUsed;
+
+				if (IsInGroup(ThrowCorePieceTag) || IsInGroup(ThrowCorePieceIdentityTag))
+				{
+					pieceInv.FurnitureSlotStack.RuntimeSourceTag = ThrowCorePieceTag;
+					pieceInv.FurnitureSlotStack.RuntimeIsThrowCoreCopy = IsInGroup(ThrowCoreCopyTag);
+				}
 			}
 
 			if (ThrowCooldownRemaining > 0f && _lastTransferredItem != null)
@@ -1132,7 +1192,7 @@ namespace Kuros.Items.World
 				for (int i = 0; i < quickbar.SlotCount; i++)
 				{
 					var stack = quickbar.GetStack(i);
-					if (stack != null && stack.Item == _lastTransferredItem )
+					if (stack != null && stack.Item == _lastTransferredItem)
 					{
 						stack.ThrowCooldownRemaining = Mathf.Max(stack.ThrowCooldownRemaining, cd);
 						return;
@@ -1145,7 +1205,7 @@ namespace Kuros.Items.World
 				for (int i = 0; i < backpack.SlotCount; i++)
 				{
 					var stack = backpack.GetStack(i);
-					if (stack != null && stack.Item == _lastTransferredItem )
+					if (stack != null && stack.Item == _lastTransferredItem)
 					{
 						stack.ThrowCooldownRemaining = Mathf.Max(stack.ThrowCooldownRemaining, cd);
 						return;
@@ -1745,21 +1805,40 @@ namespace Kuros.Items.World
 				dirX = 1f;
 			var knockbackDirection = new Vector2(Mathf.Sign(dirX), 0f);
 
-			target.ApplyKnockbackDisplacement(knockbackDirection, distance, ResolveKnockbackDuration());
+			target.ApplyKnockbackDisplacement(knockbackDirection, distance, ResolveKnockbackDuration(distance));
 		}
 
-		// 击退与血量解析：场景 export >0 优先；否则按修饰档(整体+击退专属 shift / 整体 shift)取档位值。
+		// 击退与血量解析：场景 export >0 优先；否则按修饰档(整体+击退专属 shift / 整体 shift)取档位值；
+		// 最后乘击退倍率(B_004 蓄力——距离与投掷距离同比例、初速与飞行时长同处理)。
+		// 倍率按 >0?:1 守卫(聚合链起点标量可为 0,直接乘会把数值乘穿)
 		private float ResolveKnockbackDistance()
-			=> KnockbackDistance > 0f ? KnockbackDistance
+		{
+			float baseDistance = KnockbackDistance > 0f ? KnockbackDistance
 				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDistance ?? 0f;
+			float scale = Modifiers.KnockbackDistanceScale > 0f ? Modifiers.KnockbackDistanceScale : 1f;
+			return baseDistance * scale;
+		}
 
-		private float ResolveKnockbackDuration()
-			=> KnockbackDuration > 0f ? KnockbackDuration
-				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackDuration ?? 0.2f;
+		/// <summary>击退初速(px/s)：档位初速(高档更快——"砸得更凶") × 初速倍率(B_004 蓄力)。</summary>
+		private float ResolveKnockbackSpeed()
+		{
+			float baseSpeed = ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.KnockbackTierShift)?.KnockbackSpeed ?? 0f;
+			float scale = Modifiers.KnockbackSpeedScale > 0f ? Modifiers.KnockbackSpeedScale : 1f;
+			return baseSpeed * scale;
+		}
+
+		/// <summary>击退时长由"距离 + 初速"派生(受击方匀减速滑完 d = v0×t/2 → t = 2d/v0);
+		/// 场景 export KnockbackDuration >0 仍优先(逐件特化,不参与倍率);初速缺失回退 0.2s。</summary>
+		private float ResolveKnockbackDuration(float distance)
+		{
+			if (KnockbackDuration > 0f) return KnockbackDuration;
+			float speed = ResolveKnockbackSpeed();
+			return speed > 0f ? 2f * distance / speed : 0.2f;
+		}
 
 		private float ResolveMaxHP()
 			=> MaxHP > 0f ? MaxHP
-				: ItemDefinition?.GetResolvedTierSpec(Modifiers, 0)?.MaxHp ?? 60f;
+				: ItemDefinition?.GetResolvedTierSpec(Modifiers, Modifiers.HpTierShift)?.MaxHp ?? 60f;
 
 		/// <summary>
 		/// 飞行中沿水平方向发射射线，检测前方是否为 AirWall（空气墙）。
@@ -1829,6 +1908,12 @@ namespace Kuros.Items.World
 			// 直接销毁：走 LandingHideDelay 计时（隐藏/归还由 _PhysicsProcess 处理）
 			if (!_isDestroying)
 			{
+				if (ShouldKeepAfterLanding)
+				{
+					FinalizeKeptAfterLanding();
+					return;
+				}
+
 				_landingHideTimer = LandingHideDelay;
 				if (!IsDisposableCopy && IsThrowWeapon)
 					_inventoryReturnTimer = ThrowWeaponCooldown;
@@ -1839,12 +1924,20 @@ namespace Kuros.Items.World
 		/// 进入脚本回弹模拟：向后上方初速度 + 重力积分回落 + 判定层反弹衰减。
 		/// 与真实物理相比完全可控（无物理引擎状态/碰撞副作用），俯视角"地面"= 判定层。
 		/// </summary>
-		private void StartBounce()
+		/// <param name="forwardHorizontal">水平分量方向：
+		/// false(默认,撞击停止) = 向投掷反方向弹开(撞墙/撞人原语义)；
+		/// true(完整抛物线干净落点) = 顺势向前滚——没有撞击对象可弹回。</param>
+		private void StartBounce(bool forwardHorizontal = false)
 		{
 			if (_rigidBody == null || _bouncing) return;
 			_bouncing = true;
-			_bounceVelX = -Mathf.Sign(_throwHorizontalVelocity) * Mathf.Abs(_throwHorizontalVelocity) * GetEffectiveBounceHorizontalRatio();
+			float hSpeed = Mathf.Abs(_throwHorizontalVelocity) * GetEffectiveBounceHorizontalRatio();
+			_bounceVelX = (forwardHorizontal ? Mathf.Sign(_throwHorizontalVelocity) : -Mathf.Sign(_throwHorizontalVelocity)) * hSpeed;
 			_bounceVelY = -GetEffectiveBounceSpeed();
+
+			// 回弹地面 = 本件自己的落点行（A_008 分裂件的落点行是偏移过的）；
+			// 写死 _throwJudgmentY(基准行) 会把偏移件在回弹时拽回基准行
+			_bounceGroundY = _throwJudgmentY + LandingOffsetYDelta;
 
 			// 回弹阶段视觉在地面附近，恢复阴影
 			SetShadowVisible(true);
@@ -2564,6 +2657,50 @@ namespace Kuros.Items.World
 			if (_isDestroying || _inFlight || _isThrown || _bouncing) return;
 			_isDestroying = true;
 			Destroy();
+		}
+
+		/// <summary>本件落点是否不销毁（B_006 对象撤回）：一次性道具 + 卡已在出手瞬间置位 + 未耗尽投掷耐久。
+		/// 耐久判定用"已用次数 ≥ 上限"——第 N 次投掷照常飞行/结算伤害，落地后正常销毁（即"最多投 N 次"）。</summary>
+		private bool ShouldKeepAfterLanding =>
+			KeepAfterLanding && !IsThrowWeapon
+			&& (KeepThrowLimit <= 0 || ThrowCountUsed < KeepThrowLimit);
+
+		/// <summary>落点收尾（B_006 不销毁）：把投掷态收干净,变回普通可拾取世界物。
+		/// 关键点——同步根位置到本体：飞行/落点期间视觉由内部 RigidBody2D 承载,根节点还停在投掷起点,
+		/// 而高亮、拾取距离、遮挡判定都用根位置,不同步的话会锚在起点（站在道具旁没高亮、在起点却提示可拾取）。
+		/// 碰撞还原幂等（RestoreRigidBodyCollision 以投掷中为门控,已还原则空转）。</summary>
+		private void FinalizeKeptAfterLanding()
+		{
+			if (_flightProjectionActive) RestoreFlightProjection();
+			RestoreRigidBodyCollision();
+			SetShadowVisible(true);
+			SyncRootToBody();
+			// 还原场景图层：投掷期 ZIndex 被覆写为 ThrowZIndex(3),不还原会永远盖住所有家具(场景值 2)
+			ZIndex = _initialZIndex;
+
+			// 视为在场件（与"放置件"同等待遇）：长按核心键清场、A_002 脉冲扩散、A_003 节点串联
+			// 都按脉冲组枚举——投出后保留的件现在也是"在场的核心件"。
+			// 仅核心件（有件身份组）入组：天然家具被扔出后不该获得脉冲、也不该被清场扫掉。
+			if (IsInGroup(ThrowCorePieceIdentityTag) && !IsInGroup(ThrowCorePieceTag))
+				AddToGroup(ThrowCorePieceTag);
+
+			_refreezePending = false;
+			_refreezeTimer = 0.0;
+			_flightTimer = 0.0;
+			_isDropping = false;
+			_bouncing = false;
+			_inFlight = false;
+			_impactArmed = false;
+			if (_isThrown) _isThrown = false;
+		}
+
+		/// <summary>把根节点位置同步到本体实际位置（本体作为子节点会被一起移动,再钉回原处）。</summary>
+		private void SyncRootToBody()
+		{
+			if (_rigidBody == null || !GodotObject.IsInstanceValid(_rigidBody)) return;
+			Vector2 pos = _rigidBody.GlobalPosition;
+			GlobalPosition = pos;
+			_rigidBody.GlobalPosition = pos;
 		}
 
 		private bool _destroyedBroadcast;

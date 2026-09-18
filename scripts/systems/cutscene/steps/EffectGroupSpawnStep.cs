@@ -5,36 +5,6 @@ using Godot;
 namespace Kuros.Systems.Cutscene
 {
     /// <summary>
-    /// 单个特效配置（用于 EffectGroupSpawnStep）
-    /// </summary>
-    [GlobalClass]
-    public partial class EffectConfig : Resource
-    {
-        /// <summary>特效场景路径</summary>
-        [Export] public string EffectScene { get; set; } = "";
-
-        /// <summary>生成方式</summary>
-        [Export] public EffectSpawnStep.SpawnTypeEnum SpawnType { get; set; } = EffectSpawnStep.SpawnTypeEnum.PlayerPosition;
-
-        /// <summary>
-        /// 位置参数，含义根据 SpawnType 改变：
-        /// - PlayerPosition：相对于玩家的偏移
-        /// - GlobalPosition：绝对全局坐标
-        /// - RelativeToNode：相对于目标节点的偏移
-        /// </summary>
-        [Export] public Vector2 Position { get; set; } = Vector2.Zero;
-
-        /// <summary>目标节点路径（SpawnType=RelativeToNode 时使用）</summary>
-        [Export] public NodePath TargetNodePath { get; set; } = new NodePath();
-
-        /// <summary>生成延迟（秒）。0 = 立即生成</summary>
-        [Export(PropertyHint.Range, "0,30,0.1")] public float SpawnDelay { get; set; } = 0f;
-
-        /// <summary>自动销毁时长（秒）。0 = 不自动销毁</summary>
-        [Export(PropertyHint.Range, "0,30,0.1")] public float DestroyAfterDuration { get; set; } = 0f;
-    }
-
-    /// <summary>
     /// 过场动画中生成多个特效的 Step。
     /// 
     /// 用法：
@@ -112,7 +82,7 @@ namespace Kuros.Systems.Cutscene
 
             foreach (var config in Effects)
             {
-                if (config == null || string.IsNullOrEmpty(config.EffectScene))
+                if (config == null || config.EffectScene == null)
                 {
                     GD.PushWarning("[Cutscene] EffectGroupSpawnStep: 特效配置无效，跳过");
                     continue;
@@ -137,16 +107,11 @@ namespace Kuros.Systems.Cutscene
 
         private async Task ExecuteSequential(CutsceneContext ctx)
         {
+            // 跳过时不再中断剩余条目：由每条 config.GenerateOnSkip 决定是否生成（生成后不等待时长）
             for (int i = 0; i < Effects.Count; i++)
             {
-                if (ctx.IsSkipping)
-                {
-                    GD.Print("[Cutscene] EffectGroupSpawnStep: 跳过请求，中断剩余特效");
-                    break;
-                }
-
                 var config = Effects[i];
-                if (config == null || string.IsNullOrEmpty(config.EffectScene))
+                if (config == null || config.EffectScene == null)
                 {
                     GD.PushWarning($"[Cutscene] EffectGroupSpawnStep: 第 {i} 个特效配置无效，跳过");
                     continue;
@@ -172,30 +137,31 @@ namespace Kuros.Systems.Cutscene
                         await ctx.NextFrame();
                 }
 
-                if (ctx.IsSkipping)
+                if (ctx.IsSkipping && !config.GenerateOnSkip)
                 {
-                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效生成被跳过（{config.EffectScene}）");
+                    GD.Print($"[Cutscene] EffectGroupSpawnStep: 跳过过场且 GenerateOnSkip=false，不生成（{config.EffectScene?.ResourcePath}）");
                     return;
                 }
 
-                // 加载并实例化特效
-                var scene = GD.Load<PackedScene>(config.EffectScene);
-                if (scene == null)
+                if (config.EffectScene == null)
                 {
-                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 无法加载特效 {config.EffectScene}");
+                    GD.PrintErr("[Cutscene] EffectGroupSpawnStep: EffectScene 未配置");
                     return;
                 }
 
-                var effect = scene.Instantiate();
+                var effect = config.EffectScene.Instantiate();
                 if (effect is not Node2D effectNode2D)
                 {
-                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 特效必须是 Node2D（{config.EffectScene}）");
+                    GD.PrintErr($"[Cutscene] EffectGroupSpawnStep: 特效必须是 Node2D（{config.EffectScene.ResourcePath}）");
                     effect?.QueueFree();
                     return;
                 }
 
                 // 计算生成位置
                 Vector2 spawnPos = CalculateSpawnPosition(ctx, config);
+
+                // 属性覆盖必须在入树之前（节点 _Ready 里读取的配置必须已是覆盖后的值）
+                CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, config.PropertyOverrides, nameof(EffectGroupSpawnStep));
 
                 // 添加到场景树
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;

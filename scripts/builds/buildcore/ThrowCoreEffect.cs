@@ -24,7 +24,7 @@ namespace Kuros.Builds.BuildCore
         [Export] public PackedScene? FurnitureSceneLarge { get; set; }
         [ExportCategory("Charges")]
         /// <summary>每格充能恢复时长（秒）。</summary>
-        [Export(PropertyHint.Range, "0.5,60,0.5")] public float ChargeCooldown = 10f;
+        [Export(PropertyHint.Range, "0.5,60,0.5")] public float ChargeCooldown = 6f;
         /// <summary>最大充能数（默认 1 = 单次生成 + 冷却,与旧行为等价）。</summary>
         [Export(PropertyHint.Range, "1,8,1")] public int MaxCharges = 1;
         /// <summary>家具生成位置校准边距（像素,用于避免生成时与玩家碰撞）。</summary>

@@ -247,6 +247,9 @@ namespace Kuros.Effects
                 if (node is not GameActor enemy || !IsInstanceValid(enemy) || enemy.IsDeadOrDying)
                     continue;
 
+                // 常态免疫目标（CanBeAffected=false）不参与瞄准与开火判定：朝它们打只会空放
+                if (!enemy.CanBeAffected(null)) continue;
+
                 float distSq = myPos.DistanceSquaredTo(enemy.GlobalPosition);
                 if (distSq > rangeSq)
                     continue;
