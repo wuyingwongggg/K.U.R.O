@@ -101,6 +101,7 @@ script = ExtResource("6_hyfyo")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
+visible = false
 show_behind_parent = true
 
 [node name="OutlineSpineSprite_Left" type="SpineSprite" parent="OutlineLayer"]
@@ -152,16 +153,18 @@ skeleton_data_res = ExtResource("7_3cfw7")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.0
+preview_time = 2.0
 script = ExtResource("8_6o35y")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(25.396597, -2326.8887)
+position = Vector2(-25.3968, -2326.8887)
+rotation = -3.1415925
 scale = Vector2(0.99999994, 0.99999994)
 bone_name = "bone"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 

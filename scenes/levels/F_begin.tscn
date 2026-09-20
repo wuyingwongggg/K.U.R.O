@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://b534tt4n3wr42"]
+[gd_scene load_steps=51 format=3 uid="uid://b534tt4n3wr42"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_mbxjs"]
 [ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="1_xart7"]
@@ -23,6 +23,8 @@
 [ext_resource type="PackedScene" uid="uid://dw1xkbpfrwstb" path="res://scenes/environments/lifting_platform.tscn" id="17_s4rg7"]
 [ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="23_5ka2g"]
 [ext_resource type="Script" uid="uid://c0m3fgvcgwqj8" path="res://scripts/controllers/PlayerXRangeFollower.cs" id="24_signfollow"]
+[ext_resource type="Script" uid="uid://d1ji3o13n5eda" path="res://scripts/environments/KillProgressAscendController.cs" id="25_progress"]
+[ext_resource type="Resource" uid="uid://c7dnkxl20sbvy" path="res://resources/cutscene/F_begin_3_arrive.tres" id="26_arrive"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_neu0b"]
 shader = ExtResource("1_xart7")
@@ -71,6 +73,9 @@ size = Vector2(500, 1000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mbxjs"]
 size = Vector2(300, 2000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_arrive"]
+size = Vector2(5000, 2000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qm83g"]
 size = Vector2(700, 3500)
@@ -587,6 +592,12 @@ _data = {
 
 [node name="FBegin" type="Node2D"]
 y_sort_enabled = true
+script = ExtResource("25_progress")
+TotalKillsForFull = 5
+UltimateThresholds = PackedFloat32Array(0, 0.25, 0.5, 0.75)
+MinSpeedScale = 0.5
+MaxSpeedScale = 5.0
+ArrivalTriggerPath = NodePath("CutsceneTrigger3")
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-2350, 900)
@@ -685,6 +696,19 @@ Sequence = ExtResource("4_xart7")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger2"]
 position = Vector2(1550, 279)
 shape = SubResource("RectangleShape2D_mbxjs")
+debug_color = Color(1, 0, 1, 0.41960785)
+
+[node name="CutsceneTrigger3" type="Area2D" parent="."]
+z_index = 10
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("2_neu0b")
+Sequence = ExtResource("26_arrive")
+StartsDisarmed = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger3"]
+position = Vector2(1245, 250)
+shape = SubResource("RectangleShape2D_arrive")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="Environments" type="Node2D" parent="."]

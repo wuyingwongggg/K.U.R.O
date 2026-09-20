@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies.Attacks;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -19,6 +20,14 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string DieAnimation { get; set; } = "death_down";
 		/// <summary>攻击动画槽位：攻击未实现，留空 = 不切换。（以后有 attack_up / attack_down 两套时再扩。）</summary>
 		[Export] public string AttackAnimation { get; set; } = string.Empty;
+
+		[ExportCategory("Ultimate 大招循环")]
+		/// <summary>大招攻击名（与 AttackController 上的一致）。</summary>
+		[Export] public string UltimateAttackName { get; set; } = "RogueAIOverload";
+		/// <summary>蓄力段（滑向随机一端）循环动画。</summary>
+		[Export] public string UltimateChargeAnimation { get; set; } = "attack_warming_up";
+		/// <summary>冲刺段（横扫到另一端）循环动画。</summary>
+		[Export] public string UltimateDashAnimation { get; set; } = "attack_up";
 
 		public override void _Ready()
 		{
@@ -58,8 +67,8 @@ namespace Kuros.Actors.Enemies.Animation
 				case "Dead":
 					PlayEmptyIfNeeded();
 					break;
-				case "Attack":          // 攻击未接入：配了动画名才播
-					PlayAttackIfConfigured();
+				case "Attack":
+					PlayAttackPhaseAnimation();
 					break;
 				case "Frozen":          // 骨架没有眩晕动画：保持当前姿势，不切换
 					break;
@@ -67,6 +76,39 @@ namespace Kuros.Actors.Enemies.Animation
 					PlayIdle();
 					break;
 			}
+		}
+
+		/// <summary>Attack 状态：大招按模板阶段播对应循环（蓄力 / 冲刺），其它攻击走 AttackAnimation 槽位。</summary>
+		private void PlayAttackPhaseAnimation()
+		{
+			var ultimate = ResolveRunningUltimate();
+			if (ultimate != null)
+			{
+				switch (ultimate.Phase)
+				{
+					case EnemyF1RogueAIUltimateAttack.UltPhase.Charge:
+						PlayLoopIfNeeded(UltimateChargeAnimation, UltimateChargeAnimation, WalkMixDuration);
+						return;
+					case EnemyF1RogueAIUltimateAttack.UltPhase.Dash:
+						PlayLoopIfNeeded(UltimateDashAnimation, UltimateDashAnimation, WalkMixDuration);
+						return;
+					default:   // Settle / None：收招，回常态循环
+						PlayIdle();
+						return;
+				}
+			}
+
+			PlayAttackIfConfigured();
+		}
+
+		/// <summary>正在跑的是不是大招；是则返回模板实例（供读 Phase），否则 null。</summary>
+		private EnemyF1RogueAIUltimateAttack? ResolveRunningUltimate()
+		{
+			if (Enemy == null || string.IsNullOrEmpty(UltimateAttackName)) return null;
+			if (!Enemy.IsAttackRunning(UltimateAttackName)) return null;
+
+			var controller = Enemy.StateMachine?.GetNodeOrNull<EnemyAttackController>("Attack/AttackController");
+			return controller?.GetNodeOrNull<EnemyF1RogueAIUltimateAttack>(UltimateAttackName);
 		}
 
 		private void PlayAttackIfConfigured()

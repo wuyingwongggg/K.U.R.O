@@ -41,7 +41,10 @@ namespace Kuros.Fx
 		/// <summary>生长动画时长（秒）：从 MinLength 生长到最大长度，宽度同步 0 → 目标。</summary>
 		[Export(PropertyHint.Range, "0,5,0.05")] public float GrowDuration = 0.1f;
 		/// <summary>光束全亮保持时长（秒）：生长完成后保持最大长度/宽度。</summary>
-		[Export(PropertyHint.Range, "0,10,0.05")] public float BeamDuration = 0.4f;
+		/// <summary>全亮段时长（= 伤害窗口长度）。下限提示取 0.05：编辑器里不会被顺手拖成 0
+		/// —— 但这只是 Inspector 的手感，**不是硬约束**（场景文件/PropertyOverrides/代码 Set 都能写 0），
+		/// 真正的兜底是 <see cref="MinDamageWindowSeconds"/>。</summary>
+		[Export(PropertyHint.Range, "0.05,10,0.05")] public float BeamDuration = 0.4f;
 		/// <summary>光束淡出时长（秒）：光束生命周期最后阶段 shader fade + 宽度收缩。</summary>
 		[Export] public float FadeDuration = 0.15f;
 
@@ -206,6 +209,21 @@ namespace Kuros.Fx
 		/// <summary>子类覆写：光束生长完成后的伤害/击退。</summary>
 		protected virtual void OnBeamGrown() { }
 
+		/// <summary>伤害窗口下限（秒）：≈60Hz 下的 3 个物理帧。
+		/// 作用：<see cref="BeamDuration"/> 被配成 0 时窗口会退化成空区间 → "生长完成那一刻"永不成立
+		/// → 伤害静默失效（曾经把玩家浮游炮光束打成 0 伤害）。有下限后任何配置下都至少有一个结算帧。</summary>
+		private const float MinDamageWindowSeconds = 0.05f;
+
+		/// <summary>
+		/// 伤害窗口是否开着：**生长完成 → 全亮结束**（进入淡出即关闭）。
+		/// 视觉淡出时已经"看起来没了"，若还继续结算伤害就会出现"看不见却还在挨打"——
+		/// 判定窗口直接由 <see cref="GrowDuration"/> + <see cref="BeamDuration"/> 推导，
+		/// 不额外开一个需要手动同步的时间导出（淡出本身就是纯视觉尾巴）。
+		/// </summary>
+		protected bool IsDamageWindowOpen
+			=> _beamPhaseElapsed >= GrowDuration
+			&& _beamPhaseElapsed < GrowDuration + Mathf.Max(BeamDuration, MinDamageWindowSeconds);
+
 		/// <summary>光束长度/宽度动画 + 判定带同步扩展。</summary>
 		protected virtual void UpdateBeam()
 		{
@@ -290,6 +308,12 @@ namespace Kuros.Fx
 				_spotGlowSprite.Modulate = new Color(gc.R, gc.G, gc.B, alpha);
 			}
 
+			// 挂了 shader 材质的光斑，淡入淡出同样走材质的 fade 参数（与 Glow/Beam 同一条路，
+			// 见 SetBeamFade）——laser_blaster_glow 的 alpha 是 core_mask * fade，不读 modulate，
+			// 只写 Modulate.a 对它无效。没有材质的光斑仍靠上面的 Modulate.a，所以两条都写。
+			SetSpriteShaderFade(_spotlight, alpha);
+			SetSpriteShaderFade(_spotGlowSprite, alpha);
+
 			if (finished)
 			{
 				_spotlight.QueueFree();
@@ -338,10 +362,16 @@ namespace Kuros.Fx
 		/// <summary>设置光束 shader fade（1 = 全亮，0 = 灭）。</summary>
 		protected void SetBeamFade(float t)
 		{
-			if (_glowSprite?.Material is ShaderMaterial gm)
-				gm.SetShaderParameter("fade", t);
-			if (_beamSprite?.Material is ShaderMaterial bm)
-				bm.SetShaderParameter("fade", t);
+			SetSpriteShaderFade(_glowSprite, t);
+			SetSpriteShaderFade(_beamSprite, t);
+		}
+
+		/// <summary>把 fade 写进某层的材质（是 ShaderMaterial 才写；材质为空/非 shader/已释放则静默跳过——
+		/// 那种情况该层只能靠 Modulate.a）。光束淡出与光斑淡入淡出共用这一个入口。</summary>
+		private static void SetSpriteShaderFade(Sprite2D? sprite, float t)
+		{
+			if (sprite != null && GodotObject.IsInstanceValid(sprite) && sprite.Material is ShaderMaterial m)
+				m.SetShaderParameter("fade", t);
 		}
 
 		private T? ResolveNode<T>(NodePath path, string fallbackName) where T : Node

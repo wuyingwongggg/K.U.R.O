@@ -440,12 +440,12 @@ position = Vector2(0, 890)
 shape = SubResource("RectangleShape2D_ntquy")
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-2400, -120)
+position = Vector2(-2300, -120)
 shape = SubResource("RectangleShape2D_qwpse")
 disabled = true
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(2400, -120)
+position = Vector2(2300, -120)
 shape = SubResource("RectangleShape2D_qn8n0")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

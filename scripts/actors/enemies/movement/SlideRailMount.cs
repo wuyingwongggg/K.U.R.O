@@ -74,9 +74,15 @@ public partial class SlideRailMount : Node2D
 	public bool Arrived => !HasSlotLimits || !_hasTarget
 		|| Mathf.Abs(_target - CurrentRailCoordinate) <= ArriveDeadzone;
 
+	/// <summary>机械的出生点（**局部坐标**，Mount 坐标系）：机械可以据此"回生成点"
+	/// （例如满进度后收工归位）。与出生摆放同源，FlipCarriageEnds/CarriageSpawn 都算在内。</summary>
+	public Vector2 SpawnLocalPosition { get; private set; }
+
 	public override void _Ready()
 	{
 		if (Engine.IsEditorHint()) return;
+
+		SpawnLocalPosition = ResolveSpawnPosition();
 
 		// 挂载点：CarriagePrefab 自动入驻 Mount，构成"机械是滑槽子节点"的结构约束
 		var mount = EnsureMount();
@@ -84,7 +90,7 @@ public partial class SlideRailMount : Node2D
 		{
 			var carriage = CarriagePrefab.Instantiate<Node2D>();
 			mount.AddChild(carriage);
-			carriage.Position = ResolveSpawnPosition();
+			carriage.Position = SpawnLocalPosition;
 		}
 	}
 

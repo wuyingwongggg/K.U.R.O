@@ -109,8 +109,8 @@ script = ExtResource("5_kbexi")
 EffectScene = ExtResource("9_w8qgw")
 SpawnDelay = 0.1
 PropertyOverrides = Dictionary[String, Variant]({
-"ShakeStrength": 20,
 "Duration": 0.1,
+"ShakeStrength": 20
 })
 metadata/_custom_type_script = "uid://dhch281hkryms"
 

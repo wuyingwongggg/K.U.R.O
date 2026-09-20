@@ -162,11 +162,12 @@ namespace Kuros.Fx
 
 		public override void _Process(double delta)
 		{
-			// 单次物理查询：候选目标 + 截断距离（须在基类之前——UpdateBeam 用本帧数据截断视觉）
-			RefreshTargets();
+			// 伤害窗口只在"生长完成 → 全亮结束"内：淡出阶段视觉已消失，不再判定。
+			// 同时停止 RefreshTargets —— 保留上一帧的截断距离，视觉不会因判定关闭而突然变长。
+			if (IsDamageWindowOpen)
+				RefreshTargets();   // 须在基类之前：UpdateBeam 用本帧数据截断视觉
 			base._Process(delta);
-			// Beam 持续阶段（生长完成后、淡出结束前）每帧结算——走进光束的目标也能造成伤害
-			if (_beamPhaseElapsed >= GrowDuration)
+			if (IsDamageWindowOpen)
 				ApplyDamage();
 		}
 
