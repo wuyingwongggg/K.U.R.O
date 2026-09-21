@@ -428,7 +428,7 @@ z_index = 3
 position = Vector2(2008, 535)
 texture = ExtResource("11_ntquy")
 
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
+[node name="StaticBody2D" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]

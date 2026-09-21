@@ -113,6 +113,36 @@ namespace Kuros.Actors.Enemies.Attacks
 		/// <summary>大招期间玩家跑远也不中断（配合全场覆盖的检测区半径）。</summary>
 		protected override bool ShouldInterruptOnPlayerExit() => false;
 
+		/// <summary>
+		/// 大招配额在手时放宽启动判定：RogueAIOverload 由关卡击杀进度驱动，不该被"玩家必须站在攻击范围内"卡住——
+		/// 那两道位置门都属于普攻：①普攻 <see cref="EnemySimpleMeleeAttack"/>.CanStart 要求玩家在它的 AttackArea 里
+		/// （模板未配 AttackAreaPath → 回退到根节点 Sprite2D/AttackArea 的 200×6000 窄带）；
+		/// ②基类还有朝向锥（控制器未配 MaxAllowedAngleToPlayer → 默认 135°），而本体 LockFacing 不转身，
+		/// 玩家绕到背后时连 Attack 状态都进不来。
+		/// 这里只放宽位置/朝向，保留必要条件：本体存活、有玩家目标、玩家在检测范围内、控制器自身未在跑/未在冷却、
+		/// 且大招本身确实可起手（避免进了 Attack 却起不了手导致的进/出抖动）。
+		/// 配额被消费后（ConsumeUltimate）自动失效，交回基类的正常判定。
+		/// </summary>
+		public override bool CanStart()
+		{
+			if (_pendingUltimates <= 0) return base.CanStart();
+
+			if (Enemy == null || !GodotObject.IsInstanceValid(Enemy)) return false;
+			if (Enemy.IsDead || Enemy.IsDeathSequenceActive) return false;
+			if (Enemy.PlayerTarget == null) return false;
+			if (!Enemy.IsPlayerWithinDetectionRange()) return false;
+			if (IsRunning || IsOnCooldown) return false;
+
+			// 队列里还排着别的招（如普攻）→ 先换成大招，本帧不放行（否则进了 Attack 起手的会是普攻）
+			if (!IsAttack(QueuedAttackName, UltimateAttackName))
+			{
+				ForceQueueNextAttack("UltimateArmed");
+				return false;
+			}
+
+			return GetNodeOrNull<EnemyAttackTemplate>(UltimateAttackName)?.CanStart() ?? false;
+		}
+
 		// ── 内部 ──────────────────────────────────────────────────────────
 
 		private void BindProgress()

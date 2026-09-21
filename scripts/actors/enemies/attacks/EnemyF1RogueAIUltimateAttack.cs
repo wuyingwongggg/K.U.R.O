@@ -22,7 +22,7 @@ namespace Kuros.Actors.Enemies.Attacks
 	{
 		public enum UltPhase { None, Charge, Dash, Settle }
 
-		[ExportCategory("Movement 冲刺位移")]
+		[ExportCategory("Movement")]
 		/// <summary>蓄力滑向随机一端的速度；0 = 自动（距离 / WarmupDuration）。</summary>
 		[Export(PropertyHint.Range, "0,4000,10")] public float ChargeSpeed { get; set; } = 0f;
 		/// <summary>横扫速度；0 = 自动（两端距离 / ActiveDuration）。</summary>

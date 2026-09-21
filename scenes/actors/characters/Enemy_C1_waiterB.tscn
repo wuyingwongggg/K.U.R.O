@@ -110,6 +110,9 @@ Scene = ExtResource("17_eyt4q")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 2
 SpawnMarkerPaths = [NodePath("../../../../Node2D/Marker2D"), NodePath("../../../../Node2D/Marker2D2")]
+PropertyOverrides = Dictionary[String, Variant]({
+"Lifetime": 0.7
+})
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_3au4n"]
