@@ -294,11 +294,19 @@ public partial class SampleEnemy : GameActor
 
 	public void PerformAttack(TargetableFactions targetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem)
 	{
+		PerformAttack(AttackArea, targetableFactions);
+	}
+
+	/// <summary>在指定区域结算攻击伤害（区域由攻击模板按 DamageAreaPath / AttackAreaPath 解析后传入）。
+	/// area 为空时不结算——不静默回退根节点 AttackArea，避免"所见非所伤"。</summary>
+	public void PerformAttack(Area2D? area, TargetableFactions targetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem)
+	{
 		//AttackTimer = AttackCooldown;
 		GameLogger.Info(nameof(SampleEnemy), "Enemy PerformAttack");
 
 		RefreshPlayerReference();
-		DamageDispatcher.DealDamageFromArea(AttackArea!, AttackDamage, this, targetableFactions);
+		if (area == null) return;
+		DamageDispatcher.DealDamageFromArea(area, AttackDamage, this, targetableFactions);
 
 	}
 

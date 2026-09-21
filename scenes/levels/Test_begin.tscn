@@ -1,6 +1,8 @@
-[gd_scene load_steps=55 format=3 uid="uid://dstgcw0tto5oa"]
+[gd_scene load_steps=58 format=3 uid="uid://dstgcw0tto5oa"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_7ummj"]
+[ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_o3k7i"]
+[ext_resource type="Resource" uid="uid://bicsmtly0y2kg" path="res://resources/cutscene/Text_begin_intro.tres" id="3_o3k7i"]
 [ext_resource type="Script" uid="uid://dmqu7phxi8gbi" path="res://scripts/managers/BattleArena.cs" id="4_bn434"]
 [ext_resource type="Script" uid="uid://orymlwdqv2xq" path="res://scripts/controllers/WaveSpawnManager.cs" id="5_p5xsj"]
 [ext_resource type="Texture2D" uid="uid://bkvy3th2vg6k4" path="res://assets/environments/scene_1_home/房间2墙壁.png" id="6_7ummj"]
@@ -49,6 +51,9 @@ size = Vector2(5700, 3050)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6ilfo"]
 size = Vector2(1950, 1200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mfk2f"]
+size = Vector2(1000, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mxkb7"]
 size = Vector2(5200, 3000)
@@ -127,6 +132,18 @@ ZoomLevel = 0.95
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone2"]
 shape = SubResource("RectangleShape2D_6ilfo")
+
+[node name="CutsceneTrigger" type="Area2D" parent="."]
+z_index = 10
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("2_o3k7i")
+Sequence = ExtResource("3_o3k7i")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
+position = Vector2(-2400, 0)
+shape = SubResource("RectangleShape2D_mfk2f")
+debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="BattleArena" type="Area2D" parent="."]
 visible = false

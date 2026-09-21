@@ -438,22 +438,6 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        private Area2D? ResolveArea(NodePath path, Area2D? fallback = null)
-        {
-            if (path.IsEmpty)
-            {
-                return fallback;
-            }
-
-            var area = GetNodeOrNull<Area2D>(path);
-            if (area != null)
-            {
-                return area;
-            }
-
-            return Enemy?.GetNodeOrNull<Area2D>(path) ?? fallback;
-        }
-
         public EnemyAttackTemplate? PeekQueuedAttack() => _queuedAttack;
 
         /// <summary>

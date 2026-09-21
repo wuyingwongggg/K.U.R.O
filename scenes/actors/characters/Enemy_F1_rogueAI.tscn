@@ -281,6 +281,7 @@ RecoveryDuration = 0.8
 CooldownDurationMultiplier = 6.0
 DamageMultiplier = 0.0
 MaxAllowedAngleToPlayer = 180.0
+TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_ult_beam"), SubResource("Resource_hj03l"), SubResource("Resource_65awn"), SubResource("Resource_2gc6q")])
 metadata/attack_weight = 0.0
