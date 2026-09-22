@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 using Kuros.Core;
 using Kuros.Systems.Cutscene;
@@ -7,14 +6,16 @@ using Kuros.Systems.Cutscene;
 namespace Kuros.Environments
 {
 	/// <summary>
-	/// F_begin「上升井道」的关卡侧进度载体（挂在房间根节点上），一件事三面用途：
+	/// F_begin「上升井道」的关卡侧进度载体（挂在房间根节点上），一件事两面用途：
 	///   1) **击杀统计**：静态事件 <see cref="GameActor.DeathFinalized"/> + "enemies" 组过滤。
 	///      常态免伤的本体/磁铁臂走不到 FinalizeDeath，天然不计入；生成的敌人挂在世界节点下（不在本房间子树里），
 	///      所以只能按组统计、不能按子树。
 	///   2) **上升视觉**：进度 0..1 → AnimationPlayer.SpeedScale（0 = 停住）。用速度而不是 Pause/Seek：
 	///      同一个 AnimationPlayer 上还有阻塞式过场动画（up/opening），Pause 或 Seek 会牵动它们。
-	///   3) **阶段化阈值**：进度每跨过一个阈值广播一次 <see cref="UltimateThresholdReached"/>，
-	///      Boss 侧认领后放一次大招（账本 EarnedUltimateCount 单调递增、不退还）。
+	///   3) **进度是公开数据**：消费者（Boss 的大招阈值、按进度的形态升级…）自己读
+	///      <see cref="Progress"/> / <see cref="ProgressChanged"/> 并**各自定义阈值**——与血量阈值敌人
+	///      （UltimateHealthThresholds 放在敌人自己的控制器里）同构。本控制器不替消费者定义阈值，
+	///      也不广播阈值事件（轮询式判断天然幂等：晚生成、一次跨多个阈值都不会漏/重）。
 	/// 到站（进度满）：停住上升 + 武装 ArrivalTrigger（触发区覆盖平台 = 立刻播；挪到出口 = 走过去才播）；
 	/// 到站过场一开始就**释放速度接管**（把 SpeedScale 还原），因为过场要用同一个 AnimationPlayer 播别的动画。
 	///
@@ -28,15 +29,11 @@ namespace Kuros.Environments
 		/// 注意不要再加进 player/enemies 组——CameraFollow 的局部顿帧会冻结组内节点。</summary>
 		public const string ProgressGroup = "kill_progress";
 
-		[ExportCategory("Kill Progress 击杀进度")]
+		[ExportCategory("Kill Progress")]
 		/// <summary>满进度所需的击杀数（进度 = 击杀数 / 本值，钳到 0..1）。</summary>
 		[Export(PropertyHint.Range, "1,500,1")] public int TotalKillsForFull { get; set; } = 20;
-		/// <summary>大招阈值（0~1）。乱序/重复都行，内部排序去重；每个阈值一生只广播一次。
-		/// **数组长度就是"这场最多能放几次大招"**——不再额外设上限（"一次能攒几发"由 Boss 侧
-		/// MaxQueuedUltimates 决定，消费者自己说了算）。</summary>
-		[Export] public float[] UltimateThresholds { get; set; } = { 0.5f, 1.0f };
 
-		[ExportCategory("Ascend Visual 上升视觉")]
+		[ExportCategory("Ascend Visual")]
 		[Export] public NodePath AnimationPlayerPath { get; set; } = new("AnimationPlayer");
 		/// <summary>"持续上升"的循环动画名（F_begin 是 up_loop）。</summary>
 		[Export] public string LoopAnimationName { get; set; } = "up_loop";
@@ -46,7 +43,7 @@ namespace Kuros.Environments
 		[Export(PropertyHint.Range, "0,20,0.1")] public float SpeedScaleLerpSpeed { get; set; } = 2.5f;
 		[Export] public bool DriveAscendVisual { get; set; } = true;
 
-		[ExportCategory("Arrival 到站")]
+		[ExportCategory("Arrival")]
 		/// <summary>进度满时武装的到站触发器（调它的 Arm()，路径相对本节点）。触发区覆盖平台 → 立即播；放到出口 → 玩家走过去才播。</summary>
 		[Export] public NodePath ArrivalTriggerPath { get; set; } = new();
 
@@ -56,11 +53,8 @@ namespace Kuros.Environments
 		[Signal] public delegate void AscendArrivedEventHandler();
 
 		public int KillCount { get; private set; }
-		/// <summary>0..1，连续。</summary>
+		/// <summary>0..1，连续。消费者（Boss 阈值等）自行取用。</summary>
 		public float Progress { get; private set; }
-		/// <summary>已跨过的阈值数（= 这场已获得的大招次数；单调递增、不退还、天然封顶于阈值个数）。
-		/// Boss 侧用它做"生成前已跨过阈值"的追赶。</summary>
-		public int EarnedUltimateCount => _nextThresholdIndex;
 		/// <summary>是否已接管 loop 动画的速度控制。</summary>
 		public bool VisualDriveActive { get; private set; }
 		/// <summary>进度是否已满（到站）。</summary>
@@ -69,11 +63,7 @@ namespace Kuros.Environments
 		/// <summary>(killCount, progress)</summary>
 		public event Action<int, float>? KillCountChanged;
 		public event Action<float>? ProgressChanged;
-		/// <summary>(thresholdIndex, thresholdValue) —— 每个阈值只触发一次。</summary>
-		public event Action<int, float>? UltimateThresholdReached;
 
-		private readonly List<float> _thresholds = new();
-		private int _nextThresholdIndex;
 		private AnimationPlayer? _animPlayer;
 		private float _speedScaleBeforeDrive = 1f;
 		private CutsceneManager? _cutsceneManager;
@@ -93,7 +83,6 @@ namespace Kuros.Environments
 
 		public override void _Ready()
 		{
-			BuildThresholdCache();
 			_animPlayer = AnimationPlayerPath.IsEmpty ? null : GetNodeOrNull<AnimationPlayer>(AnimationPlayerPath);
 			if (DriveAscendVisual && _animPlayer == null)
 				GD.PushWarning($"{Name}: 未找到 AnimationPlayer（{AnimationPlayerPath}），上升视觉不会被驱动");
@@ -161,26 +150,10 @@ namespace Kuros.Environments
 			if (!Mathf.IsEqualApprox(prev, Progress))
 				ProgressChanged?.Invoke(Progress);
 
-			EvaluateThresholds();
 			CheckArrival();
 
 			if (EnableDebugLogs)
-				GD.Print($"{Name}: kill={KillCount} progress={Progress:F3} earned={EarnedUltimateCount}");
-		}
-
-		/// <summary>进度一次跨多个阈值时：自低向高逐个广播（Boss 侧用队列承接，不会漏）。</summary>
-		private void EvaluateThresholds()
-		{
-			while (_nextThresholdIndex < _thresholds.Count && Progress >= _thresholds[_nextThresholdIndex])
-			{
-				int index = _nextThresholdIndex;
-				float value = _thresholds[index];
-				_nextThresholdIndex++;   // 指针即账本：单调前移、天然封顶于阈值个数
-
-				UltimateThresholdReached?.Invoke(index, value);
-				if (EnableDebugLogs)
-					GD.Print($"{Name}: 阈值 {value:P0} 达成（已获得大招次数 {EarnedUltimateCount}）");
-			}
+				GD.Print($"{Name}: kill={KillCount} progress={Progress:F3}");
 		}
 
 		// ── 到站 ──────────────────────────────────────────────────────────
@@ -240,25 +213,10 @@ namespace Kuros.Environments
 		{
 			KillCount = 0;
 			Progress = 0f;
-			_nextThresholdIndex = 0;   // 账本即指针（EarnedUltimateCount 是它的只读视图）
 			HasArrived = false;
 			_controlReleased = false;
 			if (_animPlayer != null && GodotObject.IsInstanceValid(_animPlayer))
 				_animPlayer.SpeedScale = _speedScaleBeforeDrive;
-		}
-
-		private void BuildThresholdCache()
-		{
-			_thresholds.Clear();
-			if (UltimateThresholds != null)
-			{
-				foreach (float t in UltimateThresholds)
-				{
-					float clamped = Mathf.Clamp(t, 0.01f, 1f);
-					if (!_thresholds.Contains(clamped)) _thresholds.Add(clamped);
-				}
-			}
-			_thresholds.Sort((a, b) => a.CompareTo(b)); // 升序：进度单调上升，指针只往前走
 		}
 
 		/// <summary>按组查找（Boss 侧、UI 等都走这个入口）。</summary>

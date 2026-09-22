@@ -21,7 +21,7 @@ namespace Kuros.Actors.Enemies
 		public enum RailEnd { Near, Far }
 		public enum MagnetPhase { Retreat, Approach }
 
-		[ExportCategory("Phase 相位")]
+		[ExportCategory("Phase")]
 		/// <summary>
 		/// 退场去哪一端（角色语义，来自滑槽）：Near = 贴玩家侧（内侧）端、Far = 场外端。
 		/// 左右两条镜像轨共用同一份机械配置——镜像是在**滑槽**上勾 `FlipCarriageEnds` 完成的
@@ -47,7 +47,7 @@ namespace Kuros.Actors.Enemies
 		/// <summary>释放收尾停顿（秒）：给攻击模板的 Recovery 生成外部特效留出时间再退场。</summary>
 		[Export(PropertyHint.Range, "0,2,0.01")] public float ReleaseSettleSeconds { get; set; } = 0.15f;
 
-		[ExportCategory("Progress Scaling 进度缩放")]
+		[ExportCategory("Progress Scaling")]
 		/// <summary>进度（0..1）带来的速度加成：实际速度 = 基础速度 × (1 + Progress × 本值)。
 		/// 行程越快 → 退场/进场越短 → 罐子投得越频繁。0 = 不随进度加速（旧行为）。</summary>
 		[Export(PropertyHint.Range, "0,5,0.05")] public float ProgressSpeedBonus { get; set; } = 0.5f;

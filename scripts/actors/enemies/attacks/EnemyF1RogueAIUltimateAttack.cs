@@ -9,7 +9,9 @@ namespace Kuros.Actors.Enemies.Attacks
 	///   · Dash（Active）：循环 attack_up，从该端横扫到另一端；
 	///     速度 = 两端距离 / <see cref="EnemyAttackTemplate.ActiveDuration"/>，可用 DashSpeed 覆盖。
 	///   · Settle（Recovery）：停在另一端，交给收招。
-	/// **本招本身不造成伤害**——伤害将来由挂在 Effects 里的"跟随本体的伤害领域"场景负责
+	/// <see cref="ReturnOnActive"/> = true（强化版 RogueAIOverloadPro）：Active 段 A→B 后**折返 B→A**，
+	///   自动速度按两倍行程算（2×两端距离 / ActiveDuration），两段走完刚好用满 Active。
+	/// **本招本身不造成伤害**——伤害由挂在 Effects 里的"跟随本体的伤害领域/光墙"场景负责
 	/// （AttackEffectEntry：SpawnTiming = OnActive + LifecycleBinding = OnActiveEnd，无需改这里的代码）。
 	///
 	/// 两条硬约束：
@@ -22,13 +24,26 @@ namespace Kuros.Actors.Enemies.Attacks
 	{
 		public enum UltPhase { None, Charge, Dash, Settle }
 
+		[ExportCategory("Timing 时长")]
+		/// <summary>蓄力（滑向随机一端）时长，秒；0 = 沿用基类 Timing 的 WarmupDuration。
+		/// 基类 Timing 的默认值（0.2/0.15）对本招太短，所以本招自带语义化时长并写回基类字段
+		/// ——与 EnemyMoveAttack 的 DashDuration / EnemyPinballAttack 的 PinballDuration 同范式。
+		/// 位移速度由它推导（`ChargeSpeed` 为 0 时 = 距离 / 本值）。</summary>
+		[Export(PropertyHint.Range, "0,15,0.1")] public float ChargeDuration { get; set; } = 3f;
+		/// <summary>横扫（Active）时长，秒；0 = 沿用基类 Timing 的 ActiveDuration。
+		/// <see cref="ReturnOnActive"/> 时两段行程共用这个时长（自动速度按两倍行程算）。</summary>
+		[Export(PropertyHint.Range, "0,20,0.1")] public float DashDuration { get; set; } = 5f;
+		// 收招时长直接用基类 Timing 的 RecoveryDuration（在节点上配），不再另设导出。
+
 		[ExportCategory("Movement")]
 		/// <summary>蓄力滑向随机一端的速度；0 = 自动（距离 / WarmupDuration）。</summary>
 		[Export(PropertyHint.Range, "0,4000,10")] public float ChargeSpeed { get; set; } = 0f;
-		/// <summary>横扫速度；0 = 自动（两端距离 / ActiveDuration）。</summary>
+		/// <summary>横扫速度；0 = 自动（两端距离 / ActiveDuration；<see cref="ReturnOnActive"/> 时按两倍行程）。</summary>
 		[Export(PropertyHint.Range, "0,8000,10")] public float DashSpeed { get; set; } = 0f;
 		/// <summary>到位死区（像素）。</summary>
 		[Export(PropertyHint.Range, "1,64,1")] public float ArriveDeadzone { get; set; } = 8f;
+		/// <summary>Active 段扫到另一端后**折返**回蓄力端（强化版 Pro：A→B→A）。</summary>
+		[Export] public bool ReturnOnActive { get; set; } = false;
 
 		/// <summary>当前阶段（动画控制器据此选循环动画）。</summary>
 		public UltPhase Phase { get; private set; } = UltPhase.None;
@@ -39,10 +54,16 @@ namespace Kuros.Actors.Enemies.Attacks
 		private float _chargeSpeed;
 		private float _dashSpeed;
 		private float _dashElapsed;
+		private int _dashLeg;   // 0 = 第一段（A→B）；1 = 折返段（B→A，仅 ReturnOnActive）
 		private bool _missingRailWarned;
 
 		protected override void OnInitialized()
 		{
+			// 本招时长写回基类 Timing：状态机的阶段推进、以及下面按"距离 / 时长"推导的位移速度都读那几个字段。
+			// 0 = 沿用基类节点上配的值（不覆盖）。
+			if (ChargeDuration > 0f) WarmupDuration = ChargeDuration;
+			if (DashDuration > 0f) ActiveDuration = DashDuration;
+
 			_rail = SlideRailMount.FindFor(Enemy);
 			_drive = Enemy?.GetNodeOrNull<RailChaseMovement>("RailChaseMovement");
 		}
@@ -63,6 +84,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			_chargeAtFar = GD.Randf() < 0.5f;   // 随机蓄力端（Near / Far 各 50%）
 			_chargeSpeed = 0f;                  // 首个物理帧里按"距离 / WarmupDuration"锁定一次（见 TickRailMovement）
 			_dashSpeed = 0f;
+			_dashLeg = 0;
 			Phase = UltPhase.Charge;
 			SetExternalDrive(true);
 
@@ -78,6 +100,7 @@ namespace Kuros.Actors.Enemies.Attacks
 			base.OnActivePhase();       // 基类：生成 OnActive 特效
 			Phase = UltPhase.Dash;
 			_dashElapsed = 0f;
+			_dashLeg = 0;
 		}
 
 		/// <summary>把 Active 挂起到冲刺用尽（由 <see cref="Phase"/> 自己结束，见 _PhysicsProcess）。</summary>
@@ -130,6 +153,14 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			if (Mathf.Abs(distance) <= ArriveDeadzone)
 			{
+				// 强化版：扫到 B 后折返 A —— 不停车，换成折返目标（下一帧按剩余行程反向起步）
+				if (Phase == UltPhase.Dash && ReturnOnActive && _dashLeg == 0)
+				{
+					_dashLeg = 1;
+					_dashSpeed = 0f;   // 折返段按剩余时长重新锁速（见下）
+					return;
+				}
+
 				Enemy.Velocity = Vector2.Zero;
 				return;
 			}
@@ -140,9 +171,13 @@ namespace Kuros.Actors.Enemies.Attacks
 					? ChargeSpeed
 					: Mathf.Max(50f, Mathf.Abs(distance) / Mathf.Max(0.05f, WarmupDuration));
 			if (Phase == UltPhase.Dash && _dashSpeed <= 0f)
+			{
+				float legLength = Mathf.Abs(_rail.CarriageFar - _rail.CarriageNear);
+				float totalLength = ReturnOnActive ? legLength * 2f : legLength;   // 折返 = 两倍行程
 				_dashSpeed = DashSpeed > 0f
 					? DashSpeed
-					: Mathf.Abs(_rail.CarriageFar - _rail.CarriageNear) / Mathf.Max(0.05f, ActiveDuration);
+					: Mathf.Max(50f, totalLength / Mathf.Max(0.05f, ActiveDuration));
+			}
 
 			float speed = Phase == UltPhase.Charge ? _chargeSpeed : _dashSpeed;
 			Enemy.Velocity = DirectionAlongRail(distance) * speed;   // 位移交给 EnemyAttackState 的 MoveAndSlide
@@ -168,9 +203,11 @@ namespace Kuros.Actors.Enemies.Attacks
 		private float ChargeEndCoordinate
 			=> _chargeAtFar ? _rail!.CarriageFar : _rail!.CarriageNear;
 
-		/// <summary>横扫端 = 蓄力端的另一端。</summary>
+		/// <summary>横扫端：第一段 = 蓄力端的另一端（A→B）；折返段 = 回到蓄力端（B→A）。</summary>
 		private float DashEndCoordinate
-			=> _chargeAtFar ? _rail!.CarriageNear : _rail!.CarriageFar;
+			=> _dashLeg == 0
+				? (_chargeAtFar ? _rail!.CarriageNear : _rail!.CarriageFar)
+				: ChargeEndCoordinate;
 
 		private float RailCoordinate(Vector2 worldPosition)
 			=> _rail!.CarriageAxis == SlideRailMount.RailAxis.X ? worldPosition.X : worldPosition.Y;

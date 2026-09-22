@@ -24,6 +24,8 @@ namespace Kuros.Actors.Enemies.Animation
 		[ExportCategory("Ultimate 大招循环")]
 		/// <summary>大招攻击名（与 AttackController 上的一致）。</summary>
 		[Export] public string UltimateAttackName { get; set; } = "RogueAIOverload";
+		/// <summary>强化版大招攻击名（进度升级后取代上面那个）：解析"正在跑的是哪一支"时两者都试。</summary>
+		[Export] public string UltimateProAttackName { get; set; } = "RogueAIOverloadPro";
 		/// <summary>蓄力段（滑向随机一端）循环动画。</summary>
 		[Export] public string UltimateChargeAnimation { get; set; } = "attack_warming_up";
 		/// <summary>冲刺段（横扫到另一端）循环动画。</summary>
@@ -101,14 +103,21 @@ namespace Kuros.Actors.Enemies.Animation
 			PlayAttackIfConfigured();
 		}
 
-		/// <summary>正在跑的是不是大招；是则返回模板实例（供读 Phase），否则 null。</summary>
+		/// <summary>正在跑的是不是大招（原版或强化版）；是则返回模板实例（供读 Phase），否则 null。</summary>
 		private EnemyF1RogueAIUltimateAttack? ResolveRunningUltimate()
 		{
-			if (Enemy == null || string.IsNullOrEmpty(UltimateAttackName)) return null;
-			if (!Enemy.IsAttackRunning(UltimateAttackName)) return null;
+			var controller = Enemy?.StateMachine?.GetNodeOrNull<EnemyAttackController>("Attack/AttackController");
+			if (controller == null) return null;
 
-			var controller = Enemy.StateMachine?.GetNodeOrNull<EnemyAttackController>("Attack/AttackController");
-			return controller?.GetNodeOrNull<EnemyF1RogueAIUltimateAttack>(UltimateAttackName);
+			return ResolveRunningUltimate(controller, UltimateProAttackName)
+				?? ResolveRunningUltimate(controller, UltimateAttackName);
+		}
+
+		private static EnemyF1RogueAIUltimateAttack? ResolveRunningUltimate(EnemyAttackController controller, string attackName)
+		{
+			if (string.IsNullOrEmpty(attackName)) return null;
+			var template = controller.GetNodeOrNull<EnemyF1RogueAIUltimateAttack>(attackName);
+			return template is { IsRunning: true } ? template : null;
 		}
 
 		private void PlayAttackIfConfigured()
