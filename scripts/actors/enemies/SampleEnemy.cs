@@ -119,8 +119,9 @@ public partial class SampleEnemy : GameActor
 
 	/// <summary>
 	/// 检查玩家是否在检测范围内。使用 DetectionArea 碰撞检测。
+	/// 子类可重写以整体关闭追踪（返回 false 即"看不见玩家"：追击、选招、攻击状态的进出都会随之停摆）。
 	/// </summary>
-	public bool IsPlayerWithinDetectionRange()
+	public virtual bool IsPlayerWithinDetectionRange()
 	{
 		RefreshPlayerReference();
 		if (_player == null || DetectionArea == null) return false;

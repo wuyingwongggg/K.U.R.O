@@ -151,13 +151,14 @@ script = ExtResource("8_7asvr")
 skeleton_data_res = ExtResource("7_1mbwy")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
+preview_frame = false
 preview_time = 0.0
 script = ExtResource("8_7asvr")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
-position = Vector2(25.396597, -2326.8887)
+position = Vector2(-25.3968, -2326.8887)
+rotation = -3.1415925
 scale = Vector2(0.99999994, 0.99999994)
 bone_name = "bone"
 

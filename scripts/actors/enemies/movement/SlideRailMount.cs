@@ -48,6 +48,9 @@ public partial class SlideRailMount : Node2D
 	private float _carriageFar;
 	private float _target;
 	private bool _hasTarget;
+	/// <summary>本次目标的速度覆盖（&gt; 0 时用它，否则用自身 <see cref="Speed"/>）：见 <see cref="SetTargetInTime"/>。
+	/// 每次 <see cref="SetTarget"/>（常规跟随）会清零——时长只对"设目标那一次"负责。</summary>
+	private float _targetSpeed;
 
 	/// <summary>限位已解析（首个物理帧之后）。</summary>
 	public bool IsResolved => _resolved;
@@ -108,7 +111,8 @@ public partial class SlideRailMount : Node2D
 			return;
 		}
 
-		SetCoordinate(CurrentRailCoordinate + Mathf.Sign(step) * Speed * (float)delta);
+		float speed = _targetSpeed > 0f ? _targetSpeed : Speed;
+		SetCoordinate(CurrentRailCoordinate + Mathf.Sign(step) * speed * (float)delta);
 		// 硬钳兜底：外部系统（爆炸/黑洞直接写位置）也推不出滑槽
 		SetCoordinate(Mathf.Clamp(CurrentRailCoordinate, _slotStart, _slotEnd));
 	}
@@ -128,8 +132,29 @@ public partial class SlideRailMount : Node2D
 	private Marker2D? ResolveEndMarker(bool wantFar)
 		=> GetNodeOrNull<Marker2D>(wantFar != FlipCarriageEnds ? CarriageFarMarkerPath : CarriageNearMarkerPath);
 
-	/// <summary>设置滑槽滑动目标（世界坐标，滑动轴）。无 Slot 限位时忽略（滑槽静止）。</summary>
+	/// <summary>设置滑槽滑动目标（世界坐标，滑动轴）。无 Slot 限位时忽略（滑槽静止）。
+	/// 常规跟随用它（速度 = 自身 <see cref="Speed"/>）。</summary>
 	public void SetTarget(float coordinate)
+	{
+		SetTargetInternal(coordinate);
+		_targetSpeed = 0f;
+	}
+
+	/// <summary>设置目标并**按固定时长到达**：速度 = 本次距离 / <paramref name="duration"/>。
+	/// 语义：调用方（满进度退场等）要"总耗时固定"，不关心距离有多远。
+	/// 只对**这一次**目标负责——常规的每帧 <see cref="SetTarget"/> 跟随会把速度交还给自己 <see cref="Speed"/>，
+	/// 所以用它的那段时间里不要再每帧重设目标（否则等于没设过）。
+	/// 无 Slot 限位（滑槽静止）/ duration ≤ 0 / 已在目标上 → 退回自身 Speed。</summary>
+	public void SetTargetInTime(float coordinate, float duration)
+	{
+		float before = CurrentRailCoordinate;
+		SetTargetInternal(coordinate);
+		_targetSpeed = duration > 0f && _hasTarget
+			? Mathf.Abs(_target - before) / duration
+			: 0f;
+	}
+
+	private void SetTargetInternal(float coordinate)
 	{
 		if (!HasSlotLimits) return;
 		_target = Mathf.Clamp(coordinate, _slotStart, _slotEnd);

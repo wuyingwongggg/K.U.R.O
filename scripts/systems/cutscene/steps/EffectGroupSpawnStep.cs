@@ -168,7 +168,10 @@ namespace Kuros.Systems.Cutscene
                 parent.AddChild(effectNode2D);
                 effectNode2D.GlobalPosition = spawnPos;
 
-                GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效已生成 {config.EffectScene} @ {spawnPos}");
+                // 登记生成物根（EffectDespawnStep 按 SpawnTag 回收；不登记就只能靠它自己的生命周期）
+                ctx.Manager.RegisterSpawnedRoot(effectNode2D, config.SpawnTag);
+
+                GD.Print($"[Cutscene] EffectGroupSpawnStep: 特效已生成 {config.EffectScene} @ {spawnPos}，标签: {(string.IsNullOrEmpty(config.SpawnTag) ? "(无)" : config.SpawnTag)}");
 
                 // 管理特效生命周期
                 if (config.DestroyAfterDuration > 0f)

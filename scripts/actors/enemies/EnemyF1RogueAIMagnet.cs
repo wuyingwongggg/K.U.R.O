@@ -52,6 +52,17 @@ namespace Kuros.Actors.Enemies
 		/// 行程越快 → 退场/进场越短 → 罐子投得越频繁。0 = 不随进度加速（旧行为）。</summary>
 		[Export(PropertyHint.Range, "0,5,0.05")] public float ProgressSpeedBonus { get; set; } = 0.5f;
 
+		[ExportCategory("Progress Finish")]
+		/// <summary>归位总时长（秒）：横向速度自动 = 各自距离 / 本值，滑槽纵向**共用同一时长**
+		/// （走 SlideRailMount.SetTargetInTime）——整体退场耗时固定，速度随距离变。
+		/// 0 = 不用时长，退回 <see cref="FinishReturnSpeed"/> 的定速（时间随距离变）。</summary>
+		[Export(PropertyHint.Range, "0,20,0.1")] public float FinishReturnDuration { get; set; } = 3f;
+		/// <summary>归位横向速度（px/s）；0 = 自动（按 <see cref="FinishReturnDuration"/> 从距离推导）。</summary>
+		[Export(PropertyHint.Range, "0,4000,10")] public float FinishReturnSpeed { get; set; } = 0f;
+		/// <summary>归位到位后销毁自身（退场用：走 QueueFree，不是死亡——不计击杀/不掉落）。
+		/// 注意不可逆：开了它，进度回退也找不回这台机械了。</summary>
+		[Export] public bool FreeOnFinishArrive { get; set; } = false;
+
 		private SlideRailMount? _rail;
 		private KillProgressAscendController? _progress;
 		private SamplePlayer? _player;
@@ -75,6 +86,9 @@ namespace Kuros.Actors.Enemies
 		private float _spawnX;
 		private float _spawnRailY;
 		private bool _finished;
+		// 收工那一刻锁定的归位速度 / 是否已到点（到点后销毁或停住，只做一次）
+		private float _finishSpeed;
+		private bool _finishArrived;
 
 			/// <summary>攻击模板（EnemyMagnetJarAttack）询问：罐子是否仍应挂在臂上（Warmup/Active 挂起条件）。
 		/// 抵达投放点后仍要挂到**悬停结束**，所以悬停期间继续返回 true。</summary>
@@ -113,7 +127,8 @@ namespace Kuros.Actors.Enemies
 		{
 			get
 			{
-				float speed = _phase == MagnetPhase.Approach ? EffectiveApproachSpeed : EffectiveRetreatSpeed;
+				float speed = _finished ? _finishSpeed
+					: _phase == MagnetPhase.Approach ? EffectiveApproachSpeed : EffectiveRetreatSpeed;
 				float ticksPerSecond = Mathf.Max(1f, Engine.PhysicsTicksPerSecond);
 				return Mathf.Max(MinArriveDeadzone, speed / ticksPerSecond);
 			}
@@ -147,7 +162,7 @@ namespace Kuros.Actors.Enemies
 			TickMovement((float)delta);
 		}
 
-		/// <summary>进度满（上升到底）→ 收工：退掉没走完的投放，退回**生成点**并停在那里；
+		/// <summary>进度满（上升到底）→ 收工：退掉没走完的投放，退回**生成点**并停在那里（或按配置自毁）；
 		/// 之后不再解析玩家、不再进/退场（`_finished` 后 TickPhase 直接早退，只剩归位移动）。</summary>
 		private void BeginFinish()
 		{
@@ -157,6 +172,16 @@ namespace Kuros.Actors.Enemies
 			_hoverRemaining = 0f;
 			_settleRemaining = 0f;
 			_phase = MagnetPhase.Retreat;   // 复用"退场"把归位做掉（目标改成生成点，见 CurrentCarriageTargetX）
+
+			// 速度只在收工这一刻锁一次（每帧按剩余距离重算 = 芝诺式收敛，永远差一点到不了）
+			float distance = Mathf.Abs(_spawnX - GlobalPosition.X);
+			_finishSpeed = FinishReturnSpeed > 0f
+				? FinishReturnSpeed
+				: distance / Mathf.Max(0.05f, FinishReturnDuration);
+
+			// 滑槽纵向也回生成点高度，并**共用同一个固定时长**（拿不到滑槽 = 无操作）。
+			// 归位期间 TickMovement 不再每帧写目标——重写会把速度打回滑槽自身 Speed，时长就固定不了。
+			_rail?.SetTargetInTime(_spawnRailY, FinishReturnDuration);
 
 			// 若正挂在 Attack 上会被切走：EnemyAttackState.Exit → 模板 Cancel → 挂载的罐子特效随之销毁
 			StateMachine?.ChangeState("MagnetRetreat");
@@ -313,11 +338,13 @@ namespace Kuros.Actors.Enemies
 
 			if (!holdPosition)
 			{
-				// 滑槽：每帧写目标（退场保持 Y / 进场对到玩家 Y），由滑槽自己恒速滑动 + 硬钳
-				_rail?.SetTarget(CurrentRailTargetY);
+				// 滑槽：每帧写目标（退场保持 Y / 进场对到玩家 Y），由滑槽自己恒速滑动 + 硬钳。
+				// 收工归位期间不写：那一刻已用 SetTargetInTime 锁定"固定时长"，每帧重写会把速度打回自身 Speed。
+				if (!_finished) _rail?.SetTarget(CurrentRailTargetY);
 
 				float dx = CurrentCarriageTargetX - GlobalPosition.X;
-				float speed = _phase == MagnetPhase.Approach ? EffectiveApproachSpeed : EffectiveRetreatSpeed;
+				float speed = _finished ? _finishSpeed
+					: _phase == MagnetPhase.Approach ? EffectiveApproachSpeed : EffectiveRetreatSpeed;
 				Velocity = Mathf.Abs(dx) <= EffectiveArriveDeadzone
 					? Vector2.Zero
 					: new Vector2(Mathf.Sign(dx) * speed, 0f);
@@ -336,6 +363,22 @@ namespace Kuros.Actors.Enemies
 			}
 
 			ClampToRail();
+
+			// 归位到点（横向 + 滑槽纵向都到位）→ 停住或按配置销毁自身，只做一次
+			if (_finished && !_finishArrived && CarriageArrived && RailArrived)
+			{
+				_finishArrived = true;
+				Velocity = Vector2.Zero;
+				if (FreeOnFinishArrive)
+				{
+					GD.Print($"{Name}: 满进度归位完成，销毁自身（退场）");
+					QueueFree();
+				}
+				else
+				{
+					GD.Print($"{Name}: 满进度归位完成（目标 {_spawnX:F1}）");
+				}
+			}
 		}
 
 		/// <summary>限位兜底：每帧无条件执行，与相位/状态无关（Hit/Frozen 不驱动移动时也钳位）。</summary>

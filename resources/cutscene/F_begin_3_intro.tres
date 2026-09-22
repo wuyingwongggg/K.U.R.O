@@ -1,20 +1,61 @@
-[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=5 format=3 uid="uid://c7dnkxl20sbvy"]
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=13 format=3 uid="uid://c7dnkxl20sbvy"]
 
 [ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_step"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_fade"]
+[ext_resource type="Script" uid="uid://dfa1ahl1vdlc1" path="res://scripts/systems/cutscene/steps/EffectDespawnStep.cs" id="3_krxc6"]
+[ext_resource type="Script" uid="uid://5xu2sir0yhv1" path="res://scripts/systems/cutscene/steps/PlayAnimationStep.cs" id="3_m4q78"]
 [ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="4_seq"]
 
-[sub_resource type="Resource" id="Resource_fade"]
+[sub_resource type="Resource" id="Resource_62k4c"]
 script = ExtResource("2_fade")
 Duration = 1.5
 TransitionDuration = 1.0
 UseMovieBlackBars = false
 metadata/_custom_type_script = "uid://cjl1hjmndwvcg"
 
+[sub_resource type="Resource" id="Resource_2si8d"]
+script = ExtResource("3_krxc6")
+Tags = Array[String](["SlideRailLeft", "SlideRailRight", "SlideRailMiddle"])
+metadata/_custom_type_script = "uid://dfa1ahl1vdlc1"
+
+[sub_resource type="Resource" id="Resource_pn8jt"]
+script = ExtResource("3_m4q78")
+AnimationPlayerPath = NodePath("../World/FBegin/AnimationPlayer")
+AnimationName = "up_loop"
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_xm0fp"]
+script = ExtResource("3_m4q78")
+AnimationPlayerPath = NodePath("../World/FBegin/AnimationPlayer2")
+AnimationName = "rail_move_out"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_b6ijc"]
+script = ExtResource("3_m4q78")
+AnimationPlayerPath = NodePath("../World/FBegin/Animation_rogueAI/AnimationPlayer")
+AnimationName = "leave"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_krxc6"]
+script = ExtResource("3_m4q78")
+AnimationPlayerPath = NodePath("../World/FBegin/AnimationPlayer")
+AnimationName = "up_to_top"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_m4q78"]
+script = ExtResource("3_m4q78")
+AnimationPlayerPath = NodePath("../World/FBegin/LiftingPlatform/AnimationPlayer")
+AnimationName = "open"
+WaitForCompletion = true
+metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
 [resource]
 script = ExtResource("4_seq")
-SequenceId = "F_begin_3_arrive"
-Steps = Array[ExtResource("1_step")]([SubResource("Resource_fade")])
+SequenceId = "F_begin_3_intro"
+Steps = Array[ExtResource("1_step")]([SubResource("Resource_62k4c"), SubResource("Resource_2si8d"), SubResource("Resource_pn8jt"), SubResource("Resource_xm0fp"), SubResource("Resource_b6ijc"), SubResource("Resource_krxc6"), SubResource("Resource_m4q78")])
 DisablePlayerInput = false
 HidePlayer = false
 metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

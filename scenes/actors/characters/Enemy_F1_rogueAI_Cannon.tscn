@@ -151,7 +151,7 @@ skeleton_data_res = ExtResource("7_3cfw7")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 2.0
+preview_time = 0.33
 script = ExtResource("8_6o35y")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
