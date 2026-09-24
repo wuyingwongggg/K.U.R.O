@@ -33,8 +33,11 @@ namespace Kuros.Environments
 		public const string ProgressGroup = "kill_progress";
 
 		[ExportCategory("Kill Progress")]
-		/// <summary>满进度所需的击杀数（进度 = 击杀数 / 本值，钳到 0..1）。</summary>
-		[Export(PropertyHint.Range, "1,500,1")] public int TotalKillsForFull { get; set; } = 20;
+		/// <summary>满进度所需的击杀数（进度 = 击杀数 / 本值，钳到 0..1）。
+		/// **0 = 不要求击杀：开局即满进度**（不等任何击杀，直接走到站流程：武装触发器 + 满进度退场）。
+		/// 这是给调试直达 / "这一段不需要打"用的；注意它是**全局信号**——本体与磁铁臂会在开局按满进度
+		/// 收工退场并自毁（若勾了 FreeOnFinishArrive），Boss 的进度阈值大招也会立刻开始连发。</summary>
+		[Export(PropertyHint.Range, "0,500,1")] public int TotalKillsForFull { get; set; } = 20;
 
 		[ExportCategory("Ascend Visual")]
 		[Export] public NodePath AnimationPlayerPath { get; set; } = new("AnimationPlayer");
@@ -78,6 +81,8 @@ namespace Kuros.Environments
 		// 到站触发器的延迟武装（ArrivalTriggerDelay）
 		private float _arrivalArmRemaining;
 		private bool _arrivalTriggerArmed;
+		// 到站判定是否已补查过（"开局即满"没有击杀事件来触发 CheckArrival，见 _PhysicsProcess）
+		private bool _arrivalChecked;
 
 		public override void _EnterTree()
 		{
@@ -98,10 +103,25 @@ namespace Kuros.Environments
 				GD.PushWarning($"{Name}: 未找到 AnimationPlayer（{AnimationPlayerPath}），上升视觉不会被驱动");
 
 			GameActor.DeathFinalized += OnActorDeathFinalized;
+
+			// 需求数为 0 = 开局即满：状态先亮出来（消费者首帧就该读到 1），到站判定延到首个物理帧
+			// ——_Ready 里就武装触发器可能当场开始放过场，而彼时别的节点/玩家还没就绪。
+			if (TotalKillsForFull <= 0)
+			{
+				Progress = ComputeProgress();
+				if (EnableDebugLogs) GD.Print($"{Name}: TotalKillsForFull=0 → 开局即满进度");
+			}
 		}
 
 		public override void _PhysicsProcess(double delta)
 		{
+			// 到站判定补一次：正常路径由 AddKill → CheckArrival 触发，"开局即满"没有击杀事件来触发它
+			if (!_arrivalChecked)
+			{
+				_arrivalChecked = true;
+				if (Progress >= 1f) CheckArrival();
+			}
+
 			TickArrivalArm((float)delta);
 			if (!DriveAscendVisual || _controlReleased) return;
 			if (_animPlayer == null || !GodotObject.IsInstanceValid(_animPlayer)) return;
@@ -168,9 +188,7 @@ namespace Kuros.Environments
 
 			KillCount += amount;
 			float prev = Progress;
-			Progress = TotalKillsForFull > 0
-				? Mathf.Clamp((float)KillCount / TotalKillsForFull, 0f, 1f)
-				: 0f;
+			Progress = ComputeProgress();
 
 			KillCountChanged?.Invoke(KillCount, Progress);
 			if (!Mathf.IsEqualApprox(prev, Progress))
@@ -181,6 +199,12 @@ namespace Kuros.Environments
 			if (EnableDebugLogs)
 				GD.Print($"{Name}: kill={KillCount} progress={Progress:F3}");
 		}
+
+		/// <summary>进度 = 击杀数 / 需求数（钳 0..1）；需求数为 0 时视为**一直满进度**（见 <see cref="TotalKillsForFull"/>）。</summary>
+		private float ComputeProgress()
+			=> TotalKillsForFull > 0
+				? Mathf.Clamp((float)KillCount / TotalKillsForFull, 0f, 1f)
+				: 1f;
 
 		// ── 到站 ──────────────────────────────────────────────────────────
 
@@ -273,11 +297,12 @@ namespace Kuros.Environments
 		public void ResetProgress()
 		{
 			KillCount = 0;
-			Progress = 0f;
+			Progress = ComputeProgress();   // 需求数为 0 时仍是"满进度"，复位后由 _PhysicsProcess 的补查重新走到站
 			HasArrived = false;
 			_controlReleased = false;
 			_arrivalTriggerArmed = false;
 			_arrivalArmRemaining = 0f;
+			_arrivalChecked = false;
 			if (_animPlayer != null && GodotObject.IsInstanceValid(_animPlayer))
 				_animPlayer.SpeedScale = _speedScaleBeforeDrive;
 		}

@@ -278,7 +278,7 @@ tracks/0/path = NodePath("items/behind_left:position:y")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.19999999, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.3, 0.56666666, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-700.0, -930.0, -905.0, -930.0, -920.0, -930.0, -925.0, -930.0]
@@ -290,7 +290,7 @@ tracks/1/path = NodePath("items/left:position:y")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.19999999, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.3, 0.56666666, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [75.0, -175.0, -150.0, -175.0, -165.0, -175.0, -170.0, -175.0]
@@ -314,7 +314,7 @@ tracks/3/path = NodePath("items/left:z_index")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0),
+"times": PackedFloat32Array(0.3),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [2]
@@ -329,7 +329,7 @@ tracks/0/path = NodePath("items/behind_left:position:y")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-930.0, -700.0, -725.0, -700.0, -710.0, -700.0, -705.0, -700.0]
@@ -341,7 +341,7 @@ tracks/1/path = NodePath("items/left:position:y")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-175.0, 75.0, 50.0, 75.0, 65.0, 75.0, 70.0, 75.0]
@@ -353,7 +353,7 @@ tracks/2/path = NodePath("items/behind_right:position:y")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-930.0, -700.0, -725.0, -700.0, -710.0, -700.0, -705.0, -700.0]
@@ -365,7 +365,7 @@ tracks/3/path = NodePath("items/right:position:y")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-175.0, 75.0, 50.0, 75.0, 65.0, 75.0, 70.0, 75.0]
@@ -377,7 +377,7 @@ tracks/4/path = NodePath("items/behind:position:y")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [-975.0, -790.0, -815.0, -790.0, -800.0, -790.0, -795.0, -790.0]
@@ -389,7 +389,7 @@ tracks/5/path = NodePath("items/front:position:y")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.36666667, 0.46666667, 0.53333336, 0.56666666, 0.6, 0.6333333),
+"times": PackedFloat32Array(0.4, 0.6, 0.73333335, 0.8333333, 0.9, 0.93333334, 0.96666664, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [655.0, 860.0, 835.0, 860.0, 850.0, 860.0, 855.0, 860.0]
@@ -449,7 +449,7 @@ tracks/10/path = NodePath("items/left:z_index")
 tracks/10/interp = 1
 tracks/10/loop_wrap = true
 tracks/10/keys = {
-"times": PackedFloat32Array(0),
+"times": PackedFloat32Array(0.4),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [0]
@@ -461,7 +461,7 @@ tracks/11/path = NodePath("items/right:z_index")
 tracks/11/interp = 1
 tracks/11/loop_wrap = true
 tracks/11/keys = {
-"times": PackedFloat32Array(0),
+"times": PackedFloat32Array(0.4),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [0]
@@ -473,7 +473,7 @@ tracks/12/path = NodePath("items/front:z_index")
 tracks/12/interp = 1
 tracks/12/loop_wrap = true
 tracks/12/keys = {
-"times": PackedFloat32Array(0),
+"times": PackedFloat32Array(0.4),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [0]
@@ -533,7 +533,7 @@ tracks/17/path = NodePath("column/front_left_column:z_index")
 tracks/17/interp = 1
 tracks/17/loop_wrap = true
 tracks/17/keys = {
-"times": PackedFloat32Array(0, 0.2),
+"times": PackedFloat32Array(0, 0.36666667),
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [3, 0]
@@ -545,7 +545,7 @@ tracks/18/path = NodePath("column/front_right_column:z_index")
 tracks/18/interp = 1
 tracks/18/loop_wrap = true
 tracks/18/keys = {
-"times": PackedFloat32Array(0, 0.2),
+"times": PackedFloat32Array(0, 0.36666667),
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [3, 0]
@@ -566,13 +566,13 @@ y_sort_enabled = true
 
 [node name="behind_left_column" type="Sprite2D" parent="column"]
 z_index = 2
-position = Vector2(-2005, -930)
+position = Vector2(-2005, -922)
 texture = ExtResource("2_tygy6")
 offset = Vector2(0, -150)
 
 [node name="behind_right_column" type="Sprite2D" parent="column"]
 z_index = 2
-position = Vector2(2025, -927)
+position = Vector2(2025, -918)
 texture = ExtResource("3_2nl78")
 offset = Vector2(0, -150)
 
@@ -584,7 +584,7 @@ offset = Vector2(0, -100)
 
 [node name="front_left_column2" type="Sprite2D" parent="column"]
 z_index = 2
-position = Vector2(-2009, 637)
+position = Vector2(-2009, 645)
 texture = ExtResource("4_ntquy")
 offset = Vector2(0, -200)
 
@@ -596,7 +596,7 @@ offset = Vector2(0, -100)
 
 [node name="front_right_column2" type="Sprite2D" parent="column"]
 z_index = 2
-position = Vector2(2008, 637)
+position = Vector2(2008, 645)
 texture = ExtResource("6_qwpse")
 offset = Vector2(0, -200)
 

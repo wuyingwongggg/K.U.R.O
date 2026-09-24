@@ -19,13 +19,15 @@ script = ExtResource("1_rail")
 Speed = 500.0
 ArriveDeadzone = 10.0
 
-[node name="RailSprite" type="Sprite2D" parent="."]
+[node name="Visual" type="Sprite2D" parent="."]
+
+[node name="RailSprite" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_qf1ce")
 position = Vector2(1400, -2000)
 scale = Vector2(0.66, 0.66)
 texture = ExtResource("2_track")
 
-[node name="RailSprite2" type="Sprite2D" parent="."]
+[node name="RailSprite2" type="Sprite2D" parent="Visual"]
 material = SubResource("ShaderMaterial_qf1ce")
 position = Vector2(-1400, -2000)
 scale = Vector2(0.66, 0.66)

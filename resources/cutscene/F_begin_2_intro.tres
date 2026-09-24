@@ -19,15 +19,6 @@ TransitionDuration = 1.0
 UseMovieBlackBars = false
 metadata/_custom_type_script = "uid://cjl1hjmndwvcg"
 
-[sub_resource type="Resource" id="Resource_n13f1"]
-script = ExtResource("3_kbexi")
-TargetPath = NodePath("../World/FBegin/PlayerSpawnPoint")
-TargetZoom = 0.35
-Duration = 0.5
-Ease = 0
-StayAtTargetAfterFollow = false
-metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
-
 [sub_resource type="Resource" id="Resource_kdt07"]
 script = ExtResource("4_4xa1m")
 AnimationPlayerPath = NodePath("../World/FBegin/LiftingPlatform/AnimationPlayer")
@@ -41,6 +32,15 @@ AnimationPlayerPath = NodePath("../World/FBegin/AnimationPlayer")
 AnimationName = "opening"
 WaitForCompletion = true
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
+
+[sub_resource type="Resource" id="Resource_n13f1"]
+script = ExtResource("3_kbexi")
+TargetPath = NodePath("../World/FBegin/LiftingPlatform")
+TargetZoom = 0.35
+Duration = 0.5
+Ease = 0
+StayAtTargetAfterFollow = false
+metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
 
 [sub_resource type="Resource" id="Resource_00y1s"]
 script = ExtResource("4_4xa1m")
@@ -125,7 +125,7 @@ metadata/_custom_type_script = "uid://bdni42t83syt8"
 [resource]
 script = ExtResource("5_l7d0y")
 SequenceId = "F_begin_2_intro"
-Steps = Array[ExtResource("1_283r1")]([SubResource("Resource_bcybp"), SubResource("Resource_n13f1"), SubResource("Resource_kdt07"), SubResource("Resource_4mijq"), SubResource("Resource_00y1s"), SubResource("Resource_4xa1m"), SubResource("Resource_xxti7"), SubResource("Resource_7v3ug"), SubResource("Resource_l7d0y")])
+Steps = Array[ExtResource("1_283r1")]([SubResource("Resource_bcybp"), SubResource("Resource_kdt07"), SubResource("Resource_4mijq"), SubResource("Resource_n13f1"), SubResource("Resource_00y1s"), SubResource("Resource_4xa1m"), SubResource("Resource_xxti7"), SubResource("Resource_7v3ug"), SubResource("Resource_l7d0y")])
 DisablePlayerInput = false
 HidePlayer = false
 metadata/_custom_type_script = "uid://cgnajq1ykl2mn"

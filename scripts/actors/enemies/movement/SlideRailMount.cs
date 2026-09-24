@@ -26,11 +26,16 @@ public partial class SlideRailMount : Node2D
 	[Export] public NodePath CarriageNearMarkerPath { get; set; } = new("CarriageNearMarker");
 	[Export] public NodePath CarriageFarMarkerPath { get; set; } = new("CarriageFarMarker");
 	/// <summary>
-	/// 镜像这条轨：把两个限位 Marker 的**角色**互换（Near ⇄ Far），Marker 位置与 NodePath 都不用动。
+	/// 镜像这条轨：把两个限位 Marker 的**角色**互换（Near ⇄ Far），Marker 位置与 NodePath 都不用动；
+	/// 同时把 <see cref="VisualPath"/> 的 scale.x 取负，**连整块外观一起镜像**。
 	/// 左右两条镜像轨只需在其中一条上勾选本开关，机械侧就能共用同一份配置
 	/// （机械的 RetreatEnd 一律指"场外端"，翻转后语义自动跟着走）。
 	/// </summary>
 	[Export] public bool FlipCarriageEnds { get; set; }
+	/// <summary>外观子节点：只放 Sprite 之类，**里面不能有 Marker / Mount / 物理体**（负缩放不保证碰撞结果）。
+	/// 勾了 <see cref="FlipCarriageEnds"/> 时它的 scale.x 被写成负值 = 整块外观镜像；逻辑侧（root/Marker/Mount）
+	/// 始终保持单位变换，坐标判定不受影响。</summary>
+	[Export] public NodePath VisualPath { get; set; } = new("Visual");
 	/// <summary>被挂载的机械场景：配了就自动实例化进 Mount（"机械固定在滑槽内"的父子结构）。</summary>
 	[Export] public PackedScene? CarriagePrefab { get; set; }
 	/// <summary>机械出生锚点：Far = 场外/待命端（默认）、Near = 贴玩家端、Origin = 滑槽原点（关卡摆放点/轨道中点）。
@@ -85,6 +90,7 @@ public partial class SlideRailMount : Node2D
 	{
 		if (Engine.IsEditorHint()) return;
 
+		ApplyVisualMirror();
 		SpawnLocalPosition = ResolveSpawnPosition();
 
 		// 挂载点：CarriagePrefab 自动入驻 Mount，构成"机械是滑槽子节点"的结构约束
@@ -115,6 +121,27 @@ public partial class SlideRailMount : Node2D
 		SetCoordinate(CurrentRailCoordinate + Mathf.Sign(step) * speed * (float)delta);
 		// 硬钳兜底：外部系统（爆炸/黑洞直接写位置）也推不出滑槽
 		SetCoordinate(Mathf.Clamp(CurrentRailCoordinate, _slotStart, _slotEnd));
+	}
+
+	/// <summary>把"角色翻转"同步到外观：<see cref="FlipCarriageEnds"/> 时 <see cref="VisualPath"/> 的 scale.x 写负
+	/// ——整块美术（含 Visual 下每个精灵的局部位置）一起镜像。
+	/// 用负缩放而不是 flip_h：flip_h 只是"这一个绘制节点的贴图怎么画"，不沿节点树传递（Node2D 上根本没有这个属性，
+	/// Sprite2D 上也只有它自己受影响）；scale 属于变换链，才会带着子树一起翻。
+	/// 符号由本开关**唯一决定**（写 ±|x|，不累乘）：在编辑器里手摆的镜像会在运行时被规范化掉。
+	/// 只在 _Ready 应用一次——过场的 PropertyOverrides 是在入树前写好的，正好赶得上。</summary>
+	private void ApplyVisualMirror()
+	{
+		var visual = VisualPath.IsEmpty ? null : GetNodeOrNull<Node2D>(VisualPath);
+		if (visual == null)
+		{
+			if (FlipCarriageEnds)
+				GD.PushWarning($"{Name}: FlipCarriageEnds=true 但未找到外观节点（{VisualPath}），外观不会被镜像");
+			return;
+		}
+
+		var scale = visual.Scale;
+		float absX = Mathf.Abs(scale.X);
+		visual.Scale = new Vector2(FlipCarriageEnds ? -absX : absX, scale.Y);
 	}
 
 	/// <summary>机械出生位置（**局部坐标**——与滑槽在关卡里的摆放位置无关，_Ready 阶段就能算准）。
