@@ -1,11 +1,12 @@
 using Godot;
 
 /// <summary>
-/// 通用单轴滑座（滑槽）：一个轴、Marker 限位、恒速滑动、每帧硬钳。
+/// 通用单轴滑座（滑槽）：一个轴、偏移限位、恒速滑动、每帧硬钳。
 /// 由被挂载的子节点（机械）通过 <see cref="SetTarget"/> 驱动；自身不含相位/玩家逻辑，供多台滑轨机械复用
 /// （Enemy_F1_rogueAI_Magnet / _MachineGun / _Cannon）。
-/// 滑动轴由 Axis 指定（默认 Y）；限位 Marker 取"该轴的世界坐标"。不配 Slot 限位 Marker 时滑槽静止
-/// （退化成"只有机械在轨道上移动"的单轴形态）。
+/// 滑动轴由 Axis 指定（默认 Y）。**限位是"相对本节点摆放位置的两个带符号偏移"**（过去是 Marker 节点的局部坐标，
+/// 现在直接写成数字：生成实例用 PropertyOverrides 覆盖一个 float 即可，不必再造节点、不必写 NodePath）。
+/// 无行程（两端偏移相等，含 0/0）时滑槽静止，退化成"只有机械在轨道上移动"的单轴形态。
 /// 限位解析放在首个物理帧（而不是 _Ready）：生成器是 AddChild 之后才写 GlobalPosition，_Ready 时节点还没摆到位。
 /// </summary>
 public partial class SlideRailMount : Node2D
@@ -15,18 +16,20 @@ public partial class SlideRailMount : Node2D
 	/// <summary>机械出生锚点：Far/Near 是**角色语义**（勾了 FlipCarriageEnds 会自动互换）。</summary>
 	public enum SpawnAnchor { Far, Near, Origin }
 
-	[ExportCategory("Rail 滑槽")]
+	[ExportCategory("Rail")]
 	/// <summary>滑槽自身滑动的轴（默认 Y = 纵向升降；设 X 则为横向滑槽）。</summary>
 	[Export] public RailAxis Axis { get; set; } = RailAxis.Y;
-	/// <summary>滑槽滑动轴的限位标记（不配 = 滑槽静止）。</summary>
-	[Export] public NodePath SlotStartMarkerPath { get; set; } = new("SlotStartMarker");
-	[Export] public NodePath SlotEndMarkerPath { get; set; } = new("SlotEndMarker");
-	/// <summary>机械的行程限位标记（缺省时机械被锁死在轨道原点）。
-	/// 约定：Near = 贴玩家侧（场内/内侧）端，Far = 场外端。</summary>
-	[Export] public NodePath CarriageNearMarkerPath { get; set; } = new("CarriageNearMarker");
-	[Export] public NodePath CarriageFarMarkerPath { get; set; } = new("CarriageFarMarker");
+	/// <summary>滑槽自身行程的两个端点：沿 <see cref="Axis"/> 的**带符号局部偏移**（相对本节点的摆放位置）。
+	/// 两端相等（含 0/0）= 无行程 → 滑槽静止（<see cref="HasSlotLimits"/> = false）。</summary>
+	[Export] public float SlotStartOffset { get; set; } = -1000f;
+	[Export] public float SlotEndOffset { get; set; } = 500f;
+	/// <summary>机械行程的两个端点：沿 <see cref="CarriageAxis"/> 的**带符号局部偏移**。
+	/// 角色语义不变——Near = 贴玩家侧（场内/内侧）端，Far = 场外端（勾 <see cref="FlipCarriageEnds"/> 互换解释）。
+	/// 两端相等（含 0/0）= 机械锁死在该偏移处。</summary>
+	[Export] public float CarriageNearOffset { get; set; } = 2600f;
+	[Export] public float CarriageFarOffset { get; set; } = -2600f;
 	/// <summary>
-	/// 镜像这条轨：把两个限位 Marker 的**角色**互换（Near ⇄ Far），Marker 位置与 NodePath 都不用动；
+	/// 镜像这条轨：把两端点的**角色**互换（Near ⇄ Far），偏移数字都不用改；
 	/// 同时把 <see cref="VisualPath"/> 的 scale.x 取负，**连整块外观一起镜像**。
 	/// 左右两条镜像轨只需在其中一条上勾选本开关，机械侧就能共用同一份配置
 	/// （机械的 RetreatEnd 一律指"场外端"，翻转后语义自动跟着走）。
@@ -59,12 +62,12 @@ public partial class SlideRailMount : Node2D
 
 	/// <summary>限位已解析（首个物理帧之后）。</summary>
 	public bool IsResolved => _resolved;
-	/// <summary>滑槽是否可动（配了 Slot 限位 Marker）。</summary>
+	/// <summary>滑槽是否可动（两端点偏移不等）。</summary>
 	public bool HasSlotLimits { get; private set; }
 	public float SlotStart => _slotStart;
 	public float SlotEnd => _slotEnd;
 	/// <summary>
-	/// 两个行程限位 Marker 的坐标（世界坐标，沿 <see cref="CarriageAxis"/>），**已按角色解释**：
+	/// 两个行程端点的坐标（世界坐标 = 本节点摆放位置 + 偏移，沿 <see cref="CarriageAxis"/>），**已按角色解释**：
 	/// Near = 贴玩家侧端、Far = 场外端；勾了 <see cref="FlipCarriageEnds"/> 则两者互换。
 	/// 机械直接用这两个选端点（退场去 Far），用下面的区间做夹取/钳位。
 	/// </summary>
@@ -108,7 +111,14 @@ public partial class SlideRailMount : Node2D
 		if (Engine.IsEditorHint()) return;
 
 		ResolveNow();
-		if (!HasSlotLimits || !_hasTarget) return;
+		if (!HasSlotLimits) return;   // 无行程：滑槽静止
+
+		if (!_hasTarget || HoldTargetDrive)
+		{
+			// 待命 / 被阻挡：不朝目标推进，但两端硬钳照旧（外部推力、叠加位移都压不出去）
+			SetCoordinate(Mathf.Clamp(CurrentRailCoordinate, _slotStart, _slotEnd));
+			return;
+		}
 
 		float step = _target - CurrentRailCoordinate;
 		if (Mathf.Abs(step) <= ArriveDeadzone)
@@ -145,19 +155,40 @@ public partial class SlideRailMount : Node2D
 	}
 
 	/// <summary>机械出生位置（**局部坐标**——与滑槽在关卡里的摆放位置无关，_Ready 阶段就能算准）。
-	/// 默认 Far（待命位/场外端），避免从轨道中间冒出来再滑走。</summary>
+	/// 默认 Far（待命位/场外端），避免从轨道中间冒出来再滑走。
+	/// 角色解释与 <see cref="ResolveNow"/> 同源：FlipCarriageEnds 对"出生点"和"行程端点"同时生效。</summary>
 	private Vector2 ResolveSpawnPosition()
 	{
 		if (CarriageSpawn == SpawnAnchor.Origin) return Vector2.Zero;
 
-		var marker = ResolveEndMarker(wantFar: CarriageSpawn == SpawnAnchor.Far);
-		return marker?.Position ?? Vector2.Zero;
+		// wantFar 与限位解释同一套：翻转后"要场外端"读的其实是 Near 那侧的偏移
+		bool wantFar = CarriageSpawn == SpawnAnchor.Far;
+		float offset = wantFar != FlipCarriageEnds ? CarriageFarOffset : CarriageNearOffset;
+		return CarriageAxis == RailAxis.X ? new Vector2(offset, 0f) : new Vector2(0f, offset);
 	}
 
-	/// <summary>角色端点 Marker：wantFar = 要"场外/待命端"、false = 要"贴玩家端"。
-	/// 与 <see cref="ResolveNow"/> 的判定同源——FlipCarriageEnds 对"出生点"和"限位解释"同时生效。</summary>
-	private Marker2D? ResolveEndMarker(bool wantFar)
-		=> GetNodeOrNull<Marker2D>(wantFar != FlipCarriageEnds ? CarriageFarMarkerPath : CarriageNearMarkerPath);
+	/// <summary>被阻挡时压住"目标驱动"：true 期间不朝目标推进（坐标与两端硬钳照旧，叠加位移仍然生效）。
+	/// 由子类设置（如轮子撞上一次性家具）；清掉后自动继续朝原目标推进——"家具被打碎就继续下压"。</summary>
+	public bool HoldTargetDrive { get; set; }
+
+	/// <summary>当前下发的滑动方向（沿 <see cref="Axis"/> 的符号）：无行程 / 无目标 / 已到位 = 0。</summary>
+	public float CommandedAxisSign => !HasSlotLimits || !_hasTarget
+		? 0f
+		: (Mathf.Abs(_target - CurrentRailCoordinate) <= ArriveDeadzone
+			? 0f
+			: Mathf.Sign(_target - CurrentRailCoordinate));
+
+	/// <summary>沿滑动轴额外偏移一段（相对当前坐标，带两端硬钳）。
+	/// 供子类做"叠加式"运动（轮子的回弹偏移）：与 <see cref="SetTarget"/> 的目标驱动互不干扰——
+	/// 一个是命令（被阻挡时可被 <see cref="HoldTargetDrive"/> 压住），一个是叠加量。</summary>
+	public void OffsetAxis(float delta)
+	{
+		if (delta == 0f) return;
+
+		float next = CurrentRailCoordinate + delta;
+		if (HasSlotLimits) next = Mathf.Clamp(next, _slotStart, _slotEnd);
+		SetCoordinate(next);
+	}
 
 	/// <summary>设置滑槽滑动目标（世界坐标，滑动轴）。无 Slot 限位时忽略（滑槽静止）。
 	/// 常规跟随用它（速度 = 自身 <see cref="Speed"/>）。</summary>
@@ -188,41 +219,32 @@ public partial class SlideRailMount : Node2D
 		_hasTarget = true;
 	}
 
-	/// <summary>解析限位（幂等；机械侧可主动调用以避开节点处理顺序假设）。</summary>
+	/// <summary>解析限位（幂等；机械侧可主动调用以避开节点处理顺序假设）。
+	/// 偏移是"相对本节点摆放位置"的，所以世界坐标 = **解析那一刻本节点的坐标 + 偏移**，只算一次——
+	/// 滑槽随后自己滑动、机械随后被钳位，都不会再改变这两个端点（与过去读 Marker 世界坐标完全等价）。</summary>
 	public void ResolveNow()
 	{
 		if (_resolved) return;
 		_resolved = true;
 
-		var slotStart = GetNodeOrNull<Marker2D>(SlotStartMarkerPath);
-		var slotEnd = GetNodeOrNull<Marker2D>(SlotEndMarkerPath);
-		if (slotStart != null && slotEnd != null)
+		// 滑槽自身行程（沿 Axis）：两端相等 = 无行程 → 静止
+		HasSlotLimits = !Mathf.IsEqualApprox(SlotStartOffset, SlotEndOffset);
+		if (HasSlotLimits)
 		{
-			HasSlotLimits = true;
-			var a = GetCoordinate(slotStart.GlobalPosition);
-			var b = GetCoordinate(slotEnd.GlobalPosition);
-			_slotStart = Mathf.Min(a, b);
-			_slotEnd = Mathf.Max(a, b);
+			float origin = CurrentRailCoordinate;
+			_slotStart = origin + Mathf.Min(SlotStartOffset, SlotEndOffset);
+			_slotEnd = origin + Mathf.Max(SlotStartOffset, SlotEndOffset);
 			SetCoordinate(Mathf.Clamp(CurrentRailCoordinate, _slotStart, _slotEnd));
-		}
-
-		// 角色约定（Near = 玩家侧、Far = 场外）在读取后按 FlipCarriageEnds 解释，不排序
-		var near = GetNodeOrNull<Marker2D>(CarriageNearMarkerPath);
-		var far = GetNodeOrNull<Marker2D>(CarriageFarMarkerPath);
-		if (near != null && far != null)
-		{
-			_carriageNear = GetCarriageCoordinate(near.GlobalPosition);
-			_carriageFar = GetCarriageCoordinate(far.GlobalPosition);
-			if (FlipCarriageEnds)
-				(_carriageNear, _carriageFar) = (_carriageFar, _carriageNear);
 		}
 		else
 		{
-			float x = GetCarriageCoordinate(GlobalPosition);
-			_carriageNear = x;
-			_carriageFar = x;
-			GD.PushWarning($"{Name}: 未配置 {CarriageNearMarkerPath}/{CarriageFarMarkerPath}，机械将被锁死在轨道原点。");
+			_slotStart = _slotEnd = CurrentRailCoordinate;
 		}
+
+		// 机械行程（沿 CarriageAxis）：角色约定（Near = 玩家侧、Far = 场外）在读取后按 FlipCarriageEnds 解释，不排序
+		float carriageOrigin = GetCarriageCoordinate(GlobalPosition);
+		_carriageNear = carriageOrigin + (FlipCarriageEnds ? CarriageFarOffset : CarriageNearOffset);
+		_carriageFar = carriageOrigin + (FlipCarriageEnds ? CarriageNearOffset : CarriageFarOffset);
 	}
 
 	/// <summary>把世界坐标投影到滑动轴（= 该轴分量）。</summary>

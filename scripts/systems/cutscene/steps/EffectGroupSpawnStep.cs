@@ -163,7 +163,7 @@ namespace Kuros.Systems.Cutscene
                 // 属性覆盖必须在入树之前（节点 _Ready 里读取的配置必须已是覆盖后的值）
                 CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, config.PropertyOverrides, nameof(EffectGroupSpawnStep));
 
-                // 添加到场景树
+                // 添加到场景树（基准 = 管理器所在节点的父级）
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;
                 parent.AddChild(effectNode2D);
                 effectNode2D.GlobalPosition = spawnPos;

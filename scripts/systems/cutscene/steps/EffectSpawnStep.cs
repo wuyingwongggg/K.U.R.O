@@ -128,7 +128,7 @@ namespace Kuros.Systems.Cutscene
                 // CarriagePrefab / 限位 Marker 路径）必须已是覆盖后的值
                 CutsceneSpawnUtil.ApplyPropertyOverrides(effectNode2D, PropertyOverrides, nameof(EffectSpawnStep));
 
-                // 添加到场景树
+                // 添加到场景树（基准 = 管理器所在节点的父级）
                 var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;
                 parent.AddChild(effectNode2D);
                 effectNode2D.GlobalPosition = spawnPos;

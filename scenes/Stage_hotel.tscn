@@ -21,6 +21,7 @@
 [ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="17_scfg"]
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
+y_sort_enabled = true
 script = ExtResource("1_ctuyy")
 Player = NodePath("World/MainCharacter")
 LevelName = "KURO酒店"

@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://be30f0gopxel3"]
+[gd_scene load_steps=8 format=3 uid="uid://be30f0gopxel3"]
 
-[ext_resource type="Script" uid="uid://cvwuj7aebn3du" path="res://scripts/actors/enemies/movement/SlideRailMount.cs" id="1_aa0pa"]
+[ext_resource type="Script" uid="uid://bbed03oiw7bxm" path="res://scripts/actors/enemies/movement/SlideRailWheelMount.cs" id="1_aa0pa"]
 [ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="2_lxxxg"]
 [ext_resource type="Texture2D" uid="uid://roji77g8y3sp" path="res://assets/environments/scene_6_hotel/龙门吊左轮子.png" id="2_uodhj"]
 [ext_resource type="Texture2D" uid="uid://6l2p7h58qb8w" path="res://assets/environments/scene_6_hotel/滑槽轨道.png" id="3_uodhj"]
@@ -9,7 +9,7 @@
 shader = ExtResource("2_lxxxg")
 shader_parameter/cull_backface = true
 shader_parameter/use_front = true
-shader_parameter/fov = 10.0000004275
+shader_parameter/fov = 60.0000028025
 shader_parameter/rot_y_deg = 0.0
 shader_parameter/rot_x_deg = -29.999984325000014
 shader_parameter/inset = 0.0
@@ -23,42 +23,49 @@ shader_parameter/rot_y_deg = 0.0
 shader_parameter/rot_x_deg = -44.99998503749998
 shader_parameter/inset = 0.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lxxxg"]
+size = Vector2(150, 200)
+
 [node name="SlideRail_wheel" type="Node2D"]
-z_index = 3
+y_sort_enabled = true
 script = ExtResource("1_aa0pa")
+KnockbackDistance = 300.0
+TargetableFactions = 5
+SlotStartOffset = -800.0
+SlotEndOffset = 2000.0
+CarriageFarOffset = -1300.0
 Speed = 500.0
 ArriveDeadzone = 10.0
 
 [node name="Visual" type="Sprite2D" parent="."]
+y_sort_enabled = true
 
 [node name="RailWheel" type="Sprite2D" parent="Visual"]
+z_index = 2
 material = SubResource("ShaderMaterial_lxxxg")
-position = Vector2(-570, -1325)
-scale = Vector2(0.66, 0.66)
+position = Vector2(-465, -134)
+scale = Vector2(0.66, 0.88)
 texture = ExtResource("2_uodhj")
+offset = Vector2(0, -850)
 
 [node name="RailSprite" type="Sprite2D" parent="Visual"]
+z_index = 4
 material = SubResource("ShaderMaterial_qf1ce")
 position = Vector2(1400, -2000)
 scale = Vector2(0.66, 0.66)
 texture = ExtResource("3_uodhj")
 
 [node name="RailSprite2" type="Sprite2D" parent="Visual"]
+z_index = 4
 material = SubResource("ShaderMaterial_qf1ce")
 position = Vector2(-1400, -2000)
 scale = Vector2(0.66, 0.66)
 texture = ExtResource("3_uodhj")
 
-[node name="SlotStartMarker" type="Marker2D" parent="."]
-position = Vector2(0, -1000)
+[node name="HitArea" type="Area2D" parent="Visual"]
 
-[node name="SlotEndMarker" type="Marker2D" parent="."]
-position = Vector2(0, 500)
-
-[node name="CarriageNearMarker" type="Marker2D" parent="."]
-position = Vector2(2600, 0)
-
-[node name="CarriageFarMarker" type="Marker2D" parent="."]
-position = Vector2(-151, 0)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Visual/HitArea"]
+position = Vector2(-450, -195)
+shape = SubResource("RectangleShape2D_lxxxg")
 
 [node name="Mount" type="Node2D" parent="."]

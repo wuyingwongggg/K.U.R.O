@@ -16,6 +16,10 @@ shader_parameter/inset = 0.0
 [node name="SlideRail" type="Node2D"]
 z_index = 3
 script = ExtResource("1_rail")
+SlotStartOffset = -1000.0
+SlotEndOffset = 500.0
+CarriageNearOffset = 2600.0
+CarriageFarOffset = -2600.0
 Speed = 500.0
 ArriveDeadzone = 10.0
 
@@ -32,17 +36,5 @@ material = SubResource("ShaderMaterial_qf1ce")
 position = Vector2(-1400, -2000)
 scale = Vector2(0.66, 0.66)
 texture = ExtResource("2_track")
-
-[node name="SlotStartMarker" type="Marker2D" parent="."]
-position = Vector2(0, -1000)
-
-[node name="SlotEndMarker" type="Marker2D" parent="."]
-position = Vector2(0, 500)
-
-[node name="CarriageNearMarker" type="Marker2D" parent="."]
-position = Vector2(2600, 0)
-
-[node name="CarriageFarMarker" type="Marker2D" parent="."]
-position = Vector2(-2600, 0)
 
 [node name="Mount" type="Node2D" parent="."]
