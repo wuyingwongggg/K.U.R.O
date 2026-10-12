@@ -35,6 +35,10 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export] public float[] UltimateProgressThresholds { get; set; } = { 0.5f, 1.0f };
 		/// <summary>两次大招之间的最小间隔（秒）：到点后若还有"已跨过未释放"的阈值就重新武装。</summary>
 		[Export(PropertyHint.Range, "0,20,0.1")] public float UltimateRetriggerDelay { get; set; } = 4f;
+
+		/// <summary>第二个普攻名（与基类 MeleeAttackName 并列、同权重随机，如 RogueAISlamB）。空 = 无。
+		/// 大招武装时**两个普攻都要清零**、结束后都要还原——没写进来的那个会在武装窗口被随机选中。</summary>
+		[Export] public string MeleeAttackNameSecond { get; set; } = "";
 		// 调试开关用基类 EnemyAttackController.EnableDebugLogs（此前子类又声明了一份同名导出：CS0108 + 编辑器只显示一个）
 
 		private KillProgressAscendController? _progress;
@@ -231,7 +235,8 @@ namespace Kuros.Actors.Enemies.Attacks
 				if (!_pendingWeightRestore)
 					Log($"武装大招（{ActiveUltimateName}，进度 {(_progress?.Progress ?? 0f):P0}，已放 {_consumedUltimates} 次）");
 				TrySetAttackWeight(ActiveUltimateName, 1f);
-				TrySetAttackWeight(MeleeAttackName, 0f);
+				foreach (string meleeName in EnumerateMeleeNames())
+					TrySetAttackWeight(meleeName, 0f);
 				_pendingWeightRestore = true;
 
 				// 关键：队列里可能已经排着"当前不可启动"的普攻（EnemySimpleMeleeAttack.CanStart 要求玩家
@@ -251,7 +256,8 @@ namespace Kuros.Actors.Enemies.Attacks
 			// 大招起手后（阈值已消费）：一次性还原被清零的普攻权重，之后交回疲劳逻辑
 			if (_pendingWeightRestore)
 			{
-				RestoreAttackWeight(MeleeAttackName);
+				foreach (string meleeName in EnumerateMeleeNames())
+					RestoreAttackWeight(meleeName);
 				_pendingWeightRestore = false;
 			}
 		}
@@ -270,6 +276,13 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 			list.Sort((a, b) => a.CompareTo(b));
 			_sortedThresholds = list.ToArray();
+		}
+
+		/// <summary>普攻名集合（第二个可选）：大招武装时全部清零、结束后全部还原——并列普攻都写进来。</summary>
+		private IEnumerable<string> EnumerateMeleeNames()
+		{
+			if (!string.IsNullOrEmpty(MeleeAttackName)) yield return MeleeAttackName;
+			if (!string.IsNullOrEmpty(MeleeAttackNameSecond)) yield return MeleeAttackNameSecond;
 		}
 
 		/// <summary>该攻击名是不是大招（原版或强化版之一）。</summary>

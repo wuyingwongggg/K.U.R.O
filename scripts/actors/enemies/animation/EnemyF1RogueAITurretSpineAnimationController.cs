@@ -176,6 +176,17 @@ namespace Kuros.Actors.Enemies.Animation
 				return;
 			}
 
+			// 炮台族近战招（机枪台/炮台共用）：两方向近战片未就绪，暂用 turn / d_turn 占位。
+			// 注意占位选片与常规 d_ 镜像规则**相反**：turn 收在朝左、d_turn 收在朝右（见转身组件说明），
+			// 所以按"出招收势朝向"取——朝左 = turn、朝右 = d_turn（取 !right 走 ResolveName）。
+			// 蓄力段播一次后保持段尾；出手/收招不重发（回 Idle 后 key 变更，下一次近战自然重播）。
+			if (template is EnemyF1RogueAITurretMeleeAttack)
+			{
+				if (template.CurrentPhase == EnemyAttackTemplate.AttackPhase.Warmup)
+					PlayOnceIfNeeded("melee_strike", ResolveName(!right, TurnAnimation), AttackMixDuration);
+				return;
+			}
+
 			switch (template.CurrentPhase)
 			{
 				case EnemyAttackTemplate.AttackPhase.Warmup:

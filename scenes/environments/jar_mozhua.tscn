@@ -1,0 +1,525 @@
+[gd_scene load_steps=27 format=3 uid="uid://d7oxw7fsq2i3"]
+
+[ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="2_bs38d"]
+[ext_resource type="Texture2D" uid="uid://bhfnauk0uxby6" path="res://assets/environments/scene_6_hotel/mozhua/绿色液体.png" id="3_5vk7y"]
+[ext_resource type="Texture2D" uid="uid://bryyyy46yyd2u" path="res://assets/environments/scene_6_hotel/mozhua/魔爪下盖子.png" id="4_01e4h"]
+[ext_resource type="Texture2D" uid="uid://cmodhdqcj0boo" path="res://assets/environments/scene_6_hotel/mozhua/左外壳.png" id="5_01e4h"]
+[ext_resource type="Texture2D" uid="uid://bo0mr46basxny" path="res://assets/environments/scene_6_hotel/mozhua/魔爪顶部光.png" id="5_bs38d"]
+[ext_resource type="Texture2D" uid="uid://dcpxo55qbqngy" path="res://assets/environments/scene_6_hotel/mozhua/魔爪底部.png" id="5_h8ke3"]
+[ext_resource type="Texture2D" uid="uid://lulfba8n5pqw" path="res://assets/environments/scene_6_hotel/mozhua/右外壳.png" id="6_bs38d"]
+[ext_resource type="Texture2D" uid="uid://iyuuxy7ihx80" path="res://assets/environments/scene_6_hotel/mozhua/上盖子.png" id="6_rh7uv"]
+[ext_resource type="Texture2D" uid="uid://bk0ipufx3kn76" path="res://assets/environments/26.3.17 烟.png" id="7_u68bt"]
+[ext_resource type="Texture2D" uid="uid://2e06motda2mh" path="res://assets/environments/scene_6_hotel/mozhua/扭曲的左后壳.png" id="9_u68bt"]
+[ext_resource type="Texture2D" uid="uid://dhnnqtbqpvbq4" path="res://assets/environments/scene_6_hotel/mozhua/扭曲的右后壳.png" id="10_00ckj"]
+[ext_resource type="Texture2D" uid="uid://jih7chjd1wej" path="res://assets/environments/scene_6_hotel/mozhua/扭曲的左外壳.png" id="11_g6qq7"]
+[ext_resource type="Texture2D" uid="uid://ccfo0nbhpyswy" path="res://assets/environments/scene_6_hotel/mozhua/扭曲的右外壳.png" id="12_o0pir"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5vk7y"]
+shader = ExtResource("2_bs38d")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
+shader_parameter/alpha_factor = 1.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_algbx"]
+size = Vector2(600, 400)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fkwno"]
+size = Vector2(500, 300)
+
+[sub_resource type="Gradient" id="Gradient_od0np"]
+offsets = PackedFloat32Array(0, 0.2, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.85, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTex_large"]
+gradient = SubResource("Gradient_od0np")
+
+[sub_resource type="Curve" id="Curve_xttcx"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.45, 0.8), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTex_large_scale"]
+curve = SubResource("Curve_xttcx")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_gxwh4"]
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 0.0
+emission_ring_radius = 80.0
+emission_ring_inner_radius = 70.0
+emission_ring_cone_angle = 90.0
+direction = Vector3(-1, -1, 0)
+spread = 0.0
+initial_velocity_min = 200.0
+initial_velocity_max = 350.0
+angular_velocity_min = 199.99998
+angular_velocity_max = 299.99997
+radial_velocity_min = 200.0
+radial_velocity_max = 350.0
+gravity = Vector3(0, 100, 0)
+damping_min = 20.0
+damping_max = 40.0
+scale_min = 0.75
+scale_max = 2.0
+scale_curve = SubResource("CurveTex_large_scale")
+color_ramp = SubResource("GradientTex_large")
+turbulence_enabled = true
+turbulence_noise_strength = 0.3
+turbulence_noise_scale = 2.5
+
+[sub_resource type="Animation" id="Animation_01e4h"]
+resource_name = "Normal"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Jar/middle_normal:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Jar/bottom:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Jar/top:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Jar/bottom_broken:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Jar/top_broken:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Shell/left_front:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Shell/right_front:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Shell/left_behind_broken:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Shell/Right_behind_broken:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Shell/left_front_broken:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Shell/right_front_broken:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Smoke:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_u68bt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Jar/middle_normal:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Jar/bottom:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Jar/top:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Jar/bottom_broken:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Jar/top_broken:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Shell/left_front:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Shell/right_front:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Shell/left_behind_broken:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Shell/Right_behind_broken:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Shell/left_front_broken:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Shell/right_front_broken:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Shell/left_front:position")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-169, -281)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("Shell/right_front:position")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(169, -268)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("Smoke:visible")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_00ckj"]
+resource_name = "Normal_hit"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Shell/left_front:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-199, -281), Vector2(-159, -281), Vector2(-169, -281)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Shell/right_front:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(159, -268), Vector2(199, -268), Vector2(169, -268)]
+}
+
+[sub_resource type="Animation" id="Animation_g6qq7"]
+resource_name = "Shell_Broken"
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bs38d"]
+_data = {
+&"Normal": SubResource("Animation_01e4h"),
+&"Normal_hit": SubResource("Animation_00ckj"),
+&"RESET": SubResource("Animation_u68bt"),
+&"Shell_Broken": SubResource("Animation_g6qq7")
+}
+
+[node name="Jar_mozhua" type="CharacterBody2D"]
+z_index = 1
+collision_layer = 2
+collision_mask = 7
+
+[node name="Jar" type="Node2D" parent="."]
+
+[node name="middle_normal" type="Sprite2D" parent="Jar"]
+z_index = 2
+material = SubResource("ShaderMaterial_5vk7y")
+position = Vector2(4, -255)
+texture = ExtResource("3_5vk7y")
+
+[node name="bottom" type="Sprite2D" parent="Jar"]
+z_index = 2
+position = Vector2(13, -2)
+texture = ExtResource("4_01e4h")
+
+[node name="top" type="Sprite2D" parent="Jar"]
+z_index = 2
+position = Vector2(0, -765)
+texture = ExtResource("5_bs38d")
+
+[node name="bottom_broken" type="Sprite2D" parent="Jar"]
+visible = false
+z_index = 2
+position = Vector2(13, -102)
+texture = ExtResource("5_h8ke3")
+
+[node name="top_broken" type="Sprite2D" parent="Jar"]
+visible = false
+z_index = 2
+position = Vector2(0, -688)
+texture = ExtResource("6_rh7uv")
+
+[node name="Shell" type="Node2D" parent="."]
+
+[node name="left_front" type="Sprite2D" parent="Shell"]
+z_index = 2
+position = Vector2(-169, -281)
+texture = ExtResource("5_01e4h")
+
+[node name="right_front" type="Sprite2D" parent="Shell"]
+z_index = 2
+position = Vector2(169, -268)
+texture = ExtResource("6_bs38d")
+
+[node name="left_behind_broken" type="Sprite2D" parent="Shell"]
+visible = false
+z_index = 1
+position = Vector2(-187, -504)
+texture = ExtResource("9_u68bt")
+
+[node name="Right_behind_broken" type="Sprite2D" parent="Shell"]
+visible = false
+z_index = 1
+position = Vector2(179, -476)
+texture = ExtResource("10_00ckj")
+
+[node name="left_front_broken" type="Sprite2D" parent="Shell"]
+visible = false
+z_index = 2
+position = Vector2(-84, -218)
+texture = ExtResource("11_g6qq7")
+
+[node name="right_front_broken" type="Sprite2D" parent="Shell"]
+visible = false
+z_index = 2
+position = Vector2(171, -255)
+texture = ExtResource("12_o0pir")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_algbx")
+
+[node name="HitArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
+shape = SubResource("RectangleShape2D_fkwno")
+
+[node name="Smoke" type="GPUParticles2D" parent="."]
+visible = false
+z_index = 3
+texture_filter = 1
+position = Vector2(0, -200)
+scale = Vector2(5, 5)
+emitting = false
+texture = ExtResource("7_u68bt")
+lifetime = 0.4
+one_shot = true
+explosiveness = 0.95
+randomness = 0.2
+process_material = SubResource("ParticleProcessMaterial_gxwh4")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_bs38d")
+}

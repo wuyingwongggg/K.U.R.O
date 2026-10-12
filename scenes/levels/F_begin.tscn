@@ -1466,6 +1466,9 @@ Phases = Array[ExtResource("2_82263")]([SubResource("Resource_rqd1e"), SubResour
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-2350, 900)
 
+[node name="SlamB_Marker2D" type="Marker2D" parent="."]
+position = Vector2(-1171, 330)
+
 [node name="SlideRailSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-1605, 440)
 
@@ -1556,6 +1559,7 @@ disabled = true
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CameraZone3" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_mbxjs")
@@ -1759,6 +1763,7 @@ scale = Vector2(0.66, 0.8)
 texture = ExtResource("33_som2a")
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+visible = false
 z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]

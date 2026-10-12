@@ -6,7 +6,8 @@ namespace Kuros.Fx
 	/// 光束末端溅射（粒子节点，挂在束场景内、随束复制——扇束 N 条束 = N 个溅射）：
 	/// 每帧把自己定位到父束的**当前视觉末端**（<see cref="LaserBeamVisualBase.CurrentLength"/> 已含命中截断）——
 	/// 打中目标时火花自动喷在截断点上并持续粘着目标，目标消失自动跟回自由端，全程无需检测。
-	/// 朝向：节点转到光束角 + 180°，粒子沿局部 +X（背向束轴）喷出，锥角/速度/重力在场景的粒子材质里调。
+	/// 朝向：**不随束角旋转**——保持场景里节点摆好的朝向（默认 0° = 朝 +X 正方向），束角只影响溅射位置；
+	/// 扇束逐帧改 AngleDegrees 张开时溅射方向不跟着转。锥角/速度/重力在场景的粒子材质里调。
 	/// 状态：前摇（<see cref="LaserBeamVisualBase.BeamPhaseElapsed"/> &lt; 0）内不发射；
 	/// 父束被截断（<see cref="RogueAIOverloadBeam.IsTruncated"/>）期间发射量/速度加强——推导，无导出。
 	/// </summary>
@@ -47,7 +48,8 @@ namespace Kuros.Fx
 			float rad = Mathf.DegToRad(_beam.AngleDegrees);
 			Position = _beam.VisualOriginOffset
 				+ new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * Mathf.Max(_beam.CurrentLength, 0f);
-			Rotation = rad + Mathf.Pi;   // 局部 +X 指向束轴反向 = 向后溅射
+			// 朝向不写：保持场景里摆的朝向（默认 0° = 朝 +X 正方向）——
+			// 扇束逐帧改 AngleDegrees 张开时溅射方向不跟着转
 
 			bool hit = _beam.IsTruncated;
 			AmountRatio = hit ? 1f : IdleAmountRatio;

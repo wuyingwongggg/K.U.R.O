@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://c08u473nbnuxg"]
+[gd_scene load_steps=46 format=3 uid="uid://c08u473nbnuxg"]
 
 [ext_resource type="Script" uid="uid://dwrfftyk78q7q" path="res://scripts/actors/enemies/EnemyF1RogueAI.cs" id="1_rogue"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shadow"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_hit"]
 [ext_resource type="PackedScene" uid="uid://dn0xxip3a0jbb" path="res://resources/effects/FanBeam.tscn" id="14_i3pty"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_frozen"]
+[ext_resource type="PackedScene" uid="uid://c1acqfacsuky6" path="res://scenes/objects/Animation_rogueAI.tscn" id="16_65awn"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="16_dying"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="17_dead"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="18_fx"]
@@ -25,6 +26,7 @@
 [ext_resource type="Script" uid="uid://d21a3xgcca47b" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIUltimateAttack.cs" id="23_ult"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="24_fxentry"]
 [ext_resource type="PackedScene" uid="uid://b1osuixafvh7g" path="res://resources/effects/RogueAIOverloadBeam.tscn" id="25_beam"]
+[ext_resource type="Script" uid="uid://na2w566t6dy7" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAISlamB.cs" id="26_slamb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_shadow")
@@ -56,6 +58,45 @@ SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
 PropertyOverrides = Dictionary[String, Variant]({
 "Stage1Distance": 450,
 "Stage1Seconds": 0.18
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_dp8af"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("16_65awn")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 0
+LifecycleBinding = 1
+PropertyOverrides = Dictionary[String, Variant]({
+"AnimationName": "slamB_leave"
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_c2rbd"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("16_65awn")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 3
+LifecycleBinding = 3
+PropertyOverrides = Dictionary[String, Variant]({
+"AnimationName": "slamB_appear"
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_mxjbl"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("14_i3pty")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../World/FBegin/SlamB_Marker2D")]
+PropertyOverrides = Dictionary[String, Variant]({
+"AngleDegrees": 0.0,
+"Stage1Distance": 600.0,
+"Stage1Seconds": 0.25,
+"Stage2EndDegrees": 10.0,
+"Stage2Distance": 6000.0,
+"Stage2Seconds": 0.35,
+"DetectionRadius": 50
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -160,6 +201,7 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_rogue")
 FreeOnFinishArrive = true
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -323,23 +365,37 @@ script = ExtResource("21_aiatk")
 UltimateUpgradeProgress = 0.5
 UltimateProgressThresholds = PackedFloat32Array(0.25, 0.5, 0.75)
 UltimateRetriggerDelay = 1.0
-MeleeAttackName = "RogueAISlam"
+MeleeAttackNameSecond = "RogueAISlamB"
+MeleeAttackName = "RogueAISlamA"
+SkillAttackName = "RogueAISlamB"
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-MinInterAttackDelay = 1.0
+MinInterAttackDelay = 2.0
 QueuedAttackTimeout = 3.0
 
-[node name="RogueAISlam" type="Node" parent="StateMachine/Attack/AttackController"]
+[node name="RogueAISlamA" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("22_melee")
-AttackName = "RogueAISlam"
+AttackName = "RogueAISlamA"
 WarmupDuration = 0.1
 ActiveDuration = 1.6
 RecoveryDuration = 0.5
-CooldownDurationMultiplier = 3.0
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_87lf6")])
+metadata/attack_weight = 100.0
+
+[node name="RogueAISlamB" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("26_slamb")
+AttackName = "RogueAISlamB"
+WarmupDuration = 3.0
+ActiveDuration = 3.0
+RecoveryDuration = 1.5
+DamageMultiplier = 0.0
+AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
+TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+TargetableFactions = 1
+Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_dp8af"), SubResource("Resource_c2rbd"), SubResource("Resource_mxjbl")])
 metadata/attack_weight = 100.0
 
 [node name="RogueAIOverload" type="Node" parent="StateMachine/Attack/AttackController"]

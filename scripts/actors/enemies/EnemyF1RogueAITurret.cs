@@ -78,9 +78,41 @@ namespace Kuros.Actors.Enemies
 			IsPlayerWithinDetectionRange();
 
 			// 沿轨维持间距：**不只是 Attack 期间**——玩家在攻击矩形外时也要自己靠过去。
-			// 受击/冻结/眩晕/死亡期间不接管（与机械侧"被击不驱动移动"同一约定）。
+			// 受击/冻结/眩晕/死亡期间不接管（与机械侧"被击不驱动移动"同一约定）；
+			// 子类可指定"某些攻击期间站桩"（ShouldSuppressSpacingForAttack）——抑制期间两轴都停：
+			// keep-distance 关掉（机械轴不再走），并把滑槽冻结在当前位（否则滑槽会继续滑向最后目标）。
 			if (_keepDistance != null && GodotObject.IsInstanceValid(_keepDistance))
-				_keepDistance.Active = !IsSpacingBlockedState();
+			{
+				bool suppressByAttack = ShouldSuppressSpacingForAttack();
+				_keepDistance.Active = !IsSpacingBlockedState() && !suppressByAttack;
+				if (suppressByAttack) FreezeRailSlide();
+			}
+		}
+
+		/// <summary>攻击期间是否抑制"沿轨保持间距 + 滑槽升降"（子类覆写：如机枪台近战招要求站桩）。
+		/// 默认不抑制——扫射等"边打边退"的设计不受影响。</summary>
+		protected virtual bool ShouldSuppressSpacingForAttack() => false;
+
+		private SlideRailMount? _railMount;
+		private bool _railMountWarned;
+
+		/// <summary>把滑槽冻结在当前坐标（抑制期间每帧调用）：keep-distance 停发目标后，
+		/// 若不冻结，滑槽会按自己的速度继续滑向最后目标——表现为"该阶段滑轨还在升降"。</summary>
+		private void FreezeRailSlide()
+		{
+			_railMount ??= SlideRailMount.FindFor(this);
+			if (_railMount == null || !GodotObject.IsInstanceValid(_railMount))
+			{
+				if (!_railMountWarned)
+				{
+					_railMountWarned = true;
+					GD.PushWarning($"{Name}: 未挂在滑槽（SlideRailMount）下，攻击期间无法冻结滑槽");
+				}
+				return;
+			}
+
+			if (!_railMount.IsResolved) _railMount.ResolveNow();
+			_railMount.SetTarget(_railMount.CurrentRailCoordinate);
 		}
 
 		/// <summary>转身期间不起新招（纵深防御；真正的主闸是"玩家不在前向矩形里"）。</summary>

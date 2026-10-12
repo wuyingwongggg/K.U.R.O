@@ -243,7 +243,7 @@ QueuedAttackTimeout = 3.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("13_kfcxj")
-DashSpeedMultiplier = 7.5
+DashSpeedMultiplier = 6.0
 DashDuration = 0.1
 WarmupDuration = 0.66
 ActiveDuration = 0.2

@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c7cs5rykiiay0"]
+[gd_scene load_steps=35 format=3 uid="uid://c7cs5rykiiay0"]
 
 [ext_resource type="Script" uid="uid://xpeu3h5p7n6t" path="res://scripts/actors/enemies/EnemyNormalGuard5.cs" id="1_podts"]
 [ext_resource type="Resource" uid="uid://biq1vqy017vmi" path="res://resources/loot/Enemy_NormalDrops.tres" id="2_w06kf"]
@@ -44,6 +44,9 @@ height = 900.0
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k8d2p"]
 size = Vector2(500, 250)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w06kf"]
+size = Vector2(1100, 500)
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_bo3lt"]
 radius = 100.0
 height = 300.0
@@ -75,7 +78,6 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_podts")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1200, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -83,7 +85,7 @@ AttackArea = NodePath("Sprite2D/AttackArea")
 Speed = 200.0
 AttackDamage = 10.0
 AttackCooldown = 1.0
-MaxHealth = 1500
+MaxHealth = 250
 AiDescription = "酒店复制人，普通敌人，处理酒店的杂物，接收了错误的指令，使用警棍攻击客户，会胡乱挥舞警棍攻击周围的目标"
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
@@ -206,6 +208,12 @@ shape = SubResource("CapsuleShape2D_4tvwa")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_k8d2p")
 
+[node name="DashArea" type="Area2D" parent="Sprite2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/DashArea"]
+position = Vector2(300, 0)
+shape = SubResource("RectangleShape2D_w06kf")
+
 [node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("5_xh417")
 TargetBone = NodePath("../SpineSprite/SpineBoneNode2")
@@ -255,21 +263,22 @@ KnockbackDistance = 400.0
 KnockbackDuration = 0.25
 RequireAnimationHitTrigger = true
 GrantedImmunities = 24
-metadata/attack_weight = 0.0
+metadata/attack_weight = 75.0
 
 [node name="ShieldStance" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("14_bthkv")
 DashSpeedMultiplier = 7.5
-DashDuration = 0.39999999999999997
+DashDuration = 0.4
 MissStunSeconds = 0.6
-PlayerStunSeconds = 2.0
+PlayerStunSeconds = 1.5
 AttackName = "ShieldStance"
 WarmupDuration = 3.0
 ActiveDuration = 0.53
 RecoveryDuration = 0.14
+CooldownDurationMultiplier = 10.0
 DamageMultiplier = 2.0
-AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
-DamageAreaPath = NodePath("../../../../Sprite2D/AttackArea")
+AttackAreaPath = NodePath("../../../../Sprite2D/DashArea")
+DamageAreaPath = NodePath("../../../../Sprite2D/DashArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 KnockbackDistance = 500.0
 KnockbackDuration = 0.3

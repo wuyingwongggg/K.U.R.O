@@ -12,7 +12,8 @@ namespace Kuros.Actors.Enemies
 	/// （CanBeAffected 是所有效果的总闸，TakeDamage 也先过这道闸），血量只为控制台能识别与销毁
 	/// （KillForced → 伤害被拒 → 基类兜底 QueueFree）。
 	/// 攻击由场景里的 AttackController（EnemyF1RogueAIAttackController）驱动：
-	/// 普攻 RogueAISlam 常驻、大招 RogueAIOverload 由关卡击杀进度阈值武装。
+	/// 普攻 RogueAISlamA / RogueAISlamB（同参数、同权重随机；B 为"潜行砸地"——出手期间整个敌人隐形）常驻、
+		/// 大招 RogueAIOverload 由关卡击杀进度阈值武装。
 	/// 进度满（上升到底）→ **收工**（与磁铁臂 BeginFinish 同构）：不再追踪玩家、不再起招，
 	/// 沿机械轴滑回**滑槽原点**（= 滑槽节点的摆放位置）并停在那里。
 	/// </summary>

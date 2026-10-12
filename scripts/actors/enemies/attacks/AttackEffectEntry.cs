@@ -59,9 +59,17 @@ namespace Kuros.Actors.Enemies.Attacks
                 var path = SpawnMarkerPaths[i];
                 markers[i] = relativeTo.GetNodeOrNull<Marker2D>(path)
                     ?? enemyRoot?.GetNodeOrNull<Marker2D>(path);
+                // 解析失败原本静默回退敌人原点，路径层级写错时无从查起——警告里列出实际检查过的节点全路径
+                if (markers[i] == null)
+                    GD.PushWarning($"[AttackEffectEntry] 锚点路径 \"{path}\" 解析失败：已检查相对节点 {DescribeNode(relativeTo)} 与兜底节点 {DescribeNode(enemyRoot)}，均未找到 Marker2D，特效将生成于拥有者原点。");
             }
             return markers;
         }
+
+        private static string DescribeNode(Node? node)
+            => node != null && GodotObject.IsInstanceValid(node)
+                ? $"\"{node.GetPath()}\""
+                : "<无效节点>";
 
         public bool ResolveFlip(bool fallback)
             => FlipMode == FacingFlipMode.Inherit ? fallback : FlipMode == FacingFlipMode.Flip;

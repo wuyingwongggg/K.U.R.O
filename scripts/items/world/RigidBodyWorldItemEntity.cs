@@ -1364,6 +1364,12 @@ namespace Kuros.Items.World
 				if (actor == LastDroppedBy)
 					return;
 
+				// 免疫目标不构成遮挡（EFFECT_STANDARD 第八节）：跳过 CanBeAffected(null)==false 的目标——
+				// 不停留/不回弹/不记录，投掷物视为未接触、照常飞向落点（伤害侧本就被目标自己的守门拒绝）。
+				// 例：常态免伤的机枪台（悬挂）对投掷物完全透明；进入 Attack 弱点窗口后恢复可命中。
+				if (!actor.CanBeAffected(null))
+					return;
+
 				if (_hitActors.Contains(actor))
 					return;
 

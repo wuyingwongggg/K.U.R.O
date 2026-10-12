@@ -21,6 +21,11 @@ namespace Kuros.Fx
 	public partial class DirectionalSceneEffect : Node2D, IFacingDirectional
 	{
 		[ExportGroup("Animation")]
+		/// <summary>单条指定动画：**非空则无视朝向固定播这一条**，优先于 AnimLeft/AnimRight。
+		/// 适合"只有一段表演"的场景（如 rogueAI 表演体的 leave / move_down / wake_up）——
+		/// AttackEffectEntry 的 PropertyOverrides 只写这一个字段即可指定；
+		/// 留空则维持原双向行为：按 FacingRight 取 AnimRight / AnimLeft。</summary>
+		[Export] public string AnimationName { get; set; } = "";
 		[Export] public string AnimLeft { get; set; } = "SpawnLeft";
 		[Export] public string AnimRight { get; set; } = "SpawnRight";
 		/// <summary>
@@ -39,7 +44,9 @@ namespace Kuros.Fx
 				? AnimationPlayers
 				: FindAnimationPlayers();
 
-			string anim = FacingRight ? AnimRight : AnimLeft;
+			string anim = string.IsNullOrEmpty(AnimationName)
+				? (FacingRight ? AnimRight : AnimLeft)
+				: AnimationName;
 			foreach (var ap in players)
 			{
 				if (ap != null && IsInstanceValid(ap) && ap.HasAnimation(anim))

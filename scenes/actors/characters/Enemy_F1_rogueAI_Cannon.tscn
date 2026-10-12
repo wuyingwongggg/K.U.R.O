@@ -1,8 +1,7 @@
-[gd_scene load_steps=35 format=3 uid="uid://duryvwia2gyyc"]
+[gd_scene load_steps=37 format=3 uid="uid://duryvwia2gyyc"]
 
 [ext_resource type="Script" uid="uid://ccqcbk4merfnt" path="res://scripts/actors/enemies/EnemyF1RogueAICannon.cs" id="1_3cfw7"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_3eyky"]
-[ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="3_3eyky"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_by072"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_r52tf"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_hyfyo"]
@@ -10,7 +9,6 @@
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="8_6o35y"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="9_b70sc"]
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="12_5soab"]
-[ext_resource type="Script" uid="uid://b3yljatiudox4" path="res://scripts/actors/enemies/attacks/EnemyAttackController.cs" id="13_cad0h"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="14_0xw7a"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="15_koqry"]
 [ext_resource type="PackedScene" uid="uid://1i57pudem5og" path="res://resources/effects/EnergyOrbCharge.tscn" id="15_x1ryc"]
@@ -26,6 +24,8 @@
 [ext_resource type="Script" uid="uid://c6irorf7ei407" path="res://scripts/actors/enemies/movement/RailKeepDistanceBehavior.cs" id="28_keepdist"]
 [ext_resource type="Script" uid="uid://birre3ujsghmw" path="res://scripts/controllers/SpineBoneAnchor.cs" id="29_anchor"]
 [ext_resource type="PackedScene" uid="uid://c3a0j5lhckwlq" path="res://resources/effects/EnergyOrbShot.tscn" id="30_orbshot"]
+[ext_resource type="Script" uid="uid://dk5j51adwch8j" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretMeleeAttack.cs" id="31_melee"]
+[ext_resource type="Script" uid="uid://c2kmtjqv6x2tv" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretAttackController.cs" id="32_turretctrl"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_by072")
@@ -38,11 +38,18 @@ radius = 20000.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
 radius = 10000.0
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_melee_detect"]
+radius = 2000.0
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
 size = Vector2(6000, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
 size = Vector2(500, 300)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3cfw7"]
+radius = 500.0
+height = 1800.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
 radius = 100.0
@@ -90,8 +97,7 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_3cfw7")
 BehaviorConfig = ExtResource("2_3eyky")
-IsBoss = true
-BossIcon = ExtResource("3_3eyky")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -99,7 +105,7 @@ AttackArea = NodePath("Sprite2D/AttackArea")
 Speed = 400.0
 AttackDamage = 10.0
 AttackCooldown = 1.0
-MaxHealth = 10000
+MaxHealth = 1000
 AiDescription = "固定在机械桩（滑槽）上的炮台：不移动，按玩家位置用 turn/d_turn 转身，蓄力(preheat)→开火(attack)→收招(recover)；攻击期间会沿桩退开以保持距离"
 LockFacing = true
 StateMachine = NodePath("StateMachine")
@@ -212,6 +218,15 @@ monitorable = false
 [node name="AttackDetectionShape" type="CollisionShape2D" parent="Sprite2D/AttackDetectionArea"]
 shape = SubResource("CircleShape2D_attack_detect")
 
+[node name="MeleeDetectionArea" type="Area2D" parent="Sprite2D"]
+visible = false
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="MeleeDetectionShape" type="CollisionShape2D" parent="Sprite2D/MeleeDetectionArea"]
+shape = SubResource("CircleShape2D_melee_detect")
+
 [node name="AttackArea" type="Area2D" parent="Sprite2D"]
 scale = Vector2(0.99999994, 0.99999994)
 collision_layer = 0
@@ -223,9 +238,16 @@ shape = SubResource("RectangleShape2D_attack")
 
 [node name="HitArea" type="Area2D" parent="Sprite2D"]
 z_index = 10
+collision_layer = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 shape = SubResource("RectangleShape2D_hit")
+
+[node name="MeleeAttackArea" type="Area2D" parent="Sprite2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/MeleeAttackArea"]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_3cfw7")
 
 [node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("6_hyfyo")
@@ -259,8 +281,9 @@ script = ExtResource("19_80jd2")
 script = ExtResource("12_5soab")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
-script = ExtResource("13_cad0h")
+script = ExtResource("32_turretctrl")
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
+QueuedAttackTimeout = 2.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("14_0xw7a")
@@ -275,6 +298,21 @@ TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_v1b7h"), SubResource("Resource_shot")])
+metadata/attack_weight = 100.0
+
+[node name="MeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("31_melee")
+AttackName = "MeleeAttack"
+WarmupDuration = 0.6
+ActiveDuration = 0.2
+RecoveryDuration = 0.4
+CooldownDurationMultiplier = 2.0
+DamageMultiplier = 1.5
+AttackAreaPath = NodePath("../../../../Sprite2D/MeleeAttackArea")
+DamageAreaPath = NodePath("../../../../Sprite2D/MeleeAttackArea")
+TriggerAreaPath = NodePath("../../../../Sprite2D/MeleeDetectionArea")
+KnockbackDistance = 1500.0
+KnockbackDuration = 0.6
 metadata/attack_weight = 100.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
