@@ -7,16 +7,17 @@ namespace Kuros.Actors.Enemies.Animation
 	/// <summary>
 	/// 机械桩炮台的 Spine 动画控制器（炮台 / 以后机枪台共用）。
 	///
-	/// 骨架只有 14 支片子：`idle/d_idle`、`walk/d_walk`、`hit/d_hit`、`attack/d_attack`、
-	/// `preheat/d_preheat`、`recover/d_recover`、`turn/d_turn`（没有 death / stun）。
-	/// `d_*` 是美术手绘的镜像孪生（朝向左），所以**选名规则**是：
-	///   · 静止/受击/开火：按**当前朝向**取（左 = `d_` 前缀）；
+	/// 骨架的动画片以 `d_` 前缀成对（美术手绘的镜像孪生，朝向左；镜像键在动画数据里，
+	/// 引擎永不写 `SpineSprite.scale.x`——见 <see cref="EnemyF1RogueAITurretFacingController"/> 的说明），**选名规则**：
+	///   · 静止/受击/开火/近战：按**当前朝向**取（左 = `d_` 前缀）；
 	///   · 转身：按**起飞时的朝向**取（朝右 → `turn` = 右→左，片子自己完成镜像）。
-	/// 引擎永不写 `SpineSprite.scale.x`（见 <see cref="EnemyF1RogueAITurretFacingController"/> 的说明）。
+	/// 新片可能只画了一侧（如 `skill` 尚无 `d_skill`）：朝向选片统一走 <see cref="ResolveFacingName"/>
+	/// 做存在性回退（暂播基名，美术补片后自动升级）。
 	///
 	/// 状态映射（键取动画名本身，朝向变化会自然重播）：
-	///   Idle/Walk → idle；Hit → hit（走基类的双时间轴管线）；Attack → 按攻击模板阶段 preheat/attack/recover；
-	///   Dying → 用 hit 收尾；Dead → 空动画（无死亡片）；Frozen/CooldownFrozen → 保持当前姿势。
+	///   Idle/Walk → idle；Hit → hit（走基类的双时间轴管线）；
+	///   Attack → 按攻击模板阶段 preheat/attack/recover（炮台族近战 = skill 整段）；
+	///   Dying → 用 hit 收尾；Dead → 空动画；Frozen/CooldownFrozen → 保持当前姿势。
 	/// </summary>
 	public partial class EnemyF1RogueAITurretSpineAnimationController : EnemySpineAnimationController
 	{
@@ -26,10 +27,22 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string PreHeatAnimation { get; set; } = "preheat";
 		[Export] public string AttackAnimation { get; set; } = "attack";
 		[Export] public string RecoverAnimation { get; set; } = "recover";
+		/// <summary>炮台族近战（<see cref="EnemyF1RogueAITurretMeleeAttack"/>）的出手片。骨架已有 `skill`、
+		/// 左向镜像片 `d_skill` 未就绪——选片带存在性回退（暂播基名，补片后自动升级）。</summary>
+		[Export] public string SkillAnimation { get; set; } = "skill";
 
 		/// <summary>朝向 → 动画名：朝左取 `d_` 前缀（这套骨架的 `d_*` 是手绘镜像，引擎不做缩放翻转）。</summary>
 		public static string ResolveName(bool facingRight, string baseName)
 			=> facingRight || string.IsNullOrEmpty(baseName) ? baseName : "d_" + baseName;
+
+		/// <summary>朝向 → 动画名（带**存在性回退**）：朝左优先 `d_` 镜像片；骨架里还没有这支镜像片时回退基名
+		/// （否则播放失败会每帧重试 + 刷屏报错）。美术补上镜像片后自动升级，无需改代码。</summary>
+		private string ResolveFacingName(bool facingRight, string baseName)
+		{
+			string preferred = ResolveName(facingRight, baseName);
+			if (preferred == baseName) return baseName;
+			return SpineHasAnimation(preferred) ? preferred : baseName;
+		}
 
 		/// <summary>当前选片键（无头验证用；也用于排查"配了没反应"）。</summary>
 		public string CurrentKey => _currentKey;
@@ -96,7 +109,8 @@ namespace Kuros.Actors.Enemies.Animation
 		}
 
 		/// <summary>Spine 的 hit 事件 → 转发给正在跑的招式（`TriggerAnimationHit`）。
-		/// 只在 Attack 状态、且事件确实来自本次攻击的片段（attack / d_attack）时转发——
+		/// 只在 Attack 状态、且事件确实来自**本次攻击实际在播的那支片**时转发——
+		/// 炮台族近战播 skill（左向 d_skill 未就绪时回退基名，与选片同一套解析），开火系播 attack / d_attack；
 		/// 受击片 `hit`、转身片等也带同名事件时不会误触。</summary>
 		private void OnSpineHitReceived(int hitStep, string animationName)
 		{
@@ -105,7 +119,9 @@ namespace Kuros.Actors.Enemies.Animation
 			var template = ResolveRunningTemplate();
 			if (template == null) return;
 
-			string expected = ResolveName(Enemy.FacingRight, AttackAnimation);
+			string expected = template is EnemyF1RogueAITurretMeleeAttack
+				? ResolveFacingName(Enemy.FacingRight, SkillAnimation)
+				: ResolveName(Enemy.FacingRight, AttackAnimation);
 			if (!string.Equals(animationName, expected, _comparison)) return;
 
 			template.TriggerAnimationHit();
@@ -176,14 +192,12 @@ namespace Kuros.Actors.Enemies.Animation
 				return;
 			}
 
-			// 炮台族近战招（机枪台/炮台共用）：两方向近战片未就绪，暂用 turn / d_turn 占位。
-			// 注意占位选片与常规 d_ 镜像规则**相反**：turn 收在朝左、d_turn 收在朝右（见转身组件说明），
-			// 所以按"出招收势朝向"取——朝左 = turn、朝右 = d_turn（取 !right 走 ResolveName）。
-			// 蓄力段播一次后保持段尾；出手/收招不重发（回 Idle 后 key 变更，下一次近战自然重播）。
+			// 炮台族近战招（机枪台/炮台共用）：warmup 起播 skill 一次——片段自带全段表演（~1.1s，
+			// 与整招时长接近），播完自然回 Idle；出手/收招不重发（回 Idle 后 key 变更，下一次近战自然重播）。
 			if (template is EnemyF1RogueAITurretMeleeAttack)
 			{
 				if (template.CurrentPhase == EnemyAttackTemplate.AttackPhase.Warmup)
-					PlayOnceIfNeeded("melee_strike", ResolveName(!right, TurnAnimation), AttackMixDuration);
+					PlayOnceIfNeeded("melee_strike", ResolveFacingName(right, SkillAnimation), AttackMixDuration);
 				return;
 			}
 

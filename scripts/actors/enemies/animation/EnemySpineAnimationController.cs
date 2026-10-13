@@ -467,6 +467,28 @@ namespace Kuros.Actors.Enemies.Animation
 			}
 		}
 
+		/// <summary>骨架里是否有这支动画（存在性查询——用于"镜像片未就绪时回退基名"这类选片：
+		/// 播不存在的片会让 PlayOnce/PlayLoop 每帧失败重试并刷屏报错，先查再播）。
+		/// 查询通道不可用 / 查询失败时返回 false，调用方自行兜底。</summary>
+		protected bool SpineHasAnimation(string animationName)
+		{
+			if (string.IsNullOrEmpty(animationName) || _spineHelper == null)
+			{
+				return false;
+			}
+
+			Node targetRoot = Owner ?? (Node?)Enemy ?? this;
+			try
+			{
+				return _spineHelper.Call("has_animation", targetRoot, animationName).AsBool();
+			}
+			catch (Exception ex)
+			{
+				GD.PushWarning($"[{Name}] SpineHasAnimation Failed: {ex.Message}");
+				return false;
+			}
+		}
+
 		private bool PlayInternal(string animationName, SpineAnimationPlaybackMode mode, float mixDuration, float timeScale)
 		{
 			if (string.IsNullOrEmpty(animationName) || _spineHelper == null)

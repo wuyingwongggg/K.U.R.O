@@ -144,6 +144,10 @@ namespace Kuros.Actors.Enemies.Attacks
 		/// <summary>大招期间玩家跑远也不中断（配合全场覆盖的检测区半径）。</summary>
 		protected override bool ShouldInterruptOnPlayerExit() => false;
 
+		/// <summary>大招武装期间绕过呼吸窗：阈值是外部进度轮询量，武装后就该到点即放——否则刚结束的普攻
+		/// 会把大招最多拖 MinInterAttackDelay 秒（空闲循环在该窗内不选招）。普攻之间的间隔不受影响。</summary>
+		protected override bool ShouldBypassInterAttackDelay() => _armed;
+
 		/// <summary>
 		/// 有"已跨过但没放"的阈值时放宽启动判定：RogueAIOverload 由关卡进度驱动，不该被"玩家必须站在攻击范围内"卡住——
 		/// 那两道位置门都属于普攻：①普攻 <see cref="EnemySimpleMeleeAttack"/>.CanStart 要求玩家在它的 AttackArea 里

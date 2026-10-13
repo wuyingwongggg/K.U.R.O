@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="5_l7d0y"]
 [ext_resource type="Script" uid="uid://bdni42t83syt8" path="res://scripts/systems/cutscene/steps/EffectGroupSpawnStep.cs" id="6_kbexi"]
 [ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="7_sliderail"]
-[ext_resource type="PackedScene" uid="uid://c08u473nbnuxg" path="res://scenes/actors/characters/Enemy_F1_rogueAI.tscn" id="8_0ltgo"]
+[ext_resource type="PackedScene" uid="uid://b6dltrf0y1t38" path="res://scenes/actors/characters/Enemy_F1_rogueAI_part1.tscn" id="8_0ltgo"]
 [ext_resource type="PackedScene" uid="uid://cx332v8gr3ytf" path="res://scenes/actors/characters/Enemy_F1_rogueAI_Magnet.tscn" id="8_magnet"]
 [ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="9_w8qgw"]
 

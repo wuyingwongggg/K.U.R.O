@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://c08u473nbnuxg"]
+[gd_scene load_steps=46 format=3 uid="uid://b6dltrf0y1t38"]
 
 [ext_resource type="Script" uid="uid://dwrfftyk78q7q" path="res://scripts/actors/enemies/EnemyF1RogueAI.cs" id="1_rogue"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shadow"]
@@ -88,15 +88,17 @@ script = ExtResource("24_fxentry")
 Scene = ExtResource("14_i3pty")
 EffectOffset = Vector2(nan, nan)
 SpawnTiming = 1
-SpawnMarkerPaths = [NodePath("../../../World/FBegin/SlamB_Marker2D")]
+SpawnMarkerPaths = [NodePath("../../../World/FBegin/SlamB_Marker2D/Marker2D"), NodePath("../../../World/FBegin/SlamB_Marker2D2/Marker2D")]
+SpawnMarkerSelect = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "AngleDegrees": 0.0,
+"DetectionRadius": 50,
+"SpotlightDuration": 2.25,
 "Stage1Distance": 600.0,
 "Stage1Seconds": 0.25,
-"Stage2EndDegrees": 10.0,
 "Stage2Distance": 6000.0,
-"Stage2Seconds": 0.35,
-"DetectionRadius": 50
+"Stage2EndDegrees": 10.0,
+"Stage2Seconds": 0.35
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -129,7 +131,7 @@ SpawnTiming = 1
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 5.0,
-"ShakeStrength": 16.0
+"ShakeStrength": 10.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -141,7 +143,7 @@ SpawnTiming = 0
 LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 3.0,
-"ShakeStrength": 8.0
+"ShakeStrength": 5.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -177,7 +179,7 @@ SpawnTiming = 0
 LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 3.0,
-"ShakeStrength": 8.0
+"ShakeStrength": 7.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -189,11 +191,11 @@ SpawnTiming = 1
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 10.0,
-"ShakeStrength": 16.0
+"ShakeStrength": 10.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
-[node name="Enemy_F1_rogueAI" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
+[node name="Enemy_F1_rogueAI_part1" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 y_sort_enabled = true
 scale = Vector2(0.66, 0.66)
 collision_layer = 2
@@ -201,7 +203,6 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_rogue")
 FreeOnFinishArrive = true
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -369,14 +370,14 @@ MeleeAttackNameSecond = "RogueAISlamB"
 MeleeAttackName = "RogueAISlamA"
 SkillAttackName = "RogueAISlamB"
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-MinInterAttackDelay = 2.0
+MinInterAttackDelay = 10.0
 QueuedAttackTimeout = 3.0
 
 [node name="RogueAISlamA" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("22_melee")
 AttackName = "RogueAISlamA"
 WarmupDuration = 0.1
-ActiveDuration = 1.6
+ActiveDuration = 2.4
 RecoveryDuration = 0.5
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")

@@ -104,6 +104,30 @@ func play_animation(root: Node, anim_name: String, loop: bool, mix_duration: flo
 		print("[SpineWrapper] 可用的動畫列表: ", animations)
 	return false
 
+# 存在性查詢：某支動畫在骨架裡是否存在（選片前自查，避免"播不存在的片"每帧重試刷屏）。
+# 逐層嘗試不同 wrapper 版本暴露的 API；骨架都沒找到時返回 false。
+func has_animation(root: Node, anim_name: String) -> bool:
+	if anim_name.is_empty():
+		return false
+	for sprite in find_spine_nodes(root):
+		var skeleton = sprite.get_skeleton()
+		if not skeleton:
+			continue
+		if skeleton.has_method("has_animation") and skeleton.has_animation(anim_name):
+			return true
+		var data = skeleton.get_data() if skeleton.has_method("get_data") else null
+		if data and data.has_method("find_animation") and data.find_animation(anim_name) != null:
+			return true
+		if data and data.has_method("get_animations"):
+			for anim in data.get_animations():
+				if anim is Object and anim.has_method("get_name") and anim.get_name() == anim_name:
+					return true
+		if skeleton.has_method("get_animations"):
+			for anim in skeleton.get_animations():
+				if anim is Object and anim.has_method("get_name") and anim.get_name() == anim_name:
+					return true
+	return false
+
 func add_animation(root: Node, anim_name: String, loop: bool, delay: float, mix_duration: float = 0.1, time_scale: float = 1.0) -> bool:
 	var played_any := false
 	for sprite in find_spine_nodes(root):

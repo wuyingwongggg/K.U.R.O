@@ -21,6 +21,7 @@ shader_parameter/flow_scale = 0.50000002049012
 shader_parameter/flow_strength = 0.50000002375
 shader_parameter/fov = 60.0000028025
 shader_parameter/tilt_deg = 35.0
+shader_parameter/volume = 1.0
 shader_parameter/spin_speed = 0.6
 shader_parameter/spin_width = 0.5
 shader_parameter/spin_strength = 0.7
@@ -40,6 +41,7 @@ shader_parameter/flow_scale = 0.50000002049012
 shader_parameter/flow_strength = 0.50000002375
 shader_parameter/fov = 60.0000028025
 shader_parameter/tilt_deg = 35.0
+shader_parameter/volume = 1.0
 shader_parameter/spin_speed = 0.6
 shader_parameter/spin_width = 0.5
 shader_parameter/spin_strength = 0.7
@@ -132,3 +134,4 @@ collision_mask = 3
 shape = SubResource("RectangleShape2D_beamhit")
 
 [node name="TipSplash" parent="." instance=ExtResource("4_splash")]
+rotation = -1.5707964

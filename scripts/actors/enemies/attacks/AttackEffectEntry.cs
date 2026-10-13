@@ -24,6 +24,10 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 空数组 = 未配置（回退无锚点，用敌人原点）。Resource 不能 export Node 成员（GD0107），故用 NodePath 存储。</summary>
         [Export] public NodePath[] SpawnMarkerPaths = System.Array.Empty<NodePath>();
 
+        /// <summary>多锚点选择：Sequence = 依次轮换（默认，历史行为）；Random = 每次生成在解析成功的锚点中随机。
+        /// 目前仅 EnemyAttackTemplate 的生成路径接入该模式（玩家/辅助生成路径未接，仍为轮换）。</summary>
+        [Export] public SpawnMarkerSelectMode SpawnMarkerSelect = SpawnMarkerSelectMode.Sequence;
+
         /// <summary>独立朝向翻转。Inherit = 未配置（回退不翻转）。</summary>
         [Export] public FacingFlipMode FlipMode = FacingFlipMode.Inherit;
 
@@ -70,6 +74,31 @@ namespace Kuros.Actors.Enemies.Attacks
             => node != null && GodotObject.IsInstanceValid(node)
                 ? $"\"{node.GetPath()}\""
                 : "<无效节点>";
+
+        /// <summary>选出本次生成使用的锚点下标：Sequence = 传入的轮换下标取模（与历史行为逐字一致）；
+        /// Random = 仅在解析成功的锚点里随机（全失败返回 -1，调用方回退敌人原点）。</summary>
+        public int PickMarkerIndex(Marker2D[] markers, int cycleIndex)
+        {
+            if (markers.Length == 0) return -1;
+            if (SpawnMarkerSelect != SpawnMarkerSelectMode.Random)
+                return cycleIndex % markers.Length;
+
+            int valid = 0;
+            for (int i = 0; i < markers.Length; i++)
+                if (IsValidMarker(markers[i])) valid++;
+            if (valid == 0) return -1;
+
+            int pick = (int)(GD.Randi() % (uint)valid);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                if (!IsValidMarker(markers[i])) continue;
+                if (pick-- == 0) return i;
+            }
+            return -1;
+        }
+
+        private static bool IsValidMarker(Marker2D? marker)
+            => marker != null && GodotObject.IsInstanceValid(marker);
 
         public bool ResolveFlip(bool fallback)
             => FlipMode == FacingFlipMode.Inherit ? fallback : FlipMode == FacingFlipMode.Flip;

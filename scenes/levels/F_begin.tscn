@@ -26,7 +26,7 @@
 [ext_resource type="PackedScene" uid="uid://dva26mfp5yohw" path="res://scenes/objects/Animation_character.tscn" id="23_5ka2g"]
 [ext_resource type="Texture2D" uid="uid://dhpemq2d2f7u2" path="res://assets/environments/scene_6_hotel/地板.png" id="23_kge03"]
 [ext_resource type="Texture2D" uid="uid://vvb74vgvevxu" path="res://assets/environments/scene_6_hotel/地板厚度.png" id="24_82263"]
-[ext_resource type="Script" uid="uid://c0m3fgvcgwqj8" path="res://scripts/controllers/PlayerXRangeFollower.cs" id="24_signfollow"]
+[ext_resource type="Script" uid="uid://c0m3fgvcgwqj8" path="res://scripts/controllers/PlayerAxisRangeFollower.cs" id="24_signfollow"]
 [ext_resource type="Script" uid="uid://d1ji3o13n5eda" path="res://scripts/environments/KillProgressAscendController.cs" id="25_progress"]
 [ext_resource type="Texture2D" uid="uid://dbn8b1atk6ngd" path="res://assets/environments/scene_6_hotel/背景墙.png" id="25_rqd1e"]
 [ext_resource type="Resource" uid="uid://c7dnkxl20sbvy" path="res://resources/cutscene/F_begin_3_intro.tres" id="26_arrive"]
@@ -1466,8 +1466,40 @@ Phases = Array[ExtResource("2_82263")]([SubResource("Resource_rqd1e"), SubResour
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-2350, 900)
 
-[node name="SlamB_Marker2D" type="Marker2D" parent="."]
+[node name="SlamB_Marker2D" type="Node2D" parent="."]
+z_index = 3
 position = Vector2(-1171, 330)
+script = ExtResource("24_signfollow")
+Axis = 1
+MarkerAPath = NodePath("../SlamB_Marker2D_YRangeA")
+MarkerBPath = NodePath("../SlamB_Marker2D_YRangeB")
+StopAtMarkerB = false
+
+[node name="Marker2D" type="Marker2D" parent="SlamB_Marker2D"]
+
+[node name="SlamB_Marker2D2" type="Node2D" parent="."]
+z_index = 3
+position = Vector2(3711, 330)
+script = ExtResource("24_signfollow")
+Axis = 1
+MarkerAPath = NodePath("../SlamB_Marker2D2_YRangeA")
+MarkerBPath = NodePath("../SlamB_Marker2D2_YRangeB")
+StopAtMarkerB = false
+
+[node name="Marker2D" type="Marker2D" parent="SlamB_Marker2D2"]
+rotation = -3.1415927
+
+[node name="SlamB_Marker2D_YRangeA" type="Marker2D" parent="."]
+position = Vector2(-1171, -500)
+
+[node name="SlamB_Marker2D_YRangeB" type="Marker2D" parent="."]
+position = Vector2(-1171, 1100)
+
+[node name="SlamB_Marker2D2_YRangeA" type="Marker2D" parent="."]
+position = Vector2(3711, -500)
+
+[node name="SlamB_Marker2D2_YRangeB" type="Marker2D" parent="."]
+position = Vector2(3711, 1100)
 
 [node name="SlideRailSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-1605, 440)

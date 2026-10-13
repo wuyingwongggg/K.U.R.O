@@ -49,7 +49,7 @@ namespace Kuros.Fx
 	/// 生命周期：所有束同相位 → 先后到点自毁；全部销毁后本节点自毁。
 	/// 兜底时长 <see cref="Lifetime"/> ≤ 0 时自动推导，正数按手动值（过短会告警）。
 	/// </summary>
-	public partial class FanBeam : Node2D, IFollowAnchor, IAttackerProvider
+	public partial class FanBeam : Node2D, IFollowAnchor, IAttackerProvider, IAnchorDirectional
 	{
 		/// <summary>两侧束相对中束的夹角上限（度）：cos 趋于 0 时推导长度发散。导出 Range 与运行时钳制都用它。</summary>
 		private const float MaxSpreadDegrees = 75f;
@@ -241,6 +241,11 @@ namespace Kuros.Fx
 			set { _attacker = value; ForwardTo(beam => beam.Attacker = value); }
 		}
 
+		/// <summary>锚点朝向偏移（度）：生成方按所选锚点的局部旋转注入（无锚点 = 0 = 原有朝向）。
+		/// 叠加到基准 <see cref="AngleDegrees"/>——扇束整体朝向随锚点摆放方向走；
+		/// 不加到根节点变换上（束系脚本假设根不旋转：转根会破坏束轴方向判定/焦痕/溅射的世界向假设）。</summary>
+		public float AnchorAngleDegrees { get; set; }
+
 		public override void _Ready()
 		{
 			if (!ResolveTemplate())
@@ -412,7 +417,7 @@ namespace Kuros.Fx
 
 			float rel = relFactor * spread;
 			float invCos = 1f / Mathf.Cos(Mathf.DegToRad(rel));
-			beam.AngleDegrees = AngleDegrees + rel;
+			beam.AngleDegrees = AngleDegrees + AnchorAngleDegrees + rel;
 			beam.MaxLength = d * invCos;
 			beam.MinLength = Mathf.Max(MinLength, 0f) * invCos;
 		}

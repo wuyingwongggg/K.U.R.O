@@ -32,6 +32,16 @@ namespace Kuros.Actors.Enemies.Attacks
     }
 
     /// <summary>
+    /// 多锚点选择模式（AttackEffectEntry 配置用）：Sequence = 依次轮换（默认，历史行为）；
+    /// Random = 每次生成在**解析成功**的锚点中随机挑一个（某关卡缺该 marker 时自动跳过，不会静默回退敌人原点）。
+    /// </summary>
+    public enum SpawnMarkerSelectMode
+    {
+        Sequence,
+        Random
+    }
+
+    /// <summary>
     /// 特效生命周期绑定（AttackEffectEntry 配置用）：由攻击模板在对应阶段结束时销毁特效，
     /// 替代固定 Duration——适配阶段时长不固定（Hold 挂起等）的场景。None = 特效自行管理（默认）。
     /// 攻击被打断（Cancel）时所有绑定特效统一销毁。
@@ -45,6 +55,17 @@ namespace Kuros.Actors.Enemies.Attacks
         OnActiveEnd,
         /// <summary>Recovery 结束（回 Idle）时销毁——如收招残留特效在攻击结束时消失。</summary>
         OnRecoveryEnd,
+    }
+
+    /// <summary>
+    /// 击退生效轴（Flags，模板级配置）：未勾选的轴分量归零后再归一化——默认全轴（现状）。
+    /// None（都不勾）= 不施加击退。
+    /// </summary>
+    [System.Flags]
+    public enum KnockbackAxis
+    {
+        X = 1,
+        Y = 2,
     }
 
     /// <summary>
@@ -91,7 +112,14 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
         /// <summary>击退位移时长（秒）——由攻击方决定，不受受击方动画时序影响。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
+        /// <summary>击退方向来源：false（默认）= 玩家位置 − 敌人位置（"从敌人体向外推"）；
+        /// true = 玩家 HitArea 中心 − 攻击区形状中心（"从被打中那一块的形状中心向外推"——
+        /// 大范围/长条攻击区用它更贴手感，如横扫、激光墙）。</summary>
         [Export] public bool KnockbackFromHitPosition = false;
+        /// <summary>击退生效轴（默认全轴 = 现状）：未勾选的轴分量归零后再归一化——勾单轴即"固定轴击退"
+        /// （如砸地只推 Y、横扫只推 X，不会斜着飞）。过滤后主方向为零（如仅 X 轴但目标在正上/正下方）
+        /// 时回退"过滤后的朝向向量"；仍为零（轴向配置与回退不匹配）则不施加击退。</summary>
+        [Export(PropertyHint.Flags, "X,Y")] public KnockbackAxis KnockbackAxes = KnockbackAxis.X | KnockbackAxis.Y;
 
         [ExportCategory("Animation Sync")]
         [Export] public bool RequireAnimationHitTrigger = false;
@@ -854,11 +882,15 @@ namespace Kuros.Actors.Enemies.Attacks
                 direction = player.GlobalPosition - Enemy.GlobalPosition;
             }
 
+            // 轴过滤（KnockbackAxes，默认全轴 = 不过滤）：未勾的轴分量归零后再归一化。
+            // 主方向过滤后为零 → 回退"过滤后的 fallback/朝向向量"；仍为零（轴向配置与回退不匹配）→ 放弃击退。
+            direction = MaskKnockbackAxes(direction);
             if (direction == Vector2.Zero)
             {
-                direction = fallbackDirection != Vector2.Zero
+                direction = MaskKnockbackAxes(fallbackDirection != Vector2.Zero
                     ? fallbackDirection
-                    : (Enemy.FacingRight ? Vector2.Right : Vector2.Left);
+                    : (Enemy.FacingRight ? Vector2.Right : Vector2.Left));
+                if (direction == Vector2.Zero) return false;
             }
 
             Vector2 dirNormalized = direction.Normalized();
@@ -874,6 +906,14 @@ namespace Kuros.Actors.Enemies.Attacks
             if (area == null) return null;
             var shape = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             return shape?.GlobalPosition;
+        }
+
+        /// <summary>按 <see cref="KnockbackAxes"/> 过滤方向：未勾选的轴分量归零（未勾 = 该轴不动）。</summary>
+        private Vector2 MaskKnockbackAxes(Vector2 direction)
+        {
+            if ((KnockbackAxes & KnockbackAxis.X) == 0) direction.X = 0f;
+            if ((KnockbackAxes & KnockbackAxis.Y) == 0) direction.Y = 0f;
+            return direction;
         }
 
         protected static void ApplyFrozenExternalDisplacement(SamplePlayer player, Vector2 velocity, float duration)
@@ -980,8 +1020,11 @@ namespace Kuros.Actors.Enemies.Attacks
                 Vector2 basePos;
                 if (entryMarkers.Length > 0)
                 {
-                    int idx = _spawnMarkerIndex % entryMarkers.Length;
-                    var marker = entryMarkers[idx];
+                    // 选择模式由 entry 决定：Sequence（默认）= 历史轮换下标；Random = 在解析成功的锚点中随机
+                    int idx = entry != null
+                        ? entry.PickMarkerIndex(entryMarkers, _spawnMarkerIndex)
+                        : _spawnMarkerIndex % entryMarkers.Length;
+                    var marker = idx >= 0 ? entryMarkers[idx] : null;
                     if (marker != null && GodotObject.IsInstanceValid(marker))
                     {
                         // 锚点偏移按朝向翻 X：常规锚点（按未镜像姿态手工摆放）要翻；
@@ -1021,6 +1064,12 @@ namespace Kuros.Actors.Enemies.Attacks
                     // 特效跟随锚点（marker 是敌人子节点，转向/移动自然跟随），生成方不感知具体类型
                     if (node2D is Kuros.Fx.IFollowAnchor followAnchor)
                         followAnchor.FollowAnchor = usedMarker ?? Enemy;
+
+                    // 锚点朝向：把所选锚点的**局部旋转**（度）交给能消费的特效（FanBeam 叠加到基准角度，
+                    // 扇束朝向随锚点在编辑器里的摆放方向走）；不读全局旋转——骨架锚点（SpineBoneAnchor）
+                    // 的朝向来自骨骼矩阵，读全局会把骨骼姿态卷进来
+                    if (node2D is Kuros.Fx.IAnchorDirectional anchorDirectional)
+                        anchorDirectional.AnchorAngleDegrees = usedMarker != null ? Mathf.RadToDeg(usedMarker.Rotation) : 0f;
 
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;

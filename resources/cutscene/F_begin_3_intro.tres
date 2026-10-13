@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://bdni42t83syt8" path="res://scripts/systems/cutscene/steps/EffectGroupSpawnStep.cs" id="7_v6k0a"]
 [ext_resource type="PackedScene" uid="uid://cw42j1o501x83" path="res://scenes/actors/characters/Enemy_F1_rogueAI_MachineGun.tscn" id="8_dfbxa"]
 [ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="8_v6k0a"]
-[ext_resource type="PackedScene" uid="uid://c08u473nbnuxg" path="res://scenes/actors/characters/Enemy_F1_rogueAI.tscn" id="9_nnnpt"]
+[ext_resource type="PackedScene" uid="uid://xloj3kvnvpo2" path="res://scenes/actors/characters/Enemy_F1_rogueAI_part2.tscn" id="9_nnnpt"]
 
 [sub_resource type="Resource" id="Resource_62k4c"]
 script = ExtResource("2_fade")

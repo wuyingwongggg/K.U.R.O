@@ -55,6 +55,7 @@ Difficulty = ExtResource("18_diff")
 y_sort_enabled = true
 
 [node name="MainCharacter" parent="World" instance=ExtResource("2_s0pgc")]
+AttackDamage = 100.0
 MaxHealth = 12000
 
 [node name="Camera2D" type="Camera2D" parent="World" node_paths=PackedStringArray("Target")]

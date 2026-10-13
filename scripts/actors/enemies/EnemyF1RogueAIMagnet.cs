@@ -2,6 +2,7 @@ using Godot;
 using Kuros.Core;
 using Kuros.Core.Effects;
 using Kuros.Environments;
+using Kuros.Fx;
 
 namespace Kuros.Actors.Enemies
 {
@@ -20,6 +21,10 @@ namespace Kuros.Actors.Enemies
 	{
 		public enum RailEnd { Near, Far }
 		public enum MagnetPhase { Retreat, Approach }
+
+		/// <summary>投送机械分组：开箱系统（EnemySpawnBoxDestroy）按组查找读 <see cref="MaxStagedFurniture"/>，
+		/// 做"家具在场上限"复查。两臂都入组、同场景实例天然同值。</summary>
+		public const string DeliveryGroup = "jar_deliverer";
 
 		[ExportCategory("Phase")]
 		/// <summary>
@@ -62,6 +67,11 @@ namespace Kuros.Actors.Enemies
 		/// <summary>归位到位后销毁自身（退场用：走 QueueFree，不是死亡——不计击杀/不掉落）。
 		/// 注意不可逆：开了它，进度回退也找不回这台机械了。</summary>
 		[Export] public bool FreeOnFinishArrive { get; set; } = false;
+		/// <summary>家具在场上限 F（"家具轴放满"判据）：场上存活的开箱家具（spawn_box_prop 组）达到这个数，
+		/// 且敌人轴也放满（存活开箱敌人 + 已击杀 ≥ 当前段需求数）时**提前收工**退场，不必等击杀满。
+		/// 两轴必须**同时**放满——敌人轴随时可能因"还差量"复活（见罐子投掷闸门），提前退场会失去补投保底。
+		/// 两臂是同一场景的两个实例，天然同值。</summary>
+		[Export(PropertyHint.Range, "0,64,1")] public int MaxStagedFurniture { get; set; } = 8;
 
 		private SlideRailMount? _rail;
 		private KillProgressAscendController? _progress;
@@ -134,6 +144,12 @@ namespace Kuros.Actors.Enemies
 			}
 		}
 
+		public override void _EnterTree()
+		{
+			base._EnterTree();
+			AddToGroup(DeliveryGroup);
+		}
+
 		public override void _Ready()
 		{
 			base._Ready();
@@ -154,8 +170,8 @@ namespace Kuros.Actors.Enemies
 			EnsureResolved();
 			EnsureProgressResolved();
 
-			// 进度满 → 收工：回生成点、不再检测玩家、不再走相位循环
-			if (!_finished && CurrentProgress >= 1f) BeginFinish();
+			// 收工：进度满，或"投放义务已尽"（敌人轴 + 家具轴皆放满）→ 提前退回生成点（或按配置自毁）
+			if (!_finished && (CurrentProgress >= 1f || AreDeliveryDutiesDrained())) BeginFinish();
 			if (!_finished) RefreshPlayerIfNeeded((float)delta);
 
 			TickPhase((float)delta);
@@ -192,6 +208,24 @@ namespace Kuros.Actors.Enemies
 		{
 			if (_progress != null && GodotObject.IsInstanceValid(_progress)) return;
 			_progress = KillProgressAscendController.Find(this);
+		}
+
+		/// <summary>"投放义务已尽"：敌人轴与家具轴**都**放满 → 提前收工（不必等击杀满）。
+		/// 敌人轴放满 = 存活（spawn_box_enemy 组）+ 已击杀 ≥ 当前段需求数（= 投掷闸门的对偶：全部投出）；
+		/// 家具轴放满 = 场上存活开箱家具（spawn_box_prop 组）≥ <see cref="MaxStagedFurniture"/>。
+		/// 无进度控制器 / 未配分段（需求 ≤ 0）→ 恒 false（行为同旧：只在进度满时收工）。
+		/// **罐子投掷闸门（EnemyMagnetJarAttack.CanStart）与这里的提前收工共用本判据**——唯一实现，两处不会漂移。</summary>
+		public bool AreDeliveryDutiesDrained()
+		{
+			if (_progress == null || !GodotObject.IsInstanceValid(_progress)) return false;
+			var phase = _progress.CurrentPhase;
+			if (phase == null || phase.TotalKillsForFull <= 0) return false;
+
+			int aliveEnemies = GetTree().GetNodesInGroup(EnemySpawnBoxDestroy.EnemyTrackGroup).Count;
+			if (aliveEnemies + _progress.KillCount < phase.TotalKillsForFull) return false;
+
+			int aliveFurniture = GetTree().GetNodesInGroup(EnemySpawnBoxDestroy.FurnitureTrackGroup).Count;
+			return aliveFurniture >= MaxStagedFurniture;
 		}
 
 		/// <summary>玩家解析：基类的刷新只发生在它自己的距离查询里（本脚本不调用），所以这里自己按需重解析。</summary>

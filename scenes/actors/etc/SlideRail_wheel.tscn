@@ -40,7 +40,8 @@ KnockbackDistance = 300.0
 TargetableFactions = 5
 SlotStartOffset = -800.0
 SlotEndOffset = 2000.0
-CarriageFarOffset = -1300.0
+CarriageNearOffset = 2500.0
+CarriageFarOffset = -400.0
 Speed = 400.0
 FollowSmoothing = 1.0
 
