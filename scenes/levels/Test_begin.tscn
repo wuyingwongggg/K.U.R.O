@@ -42,7 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="40_21m0k"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="41_y44s2"]
 [ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="42_hxrfn"]
-[ext_resource type="PackedScene" uid="uid://duryvwia2gyyc" path="res://scenes/actors/characters/Enemy_F1_rogueAI_Cannon.tscn" id="43_hxrfn"]
+[ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="45_4812a"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(5800, 3050)
@@ -402,5 +402,7 @@ position = Vector2(-730, 746)
 
 [node name="SlideRail" parent="." instance=ExtResource("42_hxrfn")]
 z_index = 0
-CarriagePrefab = ExtResource("43_hxrfn")
 CarriageSpawn = 2
+
+[node name="Jar_mozhua" parent="." instance=ExtResource("45_4812a")]
+position = Vector2(161, -341)

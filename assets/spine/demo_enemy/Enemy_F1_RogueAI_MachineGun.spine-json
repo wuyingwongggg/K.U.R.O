@@ -314,7 +314,8 @@
 	}
 ],
 "events": {
-	"hit": {}
+	"hit": {},
+	"effect": {}
 },
 "animations": {
 	"attack": {
@@ -890,7 +891,13 @@
 					{}
 				]
 			}
-		}
+		},
+		"events": [
+			{ "time": 0.4, "name": "effect" },
+			{ "time": 0.85, "name": "effect" },
+			{ "time": 1.33, "name": "effect" },
+			{ "time": 1.35, "name": "effect" }
+		]
 	},
 	"d_attack": {
 		"slots": {
@@ -1491,7 +1498,13 @@
 					}
 				}
 			}
-		}
+		},
+		"events": [
+			{ "time": 0.4, "name": "effect" },
+			{ "time": 0.85, "name": "effect" },
+			{ "time": 1.33, "name": "effect" },
+			{ "time": 1.35, "name": "effect" }
+		]
 	},
 	"d_hit": {
 		"bones": {
