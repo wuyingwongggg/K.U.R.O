@@ -1,0 +1,105 @@
+[gd_scene load_steps=24 format=3 uid="uid://d0tu3fq7uceqx"]
+
+[ext_resource type="Texture2D" uid="uid://bg2s5x5d7xf3p" path="res://assets/effect/AttackEffect/boom_b/boom_b0001.png" id="1_d2hg0"]
+[ext_resource type="Texture2D" uid="uid://5bxnffs14fs5" path="res://assets/effect/AttackEffect/boom_b/boom_b0002.png" id="2_f1qtf"]
+[ext_resource type="Texture2D" uid="uid://kpn7wwnclluq" path="res://assets/effect/AttackEffect/boom_b/boom_b0003.png" id="3_dhrom"]
+[ext_resource type="Texture2D" uid="uid://4vk4o5pnamau" path="res://assets/effect/AttackEffect/boom_b/boom_b0004.png" id="4_6cabj"]
+[ext_resource type="Texture2D" uid="uid://dmv4pxybgl2y5" path="res://assets/effect/AttackEffect/boom_b/boom_b0005.png" id="5_agkq3"]
+[ext_resource type="Texture2D" uid="uid://cmf5fiycr045e" path="res://assets/effect/AttackEffect/boom_b/boom_b0006.png" id="6_8t6ef"]
+[ext_resource type="Texture2D" uid="uid://4ct0ths1dxdr" path="res://assets/effect/AttackEffect/boom_b/boom_b0007.png" id="7_w52vr"]
+[ext_resource type="Texture2D" uid="uid://ct8y6sy07rpe6" path="res://assets/effect/AttackEffect/boom_b/boom_b0008.png" id="8_2fs2h"]
+[ext_resource type="Texture2D" uid="uid://bhueu0dkutg2r" path="res://assets/effect/AttackEffect/boom_b/boom_b0009.png" id="9_4pttx"]
+[ext_resource type="Texture2D" uid="uid://dd2xvwys4wqp3" path="res://assets/effect/AttackEffect/boom_b/boom_b0010.png" id="10_addga"]
+[ext_resource type="Texture2D" uid="uid://mho6scqgsfl0" path="res://assets/effect/AttackEffect/boom_b/boom_b0011.png" id="11_unpq7"]
+[ext_resource type="Texture2D" uid="uid://bspa3v38ab42l" path="res://assets/effect/AttackEffect/boom_b/boom_b0012.png" id="12_ygmsp"]
+[ext_resource type="Texture2D" uid="uid://ci8fas1bgrawt" path="res://assets/effect/AttackEffect/boom_b/boom_b0013.png" id="13_yperr"]
+[ext_resource type="Texture2D" uid="uid://l0hyeg6pvdnc" path="res://assets/effect/AttackEffect/boom_b/boom_b0014.png" id="14_y1ode"]
+[ext_resource type="Texture2D" uid="uid://sxpiqoatj42t" path="res://assets/effect/AttackEffect/boom_b/boom_b0015.png" id="15_6xima"]
+[ext_resource type="Texture2D" uid="uid://ytkoogh5df2y" path="res://assets/effect/AttackEffect/boom_b/boom_b0016.png" id="16_0e25v"]
+[ext_resource type="Texture2D" uid="uid://0yk7v527vvw7" path="res://assets/effect/AttackEffect/boom_b/boom_b0017.png" id="17_88n75"]
+[ext_resource type="Texture2D" uid="uid://pgb4dpjwhryi" path="res://assets/effect/AttackEffect/boom_b/boom_b0018.png" id="18_dopcj"]
+[ext_resource type="Texture2D" uid="uid://b836q6ihghi2m" path="res://assets/effect/AttackEffect/boom_b/boom_b0019.png" id="19_18n5e"]
+[ext_resource type="Texture2D" uid="uid://dsl8gqxvftd13" path="res://assets/effect/AttackEffect/boom_b/boom_b0020.png" id="20_hk8f4"]
+[ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="21_w1le6"]
+[ext_resource type="PackedScene" uid="uid://ciwlpetibguab" path="res://shaders/destroy_somke.tscn" id="22_d2hg0"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5tm4x"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_d2hg0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_f1qtf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_dhrom")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_6cabj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_agkq3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_8t6ef")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_w52vr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_2fs2h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_4pttx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_addga")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_unpq7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_ygmsp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_yperr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_y1ode")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_6xima")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_0e25v")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_88n75")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_dopcj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_18n5e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_hk8f4")
+}],
+"loop": false,
+"name": &"default",
+"speed": 30.0
+}]
+
+[node name="BoomRogueAI" type="AnimatedSprite2D"]
+z_index = 4
+z_as_relative = false
+scale = Vector2(1.5, 1.5)
+sprite_frames = SubResource("SpriteFrames_5tm4x")
+script = ExtResource("21_w1le6")
+
+[node name="DestroySomke" parent="." node_paths=PackedStringArray("SelectedLitterParts") instance=ExtResource("22_d2hg0")]
+z_as_relative = false
+SelectedLitterParts = [NodePath("LitterPartA"), NodePath("LitterPartA2"), NodePath("LitterPartB"), NodePath("LitterPartB2"), NodePath("LitterPartD"), NodePath("LitterPartD2")]
+DisplayCount = 3
+ShowLargeSmoke = false

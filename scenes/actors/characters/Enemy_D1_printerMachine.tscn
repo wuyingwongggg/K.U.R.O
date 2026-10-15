@@ -88,7 +88,6 @@ DebugOverlayOffset = Vector2(-1200, 100)
 DebugOverlayFontSize = 64
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-DeathEffect = ExtResource("3_221pg")
 Speed = 250.0
 AttackDamage = 10.0
 AttackCooldown = 3.0
@@ -300,6 +299,7 @@ DeathDuration = 0.67
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("21_dead")
+DeadEffect = ExtResource("3_221pg")
 
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("3_effect")

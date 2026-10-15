@@ -1,15 +1,23 @@
-[gd_scene load_steps=5 format=3 uid="uid://b0s34oo0gj8op"]
+[gd_scene load_steps=8 format=3 uid="uid://b0s34oo0gj8op"]
 
 [ext_resource type="Script" uid="uid://cykf8v4ywrlkb" path="res://scripts/fx/EnemyPaperBullet.cs" id="1_g1yeh"]
 [ext_resource type="Texture2D" uid="uid://bubb6ox7d6mfc" path="res://assets/effect/PrinterMachine/paper.png" id="2_otowl"]
 [ext_resource type="Script" uid="uid://cdtsfiymrq0nx" path="res://scripts/core/effects/AfterimageController.gd" id="3_afterimage"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_ygtr0"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_5koih"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8w4l5"]
+shader = ExtResource("4_ygtr0")
+shader_parameter/softness = 0.3
+shader_parameter/alpha = 0.25
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hgsvh"]
 radius = 60.0
 
 [node name="EnemyPaperBullet" type="Node2D"]
-z_index = 3
+z_index = 2
 z_as_relative = false
+y_sort_enabled = true
 script = ExtResource("1_g1yeh")
 Speed = 1800.0
 MaxVerticalTiltDegrees = 30.0
@@ -34,6 +42,11 @@ texture = ExtResource("2_otowl")
 region_rect = Rect2(0, 0, 128, 128)
 
 [node name="AttackArea" type="Area2D" parent="."]
+
+[node name="Shadow" type="Sprite2D" parent="AttackArea"]
+material = SubResource("ShaderMaterial_8w4l5")
+scale = Vector2(3, 1.75)
+texture = ExtResource("5_5koih")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("CircleShape2D_hgsvh")

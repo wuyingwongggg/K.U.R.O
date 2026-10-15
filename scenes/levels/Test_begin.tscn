@@ -401,5 +401,6 @@ position = Vector2(793, -689)
 position = Vector2(-730, 746)
 
 [node name="SlideRail" parent="." instance=ExtResource("42_hxrfn")]
+z_index = 0
 CarriagePrefab = ExtResource("43_hxrfn")
 CarriageSpawn = 2

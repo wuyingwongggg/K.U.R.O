@@ -17,7 +17,7 @@ namespace Kuros.Actors.Enemies.Animation
 	/// 状态映射（键取动画名本身，朝向变化会自然重播）：
 	///   Idle/Walk → idle；Hit → hit（走基类的双时间轴管线）；
 	///   Attack → 按攻击模板阶段 preheat/attack/recover（炮台族近战 = skill 整段）；
-	///   Dying → 用 hit 收尾；Dead → 空动画；Frozen/CooldownFrozen → 保持当前姿势。
+	///   Dying → death（两骨架已有 death/d_death，镜像缺失回退基名）；Dead → 空动画；Frozen/CooldownFrozen → 保持当前姿势。
 	/// </summary>
 	public partial class EnemyF1RogueAITurretSpineAnimationController : EnemySpineAnimationController
 	{
@@ -27,9 +27,11 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string PreHeatAnimation { get; set; } = "preheat";
 		[Export] public string AttackAnimation { get; set; } = "attack";
 		[Export] public string RecoverAnimation { get; set; } = "recover";
-		/// <summary>炮台族近战（<see cref="EnemyF1RogueAITurretMeleeAttack"/>）的出手片。骨架已有 `skill`、
-		/// 左向镜像片 `d_skill` 未就绪——选片带存在性回退（暂播基名，补片后自动升级）。</summary>
+		/// <summary>炮台族近战（<see cref="EnemyF1RogueAITurretMeleeAttack"/>）的出手片。骨架已有 `skill`/`d_skill`；
+		/// 选片带存在性回退（未来某侧图标缺镜像时回退基名）。</summary>
 		[Export] public string SkillAnimation { get; set; } = "skill";
+		/// <summary>阵亡片：Dying 状态播一次并保持末帧（两骨架已有 death/d_death；镜像缺失时回退基名）。</summary>
+		[Export] public string DieAnimation { get; set; } = "death";
 
 		/// <summary>朝向 → 动画名：朝左取 `d_` 前缀（这套骨架的 `d_*` 是手绘镜像，引擎不做缩放翻转）。</summary>
 		public static string ResolveName(bool facingRight, string baseName)
@@ -164,8 +166,8 @@ namespace Kuros.Actors.Enemies.Animation
 				case "Hit":
 					DriveHitPhaseAnimation(ResolveName(right, HitAnimation), HitMixDuration);
 					break;
-				case "Dying":           // 骨架没有死亡片：用受击片收尾，随后停住
-					PlayOnceIfNeeded("die", ResolveName(right, HitAnimation), DieMixDuration);
+				case "Dying":           // 阵亡片播一次并保持末帧（death/d_death，按朝向取、镜像缺失回退基名）
+					PlayOnceIfNeeded("die", ResolveFacingName(right, DieAnimation), DieMixDuration);
 					break;
 				case "Dead":
 					PlayEmptyIfNeeded();

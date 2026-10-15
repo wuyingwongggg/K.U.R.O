@@ -1,5 +1,5 @@
 using Godot;
-using Kuros.Core;
+using Kuros.Core.Effects;
 
 namespace Kuros.Actors.Enemies
 {
@@ -8,12 +8,14 @@ namespace Kuros.Actors.Enemies
 	///
 	/// **朝向完全靠动画**：这套骨架的 `d_*` 是美术手绘的镜像孪生（朝向左），`turn`/`d_turn` 片子自己完成翻转，
 	/// 所以引擎侧**绝不能写 `SpineSprite.scale.x`**（会双重镜像）——场景上的 `LockFacing = true` 是必要条件
-	/// （它是"引擎不会去翻 scale"的唯一保证：`GameActor.FlipFacing` 会被它拦下）。本脚本因此只做四件事：
+	/// （它是"引擎不会去翻 scale"的唯一保证：`GameActor.FlipFacing` 会被它拦下）。本脚本因此只做五件事：
 	///   1. 朝向提交时镜像"前向锚点"（开火判定形状 + 出膛特效 Marker 的 local X 符号）——
 	///      否则转身后判定/出膛点还留在旧的一侧；
 	///   2. 开火门：转身期间不起新招（主闸其实是那个前向矩形：转身中玩家按定义不在里面）；
 	///   3. 钉在桩上：拒绝一切强制位移；
-	///   4. 沿轨维持间距：玩家在攻击矩形外时也要自己靠过去，否则它会原地站着既不开火也不追。
+	///   4. 沿轨维持间距：玩家在攻击矩形外时也要自己靠过去，否则它会原地站着既不开火也不追；
+	///   5. 常态免伤：伤害与效果一律拒绝、攻击期间按**弱点窗口**放行——窗口由 EnemyWeakpointWindow 组件
+	///      按"正在跑的招"细分（两炮台一致；组件缺失回退"整个 Attack 状态可受击"）。
 	///
 	/// 移动由滑槽负责：场景里挂 <see cref="RailChaseMovement"/> 但长期 `ExternalDrive = true`
 	/// （只保留它的每帧硬钳，不许它自己追人），位移只在 Attack 状态由
@@ -40,6 +42,7 @@ namespace Kuros.Actors.Enemies
 		private EnemyF1RogueAITurretFacingController? _facing;
 		private RailKeepDistanceBehavior? _keepDistance;
 		private RailChaseMovement? _railChase;
+		private EnemyWeakpointWindow? _weakpoint;
 
 		public override void _Ready()
 		{
@@ -125,6 +128,17 @@ namespace Kuros.Actors.Enemies
 			// 有意空实现（炮位固定）
 		}
 
+		/// <summary>常态免伤（同 rogueAI / 磁铁臂 / netAdmin 的"常态免伤族"，见 EFFECT_STANDARD 第八节）：
+		/// 伤害与效果一律拒绝——**攻击期间按"弱点窗口"放行**：窗口由 <see cref="EnemyWeakpointWindow"/> 组件
+		/// 按"正在跑的招"细分（攻击名 → (起, 止) 秒，从该招起手计；未列出的招整个攻击期间开放；
+		/// 招间空档 / 被打断后关闭）。组件未挂时回退"整个 Attack 状态可受击"（防呆，缺失会警告一次）。
+		/// 被放行/被拒的副作用与其他同族一致：自动选目标（追踪弹幕/浮游炮/光束截断）会跳过免疫中的它；
+		/// 想让它挨打时不被硬直，给攻击配 GrantImmunities 霸体即可，那是招式的既有开关）。</summary>
+		public override bool CanBeAffected(ActorEffect? effect)
+			=> _weakpoint != null && GodotObject.IsInstanceValid(_weakpoint)
+				? _weakpoint.IsOpen
+				: (StateMachine?.CurrentState?.Name ?? string.Empty) == "Attack";
+
 		// ── 内部 ──────────────────────────────────────────────────────────
 
 		/// <summary>组件都按**类型**在直接子节点里找：改名/换层级都不用同步路径配置（各只有一个实例，无歧义）。</summary>
@@ -142,6 +156,11 @@ namespace Kuros.Actors.Enemies
 			_railChase = FindChildByType<RailChaseMovement>();
 			if (_railChase != null)
 				_railChase.ExternalDrive = true;   // 不许它自己追人
+
+			// 弱点窗口：常态免伤的可受击窗口按"正在跑的招"细分（表在组件上；缺失回退整个 Attack 状态）
+			_weakpoint = FindChildByType<EnemyWeakpointWindow>();
+			if (_weakpoint == null)
+				GD.PushWarning($"{Name}: 子节点里没有弱点窗口组件（EnemyWeakpointWindow），常态免伤回退为“整个 Attack 状态可受击”");
 		}
 
 		private T? FindChildByType<T>() where T : Node

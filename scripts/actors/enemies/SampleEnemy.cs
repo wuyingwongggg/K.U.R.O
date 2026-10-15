@@ -42,8 +42,6 @@ public partial class SampleEnemy : GameActor
 	/// <summary>死亡时是否给玩家加分数。测试控制台（EnemySpawnConsole）生成的敌人置 false——清场/击杀不应获得分数。</summary>
 	public bool GrantsScore { get; set; } = true;
 
-	[ExportCategory("Effects")]
-	[Export] public PackedScene? DeathEffect { get; set; }
 	private SamplePlayer? _player;
 	private bool _scoreGranted;
 	private string _debugOverlayText = string.Empty;

@@ -1,0 +1,88 @@
+[gd_scene load_steps=9 format=3 uid="uid://bg35anmrs8jy5"]
+
+[ext_resource type="Script" uid="uid://7ua5f3p2rfye" path="res://scripts/fx/FollowAndDestroy.cs" id="1_0ps5k"]
+[ext_resource type="Texture2D" uid="uid://tsqqkjy1fw7g" path="res://assets/effect/WarmingA/warning_000.png" id="2_kmxmf"]
+[ext_resource type="Texture2D" uid="uid://cymmlne2tgmj4" path="res://assets/effect/WarmingA/warning_001.png" id="3_34wpx"]
+[ext_resource type="Texture2D" uid="uid://brkdryfdqw6ty" path="res://assets/effect/WarmingA/warning_002.png" id="4_apwpg"]
+[ext_resource type="Texture2D" uid="uid://bw8lyipvk2lod" path="res://assets/effect/WarmingA/warning_003.png" id="5_trgv6"]
+[ext_resource type="Texture2D" uid="uid://bv54ac2co224k" path="res://assets/effect/WarmingA/warning_004.png" id="6_0c5u6"]
+[ext_resource type="Texture2D" uid="uid://dp4w7kyipubes" path="res://assets/effect/WarmingA/warning_005.png" id="7_36srr"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xpmmc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_kmxmf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_34wpx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_apwpg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_trgv6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_0c5u6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_36srr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_0c5u6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_trgv6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_apwpg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_34wpx")
+}],
+"loop": true,
+"name": &"default",
+"speed": 30.0
+}]
+
+[node name="WarmingB" type="Node2D"]
+z_index = 3
+z_as_relative = false
+script = ExtResource("1_0ps5k")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+modulate = Color(1, 0, 0, 1)
+scale = Vector2(0.33, 0.33)
+sprite_frames = SubResource("SpriteFrames_xpmmc")
+autoplay = "default"
