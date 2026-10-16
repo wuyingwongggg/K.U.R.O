@@ -14,6 +14,9 @@ namespace Kuros.Actors.Enemies.Animation
 	{
 		/// <summary>常态循环动画名（Idle/Walk 共用）。</summary>
 		[Export] public string IdleAnimation { get; set; } = "idle_up";
+		/// <summary>down 形态的常态循环（骨架的 walk_down）：<see cref="DownForm"/> 为真时 Idle/Walk 改用它；
+		/// 空 = 不区分形态（恒用 <see cref="IdleAnimation"/>，旧行为）。</summary>
+		[Export] public string DownIdleAnimation { get; set; } = "walk_down";
 		/// <summary>受击动画名（受击段/回正段由 EnemyHitState 的双时间轴驱动）。</summary>
 		[Export] public string HitAnimation { get; set; } = "hit_down";
 		/// <summary>死亡动画名。</summary>
@@ -30,6 +33,10 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string UltimateChargeAnimation { get; set; } = "attack_warming_up";
 		/// <summary>冲刺段（横扫到另一端）循环动画。</summary>
 		[Export] public string UltimateDashAnimation { get; set; } = "attack_up";
+
+		/// <summary>down 形态开关：由本体（EnemyF1RogueAIPart2）按血量阈值驱动——true 时常态循环切
+		/// <see cref="DownIdleAnimation"/>。受击/死亡本就只有 down 名（hit_down / death_down），不在本开关内。</summary>
+		public bool DownForm { get; set; }
 
 		public override void _Ready()
 		{
@@ -126,6 +133,10 @@ namespace Kuros.Actors.Enemies.Animation
 			PlayLoopIfNeeded("Attack", AttackAnimation, AttackMixDuration);
 		}
 
-		private void PlayIdle() => PlayLoopIfNeeded(IdleAnimation, IdleAnimation, IdleMixDuration);
+		private void PlayIdle()
+		{
+			string idle = DownForm && !string.IsNullOrEmpty(DownIdleAnimation) ? DownIdleAnimation : IdleAnimation;
+			PlayLoopIfNeeded(idle, idle, IdleMixDuration);
+		}
 	}
 }

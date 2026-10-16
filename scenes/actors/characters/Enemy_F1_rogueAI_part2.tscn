@@ -1,6 +1,7 @@
-[gd_scene load_steps=40 format=3 uid="uid://xloj3kvnvpo2"]
+[gd_scene load_steps=42 format=3 uid="uid://xloj3kvnvpo2"]
 
-[ext_resource type="Script" uid="uid://dwrfftyk78q7q" path="res://scripts/actors/enemies/EnemyF1RogueAI.cs" id="1_rogue"]
+[ext_resource type="Script" uid="uid://dacchy18dovd" path="res://scripts/actors/enemies/EnemyF1RogueAIPart2.cs" id="1_rogue"]
+[ext_resource type="Texture2D" uid="uid://binvuyk5j65a2" path="res://assets/ui/hp&exp_bar/boss图标.png" id="2_04486"]
 [ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="4_shadow"]
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_shadowtex"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_follower"]
@@ -19,12 +20,13 @@
 [ext_resource type="PackedScene" path="res://resources/effects/SustainedCameraShakeEffect.tscn" id="19_hj03l"]
 [ext_resource type="Script" uid="uid://beutwy4w43dgl" path="res://scripts/actors/enemies/movement/RailChaseMovement.cs" id="19_rail"]
 [ext_resource type="Script" uid="uid://cngo2bq4cjp2k" path="res://scripts/actors/enemies/animation/EnemyF1RogueAISpineAnimationController.cs" id="20_anim"]
-[ext_resource type="Script" uid="uid://b7yw68yi6g8e4" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIAttackController.cs" id="21_aiatk"]
+[ext_resource type="Script" uid="uid://mq5je5fq1uta" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIPart2AttackController.cs" id="21_aiatk"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="22_melee"]
 [ext_resource type="Script" uid="uid://d21a3xgcca47b" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIUltimateAttack.cs" id="23_ult"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="24_fxentry"]
 [ext_resource type="PackedScene" uid="uid://b1osuixafvh7g" path="res://resources/effects/RogueAIOverloadBeam.tscn" id="25_beam"]
 [ext_resource type="Script" uid="uid://na2w566t6dy7" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAISlamB.cs" id="26_slamb"]
+[ext_resource type="Script" uid="uid://e84825ehiw7v" path="res://scripts/actors/heroes/GhostHealthComponent.cs" id="99_ghost"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_shadow")
@@ -147,7 +149,12 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_rogue")
+DamagePerPart = 100
+DownHealthThreshold = 200
 FreeOnFinishArrive = true
+IsBoss = true
+BossIcon = ExtResource("2_04486")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -156,7 +163,7 @@ ScoreValue = 0
 Speed = 400.0
 AttackDamage = 20.0
 AttackCooldown = 1.0
-MaxHealth = 80
+MaxHealth = 400
 AiDescription = "错乱AI核心本体：大型敌人的主体，造成一切的源头，挂在滑槽轨道上沿轨滑行追击玩家。"
 LockFacing = true
 StateMachine = NodePath("StateMachine")
@@ -224,8 +231,8 @@ position = Vector2(0, -1500)
 skeleton_data_res = ExtResource("7_spine")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = true
-preview_time = 0.4
+preview_frame = false
+preview_time = 0.0
 script = ExtResource("8_spinectrl")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -390,3 +397,9 @@ script = ExtResource("20_anim")
 IdleMixDuration = 0.1
 WalkMixDuration = 0.1
 DieMixDuration = 0.1
+
+[node name="GhostHealthComponent" type="Node" parent="."]
+script = ExtResource("99_ghost")
+GhostHoldDuration = 0.3
+GhostDescendRatio = 0.2
+HealHoldDuration = 0.3

@@ -45,6 +45,9 @@ public partial class SlideRailMount : Node2D
 	[Export] public NodePath VisualPath { get; set; } = new("Visual");
 	/// <summary>被挂载的机械场景：配了就自动实例化进 Mount（"机械固定在滑槽内"的父子结构）。</summary>
 	[Export] public PackedScene? CarriagePrefab { get; set; }
+	/// <summary>机械入驻时给它加的组（空 = 不加，旧行为不变）。供按组识别"这台滑槽上的机械"的联动系统用
+	/// （如 rogueAI 二阶段本体统计被摧毁的部件）——过场生成时用 PropertyOverrides 覆盖。</summary>
+	[Export] public string CarriageGroupToAdd { get; set; } = "";
 	/// <summary>机械出生锚点：Far = 场外/待命端（默认）、Near = 贴玩家端、Origin = 滑槽原点（关卡摆放点/轨道中点）。
 	/// Far/Near 与行程端点同源，勾了 <see cref="FlipCarriageEnds"/> 时跟着一起镜像到另一侧。
 	/// 过场生成的 PropertyOverrides 会在入树前写好这个值，正好赶得上 <see cref="_Ready"/> 里的摆位。</summary>
@@ -113,6 +116,8 @@ public partial class SlideRailMount : Node2D
 		if (CarriagePrefab != null && mount.GetChildCount() == 0)
 		{
 			var carriage = CarriagePrefab.Instantiate<Node2D>();
+			if (!string.IsNullOrEmpty(CarriageGroupToAdd))
+				carriage.AddToGroup(CarriageGroupToAdd);
 			mount.AddChild(carriage);
 			carriage.Position = SpawnLocalPosition;
 		}

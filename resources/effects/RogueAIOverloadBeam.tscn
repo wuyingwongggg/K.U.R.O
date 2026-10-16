@@ -39,7 +39,7 @@ shader_parameter/core_start_length = 0.50000002375
 shader_parameter/fade = 1.0
 shader_parameter/flow_noise = ExtResource("3_hv1ib")
 shader_parameter/flow_speed = Vector2(10, 20)
-shader_parameter/flow_scale = 10.000000471740119
+shader_parameter/flow_scale = 10.00000047174012
 shader_parameter/flow_strength = 0.2000000095
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tw34n"]
@@ -51,7 +51,7 @@ shader_parameter/core_start_length = 0.50000002375
 shader_parameter/fade = 1.0
 shader_parameter/flow_noise = ExtResource("3_hv1ib")
 shader_parameter/flow_speed = Vector2(-10, -20)
-shader_parameter/flow_scale = 10.000000471740119
+shader_parameter/flow_scale = 10.00000047174012
 shader_parameter/flow_strength = 0.2000000095
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_beamhit"]
@@ -59,6 +59,7 @@ size = Vector2(1, 50)
 
 [node name="RogueAIOverloadBeam" type="Node2D"]
 z_index = 3
+z_as_relative = false
 y_sort_enabled = true
 script = ExtResource("1_script")
 TargetableFactions = 7

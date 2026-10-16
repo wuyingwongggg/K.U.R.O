@@ -36,6 +36,7 @@
 [ext_resource type="Texture2D" uid="uid://dxrn8y2or0pgc" path="res://assets/environments/scene_6_hotel/右墙壁.png" id="29_0pejj"]
 [ext_resource type="Texture2D" uid="uid://kohvycrlmg3h" path="res://assets/environments/scene_6_hotel/地板前面遮挡升降机.png" id="31_dnirc"]
 [ext_resource type="Texture2D" uid="uid://bfca73pu7u6xc" path="res://assets/environments/scene_6_hotel/龙门吊右轮子.png" id="33_som2a"]
+[ext_resource type="PackedScene" uid="uid://dqgd0gotcsogg" path="res://scenes/environments/jar_mozhua_sprite.tscn" id="34_npcwp"]
 
 [sub_resource type="Resource" id="Resource_rqd1e"]
 script = ExtResource("2_82263")
@@ -45,14 +46,6 @@ ArrivalTriggerPath = NodePath("CutsceneTrigger3")
 ArrivalTriggerDelay = 2.5
 MinSpeedScale = 0.5
 MaxSpeedScale = 5.0
-metadata/_custom_type_script = "uid://vf5y6hhn28rq"
-
-[sub_resource type="Resource" id="Resource_som2a"]
-script = ExtResource("2_82263")
-PhaseId = "stage_top"
-TotalKillsForFull = 5
-AnimationPlayerPath = NodePath("")
-LoopAnimationName = ""
 metadata/_custom_type_script = "uid://vf5y6hhn28rq"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_neu0b"]
@@ -640,6 +633,30 @@ tracks/37/keys = {
 "update": 1,
 "values": [true]
 }
+tracks/38/type = "value"
+tracks/38/imported = false
+tracks/38/enabled = true
+tracks/38/path = NodePath("Environments/FloorTop/Jar_mozhua_sprite:visible")
+tracks/38/interp = 1
+tracks/38/loop_wrap = true
+tracks/38/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/39/type = "value"
+tracks/39/imported = false
+tracks/39/enabled = true
+tracks/39/path = NodePath("Environments/FloorTop/Jar_mozhua_sprite2:visible")
+tracks/39/interp = 1
+tracks/39/loop_wrap = true
+tracks/39/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_xart7"]
 resource_name = "opening"
@@ -1189,6 +1206,30 @@ tracks/7/keys = {
 "update": 1,
 "values": [true, false]
 }
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Environments/FloorTop/Jar_mozhua_sprite:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1.035265),
+"update": 1,
+"values": [true, false]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Environments/FloorTop/Jar_mozhua_sprite2:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_s4rg7"]
 _data = {
@@ -1461,7 +1502,7 @@ _data = {
 [node name="FBegin" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("25_progress")
-Phases = Array[ExtResource("2_82263")]([SubResource("Resource_rqd1e"), SubResource("Resource_som2a")])
+Phases = Array[ExtResource("2_82263")]([SubResource("Resource_rqd1e")])
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
 position = Vector2(-2350, 900)
@@ -1783,16 +1824,22 @@ texture = ExtResource("29_0pejj")
 [node name="LeftRailWheel" type="Sprite2D" parent="Environments/FloorTop"]
 z_index = 5
 material = SubResource("ShaderMaterial_som2a")
-position = Vector2(-3250, -596)
+position = Vector2(-3250, -540)
 scale = Vector2(0.66, 0.8)
 texture = ExtResource("6_rqd1e")
 
 [node name="RightRailWheel" type="Sprite2D" parent="Environments/FloorTop"]
 z_index = 5
 material = SubResource("ShaderMaterial_som2a")
-position = Vector2(3380, -600)
+position = Vector2(3380, -540)
 scale = Vector2(0.66, 0.8)
 texture = ExtResource("33_som2a")
+
+[node name="Jar_mozhua_sprite" parent="Environments/FloorTop" instance=ExtResource("34_npcwp")]
+position = Vector2(-2785, 285)
+
+[node name="Jar_mozhua_sprite2" parent="Environments/FloorTop" instance=ExtResource("34_npcwp")]
+position = Vector2(2915, 285)
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 visible = false

@@ -5,7 +5,7 @@ using Kuros.Core;
 namespace Kuros.Actors.Heroes
 {
     /// <summary>
-    /// 虚血（Ghost Health）组件：挂在玩家根节点下，管理三层血条所需的显示值状态机。
+    /// 虚血（Ghost Health）组件：挂在对象根节点下，管理三层血条所需的显示值状态机。
     /// - 受伤：HealthFillBar（真实红条）立即掉；虚血（GhostValue）停留受伤前值一段时间后缓慢下降；
     ///   HurtBar（深红虚血条）锁定跟随虚血。
     /// - 治疗：虚血（逻辑值）立即对齐当前血量；RecoveryBar（青色恢复条）立即=当前血量（露出恢复段）；

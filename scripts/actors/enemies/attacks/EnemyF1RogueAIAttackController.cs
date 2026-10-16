@@ -14,7 +14,9 @@ namespace Kuros.Actors.Enemies.Attacks
 	///   · 大招**真正起手**才前进指针（避免被别的攻击抢走这一发）；
 	///   · Warmup/Active 被打断 = 没放出来 → 指针回退一格（Recovery 打断视为已释放，不退）；
 	///   · 轮询式判断天然幂等：本体晚于阈值生成、一次跨多个阈值都不会漏/重
-	///     （所以不需要事件订阅，也不需要 Initialize 追赶）。
+	///     （所以不需要事件订阅，也不需要 Initialize 追赶）；
+	///   · **判据源可替换**：二阶段本体（RogueAI part2）的"血量"由部件驱动、关卡进度在 phase-2 恒满，
+	///     它改用血量阈值——见 EnemyF1RogueAIPart2AttackController（本类的三个 protected virtual 即为此留的接缝）。
 	/// 无进度源（场景里没有 KillProgressAscendController，如单独测试本体）→ 不触发，只警告一次。
 	/// 注意：模板**节点名必须等于 AttackName**（TrySetAttackWeight/IsAttack 都按节点名比较），
 	/// 且两招用全局唯一名（IsOtherEnemyAttacking 按攻击名在全体敌人间去重）。
@@ -42,7 +44,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		// 调试开关用基类 EnemyAttackController.EnableDebugLogs（此前子类又声明了一份同名导出：CS0108 + 编辑器只显示一个）
 
 		private KillProgressAscendController? _progress;
-		private float[] _sortedThresholds = System.Array.Empty<float>();
+		protected float[] _sortedThresholds = System.Array.Empty<float>();
 		private int _consumedUltimates;
 		private bool _armed;
 		private bool _ultUpgraded;
@@ -200,8 +202,9 @@ namespace Kuros.Actors.Enemies.Attacks
 			ConfigureNextAttack();
 		}
 
-		/// <summary>"已跨过阈值但还没放"：直接轮询当前进度，天然幂等（本体晚生成、一次跨多个都不会漏/重）。</summary>
-		private bool ShouldTriggerUltimate()
+		/// <summary>"已跨过阈值但还没放"：直接轮询当前进度，天然幂等（本体晚生成、一次跨多个都不会漏/重）。
+		/// protected virtual：子类可换判据源（二阶段本体换回血量阈值，见 EnemyF1RogueAIPart2AttackController）。</summary>
+		protected virtual bool ShouldTriggerUltimate()
 		{
 			if (_sortedThresholds.Length == 0) return false;
 			if (_consumedUltimates >= _sortedThresholds.Length) return false;
@@ -221,8 +224,8 @@ namespace Kuros.Actors.Enemies.Attacks
 		/// <summary>当前生效的大招名：未升级 = 原版；升级后 = Pro（两者互斥，权重只给这一个）。</summary>
 		private string ActiveUltimateName => _ultUpgraded ? UltimateProAttackName : UltimateAttackName;
 
-		/// <summary>进度是否已到"换强化版"的值（与阈值同源，轮询读取）。</summary>
-		private bool ShouldUpgradeUltimate()
+		/// <summary>进度是否已到"换强化版"的值（与阈值同源，轮询读取）。protected virtual：同上，子类可换判据源。</summary>
+		protected virtual bool ShouldUpgradeUltimate()
 			=> _progress != null && GodotObject.IsInstanceValid(_progress)
 			   && _progress.Progress >= UltimateUpgradeProgress;
 
@@ -266,8 +269,9 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 		}
 
-		/// <summary>阈值缓存：钳到 0..1、去重、**升序**——进度单调上升、指针只往前走（血阈值那套是降序）。</summary>
-		private void RefreshThresholdCache()
+		/// <summary>阈值缓存：钳到 0..1、去重、**升序**——进度单调上升、指针只往前走（血阈值那套是降序，
+		/// 子类重写为降序缓存，见 EnemyF1RogueAIPart2AttackController）。</summary>
+		protected virtual void RefreshThresholdCache()
 		{
 			var list = new List<float>();
 			if (UltimateProgressThresholds != null)

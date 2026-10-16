@@ -13,13 +13,16 @@ namespace Kuros.Fx
 	///
 	/// 时间轴（本节点自己的时钟，子束只是零件）：**每段各自带 {时长, 距离, 结束角}**——
 	/// 底边"已推进基距"由三段接力推出（段内匀速），所以**总量全部推导**：
-	/// 基距 D = 三段距离之和、各段速度 = 该段距离 ÷ 该段时长、角度 = 四个折点的折线。
+	/// 基距 D = 三段距离之和、各段速度 = 该段距离 ÷ 该段时长。
 	/// **没有"整体变量"**（不再有总距离/总速度字段）→ 各段互不冲突，任何配置下三段都恰好推满 D。
-	///   BeamDelay（前摇）→ 段 1（S1 秒推 S1 距离，半角张到 S1 结束角）→ 停 1（P1 秒，进度冻结）
+	///   BeamDelay（前摇）→ 段 1（S1 秒推 S1 距离，半角张到 S1 结束角）→ 停 1（P1 秒，基距冻结）
 	///   → 段 2（→ 段 2 结束角）→ 停 2（P2 秒）→ 段 3（推完剩下的，半角到 S3 结束角 = 终态）
 	///   → 完全张开 → FadeDuration 淡出。
-	///   · 夹角按**已推进基距**四点折线映射（0 → 段1结束角 → 段2结束角 → 段3结束角），
-	///     映射出来的是**半角 S(t)**，各束再按 N 均分到 [−S(t), +S(t)]；停顿期间进度冻结 → 角度自动冻结；
+	///   · 夹角 S(t)（半角）= **独立的时间折线**（与基距进度解耦），6 个关键点：
+	///     0 → 段1结束角（段1秒内）→ 停1结束角（停1秒内）→ 段2结束角（段2秒内）
+	///     → 停2结束角（停2秒内）→ 段3结束角（段3秒内，后保持），每小节内线性；
+	///     **停 N 结束角 = -1（默认）时跟随本段结束角**（= 旧行为：停顿期间角度冻结），
+	///     填 ≥0 可在停顿期间继续张、回摆或停住再转；各束再按 N 均分到 [−S(t), +S(t)]；
 	///   · **伤害**：每段有自己的开关（<see cref="DamageInStage1"/> / <see cref="DamageInStage2"/> /
 	///     <see cref="DamageInStage3"/>，停顿时段沿用其前一段的开关；默认段 3 关 = 只做视觉）；
 	///   · **伪体积**：<see cref="Pseudo3DFromStage"/> 段起点之前恒 0（平面），之后在
@@ -91,6 +94,9 @@ namespace Kuros.Fx
 		[Export(PropertyHint.Range, "0,75,1")] public float Stage1EndDegrees { get; set; } = 25f;
 		/// <summary>停 1 时长（秒）：0 = 不停。</summary>
 		[Export(PropertyHint.Range, "0,10,0.05")] public float Pause1Seconds { get; set; } = 1f;
+		/// <summary>停 1 结束时的张开半角（度）：-1（默认）= 跟随段 1 结束角（停顿期间角度冻结，旧行为）；
+		/// ≥0 = 停顿 1 期间从段 1 结束角线性转到本值（继续张 / 回摆都行）。</summary>
+		[Export(PropertyHint.Range, "-1,75,1")] public float Pause1EndDegrees { get; set; } = -1f;
 
 		/// <summary>段 2 时长（秒）。</summary>
 		[Export(PropertyHint.Range, "0,10,0.05")] public float Stage2Seconds { get; set; } = 0.5f;
@@ -100,6 +106,9 @@ namespace Kuros.Fx
 		[Export(PropertyHint.Range, "0,75,1")] public float Stage2EndDegrees { get; set; } = 50f;
 		/// <summary>停 2 时长（秒）：0 = 不停。</summary>
 		[Export(PropertyHint.Range, "0,10,0.05")] public float Pause2Seconds { get; set; } = 2f;
+		/// <summary>停 2 结束时的张开半角（度）：-1（默认）= 跟随段 2 结束角（冻结，旧行为）；
+		/// ≥0 = 停顿 2 期间从段 2 结束角线性转到本值。</summary>
+		[Export(PropertyHint.Range, "-1,75,1")] public float Pause2EndDegrees { get; set; } = -1f;
 
 		/// <summary>段 3 时长（秒）：收尾段——把剩余基距推完（= 完全张开）。</summary>
 		[Export(PropertyHint.Range, "0,10,0.05")] public float Stage3Seconds { get; set; } = 1f;
@@ -297,7 +306,7 @@ namespace Kuros.Fx
 			float progress = ResolveOpeningProgress();
 			TickScorches();   // 焦痕拖尾：纯视觉，独立于下面的"变化才下发"判据
 
-			float spread = ResolveSpreadDegrees(progress);
+			float spread = ResolveSpreadDegrees();
 			bool damageEnabled = ResolveDamageEnabled();
 			float pseudo3D = ResolvePseudo3DWeight();
 			if (Mathf.IsEqualApprox(progress, _appliedProgress) && Mathf.IsEqualApprox(spread, _appliedSpread)
@@ -347,7 +356,7 @@ namespace Kuros.Fx
 			float progress = ResolveOpeningProgress();
 			TickScorches();   // 焦痕拖尾：纯视觉，独立于下面的"变化才下发"判据
 
-			float spread = ResolveSpreadDegrees(progress);
+			float spread = ResolveSpreadDegrees();
 			bool damageEnabled = ResolveDamageEnabled();
 			float pseudo3D = ResolvePseudo3DWeight();
 			_appliedProgress = progress;
@@ -605,27 +614,37 @@ namespace Kuros.Fx
 			beam.VisualZIndex = ResolveStageZIndex();   // 只改视觉层（Visual）：判定带/根节点不碰
 		}
 
-		/// <summary>当前半角 S(t)（度）：按**已推进基距**的四点折线——0 → 段1结束角 → 段2结束角 → 段3结束角（终态）。
-		/// 折点进度 = 累计距离 ÷ D（推导）；停顿期间进度冻结 → 角度自动冻结。</summary>
-		private float ResolveSpreadDegrees(float progress)
+		/// <summary>当前半角 S(t)（度）：**独立的时间折线**（与基距进度解耦）——6 个关键点：
+		/// 0 → 段1结束角（段1秒内）→ 停1结束角（停1秒内）→ 段2结束角（段2秒内）
+		/// → 停2结束角（停2秒内）→ 段3结束角（段3秒内，后保持），每小节内线性。
+		/// 停 N 结束角 = -1 时跟随本段结束角（停顿期间冻结 = 旧行为；旧版按基距进度映射，
+		/// 段内匀速下与时间线性逐帧等价）。段距离为 0 不再影响角度（时间折线天然分段）。</summary>
+		private float ResolveSpreadDegrees()
 		{
-			float d = ResolveBaseDistance();
-			if (d <= 0f) return 0f;
-
 			float t1 = Mathf.Clamp(Mathf.Max(Stage1EndDegrees, 0f), 0f, MaxSpreadDegrees);
 			float t2 = Mathf.Clamp(Mathf.Max(Stage2EndDegrees, 0f), 0f, MaxSpreadDegrees);
 			float t3 = Mathf.Clamp(Mathf.Max(Stage3EndDegrees, 0f), 0f, MaxSpreadDegrees);
+			float q1 = Pause1EndDegrees >= 0f ? Mathf.Clamp(Pause1EndDegrees, 0f, MaxSpreadDegrees) : t1;
+			float q2 = Pause2EndDegrees >= 0f ? Mathf.Clamp(Pause2EndDegrees, 0f, MaxSpreadDegrees) : t2;
 
-			float d1 = Mathf.Max(Stage1Distance, 0f);
-			float p1 = Mathf.Clamp(d1 / d, 0f, 1f);
-			float p2 = Mathf.Clamp((d1 + Mathf.Max(Stage2Distance, 0f)) / d, 0f, 1f);
+			float phase = Mathf.Max(_elapsed - Mathf.Max(BeamDelay, 0f), 0f);
 
-			if (p1 <= 0.0001f) return t3 * progress;                                   // 段 1 无距离 → 单一角度随进度
-			if (progress <= p1) return t1 * (progress / p1);
-			if (p2 <= p1 + 0.0001f)                                                    // 段 2 无距离 → 退化成两段
-				return t1 + (t3 - t1) * ((progress - p1) / Mathf.Max(1f - p1, 0.0001f));
-			if (progress <= p2) return t1 + (t2 - t1) * ((progress - p1) / (p2 - p1));
-			return t2 + (t3 - t2) * ((progress - p2) / Mathf.Max(1f - p2, 0.0001f));
+			float s1 = Mathf.Max(Stage1Seconds, 0f);
+			if (phase < s1) return t1 * (phase / Mathf.Max(s1, 0.0001f));
+
+			float e1 = s1 + Mathf.Max(Pause1Seconds, 0f);
+			if (phase < e1) return Mathf.Lerp(t1, q1, (phase - s1) / Mathf.Max(Mathf.Max(Pause1Seconds, 0f), 0.0001f));
+
+			float s2e = e1 + Mathf.Max(Stage2Seconds, 0f);
+			if (phase < s2e) return Mathf.Lerp(q1, t2, (phase - e1) / Mathf.Max(Mathf.Max(Stage2Seconds, 0f), 0.0001f));
+
+			float e2 = s2e + Mathf.Max(Pause2Seconds, 0f);
+			if (phase < e2) return Mathf.Lerp(t2, q2, (phase - s2e) / Mathf.Max(Mathf.Max(Pause2Seconds, 0f), 0.0001f));
+
+			float s3e = e2 + Mathf.Max(Stage3Seconds, 0f);
+			if (phase < s3e) return Mathf.Lerp(q2, t3, (phase - e2) / Mathf.Max(Mathf.Max(Stage3Seconds, 0f), 0.0001f));
+
+			return t3;
 		}
 
 		/// <summary>兜底总时长（秒）：Lifetime > 0 用手动值，≤ 0 自动推导

@@ -37,6 +37,10 @@ namespace Kuros.Systems.Cutscene
         /// 登记的是实例**根节点**，子树随父节点一起释放。</summary>
         [Export] public string SpawnTag { get; set; } = "";
 
+        /// <summary>生成时给实例根节点加的组（空 = 不加，旧行为不变）。供联动系统按组识别本次生成物
+        /// （如 rogueAI 二阶段本体统计被摧毁的部件罐子）。</summary>
+        [Export] public string GroupToAdd { get; set; } = "";
+
         /// <summary>跳过过场时是否仍然生成（默认 true）。关键生成（道具/轨道等）保持 true；
         /// 纯视觉（爆炸/烟雾）可设 false，避免按跳过时闪现一下。</summary>
         [Export] public bool GenerateOnSkip { get; set; } = true;

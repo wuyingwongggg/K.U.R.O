@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=27 format=3 uid="uid://c7dnkxl20sbvy"]
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=30 format=3 uid="uid://c7dnkxl20sbvy"]
 
 [ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_step"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_fade"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://cw42j1o501x83" path="res://scenes/actors/characters/Enemy_F1_rogueAI_MachineGun.tscn" id="8_dfbxa"]
 [ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="8_v6k0a"]
 [ext_resource type="PackedScene" uid="uid://xloj3kvnvpo2" path="res://scenes/actors/characters/Enemy_F1_rogueAI_part2.tscn" id="9_nnnpt"]
+[ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="11_yqcfi"]
 
 [sub_resource type="Resource" id="Resource_62k4c"]
 script = ExtResource("2_fade")
@@ -84,6 +85,7 @@ SpawnType = 2
 TargetNodePath = NodePath("../World/FBegin/SlideRailSpawnPoint")
 SpawnTag = "SlideRailWheelLeft"
 PropertyOverrides = Dictionary[String, Variant]({
+"CarriageGroupToAdd": "rogueai_part2_part",
 "CarriagePrefab": ExtResource("7_2si8d")
 })
 metadata/_custom_type_script = "uid://dhch281hkryms"
@@ -95,6 +97,7 @@ SpawnType = 2
 TargetNodePath = NodePath("../World/FBegin/SlideRailSpawnPoint2")
 SpawnTag = "SlideRailWheeRight"
 PropertyOverrides = Dictionary[String, Variant]({
+"CarriageGroupToAdd": "rogueai_part2_part",
 "CarriagePrefab": ExtResource("8_dfbxa"),
 "FlipCarriageEnds": true
 })
@@ -114,9 +117,27 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://dhch281hkryms"
 
+[sub_resource type="Resource" id="Resource_w2wmn"]
+script = ExtResource("5_xm0fp")
+EffectScene = ExtResource("11_yqcfi")
+SpawnType = 2
+TargetNodePath = NodePath("../World/FBegin/SlideRailSpawnPoint")
+SpawnTag = "JarLeft"
+GroupToAdd = "rogueai_part2_part"
+metadata/_custom_type_script = "uid://dhch281hkryms"
+
+[sub_resource type="Resource" id="Resource_afdnt"]
+script = ExtResource("5_xm0fp")
+EffectScene = ExtResource("11_yqcfi")
+SpawnType = 2
+TargetNodePath = NodePath("../World/FBegin/SlideRailSpawnPoint2")
+SpawnTag = "JarRight"
+GroupToAdd = "rogueai_part2_part"
+metadata/_custom_type_script = "uid://dhch281hkryms"
+
 [sub_resource type="Resource" id="Resource_yqcfi"]
 script = ExtResource("7_v6k0a")
-Effects = Array[ExtResource("5_xm0fp")]([SubResource("Resource_untg7"), SubResource("Resource_cogwa"), SubResource("Resource_3erl1")])
+Effects = Array[ExtResource("5_xm0fp")]([SubResource("Resource_untg7"), SubResource("Resource_cogwa"), SubResource("Resource_3erl1"), SubResource("Resource_w2wmn"), SubResource("Resource_afdnt")])
 metadata/_custom_type_script = "uid://bdni42t83syt8"
 
 [resource]

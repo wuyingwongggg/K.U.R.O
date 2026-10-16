@@ -113,7 +113,7 @@ OffsetFlip = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [node name="Enemy_F1_rogueAI_Cannon" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
-z_index = 3
+z_index = 4
 y_sort_enabled = true
 scale = Vector2(0.6, 0.6)
 collision_layer = 2

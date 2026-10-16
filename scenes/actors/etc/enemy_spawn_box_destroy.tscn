@@ -1,4 +1,4 @@
-[gd_scene load_steps=70 format=3 uid="uid://b5rh3kfbsbo18"]
+[gd_scene load_steps=69 format=3 uid="uid://b5rh3kfbsbo18"]
 
 [ext_resource type="Script" uid="uid://d1oj6mf8un18u" path="res://scripts/fx/EnemySpawnBoxDestroy.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="2_76gsl"]
@@ -42,7 +42,6 @@
 [ext_resource type="PackedScene" uid="uid://c5bi1g6rymvgo" path="res://scenes/items/Furniture_B_vendingMachineA.tscn" id="18_f26"]
 [ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="18_f27"]
 [ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="18_f29"]
-[ext_resource type="PackedScene" uid="uid://dixwca6u7ayek" path="res://scenes/items/Furniture_D_printerMachineA.tscn" id="18_f31"]
 [ext_resource type="PackedScene" uid="uid://bah3sya2wxtwv" path="res://scenes/items/Furniture_D_tableOfficeB.tscn" id="18_f32"]
 [ext_resource type="PackedScene" uid="uid://de5p3deu3oubn" path="res://scenes/items/Furniture_D_waterMachineA.tscn" id="18_f36"]
 [ext_resource type="PackedScene" uid="uid://dwurrf77iaxo2" path="res://scenes/items/Furniture_D_whiteBoardA.tscn" id="18_f37"]
@@ -219,7 +218,7 @@ _data = {
 top_level = true
 script = ExtResource("1_script")
 EnemyScenes = Array[PackedScene]([ExtResource("2_76gsl"), ExtResource("3_4gwgl"), ExtResource("4_fonow"), ExtResource("5_d8t1y"), ExtResource("6_m0yr0"), ExtResource("5_roads"), ExtResource("6_n2ego"), ExtResource("7_17hji"), ExtResource("8_5q7j8"), ExtResource("9_83ejs"), ExtResource("10_osu5u"), ExtResource("11_838ui")])
-PropScenes = Array[PackedScene]([ExtResource("12_roads"), ExtResource("13_n2ego"), ExtResource("14_5q7j8"), ExtResource("15_83ejs"), ExtResource("16_osu5u"), ExtResource("17_838ui"), ExtResource("18_f02"), ExtResource("18_f03"), ExtResource("18_f12"), ExtResource("18_f13"), ExtResource("18_f15"), ExtResource("18_f17"), ExtResource("18_f18"), ExtResource("18_f20"), ExtResource("18_f24"), ExtResource("18_f25"), ExtResource("18_f26"), ExtResource("18_f27"), ExtResource("18_f29"), ExtResource("18_f31"), ExtResource("18_f32"), ExtResource("18_f36"), ExtResource("18_f37")])
+PropScenes = Array[PackedScene]([ExtResource("12_roads"), ExtResource("13_n2ego"), ExtResource("14_5q7j8"), ExtResource("15_83ejs"), ExtResource("16_osu5u"), ExtResource("17_838ui"), ExtResource("18_f02"), ExtResource("18_f03"), ExtResource("18_f12"), ExtResource("18_f13"), ExtResource("18_f15"), ExtResource("18_f17"), ExtResource("18_f18"), ExtResource("18_f20"), ExtResource("18_f24"), ExtResource("18_f25"), ExtResource("18_f26"), ExtResource("18_f27"), ExtResource("18_f29"), ExtResource("18_f32"), ExtResource("18_f36"), ExtResource("18_f37")])
 EnemyPoolProbability = 0.7
 SpawnMarkerPath = NodePath("Marker2D")
 AnimatedSpritePath = NodePath("SpawnBoxBG")
