@@ -669,7 +669,7 @@ collision_mask = 7
 script = ExtResource("14_gatectrl")
 Stages = Array[ExtResource("15_dstage")]([SubResource("Resource_gate_stage1"), SubResource("Resource_gate_stage2")])
 DeathAnimation = "gate_knockback"
-DeclaredFaction = 2
+DeclaredFaction = 1
 
 [node name="Broken" type="Sprite2D" parent="."]
 visible = false

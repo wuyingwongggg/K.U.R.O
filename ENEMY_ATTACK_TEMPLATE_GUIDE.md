@@ -40,7 +40,7 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 | | `CooldownDuration` | 攻击冷却时长（秒） |
 | **Combat** | `MaxAllowedAngleToPlayer` | 可发起攻击的最大角度（度） |
 | | `AnimationName` | 播放的动画路径 |
-| **Area** | `TriggerAreaPath` | 触发/追踪区（玩家不在圈内本招不进候选；未配置 = 不限制）——详见[区域语义](#区域语义trigger--attack--damage) |
+| **Area** | `TriggerAreaPath` | 触发/追踪区（玩家不在圈内本招不进候选；未配置 = 不限制）——**需子类覆写 `IsPlayerInDetectionRange()` 才真正接入选招（基类默认恒 true，普通攻击配了无效）**，详见[区域语义](#区域语义trigger--attack--damage) |
 | | `AttackAreaPath` | 攻击区/起手盒（近战族起手门；未配置回退根节点 `AttackArea`） |
 | | `DamageAreaPath` | 伤害结算区（伤害永远落在这块区；未配置回退 `AttackArea`） |
 | **Knockback** | `KnockbackDistance` / `KnockbackSpeed` / `KnockbackDuration` | 击退参数 |
@@ -80,7 +80,7 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 
 | 配置 | 角色 | 谁在消费 |
 |---|---|---|
-| `TriggerAreaPath` | **触发/追踪区**——玩家不在圈内，本招**不进加权随机池**（选招资格） | `IsPlayerInDetectionRange`（控制器 `IsAttackEligible`） |
+| `TriggerAreaPath` | **触发/追踪区**——玩家不在圈内，本招**不进加权随机池**（选招资格）。⚠️ **基类 `IsPlayerInDetectionRange()` 默认恒 true**——字段要生效，须由子类覆写该钩子（如 AreaDetection / TurretMelee / Pinball / Guard4 / Guard5 / NetAdmin；Guard4Counter、Wheel 走自覆写的 `CanStart`）；**SimpleMelee 等普通攻击不查此区，配了等于没配** | `IsPlayerInDetectionRange`（控制器 `IsAttackEligible`） |
 | `AttackAreaPath` | **攻击区/起手盒**——进盒才起手（近战族的 `CanStart` 门） | 近战族 `CanStart`；缺省回退敌人根节点 `AttackArea` |
 | `DamageAreaPath` | **伤害区**——伤害结算落点 | `PerformAttackNow()` → `Enemy.PerformAttack(DamageArea ?? AttackArea)` |
 
@@ -101,7 +101,7 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 area.OverlapsBody(player) || player.IsHitByArea(area)
 ```
 
-两种写法都认，区域怎么摆都不会静默失灵。基类 `IsPlayerInTriggerArea` 就是这么写的；炮台近战的 `IsPlayerInsideArea` 是同一套（目前是私有副本）。
+两种写法都认，区域怎么摆都不会静默失灵。基类 `IsPlayerInTriggerArea` 就是这么写的（**能力/工具，自身不接入任何门**——需消费者主动调用才生效）；炮台近战的 `IsPlayerInsideArea` 是同一套（目前是私有副本）。
 
 ### 各脚本的判定写法现状（2026-10 清点）
 
