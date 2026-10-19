@@ -467,6 +467,12 @@ namespace Kuros.Items.World
                     }
                     if (isEnemy)
                     {
+                        // 免疫目标不构成遮挡（与实体侧命中入口同一门，EFFECT_STANDARD 第八节）：
+                        // 常态免伤的目标（如悬挂中的机枪台）预览同样视为不存在——不截断轨迹、不落标记；
+                        // 进入其弱点窗口（CanBeAffected 放行）后恢复阻挡预测。
+                        var blockActor = hitNode as GameActor ?? ResolveActorFrom(hitNode);
+                        if (blockActor == null || !blockActor.CanBeAffected(null))
+                            continue;
                         if (EnemyBlocks(item)) return phase;
                         continue;
                     }

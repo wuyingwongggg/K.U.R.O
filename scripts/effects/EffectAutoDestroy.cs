@@ -18,6 +18,10 @@ namespace Kuros.Fx
 
 		/// <summary>在自身位置生成的特效场景列表（可多个）。生成时机由 SpawnDelay 决定。</summary>
 		[Export] public PackedScene[] SpawnOnDestroyScenes { get; set; } = Array.Empty<PackedScene>();
+		/// <summary>衍生特效的生成偏移（相对本特效位置）。按**未镜像（朝右）姿态**摆——
+		/// 本体被水平镜像（Scale.X &lt; 0：自身翻转或生成方外翻都会落到这里）时 X 自动翻，
+		/// 偏移始终跟随实际画面朝向。默认 (0,0) = 生成在原点（旧行为）。</summary>
+		[Export] public Vector2 SpawnOffset { get; set; } = Vector2.Zero;
 		/// <summary>生成衍生特效时按自身缩放等比缩放衍生特效（fx.Scale ×= 自身 Scale）。默认关闭。</summary>
 		[Export] public bool ScaleSpawnWithSelf { get; set; } = false;
 		/// <summary>衍生特效生成延迟（秒）：0 = 销毁时生成（与销毁同帧）；N&gt;0 = 动画开始 N 秒后生成（不随销毁）。</summary>
@@ -76,12 +80,24 @@ namespace Kuros.Fx
 
 			Vector2 spawnPos = GlobalPosition;
 
+			// 衍生特效偏移：按未镜像（朝右）姿态摆，本体被水平镜像时 X 自动翻——
+			// fx.GlobalPosition 是绝对赋值，不翻的话朝左时偏移会留在画面的错误一侧
+			Vector2 spawnOffset = Scale.X < 0f
+				? new Vector2(-SpawnOffset.X, SpawnOffset.Y)
+				: SpawnOffset;
+
 			foreach (var scene in SpawnOnDestroyScenes)
 			{
 				if (scene == null) continue;
 				var fx = scene.Instantiate<Node2D>();
 				spawnParent?.AddChild(fx);
-				fx.GlobalPosition = spawnPos;
+
+				// 自身是"世界锚定"的（TopLevel，如落在滑槽机械旁的爆炸）→ 衍生特效同样锚定：
+				// 否则它们会挂在 Mount 这类会移动的父节点下，跟着滑槽一起漂走
+				if (TopLevel)
+					fx.TopLevel = true;
+
+				fx.GlobalPosition = spawnPos + spawnOffset;
 
 				// 继承自身调制：预热器（ParticleEffectWarmer）全透明预热时，衍生特效同样透明，
 				// 避免预热结束后衍生特效在屏幕左上角闪现；正常游戏（自身 Modulate=1,1,1,1）无变化

@@ -16,9 +16,8 @@ namespace Kuros.Actors.Enemies.Attacks
     /// </summary>
     public partial class EnemyKickAttack : EnemyAttackTemplate
     {
-        [ExportCategory("Areas")]
-        [Export] public NodePath DetectionAreaPath = new NodePath();
-        [Export] public NodePath KickAttackAreaPath = new NodePath();
+        // 区域由基类统一提供：TriggerAreaPath（触发判定区；未配置 = 不做额外位置限制）
+        // 与 DamageAreaPath（伤害区；未配置 = AttackArea）。旧的 DetectionAreaPath / KickAttackAreaPath 已并入基类。
 
         [ExportCategory("Dash")]
 		/// <summary>冲刺速度 = 基础 Speed × 倍率（倍率语义：基础速度调整时冲刺自动适配）。</summary>
@@ -45,7 +44,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
 
         private Area2D? _detectionArea;
-		private Area2D? _kickArea;
         private EnemyAttackController? _controller;
 		private bool _playerInsideDetection;
 
@@ -69,23 +67,15 @@ namespace Kuros.Actors.Enemies.Attacks
             base.OnInitialized();
             _controller = GetParent() as EnemyAttackController;
 
-            _detectionArea = ResolveArea(DetectionAreaPath);
+            // 触发判定区走基类：TriggerAreaPath 配了就要求玩家在区内；未配置 = 不做额外限制。
+            // （配置了却解析不到时基类诊断会报警告，这里不再自己报"回退"）
+            _detectionArea = TriggerArea;
             if (_detectionArea != null)
             {
 				_detectionArea.Monitoring = true;
                 _detectionArea.BodyEntered += OnDetectionAreaBodyEntered;
 				_detectionArea.BodyExited += OnDetectionAreaBodyExited;
 			}
-			else
-			{
-				GD.PushWarning($"[EnemySmashAttack] DetectionArea not found for {Enemy?.Name ?? Name}, fallback to DetectionRange.");
-            }
-
-	            _kickArea = ResolveArea(KickAttackAreaPath);
-	            if (_kickArea == null)
-            {
-	                _kickArea = AttackArea;
-            }
 
 			SetPhysicsProcess(true);
         }
@@ -192,6 +182,16 @@ namespace Kuros.Actors.Enemies.Attacks
 				return;
 			}
 
+			// frozen/受击状态下停止所有追踪与冲刺逻辑（与 MoveAttack 同款守卫）：
+			// 缺失时，触发区轮询会在玩家位于区内时把刚进入的眩晕/受击状态强行切回 Attack，
+			// 眩晕被立刻抽走（guard4 的反击破招眩晕复现过）。
+			var stateName = Enemy.StateMachine?.CurrentState?.Name;
+			if (stateName == "Frozen" || stateName == "CooldownFrozen"
+				|| stateName == "Hit" || stateName == "Dying" || stateName == "Dead")
+			{
+				return;
+			}
+
 			// 快照延迟计时
 			if (_waitingForSnapshot)
 			{
@@ -280,8 +280,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			// DealDamage 必须在 Player 检测之前无条件调用，
 			// 确保非 Player 目标（WorldItem 等）也能被处理
-			ApplyAttackAreaMaskOverride(_kickArea);
-			DealDamage(_kickArea!);
+			ApplyAttackAreaMaskOverride(DamageArea);
+			DealDamage(DamageArea!);
 
 		            if (!IsPlayerInsideKickAttackZone(player))
 	            {
@@ -295,11 +295,6 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private bool IsPlayerInsideKickAttackZone(SamplePlayer player)
         {
-	            if (_kickArea != null)
-            {
-				return player.IsHitByArea(_kickArea);
-            }
-
 			return player.IsHitByArea(AttackArea);
         }
 
@@ -353,6 +348,16 @@ namespace Kuros.Actors.Enemies.Attacks
             if (IsRunning || IsOnCooldown) return;
 			if (Enemy.AttackTimer > 0) return;
 			if (_postAttackCooldown > 0f) return;
+
+			// 冻结/受击状态下不触发攻击（与 MoveAttack 同款守卫）：
+			// BodyEntered 信号直达本方法——眩晕/受击期间玩家跨入触发区会被强切回 Attack，
+			// 刚进入的眩晕/受击状态被立刻抽走（guard4 的反击破招眩晕复现过）。
+			var currentStateName = Enemy.StateMachine?.CurrentState?.Name;
+			if (currentStateName == "Frozen" || currentStateName == "CooldownFrozen"
+				|| currentStateName == "Hit" || currentStateName == "Dying" || currentStateName == "Dead")
+			{
+				return;
+			}
 
 			if (_controller != null && _controller.PeekQueuedAttack() != this)
 			{
@@ -444,8 +449,8 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			_animationHitCount++;
 
-			ApplyAttackAreaMaskOverride(_kickArea);
-			DealDamage(_kickArea!);
+			ApplyAttackAreaMaskOverride(DamageArea);
+			DealDamage(DamageArea!);
 
 			if (_animationHitCount == KnockbackOnHitIndex && IsPlayerInsideKickAttackZone(Enemy.PlayerTarget))
 			{
@@ -453,25 +458,20 @@ namespace Kuros.Actors.Enemies.Attacks
 			}
 		}
 
-        private Area2D? ResolveArea(NodePath path)
-        {
-            if (path.IsEmpty)
-            {
-                return null;
-            }
-
-            var area = GetNodeOrNull<Area2D>(path);
-            if (area != null)
-            {
-                return area;
-            }
-
-            return Enemy?.GetNodeOrNull<Area2D>(path);
-        }
-
         private void AlignFacingWithPlayer()
         {
             if (Enemy == null) return;
+
+            // CanStart 本是"能不能起手"的查询，但这里带朝向对齐的副作用——
+            // 被调试面板（QueuedCanStart）等无条件调用时，会隔着眩晕/受击把敌人翻向玩家。
+            // 控制状态下直接跳过；真正的对齐在出手路径 PrepareDashTowardsPlayer 里会再做一次。
+            var st = Enemy.StateMachine?.CurrentState?.Name;
+            if (st == "Frozen" || st == "CooldownFrozen"
+                || st == "Hit" || st == "Dying" || st == "Dead")
+            {
+                return;
+            }
+
             Vector2 toPlayer = Enemy.GetDirectionToPlayer();
             if (Mathf.Abs(toPlayer.X) > 0.01f)
             {

@@ -178,6 +178,7 @@ namespace Kuros.Core
 			// 让死亡也走完整的"后仰 + 击退"表现；Hit 结束后 IsDyingDeferred 清空，门恢复关闭。
 			if (IsDeadOrDying && !IsDyingDeferred) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			if (!AllowsKnockback()) return;
 
 			// 旧二参 API 保留（fx/爆炸/投掷物）：无时长语义——sentinel duration=0，
 			// 由受击方 Hit 状态按自身 HitImpactDuration 解析（speed 借存于 Distance 槽位）。
@@ -198,6 +199,7 @@ namespace Kuros.Core
 			// 同 ApplyKnockback：致死反馈窗口内放行致死一击自身的击退
 			if (IsDeadOrDying && !IsDyingDeferred) return;
 			if (ActiveImmunities.HasFlag(ImmunityFlags.ForcedMovement)) return;
+			if (!AllowsKnockback()) return;
 			if (direction == Vector2.Zero || distance <= 0f) return;
 
 			_knockDirection = direction.Normalized();
@@ -206,6 +208,12 @@ namespace Kuros.Core
 			_knockWriteMsec = Time.GetTicksMsec();
 			_hasKnockRequest = true;
 		}
+
+		/// <summary>本次击退是否放行。子类可拦截——**玩家侧就靠它**：`MainCharacter` 覆写成
+		/// "消费 `ConsumePendingHitKnockback()`"，即只有"刚结算的这次伤害允许被击退"时才推得动。
+		/// 因此**调用点不需要也不应该自己判断无敌帧**（见 EFFECT_STANDARD.md 第四条）。
+		/// 注意：这个钩子带副作用（读一次即消费），每次命中只会放行一次击退。</summary>
+		protected virtual bool AllowsKnockback() => true;
 
 		/// <summary>击退请求有效期（毫秒）：超过视为滞留陈旧（Frozen/超甲期间写入无人消费），消费时丢弃。
 		/// 攻击链内"先写入后进 Hit"（同帧/紧邻）远小于该值，不受影响。</summary>
@@ -252,6 +260,39 @@ namespace Kuros.Core
 		private float _knockDuration = 0f;
 		private ulong _knockWriteMsec = 0;
 		private bool _hasKnockRequest = false;
+
+		// ── 受击后眩晕（PENDING STUN）────────────────────────────────────────────
+		// 眩晕与受击不再互斥：施加方在"目标刚进受击"时改用挂起（RequestStunAfterHit），
+		// 受击状态（含后仰 + 击退位移）完整走完后，由 Hit 状态出口消费并转入 Frozen——
+		// 眩晕时长从 hit 结束时刻起算（hit 期间不消耗眩晕时间）。
+		private float _stunAfterHitSeconds;
+		private ulong _stunAfterHitAtMsec;
+
+		/// <summary>挂起一次"受击结束后眩晕"：先播完整受击（含击退），Hit 结束时再进 Frozen。
+		/// 请求带时间戳，超过 <see cref="StunAfterHitLifetimeMsec"/> 未被消费则作废（防陈旧请求被后续受击误用）。
+		/// 多个来源重复请求取较大时长。</summary>
+		public void RequestStunAfterHit(float seconds)
+		{
+			if (seconds <= 0f) return;
+			_stunAfterHitSeconds = Mathf.Max(_stunAfterHitSeconds, seconds);
+			_stunAfterHitAtMsec = Time.GetTicksMsec();
+		}
+
+		/// <summary>Hit 状态出口消费挂起眩晕：有有效请求 → true 并给出时长（消费即清空）。</summary>
+		public bool TryConsumeStunAfterHit(out float seconds)
+		{
+			seconds = _stunAfterHitSeconds;
+			_stunAfterHitSeconds = 0f;
+			if (seconds <= 0f) return false;
+			return Time.GetTicksMsec() - _stunAfterHitAtMsec <= StunAfterHitLifetimeMsec;
+		}
+
+		/// <summary>丢弃挂起眩晕（死亡时）。</summary>
+		public void ClearStunAfterHit() => _stunAfterHitSeconds = 0f;
+
+		/// <summary>挂起眩晕有效期（毫秒）：受击链从"伤害结算"到"Hit 状态自然走出"约 0.5~1s，
+		/// 给足余量即可；超时的请求视为陈旧（例如目标死亡/被外部状态劫走），丢弃。</summary>
+		private const ulong StunAfterHitLifetimeMsec = 3000;
 
 		public float GetSecondsSinceLastDamageTaken()
 		{
@@ -528,6 +569,13 @@ namespace Kuros.Core
 				return false;
 			if (damage <= 0) return false;
 
+			// 楼层难度：敌人打出的伤害按攻击者的系数放大。
+			// 放在这里而不是各攻击特效里——多数敌人的伤害写在**特效**上（BoomDmgEffect / 弹幕 / DoT…），
+			// 攻击者只知道系数（SampleEnemy.OutgoingDamageMultiplier），受击侧是唯一必经点。
+			// 防溢出：ComputerAAnnihilationEffect 之类会用 int.MaxValue 打伤害，直接整数乘会翻负。
+			if (attacker is SampleEnemy enemyAttacker && enemyAttacker.OutgoingDamageMultiplier != 1f)
+				damage = (int)Math.Min((double)int.MaxValue, Math.Round(damage * (double)enemyAttacker.OutgoingDamageMultiplier));
+
 			if (IncomingDamageMultiplier != 1f)
 				damage = Mathf.Max(1, Mathf.RoundToInt(damage * IncomingDamageMultiplier));
 
@@ -735,6 +783,7 @@ namespace Kuros.Core
 			if (_deathStarted) return;
 
 			_deathStarted = true;
+			ClearStunAfterHit();   // 死亡后挂起眩晕不再生效（Hit 出口的死亡分支会先走）
 
 			// 致死伤害的受击反馈（Hit 状态）未走完：不立即切 Dying，等 Hit 结束时由
 			// TryEnterDeferredDeath 接手（Hit 期间 FSM 只放行 Dying/Dead，状态不会被其他状态抢走）

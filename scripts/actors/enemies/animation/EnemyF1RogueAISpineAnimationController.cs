@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies.Attacks;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -13,12 +14,29 @@ namespace Kuros.Actors.Enemies.Animation
 	{
 		/// <summary>常态循环动画名（Idle/Walk 共用）。</summary>
 		[Export] public string IdleAnimation { get; set; } = "idle_up";
+		/// <summary>down 形态的常态循环（骨架的 walk_down）：<see cref="DownForm"/> 为真时 Idle/Walk 改用它；
+		/// 空 = 不区分形态（恒用 <see cref="IdleAnimation"/>，旧行为）。</summary>
+		[Export] public string DownIdleAnimation { get; set; } = "walk_down";
 		/// <summary>受击动画名（受击段/回正段由 EnemyHitState 的双时间轴驱动）。</summary>
 		[Export] public string HitAnimation { get; set; } = "hit_down";
 		/// <summary>死亡动画名。</summary>
 		[Export] public string DieAnimation { get; set; } = "death_down";
 		/// <summary>攻击动画槽位：攻击未实现，留空 = 不切换。（以后有 attack_up / attack_down 两套时再扩。）</summary>
-		[Export] public string AttackAnimation { get; set; } = string.Empty;
+		[Export] public string AttackAnimation { get; set; } = "attack_up";
+
+		[ExportCategory("Ultimate 大招循环")]
+		/// <summary>大招攻击名（与 AttackController 上的一致）。</summary>
+		[Export] public string UltimateAttackName { get; set; } = "RogueAIOverload";
+		/// <summary>强化版大招攻击名（进度升级后取代上面那个）：解析"正在跑的是哪一支"时两者都试。</summary>
+		[Export] public string UltimateProAttackName { get; set; } = "RogueAIOverloadPro";
+		/// <summary>蓄力段（滑向随机一端）循环动画。</summary>
+		[Export] public string UltimateChargeAnimation { get; set; } = "attack_warming_up";
+		/// <summary>冲刺段（横扫到另一端）循环动画。</summary>
+		[Export] public string UltimateDashAnimation { get; set; } = "attack_up";
+
+		/// <summary>down 形态开关：由本体（EnemyF1RogueAIPart2）按血量阈值驱动——true 时常态循环切
+		/// <see cref="DownIdleAnimation"/>。受击/死亡本就只有 down 名（hit_down / death_down），不在本开关内。</summary>
+		public bool DownForm { get; set; }
 
 		public override void _Ready()
 		{
@@ -58,8 +76,8 @@ namespace Kuros.Actors.Enemies.Animation
 				case "Dead":
 					PlayEmptyIfNeeded();
 					break;
-				case "Attack":          // 攻击未接入：配了动画名才播
-					PlayAttackIfConfigured();
+				case "Attack":
+					PlayAttackPhaseAnimation();
 					break;
 				case "Frozen":          // 骨架没有眩晕动画：保持当前姿势，不切换
 					break;
@@ -69,12 +87,56 @@ namespace Kuros.Actors.Enemies.Animation
 			}
 		}
 
+		/// <summary>Attack 状态：大招按模板阶段播对应循环（蓄力 / 冲刺），其它攻击走 AttackAnimation 槽位。</summary>
+		private void PlayAttackPhaseAnimation()
+		{
+			var ultimate = ResolveRunningUltimate();
+			if (ultimate != null)
+			{
+				switch (ultimate.Phase)
+				{
+					case EnemyF1RogueAIUltimateAttack.UltPhase.Charge:
+						PlayLoopIfNeeded(UltimateChargeAnimation, UltimateChargeAnimation, WalkMixDuration);
+						return;
+					case EnemyF1RogueAIUltimateAttack.UltPhase.Dash:
+						PlayLoopIfNeeded(UltimateDashAnimation, UltimateDashAnimation, WalkMixDuration);
+						return;
+					default:   // Settle / None：收招，回常态循环
+						PlayIdle();
+						return;
+				}
+			}
+
+			PlayAttackIfConfigured();
+		}
+
+		/// <summary>正在跑的是不是大招（原版或强化版）；是则返回模板实例（供读 Phase），否则 null。</summary>
+		private EnemyF1RogueAIUltimateAttack? ResolveRunningUltimate()
+		{
+			var controller = Enemy?.StateMachine?.GetNodeOrNull<EnemyAttackController>("Attack/AttackController");
+			if (controller == null) return null;
+
+			return ResolveRunningUltimate(controller, UltimateProAttackName)
+				?? ResolveRunningUltimate(controller, UltimateAttackName);
+		}
+
+		private static EnemyF1RogueAIUltimateAttack? ResolveRunningUltimate(EnemyAttackController controller, string attackName)
+		{
+			if (string.IsNullOrEmpty(attackName)) return null;
+			var template = controller.GetNodeOrNull<EnemyF1RogueAIUltimateAttack>(attackName);
+			return template is { IsRunning: true } ? template : null;
+		}
+
 		private void PlayAttackIfConfigured()
 		{
 			if (string.IsNullOrEmpty(AttackAnimation)) return;
-			PlayOnceIfNeeded("Attack", AttackAnimation, AttackMixDuration);
+			PlayLoopIfNeeded("Attack", AttackAnimation, AttackMixDuration);
 		}
 
-		private void PlayIdle() => PlayLoopIfNeeded(IdleAnimation, IdleAnimation, IdleMixDuration);
+		private void PlayIdle()
+		{
+			string idle = DownForm && !string.IsNullOrEmpty(DownIdleAnimation) ? DownIdleAnimation : IdleAnimation;
+			PlayLoopIfNeeded(idle, idle, IdleMixDuration);
+		}
 	}
 }

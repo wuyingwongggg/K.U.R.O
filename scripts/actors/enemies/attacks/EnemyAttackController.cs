@@ -23,9 +23,10 @@ namespace Kuros.Actors.Enemies.Attacks
         private float _interAttackDelay = 0f;
 
 	    /// <summary>两次攻击之间的全局最小间隔（呼吸窗）：攻击结束后必须经过此间隔才能选下一招。
-/// 各技能仍由自身的 CooldownDurationMultiplier 独立 CD（只锁自己，不锁其他技能）。
-/// 0 = 无间隔（旧行为：纯独立 CD，可能出现 A 结束 B 零间隔连发）。</summary>
-[Export(PropertyHint.Range, "0,2,0.05")] public float MinInterAttackDelay = 0f;
+        /// 各技能仍由自身的 CooldownDurationMultiplier 独立 CD（只锁自己，不锁其他技能）。
+        /// 0 = 无间隔（旧行为：纯独立 CD，可能出现 A 结束 B 零间隔连发）。
+        /// 特殊状态（如大招武装）可经 ShouldBypassInterAttackDelay 绕过呼吸窗立刻选招。</summary>
+        [Export(PropertyHint.Range, "0,30,0.05")] public float MinInterAttackDelay = 0f;
 
         /// <summary>
         /// 排队攻击等待超时（秒）：选中的攻击因距离/角度一直无法启动（CanStart 不满足）时，
@@ -242,8 +243,9 @@ namespace Kuros.Actors.Enemies.Attacks
             }
 
             // 控制器空闲时，等待呼吸窗到期后再做加权随机选择；
-            // 各攻击的独立 CD 由 IsAttackEligible 过滤，权重真正生效
-            if (!IsRunning && _interAttackDelay <= 0f
+            // 各攻击的独立 CD 由 IsAttackEligible 过滤，权重真正生效。
+            // 呼吸窗可被 ShouldBypassInterAttackDelay（如大招武装）绕过——此时照常选招
+            if (!IsRunning && (_interAttackDelay <= 0f || ShouldBypassInterAttackDelay())
                 && (_queuedAttack == null || _queuedAttack.IsOnCooldown))
             {
                 var candidate = PickAttack();
@@ -438,22 +440,6 @@ namespace Kuros.Actors.Enemies.Attacks
             }
         }
 
-        private Area2D? ResolveArea(NodePath path, Area2D? fallback = null)
-        {
-            if (path.IsEmpty)
-            {
-                return fallback;
-            }
-
-            var area = GetNodeOrNull<Area2D>(path);
-            if (area != null)
-            {
-                return area;
-            }
-
-            return Enemy?.GetNodeOrNull<Area2D>(path) ?? fallback;
-        }
-
         public EnemyAttackTemplate? PeekQueuedAttack() => _queuedAttack;
 
         /// <summary>
@@ -601,6 +587,12 @@ namespace Kuros.Actors.Enemies.Attacks
         /// 子类可重写此方法，对需要持续到底的攻击（如终极技）返回 false。
         /// </summary>
         protected virtual bool ShouldInterruptOnPlayerExit() => true;
+
+        /// <summary>
+        /// 是否绕过 <see cref="MinInterAttackDelay"/> 呼吸窗选招（默认 false）。子类在"必须立刻发"的状态
+        /// （如大招已武装）下返回 true：空闲循环照常选招、不必等呼吸窗跑完；普攻之间的间隔不受影响。
+        /// </summary>
+        protected virtual bool ShouldBypassInterAttackDelay() => false;
 
         private bool ShouldForceAttackState()
         {

@@ -35,7 +35,7 @@ shader_parameter/alpha = 0.4
 radius = 20000.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
-radius = 3072.0
+radius = 6000.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
 size = Vector2(4000, 2000)
@@ -82,7 +82,6 @@ DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
-DeathEffect = ExtResource("3_2csbb")
 Speed = 400.0
 AttackDamage = 10.0
 AttackCooldown = 1.0
@@ -243,6 +242,7 @@ RecoveryDuration = 0.53
 CooldownDurationMultiplier = 3.0
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
+TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 16
@@ -269,6 +269,7 @@ DeathDuration = 0.67
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("23_k0aye")
+DeadEffect = ExtResource("3_2csbb")
 
 [node name="EffectController" type="Node" parent="."]
 script = ExtResource("24_q85o3")

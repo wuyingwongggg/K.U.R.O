@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://b5rh3kfbsbo18"]
+[gd_scene load_steps=69 format=3 uid="uid://b5rh3kfbsbo18"]
 
 [ext_resource type="Script" uid="uid://d1oj6mf8un18u" path="res://scripts/fx/EnemySpawnBoxDestroy.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://byi2utn347fwu" path="res://scenes/actors/characters/Enemy_Normal_guard1.tscn" id="2_76gsl"]
@@ -7,8 +7,10 @@
 [ext_resource type="Texture2D" uid="uid://deubp73yoy3gd" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0026.png" id="3_mi7s6"]
 [ext_resource type="Texture2D" uid="uid://dvgi5obvtfn06" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0027.png" id="4_a6n1n"]
 [ext_resource type="PackedScene" uid="uid://bj81vpm6lg1b8" path="res://scenes/actors/characters/Enemy_Normal_guard3.tscn" id="4_fonow"]
+[ext_resource type="PackedScene" uid="uid://lymwepvi725w" path="res://scenes/actors/characters/Enemy_Normal_guard4.tscn" id="5_d8t1y"]
 [ext_resource type="Texture2D" uid="uid://bk163h7uxf7rg" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0028.png" id="5_hgu40"]
 [ext_resource type="PackedScene" uid="uid://cofm45kotvgto" path="res://scenes/actors/characters/Enemy_B1_fat.tscn" id="5_roads"]
+[ext_resource type="PackedScene" uid="uid://c7cs5rykiiay0" path="res://scenes/actors/characters/Enemy_Normal_guard5.tscn" id="6_m0yr0"]
 [ext_resource type="PackedScene" uid="uid://wrebd662va23" path="res://scenes/actors/characters/Enemy_B2_fat02.tscn" id="6_n2ego"]
 [ext_resource type="Texture2D" uid="uid://culsp4hnhj4me" path="res://assets/environments/Spawm_Emeny_Pod/back/时间轴 1_0029.png" id="6_prne0"]
 [ext_resource type="PackedScene" uid="uid://bvps5t0s8owhw" path="res://scenes/actors/characters/Enemy_C1_waiterA.tscn" id="7_17hji"]
@@ -27,6 +29,22 @@
 [ext_resource type="PackedScene" uid="uid://c6hw6lffbuhlb" path="res://scenes/items/Furniture_D_chairOfficeC.tscn" id="15_83ejs"]
 [ext_resource type="PackedScene" uid="uid://3c5l27vhvwni" path="res://scenes/items/Furniture_B_sofaA.tscn" id="16_osu5u"]
 [ext_resource type="PackedScene" uid="uid://b8twfkaisp0mt" path="res://scenes/items/Furniture_C_tableRoundC.tscn" id="17_838ui"]
+[ext_resource type="PackedScene" uid="uid://xr3dxjuou057" path="res://scenes/items/Furniture_A_chairOfficeA.tscn" id="18_f02"]
+[ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="18_f03"]
+[ext_resource type="PackedScene" uid="uid://bkbhucnxqiys2" path="res://scenes/items/Furniture_B_CounterB.tscn" id="18_f12"]
+[ext_resource type="PackedScene" uid="uid://c0oyd0psq7fe1" path="res://scenes/items/Furniture_B_cautionTape_fwd.tscn" id="18_f13"]
+[ext_resource type="PackedScene" uid="uid://kwbg3wy7rik" path="res://scenes/items/Furniture_B_chairA.tscn" id="18_f15"]
+[ext_resource type="PackedScene" uid="uid://51x1ik7ixw7w" path="res://scenes/items/Furniture_B_counterA.tscn" id="18_f17"]
+[ext_resource type="PackedScene" uid="uid://dqrmlh3reek3f" path="res://scenes/items/Furniture_B_garbageCanA.tscn" id="18_f18"]
+[ext_resource type="PackedScene" uid="uid://0anrcfm2pnsd" path="res://scenes/items/Furniture_B_luggageCartA.tscn" id="18_f20"]
+[ext_resource type="PackedScene" uid="uid://cqpk38oxthrr1" path="res://scenes/items/Furniture_B_tableRoundA.tscn" id="18_f24"]
+[ext_resource type="PackedScene" uid="uid://1mc4twnj45va" path="res://scenes/items/Furniture_B_tableRoundB.tscn" id="18_f25"]
+[ext_resource type="PackedScene" uid="uid://c5bi1g6rymvgo" path="res://scenes/items/Furniture_B_vendingMachineA.tscn" id="18_f26"]
+[ext_resource type="PackedScene" uid="uid://ddorhljtetljs" path="res://scenes/items/Furniture_C_FoodCartA.tscn" id="18_f27"]
+[ext_resource type="PackedScene" uid="uid://bjjo7k06e4sqb" path="res://scenes/items/Furniture_C_tableSquareA.tscn" id="18_f29"]
+[ext_resource type="PackedScene" uid="uid://bah3sya2wxtwv" path="res://scenes/items/Furniture_D_tableOfficeB.tscn" id="18_f32"]
+[ext_resource type="PackedScene" uid="uid://de5p3deu3oubn" path="res://scenes/items/Furniture_D_waterMachineA.tscn" id="18_f36"]
+[ext_resource type="PackedScene" uid="uid://dwurrf77iaxo2" path="res://scenes/items/Furniture_D_whiteBoardA.tscn" id="18_f37"]
 [ext_resource type="Texture2D" uid="uid://hieghj58smcg" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0008.png" id="38_ngot0"]
 [ext_resource type="Texture2D" uid="uid://dg1hx2whsy180" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0001.png" id="39_aqdem"]
 [ext_resource type="Texture2D" uid="uid://dfl6pdn2vepc7" path="res://assets/effect/SpawnEffect/SpawnEffectA/dianti0002.png" id="40_d8t1y"]
@@ -199,7 +217,9 @@ _data = {
 [node name="EnemySpawnBoxDestroy" type="Node2D"]
 top_level = true
 script = ExtResource("1_script")
-SpawnScenes = Array[PackedScene]([ExtResource("2_76gsl"), ExtResource("3_4gwgl"), ExtResource("4_fonow"), ExtResource("5_roads"), ExtResource("6_n2ego"), ExtResource("7_17hji"), ExtResource("8_5q7j8"), ExtResource("9_83ejs"), ExtResource("10_osu5u"), ExtResource("11_838ui"), ExtResource("12_roads"), ExtResource("13_n2ego"), ExtResource("14_5q7j8"), ExtResource("15_83ejs"), ExtResource("16_osu5u"), ExtResource("17_838ui")])
+EnemyScenes = Array[PackedScene]([ExtResource("2_76gsl"), ExtResource("3_4gwgl"), ExtResource("4_fonow"), ExtResource("5_d8t1y"), ExtResource("6_m0yr0"), ExtResource("5_roads"), ExtResource("6_n2ego"), ExtResource("7_17hji"), ExtResource("8_5q7j8"), ExtResource("9_83ejs"), ExtResource("10_osu5u"), ExtResource("11_838ui")])
+PropScenes = Array[PackedScene]([ExtResource("12_roads"), ExtResource("13_n2ego"), ExtResource("14_5q7j8"), ExtResource("15_83ejs"), ExtResource("16_osu5u"), ExtResource("17_838ui"), ExtResource("18_f02"), ExtResource("18_f03"), ExtResource("18_f12"), ExtResource("18_f13"), ExtResource("18_f15"), ExtResource("18_f17"), ExtResource("18_f18"), ExtResource("18_f20"), ExtResource("18_f24"), ExtResource("18_f25"), ExtResource("18_f26"), ExtResource("18_f27"), ExtResource("18_f29"), ExtResource("18_f32"), ExtResource("18_f36"), ExtResource("18_f37")])
+EnemyPoolProbability = 0.7
 SpawnMarkerPath = NodePath("Marker2D")
 AnimatedSpritePath = NodePath("SpawnBoxBG")
 DelayDestroySelf = 1.0

@@ -8,6 +8,8 @@ uniform float highlight_speed : hint_range(0.5, 5.0) = 2.0;
 uniform float highlight_intensity : hint_range(0.0, 2.0) = 1.2;
 // 光线生成间隔（秒）
 uniform float highlight_interval : hint_range(0.5, 10.0) = 2.0;
+// 整体亮度乘数（1.0 = 原色；>1 提亮 / <1 压暗）——直接调这个
+uniform float brightness : hint_range(0.0, 10.0) = 1.0;
 // 整体透明度乘数（供外部淡出/呼吸等整体透明控制驱动；1.0 = 不透明）
 uniform float alpha_factor : hint_range(0.0, 1.0) = 1.0;
 
@@ -38,8 +40,8 @@ void fragment() {
 	float distance_to_light = abs(diag_coord - highlight_pos);
 	float highlight = exp(-distance_to_light * distance_to_light / (highlight_width * highlight_width)) * highlight_intensity * visibility;
 	
-	// 组合：基础颜色 + 高光条
-	vec3 final_color = base_color.rgb + vec3(highlight);
+	// 组合：基础颜色 + 高光条，整体乘亮度
+	vec3 final_color = (base_color.rgb + vec3(highlight)) * brightness;
 
 	COLOR = vec4(final_color, base_color.a);
 	// 整体透明度乘数：自定义 shader 下 item modulate 的 alpha 控制不可靠，外部统一驱动此 uniform

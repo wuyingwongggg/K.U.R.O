@@ -20,6 +20,13 @@ namespace Kuros.FX
         public int DisplayCount = 1;
 
         /// <summary>
+        /// 是否显示主体 LargeSmoke（默认显示）。关掉 = 只让随机小部件出现；
+        /// 隐藏时同步关闭其发射（与 LitterPart 同款成本考虑——不可见的粒子系统不该白跑模拟）。
+        /// </summary>
+        [Export]
+        public bool ShowLargeSmoke = true;
+
+        /// <summary>
         /// 所有LitterPart节点列表
         /// </summary>
         private List<Node2D> _allLitterParts = new();
@@ -37,15 +44,11 @@ namespace Kuros.FX
         }
 
         /// <summary>
-        /// 查找LargeSmoke节点
+        /// 查找LargeSmoke节点（可选：ShowLargeSmoke 关闭时场景里没有它也算合法，故用 OrNull）
         /// </summary>
         private void FindLargeSmoke()
         {
-            _largeSmoke = GetNode<Node2D>("LargeSmoke");
-            if (_largeSmoke != null)
-            {
-                _largeSmoke.Visible = true;
-            }
+            _largeSmoke = GetNodeOrNull<Node2D>("LargeSmoke");
         }
 
         /// <summary>
@@ -78,10 +81,15 @@ namespace Kuros.FX
                     gp.Emitting = false;
             }
 
-            // 确保LargeSmoke始终显示
+            // 主体 LargeSmoke：按 ShowLargeSmoke 显示/隐藏（隐藏时同步关发射——与上面的 LitterPart 同款成本考虑）
             if (_largeSmoke != null)
             {
-                _largeSmoke.Visible = true;
+                _largeSmoke.Visible = ShowLargeSmoke;
+                if (_largeSmoke is GpuParticles2D smokeGp)
+                {
+                    smokeGp.Emitting = ShowLargeSmoke;
+                    if (ShowLargeSmoke) smokeGp.Restart();
+                }
             }
 
             // 检查选择的节点是否有效

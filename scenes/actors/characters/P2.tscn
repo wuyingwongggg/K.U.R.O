@@ -148,7 +148,7 @@ CarrySpeed = 500.0
 
 [node name="AI_Executor" type="Node" parent="."]
 script = ExtResource("5_p2executor")
-_shieldChargeLevel = 1
+SupportSkillCooldownSeconds = 20.0
 
 [node name="AI_DecisionBridge" type="Node" parent="."]
 script = ExtResource("6_p2bridge")

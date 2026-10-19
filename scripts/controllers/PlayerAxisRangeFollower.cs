@@ -2,29 +2,41 @@ using Godot;
 
 namespace Kuros.Controllers
 {
+	/// <summary>跟随轴：X = 横向（招牌/指示牌等）；Y = 纵向（如跟随玩家身位的落点锚点）。</summary>
+	public enum FollowAxis
+	{
+		X,
+		Y
+	}
+
 	/// <summary>
-	/// X 轴跟随（Marker 限位）：**只写 X** —— 平滑跟随玩家的横向位置，并夹在场景里两个 Marker2D 的 X 区间内；
-	/// Y 完全不碰（保持场景摆放的高度），典型用法是关卡里的招牌 / 指示牌随玩家横移（F_begin 的 exit_sign）。
+	/// 单轴跟随（Marker 限位）：**只写 <see cref="Axis"/> 所选的那一轴** —— 平滑跟随玩家在该轴上的位置，
+	/// 并夹在场景里两个 Marker2D 的该轴区间内；另一轴完全不碰（保持场景摆放值）。
+	/// 基类为 Node2D：可直接挂在 Sprite2D（F_begin 的 exit_sign 随玩家横移）或 Marker2D
+	/// （SlamB 落点锚点随玩家身位纵移、X 保持左右分区）上。
 	/// 放在 _Process（与 CameraFollow 同帧）避免与摄像机产生相对抖动；
 	/// 平滑用指数趋近 1-e^(-k·dt) 而不是固定 Lerp 系数，帧率变化时手感一致。
 	/// </summary>
 	[GlobalClass]
-	public partial class PlayerXRangeFollower : Sprite2D
+	public partial class PlayerAxisRangeFollower : Node2D
 	{
 		[ExportCategory("跟随")]
+		/// <summary>跟随轴：X = 只写 X（横向跟随）；Y = 只写 Y（纵向跟随）。另一轴保持场景摆放。</summary>
+		[Export] public FollowAxis Axis { get; set; } = FollowAxis.X;
 		/// <summary>被跟随的玩家路径；留空 = 用 "player" 组（与其它系统同源）。</summary>
 		[Export] public NodePath PlayerPath { get; set; } = new();
 		/// <summary>跟随速度（指数趋近系数，每秒）：越大越紧跟；0 = 不平滑，直接贴合目标。</summary>
 		[Export(PropertyHint.Range, "0,30,0.1")] public float FollowSpeed { get; set; } = 5f;
-		/// <summary>额外横向偏移（目标 X = 玩家 X + 偏移）。</summary>
-		[Export] public float XOffset { get; set; } = 0f;
+		/// <summary>额外偏移（加在所选轴的目标坐标上）。</summary>
+		[Export] public float AxisOffset { get; set; } = 0f;
 
 		[ExportCategory("限位 Marker")]
-		/// <summary>行程两端的 Marker2D（相对本节点）；顺序无所谓，内部按 X 排序取区间。</summary>
+		/// <summary>行程两端的 Marker2D（相对本节点）；顺序无所谓，内部按**所选轴**排序取区间。</summary>
 		[Export] public NodePath MarkerAPath { get; set; } = new();
 		[Export] public NodePath MarkerBPath { get; set; } = new();
 		/// <summary>抵达 <see cref="MarkerBPath"/> 后**停止追踪玩家**：锁定在 B 端不再随玩家移动（一次性，
-		/// 之后玩家再走近/走远都不会恢复）。B 是哪一侧都成立——它就是"终点"标记。</summary>
+		/// 之后玩家再走近/走远都不会恢复；沿所选轴判定）。B 在哪一侧都成立——它就是"终点"标记。
+		/// 需要持续跟随（如落点锚点）就关掉。</summary>
 		[Export] public bool StopAtMarkerB { get; set; } = true;
 		/// <summary>抵达判定死区（像素）：指数平滑只会无限趋近、不会精确到达，需要一个死区来判定"已抵达"。</summary>
 		[Export(PropertyHint.Range, "0,64,1")] public float ArriveDeadzone { get; set; } = 8f;
@@ -48,18 +60,17 @@ namespace Kuros.Controllers
 			UpdateRange();   // 每帧现算：见方法注释（关卡摆位时序 / Marker 被动画挪动）
 			if (_player == null || !_rangeReady) return;
 
-			float targetX = Mathf.Clamp(_player.GlobalPosition.X + XOffset, _rangeLo, _rangeHi);
+			float target = Mathf.Clamp(AxisCoord(_player.GlobalPosition) + AxisOffset, _rangeLo, _rangeHi);
 			float t = FollowSpeed <= 0f ? 1f : 1f - Mathf.Exp(-FollowSpeed * (float)delta);
 
-			// 只写 X：Y 不碰（场景摆放高度即"锁死"），也不会抹掉父级（如 Environments）的摆放
-			var pos = GlobalPosition;
-			pos.X = Mathf.Lerp(pos.X, targetX, t);
+			// 只写所选轴：另一轴不碰（场景摆放值即"锁死"），也不会抹掉父级（如 Environments）的摆放
+			var pos = WithAxisCoord(GlobalPosition, Mathf.Lerp(AxisCoord(GlobalPosition), target, t));
 
 			// 抵达 B 端 → 对齐到 B 并停止追踪（一次性；之后玩家怎么走都不再跟随）
 			if (StopAtMarkerB && _markerB != null
-				&& Mathf.Abs(pos.X - _markerB.GlobalPosition.X) <= ArriveDeadzone)
+				&& Mathf.Abs(AxisCoord(pos) - AxisCoord(_markerB.GlobalPosition)) <= ArriveDeadzone)
 			{
-				pos.X = _markerB.GlobalPosition.X;
+				pos = WithAxisCoord(pos, AxisCoord(_markerB.GlobalPosition));
 				GlobalPosition = pos;
 				SetProcess(false);
 				GD.Print($"{Name}: 已抵达 MarkerBPath，停止追踪玩家");
@@ -100,7 +111,7 @@ namespace Kuros.Controllers
 		///   ① 关卡会被 StageGeneratorManager 在 _Ready 之后才摆位（先 AddChild → 再设 room.Position），
 		///      缓存的全局坐标会整体偏掉，夹取区间跟着缩水；
 		///   ② Marker 也可能被动画/父节点挪动。
-		/// 区间按 X 排序取值，两端的命名/摆放顺序都不影响结果。</summary>
+		/// 区间按**所选轴**排序取值，两端的命名/摆放顺序都不影响结果。</summary>
 		private void UpdateRange()
 		{
 			if (_markerA == null || !GodotObject.IsInstanceValid(_markerA))
@@ -119,9 +130,20 @@ namespace Kuros.Controllers
 				return;
 			}
 
-			_rangeLo = Mathf.Min(_markerA.GlobalPosition.X, _markerB.GlobalPosition.X);
-			_rangeHi = Mathf.Max(_markerA.GlobalPosition.X, _markerB.GlobalPosition.X);
+			_rangeLo = Mathf.Min(AxisCoord(_markerA.GlobalPosition), AxisCoord(_markerB.GlobalPosition));
+			_rangeHi = Mathf.Max(AxisCoord(_markerA.GlobalPosition), AxisCoord(_markerB.GlobalPosition));
 			_rangeReady = true;
+		}
+
+		/// <summary>取所选轴的坐标分量。</summary>
+		private float AxisCoord(Vector2 v) => Axis == FollowAxis.Y ? v.Y : v.X;
+
+		/// <summary>写所选轴的坐标分量（另一轴原样保留）。</summary>
+		private Vector2 WithAxisCoord(Vector2 v, float value)
+		{
+			if (Axis == FollowAxis.Y) v.Y = value;
+			else v.X = value;
+			return v;
 		}
 	}
 }

@@ -7,13 +7,14 @@
 ## 目录
 
 1. [核心概念](#核心概念)
-2. [攻击流程](#攻击流程)
-3. [基础实现](#基础实现)
-4. [进阶模式](#进阶模式)
-5. [检测区域攻击](#检测区域攻击detection-based-attacks)
-6. [冷却机制（PostCooldown）](#冷却机制postcooldown)
-7. [控制器冷却协调](#控制器冷却协调controller-coordination)
-8. [常见问题](#常见问题)
+2. [区域语义（Trigger / Attack / Damage）](#区域语义trigger--attack--damage)
+3. [攻击流程](#攻击流程)
+4. [基础实现](#基础实现)
+5. [进阶模式](#进阶模式)
+6. [检测区域攻击](#检测区域攻击detection-based-attacks)
+7. [冷却机制（PostCooldown）](#冷却机制postcooldown)
+8. [控制器冷却协调](#控制器冷却协调controller-coordination)
+9. [常见问题](#常见问题)
 
 ---
 
@@ -39,6 +40,9 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 | | `CooldownDuration` | 攻击冷却时长（秒） |
 | **Combat** | `MaxAllowedAngleToPlayer` | 可发起攻击的最大角度（度） |
 | | `AnimationName` | 播放的动画路径 |
+| **Area** | `TriggerAreaPath` | 触发/追踪区（玩家不在圈内本招不进候选；未配置 = 不限制）——**需子类覆写 `IsPlayerInDetectionRange()` 才真正接入选招（基类默认恒 true，普通攻击配了无效）**，详见[区域语义](#区域语义trigger--attack--damage) |
+| | `AttackAreaPath` | 攻击区/起手盒（近战族起手门；未配置回退根节点 `AttackArea`） |
+| | `DamageAreaPath` | 伤害结算区（伤害永远落在这块区；未配置回退 `AttackArea`） |
 | **Knockback** | `KnockbackDistance` / `KnockbackSpeed` / `KnockbackDuration` | 击退参数 |
 | **Super Armor** | `GrantedImmunities` | 攻击期间赋予的免疫标志 |
 | **Effect** | `Effects` | 攻击生成的特效条目数组（`AttackEffectEntry`：Scene + UniqueGroup + PropertyOverrides） |
@@ -67,6 +71,62 @@ ComplexAttack（如EnemyDashSlashAttack、EnemyChargeGrabAttack）
 **检测实现**：`IsFxGroupActive(group)` = `GetTree().GetNodesInGroup(group)` + `IsInstanceValid` 过滤（销毁的实例自动失效）。
 
 **使用示例**：敌人 A 的"火焰喷吐"特效带 `UniqueGroup = "fx_fire_breath"`；敌人 B 的攻击配置 `BlockedByFxGroup = "fx_fire_breath"`——A 放火期间 B 的对应攻击不可选，避免场上叠加。
+
+---
+
+## 区域语义（Trigger / Attack / Damage）
+
+攻击模板的三个区域配置**各管一件事**，配置前先明确职责。`ResolveArea` 解析规则：先按**模板节点**、再按**敌人根节点**（`../../../../Sprite2D/Xxx` 与 `Sprite2D/Xxx` 两种写法都认）；路径配了却找不到 → 静默回退 + 一次性警告。
+
+| 配置 | 角色 | 谁在消费 |
+|---|---|---|
+| `TriggerAreaPath` | **触发/追踪区**——玩家不在圈内，本招**不进加权随机池**（选招资格）。⚠️ **基类 `IsPlayerInDetectionRange()` 默认恒 true**——字段要生效，须由子类覆写该钩子（如 AreaDetection / TurretMelee / Pinball / Guard4 / Guard5 / NetAdmin；Guard4Counter、Wheel 走自覆写的 `CanStart`）；**SimpleMelee 等普通攻击不查此区，配了等于没配** | `IsPlayerInDetectionRange`（控制器 `IsAttackEligible`） |
+| `AttackAreaPath` | **攻击区/起手盒**——进盒才起手（近战族的 `CanStart` 门） | 近战族 `CanStart`；缺省回退敌人根节点 `AttackArea` |
+| `DamageAreaPath` | **伤害区**——伤害结算落点 | `PerformAttackNow()` → `Enemy.PerformAttack(DamageArea ?? AttackArea)` |
+
+⚠️ **基类 `CanStart` 故意不查任何区域位置**（只查根检测圈 + 朝向角）——把区域门放进基类会让远程/召唤类攻击被迫贴脸；位置门由近战子类自行加。炮台族的三区示例：触发圈 = 大追踪圈（选招）、`MeleeAttackArea` = 起手盒、`MeleeDmgArea` = 伤害区。
+
+### 两种区域写法与"双检测"规则（踩坑高发区）
+
+区域**节点的碰撞层**决定它能被哪种判定探测到：
+
+- **命中型**（`collision_mask` 指向玩家 **HitArea** 层）→ 用 `player.IsHitByArea(area)` 判定（内部 = `area.OverlapsArea(玩家HitArea)`）；
+- **检测型**（`collision_mask` 指向玩家**身体**层，如 `mask = 4`）→ 用 `area.OverlapsBody(player)` 判定。
+
+⚠️ **`GameActor.IsHitByArea` 在玩家有 HitArea 时只看 HitArea 重叠，不会回退身体检测**——所以"用命中型判定去查检测型区域"会**永久为假、静默无报错**。炮台近战踩过这个坑：`MeleeAttackArea` 是身体检测型（`mask = 4`），起手门却用 `IsHitByArea` → 招式完全无法触发。
+
+**规范：区域判定统一用"双检测"**——
+
+```csharp
+area.OverlapsBody(player) || player.IsHitByArea(area)
+```
+
+两种写法都认，区域怎么摆都不会静默失灵。基类 `IsPlayerInTriggerArea` 就是这么写的（**能力/工具，自身不接入任何门**——需消费者主动调用才生效）；炮台近战的 `IsPlayerInsideArea` 是同一套（目前是私有副本）。
+
+### 各脚本的判定写法现状（2026-10 清点）
+
+| 判定场合 | 写法 | 使用者 |
+|---|---|---|
+| 触发/选招（TriggerArea） | **双检测** | 基类 `IsPlayerInTriggerArea`（能力，不接基类 CanStart）；`NetAdminSimpleMeleeAttack`（起手）、炮台近战（选招）借它 |
+| 攻击命中/起手（AttackArea） | **双检测**（新） | `EnemyF1RogueAITurretMeleeAttack.IsPlayerInsideArea` |
+| 攻击命中（AttackArea） | **命中型单写** `IsHitByArea` | `EnemySimpleMeleeAttack`、`Kick`、`Move`、`ChargeGrab`、`DashSlash`、`Freeze`、`Guard4`、`Guard5`、`NetAdminSimple/Multi`（约 10 处） |
+| 检测圈（追踪/警戒） | `OverlapsBody` + 根检测回退 | `Move`、`Kick`、`ChargeGrab`、`DashSlash`、`OnePunch` 等（**已统一**且正确——追踪圈就该是 body 检测） |
+
+**结论：目前尚未统一**——"命中型单写"占多数。只要哪招的攻击区被配成检测型（mask→身体层），那招的起手/命中/击退就会静默失灵。
+
+### 建议的统一方向（暂缓实施）
+
+1. 把炮台近战的 `IsPlayerInsideArea`（双检测）**上移为基类共享助手**（与 `IsPlayerInTriggerArea` 共底层）；
+2. 逐步把"命中型单写"的 ~10 处调用点替换成双检测。双检测是**超集**：区域配置正确的行为不变；检测型配置的静默失灵被修复；body 与 HitArea 边界有几十像素差，抓取/冲刺/踢击这类手感敏感招需抽测；
+3. **检测圈层不动**——已是各脚本统一惯例。
+
+### 诊断速查
+
+| 日志 | 含义 |
+|---|---|
+| `[模板名] XXAreaPath="..." 解析不到 Area2D → 已回退` | 路径写错（层级数/名字不对），该字段回退默认区 |
+| `[模板名] 区域与根节点 AttackArea 不同：触发区=… 攻击区=… 伤害区=…` | 配了自定义区域（正常信息；确认是否符合预期——伤害**永远**落在伤害区） |
+| 招式"配了没反应"且无任何警告 | 高概率是**两种写法的静默失灵**（命中型判定 × 检测型区域）——先核对该区域 `collision_mask` 指向哪个层 |
 
 ---
 
@@ -753,6 +813,7 @@ if (Enemy.CurrentState == "Hit")
 - [ ] 继承 `EnemyAttackTemplate`
 - [ ] 配置导出属性（Timing、Damage、动画等）
 - [ ] 实现 `CanStart()` 条件检查
+- [ ] 区域判定用"双检测"（`OverlapsBody || IsHitByArea`，见[区域语义](#区域语义trigger--attack--damage)）——单写 `IsHitByArea` 遇到身体检测型区域会静默失灵
 - [ ] 若需要动画驱动伤害，设置 `RequireAnimationHitTrigger = true` 并实现 `OnAnimationHit()`
 - [ ] 若需要Post冷却，实现 `_postAttackCooldown` 逻辑 + 防护检查
 - [ ] 在动画中添加"hit"帧事件（若需要）

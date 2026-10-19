@@ -10,7 +10,9 @@ namespace Kuros.Actors.Enemies.Attacks
     ///     释放特效 SpawnTiming = OnRecovery → 抵达即 Active 结束销毁罐子、Recovery 生成释放特效。
     /// 注意：挂起会把 Warmup/Active 的计时一并拖住，所以绑定在 OnWarmupEnd/OnActiveEnd 的特效寿命 = 整段搬运，
     /// 而不是配置表里的秒数（这正是"挂到抵达为止"的实现方式）。
-    /// 另外重写 CanStart：不看朝向角度、也不要求玩家在攻击盒内——何时投送完全由机械臂的相位决定。
+    /// 另外重写 CanStart：不看朝向角度、也不要求玩家在攻击盒内——何时投送完全由机械臂的相位决定；
+    /// **投掷闸门**只额外否决"罐子里已没有东西可投"（敌人轴 + 家具轴皆放满，见 <see cref="HasDeliverableContent"/>）
+    /// ——裁决点在源头，投满后不再投出，箱内不再出现空开。
     /// </summary>
     public partial class EnemyMagnetJarAttack : EnemySimpleMeleeAttack
     {
@@ -20,8 +22,16 @@ namespace Kuros.Actors.Enemies.Attacks
             // 玩家引用缺失（生成早于玩家解析）也不该让循环停摆。
             if (Enemy == null) return false;
             if (Enemy.IsDeathSequenceActive || Enemy.IsDead) return false;
+            if (!HasDeliverableContent()) return false;   // 两轴皆放满 → 不再起投（SimpleMeleeAttack 不触发）
             return !IsRunning && !IsOnCooldown;
         }
+
+        /// <summary>投掷闸门：罐子里还有东西可投才起投——判据唯一实现在机械侧
+        /// （<see cref="Kuros.Actors.Enemies.EnemyF1RogueAIMagnet.AreDeliveryDutiesDrained"/>：
+        /// 敌人轴 + 家具轴皆放满 = 已尽），与相位循环共用、两处不会漂移。
+        /// 机械解析不到（非磁铁）→ 视为可投（行为同旧）。</summary>
+        private bool HasDeliverableContent()
+            => (Enemy as Kuros.Actors.Enemies.EnemyF1RogueAIMagnet)?.AreDeliveryDutiesDrained() != true;
 
         protected override bool ShouldHoldWarmupPhase() => ShouldHoldJar();
 

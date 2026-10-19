@@ -32,6 +32,16 @@ namespace Kuros.Actors.Enemies.Attacks
     }
 
     /// <summary>
+    /// 多锚点选择模式（AttackEffectEntry 配置用）：Sequence = 依次轮换（默认，历史行为）；
+    /// Random = 每次生成在**解析成功**的锚点中随机挑一个（某关卡缺该 marker 时自动跳过，不会静默回退敌人原点）。
+    /// </summary>
+    public enum SpawnMarkerSelectMode
+    {
+        Sequence,
+        Random
+    }
+
+    /// <summary>
     /// 特效生命周期绑定（AttackEffectEntry 配置用）：由攻击模板在对应阶段结束时销毁特效，
     /// 替代固定 Duration——适配阶段时长不固定（Hold 挂起等）的场景。None = 特效自行管理（默认）。
     /// 攻击被打断（Cancel）时所有绑定特效统一销毁。
@@ -45,6 +55,17 @@ namespace Kuros.Actors.Enemies.Attacks
         OnActiveEnd,
         /// <summary>Recovery 结束（回 Idle）时销毁——如收招残留特效在攻击结束时消失。</summary>
         OnRecoveryEnd,
+    }
+
+    /// <summary>
+    /// 击退生效轴（Flags，模板级配置）：未勾选的轴分量归零后再归一化——默认全轴（现状）。
+    /// None（都不勾）= 不施加击退。
+    /// </summary>
+    [System.Flags]
+    public enum KnockbackAxis
+    {
+        X = 1,
+        Y = 2,
     }
 
     /// <summary>
@@ -75,6 +96,12 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,180,1")] public float MaxAllowedAngleToPlayer = 135.0f;
         [Export] public string AnimationName = "animations/attack";
         [Export] public NodePath AttackAreaPath = new NodePath();
+        /// <summary>伤害结算区（可选）：本招伤害落在这块 Area2D 上。
+        /// 未配置 = 沿用 <see cref="AttackArea"/>（= AttackAreaPath → 未配置再回退敌人根节点 Sprite2D/AttackArea）。</summary>
+        [Export] public NodePath DamageAreaPath = new NodePath();
+        /// <summary>触发判定区（可选）：配了就要求玩家在该区内本招才可起手（子类用 <see cref="IsPlayerInTriggerArea"/> 判）。
+        /// 未配置 = 不做额外位置限制（现状：基类 CanStart 只要求玩家在敌人根节点 DetectionArea 内）。</summary>
+        [Export] public NodePath TriggerAreaPath = new NodePath();
         [Export(PropertyHint.Flags, "Player,Enemy,WorldItem")]
         public TargetableFactions TargetableFactions = TargetableFactions.Player | TargetableFactions.WorldItem;
         /// <summary>是否允许攻击者的攻击命中自身。独立于阵营筛选，默认关闭。</summary>
@@ -85,7 +112,14 @@ namespace Kuros.Actors.Enemies.Attacks
         [Export(PropertyHint.Range, "0,2000,1")] public float KnockbackDistance = 0f;
         /// <summary>击退位移时长（秒）——由攻击方决定，不受受击方动画时序影响。</summary>
         [Export(PropertyHint.Range, "0.01,2,0.01")] public float KnockbackDuration = 0.18f;
+        /// <summary>击退方向来源：false（默认）= 玩家位置 − 敌人位置（"从敌人体向外推"）；
+        /// true = 玩家 HitArea 中心 − 攻击区形状中心（"从被打中那一块的形状中心向外推"——
+        /// 大范围/长条攻击区用它更贴手感，如横扫、激光墙）。</summary>
         [Export] public bool KnockbackFromHitPosition = false;
+        /// <summary>击退生效轴（默认全轴 = 现状）：未勾选的轴分量归零后再归一化——勾单轴即"固定轴击退"
+        /// （如砸地只推 Y、横扫只推 X，不会斜着飞）。过滤后主方向为零（如仅 X 轴但目标在正上/正下方）
+        /// 时回退"过滤后的朝向向量"；仍为零（轴向配置与回退不匹配）则不施加击退。</summary>
+        [Export(PropertyHint.Flags, "X,Y")] public KnockbackAxis KnockbackAxes = KnockbackAxis.X | KnockbackAxis.Y;
 
         [ExportCategory("Animation Sync")]
         [Export] public bool RequireAnimationHitTrigger = false;
@@ -146,6 +180,10 @@ namespace Kuros.Actors.Enemies.Attacks
         protected SampleEnemy Enemy { get; private set; } = null!;
         protected SamplePlayer? Player => Enemy.PlayerTarget;
         protected Area2D? AttackArea { get; private set; }
+        /// <summary>伤害结算区：DamageAreaPath 配了用它，未配置 = <see cref="AttackArea"/>（现状：最终落到敌人根节点 AttackArea）。</summary>
+        protected Area2D? DamageArea { get; private set; }
+        /// <summary>触发判定区：**仅在 TriggerAreaPath 配置时非空**（未配置 = 不额外限制，见 <see cref="IsPlayerInTriggerArea"/>）。</summary>
+        protected Area2D? TriggerArea { get; private set; }
 
         private AttackPhase _phase = AttackPhase.Idle;
         /// <summary>当前所处阶段，仅供控制器在打断时判断子攻击所处阶段。</summary>
@@ -160,6 +198,8 @@ namespace Kuros.Actors.Enemies.Attacks
         private bool _hasCollisionMaskOverride;
         private uint _cachedAttackAreaMask;
         private bool _hasAttackAreaMaskOverride;
+        private uint _cachedDamageAreaMask;
+        private bool _hasDamageAreaMaskOverride;
         private int _spawnMarkerIndex;
         private readonly System.Collections.Generic.HashSet<Area2D> _customAreaOverrides = new();
         // 生命周期绑定特效（entry.LifecycleBinding != None）：阶段结束时由模板销毁
@@ -185,17 +225,66 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             Enemy = enemy;
 
-            if (!string.IsNullOrEmpty(AttackAreaPath.ToString()))
-            {
-                AttackArea = Enemy.GetNodeOrNull<Area2D>(AttackAreaPath);
-            }
+            // 与 DamageAreaPath / TriggerAreaPath 同一套解析：先按模板节点、再按敌人根节点。
+            // （历史实现只从根节点解析，于是按模板写的 ../../../../Sprite2D/Xxx 全部静默失效、回退根区）
+            AttackArea = ResolveArea(AttackAreaPath, Enemy.AttackArea);
 
-            if (AttackArea == null && Enemy.AttackArea != null)
-            {
-                AttackArea = Enemy.AttackArea;
-            }
+            DamageArea = ResolveArea(DamageAreaPath) ?? AttackArea;
+            TriggerArea = ResolveArea(TriggerAreaPath);
+            WarnIfAreaMismatch();
 
             OnInitialized();
+        }
+
+        /// <summary>按路径取 Area2D：先在模板自身下找，再在敌人根节点下找（兼容两种配置习惯）。
+        /// 路径为空或找不到 → 返回 <paramref name="fallback"/>（默认 null）。</summary>
+        protected Area2D? ResolveArea(NodePath? path, Area2D? fallback = null)
+        {
+            if (path == null || path.IsEmpty) return fallback;
+            var area = GetNodeOrNull<Area2D>(path) ?? Enemy?.GetNodeOrNull<Area2D>(path);
+            return area ?? fallback;
+        }
+
+        /// <summary>玩家是否在"触发判定区"内：未配置 TriggerAreaPath → 恒 true（不额外限制）。
+        /// 两种区域写法都认：<br/>
+        /// ①**检测区**（CDet/ADet：collision_mask 指向玩家**身体**层）→ <see cref="Area2D.OverlapsBody"/>；<br/>
+        /// ②**受击/攻击区**（mask 指向玩家 **HitArea** 层）→ <see cref="GameActor.IsHitByArea"/>。<br/>
+        /// 只判前者会漏掉后者的配置，只判后者会漏掉前者（GameActor 有 HitArea 时 IsHitByArea 只看 HitArea 重叠，
+        /// 检测区的 body 层掩码对它无效）——两边都试才不会出现"配置正确却永远不触发"。
+        /// 只提供能力，**不接进 <see cref="CanStart"/>**：那会让远程/召唤类攻击被迫贴脸；
+        /// 选招用的 <see cref="IsPlayerInDetectionRange"/> 与保底大招是另外两套语义，别混。</summary>
+        protected bool IsPlayerInTriggerArea()
+        {
+            if (TriggerArea == null) return true;
+            if (Player == null) return false;
+            return TriggerArea.OverlapsBody(Player) || Player.IsHitByArea(TriggerArea);
+        }
+
+        /// <summary>诊断（一次性提示，不影响运行）：区域路径解析不到、或解析结果与敌人根节点 AttackArea 不同时各打一行，
+        /// 便于对照"哪一招的区域没生效/不是根区"（伤害落在 DamageArea；触发/掩码按各自解析结果）。</summary>
+        private void WarnIfAreaMismatch()
+        {
+            WarnIfPathUnresolved(AttackAreaPath, nameof(AttackAreaPath));
+            WarnIfPathUnresolved(DamageAreaPath, nameof(DamageAreaPath));
+            WarnIfPathUnresolved(TriggerAreaPath, nameof(TriggerAreaPath));
+
+            var rootArea = Enemy?.AttackArea;
+            if (rootArea == null) return;
+            if (AttackArea == rootArea && DamageArea == rootArea && TriggerArea == null) return;
+            GD.PushWarning($"[{Name}] 区域与根节点 AttackArea 不同：触发区={TriggerArea?.Name ?? "未配置"} "
+                + $"攻击区={AttackArea?.Name ?? "无"} 伤害区={DamageArea?.Name ?? "无"} 根区={rootArea.Name}（伤害落在伤害区）");
+        }
+
+        /// <summary>路径配了却解析不到 Area2D → 已静默回退（看着像"配置没生效"）。
+        /// 三个区域字段统一走 <see cref="ResolveArea"/>：先按模板节点、再按敌人根节点，所以
+        /// `../../../../Sprite2D/Xxx`（相对模板）与 `Sprite2D/Xxx`（相对敌人根）两种写法都吃。</summary>
+        private void WarnIfPathUnresolved(NodePath? path, string label)
+        {
+            if (path == null || path.IsEmpty || Enemy == null) return;
+            if (ResolveArea(path) != null) return;
+
+            GD.PushWarning($"[{Name}] {label}=\"{path}\" 解析不到 Area2D → 已回退"
+                + "（该字段先按模板节点、再按敌人根节点解析；确认路径真的指向某个区域节点）");
         }
 
         protected virtual void OnInitialized() { }
@@ -303,12 +392,22 @@ namespace Kuros.Actors.Enemies.Attacks
             // 阶段细分开关：当前阶段不允许眩晕则忽略本次受伤
             if (!IsStunEnabledForCurrentPhase()) return;
 
-            // 中断当前攻击（进入冷却）并切入眩晕
+            // 中断当前攻击（进入冷却）：先走完整受击（后仰 + 击退，攻击方写入的击退请求也在此被消费），
+            // 眩晕挂起、由 Hit 状态在受击走完后进入（时长从 hit 结束起算）；无 Hit 状态的目标退回直接眩晕。
             Cancel();
-            var frozenState = Enemy.StateMachine?.GetNodeOrNull<EnemyFrozenState>("Frozen");
-            if (frozenState != null)
-                frozenState.FrozenDuration = Mathf.Max(DamageTakenFrozenDuration, 0.1f);
-            Enemy.StateMachine?.ChangeState("Frozen");
+            var sm = Enemy.StateMachine;
+            if (sm != null && sm.HasState("Hit"))
+            {
+                Enemy.RequestStunAfterHit(Mathf.Max(DamageTakenFrozenDuration, 0.1f));
+                sm.ChangeState("Hit");
+            }
+            else
+            {
+                var frozenState = sm?.GetNodeOrNull<EnemyFrozenState>("Frozen");
+                if (frozenState != null)
+                    frozenState.FrozenDuration = Mathf.Max(DamageTakenFrozenDuration, 0.1f);
+                sm?.ChangeState("Frozen");
+            }
 
             // 全场时间减缓 + 镜头聚焦被眩晕的敌人（真实秒窗口，结束自动恢复 TimeScale/Zoom/聚焦目标）
             if (EnableInterruptSlowMo)
@@ -451,13 +550,23 @@ namespace Kuros.Actors.Enemies.Attacks
 
         private void ApplyAttackAreaMaskOverride()
         {
-            if (AttackArea == null) return;
             uint factionMask = BuildFactionMask();
             if (factionMask == 0) return;
 
-            _cachedAttackAreaMask = AttackArea.CollisionMask;
-            AttackArea.CollisionMask |= factionMask;
-            _hasAttackAreaMaskOverride = true;
+            if (AttackArea != null)
+            {
+                _cachedAttackAreaMask = AttackArea.CollisionMask;
+                AttackArea.CollisionMask |= factionMask;
+                _hasAttackAreaMaskOverride = true;
+            }
+
+            // 伤害区可能是另一个节点（DamageAreaPath）：伤害查询按区自身的 mask 过滤，必须一并覆盖
+            if (DamageArea != null && DamageArea != AttackArea)
+            {
+                _cachedDamageAreaMask = DamageArea.CollisionMask;
+                DamageArea.CollisionMask |= factionMask;
+                _hasDamageAreaMaskOverride = true;
+            }
         }
 
         private void RestoreAttackAreaMask()
@@ -469,11 +578,17 @@ namespace Kuros.Actors.Enemies.Attacks
             }
             _customAreaOverrides.Clear();
 
-            if (!_hasAttackAreaMaskOverride || AttackArea == null)
-                return;
+            if (_hasAttackAreaMaskOverride && AttackArea != null)
+            {
+                AttackArea.CollisionMask = _cachedAttackAreaMask;
+                _hasAttackAreaMaskOverride = false;
+            }
 
-            AttackArea.CollisionMask = _cachedAttackAreaMask;
-            _hasAttackAreaMaskOverride = false;
+            if (_hasDamageAreaMaskOverride && DamageArea != null)
+            {
+                DamageArea.CollisionMask = _cachedDamageAreaMask;
+                _hasDamageAreaMaskOverride = false;
+            }
         }
 
         /// <summary>
@@ -531,6 +646,23 @@ namespace Kuros.Actors.Enemies.Attacks
             {
                 SetPhase(AttackPhase.Recovery);
             }
+        }
+
+        /// <summary>强制提前结束 Warmup 进入 Active（供"等待条件提前满足、不再等满 WarmupDuration"的攻击——
+        /// 如防御反击：招架到伤害立刻出手）。仅 Warmup 阶段生效，其余阶段忽略。</summary>
+        protected void ForceEnterActivePhase()
+        {
+            if (_phase == AttackPhase.Warmup)
+            {
+                SetPhase(AttackPhase.Active);
+            }
+        }
+
+        /// <summary>保证自身冷却至少为指定时长（只补不缩：与剩余冷却取较大值）——
+        /// 打断收尾等需要"按正常 CD 结算"的场景用（控制器默认打断会清子攻击 CD）。</summary>
+        protected void EnsureCooldown(float seconds)
+        {
+            _cooldownTimer = Mathf.Max(_cooldownTimer, seconds);
         }
 
         private void SetPhase(AttackPhase phase)
@@ -646,7 +778,9 @@ namespace Kuros.Actors.Enemies.Attacks
         {
             float originalDamage = Enemy.AttackDamage;
             Enemy.AttackDamage = GetDamage();
-            Enemy.PerformAttack(TargetableFactions);
+            // 伤害落在本模板解析出的伤害区（DamageAreaPath → 回退 AttackArea → 回退根节点 AttackArea）。
+            // 旧行为是写死敌人根节点的 AttackArea：配了 AttackAreaPath 指向别的区就会出现"触发换区了、伤害还在根区"。
+            Enemy.PerformAttack(DamageArea ?? Enemy.AttackArea, TargetableFactions);
             Enemy.AttackDamage = originalDamage;
         }
 
@@ -719,12 +853,12 @@ namespace Kuros.Actors.Enemies.Attacks
 
             // 无论是无敌帧还是护盾完全格挡（此时血量未减少，_pendingHitKnockback=false），
             // 只要没有待处理的击退标记，就跳过击退，避免护盾格挡后仍被大力弹飞。
-            if (player is Kuros.Actors.Heroes.MainCharacter mainCharacter)
+            // 只**读**不消费：真正的放行与消费在 GameActor.ApplyKnockbackDisplacement 内部
+            // （EFFECT_STANDARD 第四条），这里读是为了给调用方返回准确的"到底弹没弹"。
+            if (player is Kuros.Actors.Heroes.MainCharacter mainCharacter
+                && !mainCharacter.HasPendingHitKnockback)
             {
-                if (!mainCharacter.ConsumePendingHitKnockback())
-                {
-                    return false;
-                }
+                return false;
             }
 
             float clampedDistance = Mathf.Max(0f, distance);
@@ -748,11 +882,15 @@ namespace Kuros.Actors.Enemies.Attacks
                 direction = player.GlobalPosition - Enemy.GlobalPosition;
             }
 
+            // 轴过滤（KnockbackAxes，默认全轴 = 不过滤）：未勾的轴分量归零后再归一化。
+            // 主方向过滤后为零 → 回退"过滤后的 fallback/朝向向量"；仍为零（轴向配置与回退不匹配）→ 放弃击退。
+            direction = MaskKnockbackAxes(direction);
             if (direction == Vector2.Zero)
             {
-                direction = fallbackDirection != Vector2.Zero
+                direction = MaskKnockbackAxes(fallbackDirection != Vector2.Zero
                     ? fallbackDirection
-                    : (Enemy.FacingRight ? Vector2.Right : Vector2.Left);
+                    : (Enemy.FacingRight ? Vector2.Right : Vector2.Left));
+                if (direction == Vector2.Zero) return false;
             }
 
             Vector2 dirNormalized = direction.Normalized();
@@ -768,6 +906,14 @@ namespace Kuros.Actors.Enemies.Attacks
             if (area == null) return null;
             var shape = area.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             return shape?.GlobalPosition;
+        }
+
+        /// <summary>按 <see cref="KnockbackAxes"/> 过滤方向：未勾选的轴分量归零（未勾 = 该轴不动）。</summary>
+        private Vector2 MaskKnockbackAxes(Vector2 direction)
+        {
+            if ((KnockbackAxes & KnockbackAxis.X) == 0) direction.X = 0f;
+            if ((KnockbackAxes & KnockbackAxis.Y) == 0) direction.Y = 0f;
+            return direction;
         }
 
         protected static void ApplyFrozenExternalDisplacement(SamplePlayer player, Vector2 velocity, float duration)
@@ -874,12 +1020,19 @@ namespace Kuros.Actors.Enemies.Attacks
                 Vector2 basePos;
                 if (entryMarkers.Length > 0)
                 {
-                    int idx = _spawnMarkerIndex % entryMarkers.Length;
-                    var marker = entryMarkers[idx];
+                    // 选择模式由 entry 决定：Sequence（默认）= 历史轮换下标；Random = 在解析成功的锚点中随机
+                    int idx = entry != null
+                        ? entry.PickMarkerIndex(entryMarkers, _spawnMarkerIndex)
+                        : _spawnMarkerIndex % entryMarkers.Length;
+                    var marker = idx >= 0 ? entryMarkers[idx] : null;
                     if (marker != null && GodotObject.IsInstanceValid(marker))
                     {
+                        // 锚点偏移按朝向翻 X：常规锚点（按未镜像姿态手工摆放）要翻；
+                        // 自镜像锚点（如挂在 SpineBoneNode 下、由 SpineBoneAnchor 跟骨骼矩阵的炮口 marker）由 entry 关掉（OffsetFlip = NoFlip），
+                        // 否则会翻两次（特效落到镜像的相反侧）
+                        bool offsetFlip = entry?.ResolveOffsetFlip(true) ?? true;
                         Vector2 rel = marker.GlobalPosition - Enemy.GlobalPosition;
-                        if (!Enemy.FacingRight && !isFollowFx) rel.X = -rel.X;
+                        if (!Enemy.FacingRight && !isFollowFx && offsetFlip) rel.X = -rel.X;
                         basePos = Enemy.GlobalPosition + rel;
                         usedMarker = marker;
                     }
@@ -911,6 +1064,12 @@ namespace Kuros.Actors.Enemies.Attacks
                     // 特效跟随锚点（marker 是敌人子节点，转向/移动自然跟随），生成方不感知具体类型
                     if (node2D is Kuros.Fx.IFollowAnchor followAnchor)
                         followAnchor.FollowAnchor = usedMarker ?? Enemy;
+
+                    // 锚点朝向：把所选锚点的**局部旋转**（度）交给能消费的特效（FanBeam 叠加到基准角度，
+                    // 扇束朝向随锚点在编辑器里的摆放方向走）；不读全局旋转——骨架锚点（SpineBoneAnchor）
+                    // 的朝向来自骨骼矩阵，读全局会把骨骼姿态卷进来
+                    if (node2D is Kuros.Fx.IAnchorDirectional anchorDirectional)
+                        anchorDirectional.AnchorAngleDegrees = usedMarker != null ? Mathf.RadToDeg(usedMarker.Rotation) : 0f;
 
                     Enemy.GetParent()?.AddChild(node2D);
                     node2D.GlobalPosition = spawnPos;

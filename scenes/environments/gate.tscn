@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://cb4xinggegye7"]
+[gd_scene load_steps=34 format=3 uid="uid://cb4xinggegye7"]
 
 [ext_resource type="Texture2D" uid="uid://gxc75o5wrtfl" path="res://assets/environments/scene_2_hotel/酒店大门口.png" id="1_ahd7w"]
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="1_gxwh4"]
@@ -6,7 +6,21 @@
 [ext_resource type="Texture2D" uid="uid://dg0dlvjyvdfed" path="res://assets/effect/LightEffect/强光1.png" id="2_xttcx"]
 [ext_resource type="Texture2D" uid="uid://bk0ipufx3kn76" path="res://assets/environments/26.3.17 烟.png" id="3_fkwno"]
 [ext_resource type="Texture2D" uid="uid://b6qys2indga4q" path="res://assets/effect/LightEffect/开门光.png" id="3_xttcx"]
-[ext_resource type="Script" uid="uid://drgauik0pftca" path="res://scripts/environments/GateController.cs" id="14_gatectrl"]
+[ext_resource type="Script" uid="uid://b2sqtcg0odsrt" path="res://scripts/environments/DestructibleStageController.cs" id="14_gatectrl"]
+[ext_resource type="Script" uid="uid://elxwhcec5gcr" path="res://scripts/environments/DestructibleStage.cs" id="15_dstage"]
+
+[sub_resource type="Resource" id="Resource_gate_stage1"]
+script = ExtResource("15_dstage")
+IdleAnimation = "gate_idle"
+HitAnimation = "gate_hit"
+BreakAnimation = "gate_broken"
+Threshold = 30.0
+
+[sub_resource type="Resource" id="Resource_gate_stage2"]
+script = ExtResource("15_dstage")
+IdleAnimation = "gate_broken_idle"
+HitAnimation = "gate_broken_hit"
+Threshold = 60.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_7xwka"]
 shader = ExtResource("1_gxwh4")
@@ -14,6 +28,8 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 2.0
+shader_parameter/brightness = 1.0
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="Shader" id="Shader_xttcx"]
 code = "shader_type canvas_item;
@@ -163,6 +179,8 @@ shader_parameter/highlight_width = 0.08
 shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 2.0
+shader_parameter/brightness = 1.0
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_algbx"]
 size = Vector2(400, 1651)
@@ -297,6 +315,30 @@ tracks/6/keys = {
 "update": 1,
 "values": [false]
 }
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Sprite2D:material:shader_parameter/brightness")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Broken:material:shader_parameter/brightness")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
 
 [sub_resource type="Animation" id="Animation_gxwh4"]
 resource_name = "gate_broken"
@@ -336,6 +378,30 @@ tracks/2/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [false, true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D:material:shader_parameter/brightness")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"update": 0,
+"values": []
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Broken:material:shader_parameter/brightness")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.26666668, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [1.0000000475, 10.0, 10.0, 1.0]
 }
 
 [sub_resource type="Animation" id="Animation_xttcx"]
@@ -388,6 +454,18 @@ tracks/3/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [false, true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Broken:material:shader_parameter/brightness")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.100000024, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0, 10.0, 1.0]
 }
 
 [sub_resource type="Animation" id="Animation_5c8l7"]
@@ -444,6 +522,18 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:material:shader_parameter/brightness")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.099999994, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0, 10.0, 1.0]
 }
 
 [sub_resource type="Animation" id="Animation_g0gvw"]
@@ -548,6 +638,18 @@ tracks/5/keys = {
 "update": 1,
 "values": [false, true]
 }
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Broken:material:shader_parameter/brightness")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0000000475, 10.0, 1.0000000475]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_5c8l7"]
 _data = {
@@ -565,8 +667,9 @@ z_index = 1
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("14_gatectrl")
-MaxHealth = 60
-BrokenThreshold = 30
+Stages = Array[ExtResource("15_dstage")]([SubResource("Resource_gate_stage1"), SubResource("Resource_gate_stage2")])
+DeathAnimation = "gate_knockback"
+DeclaredFaction = 1
 
 [node name="Broken" type="Sprite2D" parent="."]
 visible = false

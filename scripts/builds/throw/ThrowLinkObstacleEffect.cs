@@ -215,6 +215,12 @@ namespace Kuros.Builds.Throw
 
         private void DealHit(GameActor enemy)
         {
+            // 免疫目标与连线零交互（同"免疫目标不构成遮挡"准则）：伤害本会被目标自己的守门拒掉，
+            // 但减速半场走的是 SharedSpeedSlowManager（无 CanBeAffected 门）——这里统一跳。
+            // 例：常态免伤的机枪台（悬挂）穿线无伤害也无减速；进入 Attack 弱点窗口后恢复结算。
+            if (!enemy.CanBeAffected(null))
+                return;
+
             DamageDispatcher.DealDamage(enemy, Damage, enemy.GlobalPosition, Actor,
                 DamageSource.AreaEffect, TargetableFactions.Enemy, false);
 
