@@ -1736,9 +1736,13 @@ public partial class SamplePlayer : GameActor, IPlayerStatsSource, IThrowableMod
 	// 	}
 	// }
 
+	/// <summary>近战"合法目标"：按**攻击配置的阵营列表**（<see cref="CurrentAttackTargetableFactions"/>，
+	/// 默认 Enemy|WorldItem）走 dispatcher 同一套判据（含 damage_receivable 豁免）——不再写死 enemies 组：
+	/// GameActor 化的世界物（如 DestructibleStageController 的 gate，world_items 组）否则近战永远打不到。</summary>
 	protected virtual bool IsValidAttackTarget(GameActor candidate)
 	{
-		return candidate != this && candidate.IsInGroup("enemies");
+		if (candidate == this) return false;
+		return DamageDispatcher.ResolveDamageReceiver(candidate, CurrentAttackTargetableFactions) != null;
 	}
 
 	private void DealDamageToTarget(GameActor target, float damageAmount)

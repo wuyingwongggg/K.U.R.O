@@ -42,7 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="40_21m0k"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="41_y44s2"]
 [ext_resource type="PackedScene" uid="uid://30w6ddbm18ga" path="res://scenes/actors/etc/SlideRail.tscn" id="42_hxrfn"]
-[ext_resource type="PackedScene" uid="uid://b6dltrf0y1t38" path="res://scenes/actors/characters/Enemy_F1_rogueAI_part1.tscn" id="43_mfk2f"]
+[ext_resource type="PackedScene" uid="uid://xloj3kvnvpo2" path="res://scenes/actors/characters/Enemy_F1_rogueAI_part2.tscn" id="43_mfk2f"]
 [ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="45_4812a"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
@@ -115,6 +115,7 @@ collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_7ummj")
 ZoneName = "Room_Zone_Test_begin"
+ZoomLevel = 0.2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -402,6 +403,7 @@ position = Vector2(793, -689)
 position = Vector2(-730, 746)
 
 [node name="SlideRail" parent="." instance=ExtResource("42_hxrfn")]
+position = Vector2(0, 453)
 CarriagePrefab = ExtResource("43_mfk2f")
 CarriageSpawn = 2
 

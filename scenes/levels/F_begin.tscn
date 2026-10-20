@@ -1,4 +1,4 @@
-[gd_scene load_steps=79 format=3 uid="uid://b534tt4n3wr42"]
+[gd_scene load_steps=80 format=3 uid="uid://b534tt4n3wr42"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_mbxjs"]
 [ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="1_xart7"]
@@ -1339,6 +1339,30 @@ tracks/7/keys = {
 "update": 1,
 "values": [true]
 }
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("SlideRailSpawnPoint/LeftRial:position:y")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-2000.0]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("SlideRailSpawnPoint2/RightRial:position:y")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-2000.0]
+}
 
 [sub_resource type="Animation" id="Animation_lbll7"]
 resource_name = "rail_move_in"
@@ -1492,10 +1516,135 @@ tracks/3/keys = {
 "values": [-1400.0, 3000.0]
 }
 
+[sub_resource type="Animation" id="Animation_npcwp"]
+resource_name = "rail_move_in"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SlideRailSpawnPoint/LeftRial:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.33333334, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [-6400.0, -1400.0, -1600.0, -1400.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SlideRailSpawnPoint2/RightRial:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.33333334, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [3000.0, -1400.0, -1200.0, -1400.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SlideRailSpawnPoint/LeftRial/HitA:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.2, 0.21, 0.22, 0.23, 0.24),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("SlideRailSpawnPoint/LeftRial/HitA:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.25),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [false, true, false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("SlideRailSpawnPoint2/RightRial/HitA:frame")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.2, 0.21, 0.22, 0.23, 0.24),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("SlideRailSpawnPoint2/RightRial/HitA:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.25),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [false, true, false]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("SlideRailSpawnPoint/LeftRial:position:y")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-1800.0]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("SlideRailSpawnPoint/LeftRial:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("SlideRailSpawnPoint2/RightRial:position:y")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [-1800.0]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("SlideRailSpawnPoint2/RightRial:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1owxs"]
 _data = {
 &"RESET": SubResource("Animation_ri2xm"),
 &"rail_move_in": SubResource("Animation_lbll7"),
+&"rail_move_in_stage2": SubResource("Animation_npcwp"),
 &"rail_move_out": SubResource("Animation_kge03")
 }
 

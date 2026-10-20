@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://xloj3kvnvpo2"]
+[gd_scene load_steps=50 format=3 uid="uid://xloj3kvnvpo2"]
 
 [ext_resource type="Script" uid="uid://dacchy18dovd" path="res://scripts/actors/enemies/EnemyF1RogueAIPart2.cs" id="1_rogue"]
 [ext_resource type="Texture2D" uid="uid://binvuyk5j65a2" path="res://assets/ui/hp&exp_bar/boss图标.png" id="2_04486"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="5_shadowtex"]
 [ext_resource type="Script" uid="uid://4dd56677a2aa" path="res://scripts/controllers/ShadowFollower.cs" id="6_follower"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://cu7dh3atg6s4d" path="res://animations/spine/Enemy_F1_rogueAI.tres" id="7_spine"]
+[ext_resource type="PackedScene" uid="uid://c530nvmm8rfd" path="res://scenes/environments/rogueAI_bumper.tscn" id="8_nrern"]
 [ext_resource type="Script" uid="uid://bbybuyitd10jr" path="res://scripts/controllers/SpineController.gd" id="8_spinectrl"]
 [ext_resource type="Script" uid="uid://cenpuhlcgesin" path="res://scripts/systems/fsm/StateMachine.cs" id="9_fsm"]
 [ext_resource type="Script" uid="uid://7sdhlullren0" path="res://scripts/actors/enemies/states/EnemyIdleState.cs" id="10_idle"]
@@ -13,19 +14,23 @@
 [ext_resource type="Script" uid="uid://bo6uhkbqyxe6o" path="res://scripts/actors/enemies/states/EnemyAttackState.cs" id="12_attack"]
 [ext_resource type="Script" uid="uid://cwnxfhj8ysc2f" path="res://scripts/actors/enemies/states/EnemyHitState.cs" id="14_hit"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="15_frozen"]
+[ext_resource type="PackedScene" uid="uid://dn0xxip3a0jbb" path="res://resources/effects/FanBeam.tscn" id="16_aal8m"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="16_dying"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="17_dead"]
 [ext_resource type="Script" uid="uid://d6ppl6a6djpr" path="res://scripts/core/effects/EffectController.cs" id="18_fx"]
 [ext_resource type="PackedScene" uid="uid://cq03m6wlrgxdp" path="res://scenes/actors/etc/RogueAIOverloadBeamWarming.tscn" id="18_i3pty"]
+[ext_resource type="PackedScene" uid="uid://cmh3bnabinwi0" path="res://resources/effects/CameraShakeEffect.tscn" id="18_mlj7w"]
 [ext_resource type="PackedScene" path="res://resources/effects/SustainedCameraShakeEffect.tscn" id="19_hj03l"]
 [ext_resource type="Script" uid="uid://beutwy4w43dgl" path="res://scripts/actors/enemies/movement/RailChaseMovement.cs" id="19_rail"]
+[ext_resource type="PackedScene" uid="uid://dqvnmenbdi81" path="res://resources/effects/RingShockwave.tscn" id="19_sqmbs"]
 [ext_resource type="Script" uid="uid://cngo2bq4cjp2k" path="res://scripts/actors/enemies/animation/EnemyF1RogueAISpineAnimationController.cs" id="20_anim"]
 [ext_resource type="Script" uid="uid://mq5je5fq1uta" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIPart2AttackController.cs" id="21_aiatk"]
 [ext_resource type="Script" uid="uid://cu6enbmbcicac" path="res://scripts/actors/enemies/attacks/EnemySimpleMeleeAttack.cs" id="22_melee"]
 [ext_resource type="Script" uid="uid://d21a3xgcca47b" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIUltimateAttack.cs" id="23_ult"]
 [ext_resource type="Script" uid="uid://fd5076f50ca0" path="res://scripts/actors/enemies/attacks/AttackEffectEntry.cs" id="24_fxentry"]
 [ext_resource type="PackedScene" uid="uid://b1osuixafvh7g" path="res://resources/effects/RogueAIOverloadBeam.tscn" id="25_beam"]
-[ext_resource type="Script" uid="uid://na2w566t6dy7" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAISlamB.cs" id="26_slamb"]
+[ext_resource type="Script" uid="uid://bh8w01esd1m7l" path="res://scripts/actors/enemies/states/EnemyF1RogueAIPart2DownTransitionState.cs" id="27_downtrans"]
+[ext_resource type="Script" uid="uid://b67c4yu8d4dfp" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAIDownSlamAttack.cs" id="28_downslam"]
 [ext_resource type="Script" uid="uid://e84825ehiw7v" path="res://scripts/actors/heroes/GhostHealthComponent.cs" id="99_ghost"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
@@ -46,8 +51,39 @@ size = Vector2(200, 6000)
 size = Vector2(500, 300)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
-radius = 100.0
-height = 300.0
+radius = 180.0
+height = 800.0
+
+[sub_resource type="Resource" id="Resource_mlj7w"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("16_aal8m")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_aal8m"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("18_mlj7w")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+PropertyOverrides = Dictionary[String, Variant]({
+"Duration": 1.0,
+"ShakeStrength": 20.0
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
+[sub_resource type="Resource" id="Resource_bf1er"]
+script = ExtResource("24_fxentry")
+Scene = ExtResource("19_sqmbs")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 2
+SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
+PropertyOverrides = Dictionary[String, Variant]({
+"TargetCollisionMask": 4,
+"TargetableFactions": 1
+})
+metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_ult_beam"]
 script = ExtResource("24_fxentry")
@@ -142,7 +178,7 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
-[node name="Enemy_F1_rogueAI_part2" type="CharacterBody2D" node_paths=PackedStringArray("DetectionArea", "AttackArea", "StateMachine", "EffectController")]
+[node name="Enemy_F1_rogueAI_part2" type="CharacterBody2D" node_paths=PackedStringArray("Armor", "DetectionArea", "AttackArea", "StateMachine", "EffectController")]
 y_sort_enabled = true
 scale = Vector2(0.66, 0.66)
 collision_layer = 2
@@ -150,11 +186,13 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_rogue")
 DamagePerPart = 100
+Armor = NodePath("SpineSprite/SpineBoneNode2/rogueAI_bumper")
 DownHealthThreshold = 100
+DownZIndexDecrease = 1
+DebugDamagePerPress = 100
 FreeOnFinishArrive = true
 IsBoss = true
 BossIcon = ExtResource("2_04486")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
@@ -163,7 +201,7 @@ ScoreValue = 0
 Speed = 400.0
 AttackDamage = 20.0
 AttackCooldown = 1.0
-MaxHealth = 500
+MaxHealth = 401
 AiDescription = "错乱AI核心本体：大型敌人的主体，造成一切的源头，挂在滑槽轨道上沿轨滑行追击玩家。"
 LockFacing = true
 StateMachine = NodePath("StateMachine")
@@ -176,7 +214,7 @@ material = SubResource("ShaderMaterial_shadow")
 scale = Vector2(12, 6)
 texture = ExtResource("5_shadowtex")
 script = ExtResource("6_follower")
-TargetBone = NodePath("../SpineSprite/SpineBoneNode")
+TargetBone = NodePath("../SpineSprite/SpineBoneNode2")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -230,9 +268,9 @@ script = ExtResource("8_spinectrl")
 position = Vector2(0, -1500)
 skeleton_data_res = ExtResource("7_spine")
 preview_skin = "Default"
-preview_animation = "-- Empty --"
-preview_frame = false
-preview_time = 0.0
+preview_animation = "up_to_down"
+preview_frame = true
+preview_time = 0.8
 script = ExtResource("8_spinectrl")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -241,6 +279,18 @@ position = Vector2(-27.952059, -748.9253)
 rotation = 1.570796
 scale = Vector2(0.99999994, 0.99999994)
 bone_name = "bone4"
+
+[node name="SpineBoneNode2" type="SpineBoneNode" parent="SpineSprite"]
+show_behind_parent = true
+position = Vector2(-30.30862, 501.3683)
+rotation = 1.5848805
+scale = Vector2(0.9999999, 0.9999999)
+bone_name = "bone6"
+thickness = 30.0
+
+[node name="rogueAI_bumper" parent="SpineSprite/SpineBoneNode2" instance=ExtResource("8_nrern")]
+z_index = 2
+z_as_relative = false
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0.6, 0.5, 1)
@@ -281,7 +331,6 @@ scale = Vector2(0.9999999, 0.9999999)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitArea"]
 position = Vector2(-30, 0)
 shape = SubResource("RectangleShape2D_hit")
-disabled = true
 
 [node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("6_follower")
@@ -315,14 +364,12 @@ script = ExtResource("12_attack")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("21_aiatk")
-UltimateUpgradeProgress = 0.5
-UltimateProgressThresholds = PackedFloat32Array(0.25, 0.5, 0.75)
 UltimateRetriggerDelay = 1.0
 MeleeAttackNameSecond = "RogueAISlamB"
 MeleeAttackName = "RogueAISlamA"
 SkillAttackName = "RogueAISlamB"
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-MinInterAttackDelay = 10.0
+MinInterAttackDelay = 1.0
 QueuedAttackTimeout = 3.0
 
 [node name="RogueAISlamA" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -335,18 +382,57 @@ DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
-metadata/attack_weight = 100.0
+Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_mlj7w")])
+metadata/attack_weight = 0.0
 
 [node name="RogueAISlamB" type="Node" parent="StateMachine/Attack/AttackController"]
-script = ExtResource("26_slamb")
+script = ExtResource("22_melee")
 AttackName = "RogueAISlamB"
-WarmupDuration = 3.0
-ActiveDuration = 3.0
-RecoveryDuration = 1.5
+WarmupDuration = 0.1
+ActiveDuration = 2.4
+RecoveryDuration = 0.5
 DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+metadata/attack_weight = 0.0
+
+[node name="RogueAIDownSlam" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("28_downslam")
+AttackName = "RogueAIDownSlam"
+WarmupDuration = 0.6
+ActiveDuration = 0.8
+RecoveryDuration = 0.3
+CooldownDurationMultiplier = 3.0
+DamageMultiplier = 0.0
+AttackAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
+TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
+KnockbackFromHitPosition = true
+RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
+GrantedImmunities = 24
+Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_aal8m"), SubResource("Resource_bf1er")])
+metadata/attack_weight = 100.0
+
+[node name="RogueAIDownSlamPro" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("28_downslam")
+StrikeLoopCount = 5
+RequiresProUpgrade = true
+AttackName = "RogueAIDownSlamPro"
+WarmupDuration = 0.6
+ActiveDuration = 2.4
+RecoveryDuration = 0.3
+CooldownDurationMultiplier = 6.0
+DamageMultiplier = 1.5
+MaxAllowedAngleToPlayer = 180.0
+TargetableFactions = 1
+KnockbackDistance = 1500.0
+KnockbackDuration = 0.6
+KnockbackFromHitPosition = true
+RequireAnimationHitTrigger = true
+AllowMultipleAnimationHits = true
+GrantedImmunities = 24
+Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_aal8m"), SubResource("Resource_bf1er")])
 metadata/attack_weight = 100.0
 
 [node name="RogueAIOverload" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -371,6 +457,9 @@ TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_201lk"), SubResource("Resource_i3pty"), SubResource("Resource_eams0"), SubResource("Resource_8uyj2")])
 metadata/attack_weight = 0.0
 
+[node name="DownTransition" type="Node" parent="StateMachine"]
+script = ExtResource("27_downtrans")
+
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("14_hit")
 HitImpactDuration = 0.1
@@ -381,7 +470,7 @@ script = ExtResource("15_frozen")
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("16_dying")
-DeathDuration = 0.67
+DeathDuration = 2.0
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("17_dead")
@@ -391,6 +480,7 @@ script = ExtResource("18_fx")
 
 [node name="RailChaseMovement" type="Node" parent="."]
 script = ExtResource("19_rail")
+BlockedStates = Array[StringName]([&"Attack", &"Hit", &"Frozen", &"CooldownFrozen", &"Dying", &"Dead", &"DownTransition"])
 
 [node name="AnimationController" type="Node" parent="."]
 script = ExtResource("20_anim")
