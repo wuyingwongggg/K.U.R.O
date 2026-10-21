@@ -99,7 +99,7 @@ y_sort_enabled = true
 position = Vector2(1, 0)
 
 [node name="PlayerSpawnPoint" type="Node2D" parent="."]
-position = Vector2(-2246, 330)
+position = Vector2(-2246, 858)
 
 [node name="AreaSize" type="Area2D" parent="."]
 visible = false
@@ -115,7 +115,6 @@ collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_7ummj")
 ZoneName = "Room_Zone_Test_begin"
-ZoomLevel = 0.2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10

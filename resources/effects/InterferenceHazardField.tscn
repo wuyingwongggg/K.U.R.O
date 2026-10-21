@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/InterferenceHazardField.cs" id="1_field"]
+[ext_resource type="PackedScene" path="res://resources/effects/InterferenceZone.tscn" id="2_zone"]
+
+[node name="InterferenceHazardField" type="Node2D"]
+script = ExtResource("1_field")
+ZoneScene = ExtResource("2_zone")

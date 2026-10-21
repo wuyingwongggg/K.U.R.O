@@ -9,6 +9,9 @@ namespace Kuros.Fx
 	/// 断裂环形冲击波：从生成点向四周扩散，波前接触目标时结算一次伤害与径向击退。
 	/// 缺口（Gap）在生成时随机一次、全程固定；C# 逻辑与 Shader 共用同一份缺口数据——
 	/// Shader 只负责画，命中判定用数学距离 + 环绕角差，不建逐缺口 Area2D。
+	/// **命中判定在 shader 的伪 3D 平面空间里做**：C# 复刻 ring_shockwave.gdshader 的投影公式
+	/// （世界坐标 → plane_uv → 归一化半径/角度），视觉与判定共享同一个投影，fov / rot_x / rot_y
+	/// 怎么调都对得上；投影参数直接从材质读，材质是唯一参数源。投影不可用时回退世界坐标正圆。
 	/// </summary>
 	[GlobalClass]
 	public partial class ShockwaveController : Node2D, IAttackerProvider
@@ -89,6 +92,15 @@ namespace Kuros.Fx
 		/// <summary>Shader 缺口羽化角（弧度）：逻辑安全区必须把这段羽化也算进去，否则视觉断口和伤害边界错位。</summary>
 		private float _gapFeatherRad;
 
+		/// <summary>伪 3D 投影缓存（与 ring_shockwave.gdshader 的 vertex/fragment 完全同构）。</summary>
+		private bool _planeSpaceReady;
+		private float _ps, _sx, _cx, _sy, _cy, _S, _ds, _kx, _ky, _projScale;
+		/// <summary>目标身体包络的圆周采样点数（平面空间下身体不再是正圆，只能采样求包络）。</summary>
+		private const int TargetExtentSamples = 8;
+		/// <summary>当前/上一帧波前的平面空间归一化半径（= 世界半径 / MaxRadius，与 wave_radius uniform 同量纲）。</summary>
+		private float _planeRadius;
+		private float _previousPlaneRadius;
+
 		public override void _Ready()
 		{
 			_origin = GlobalPosition;
@@ -98,6 +110,7 @@ namespace Kuros.Fx
 			_gapFeatherRad = _material != null
 				? Mathf.Max(0f, _material.GetShaderParameter("gap_feather").AsSingle())
 				: 0.1f;
+			SetupProjection();
 			GenerateGaps();
 			ApplyStaticShaderParams();
 			SetShaderParam("wave_radius", 0f);
@@ -123,12 +136,14 @@ namespace Kuros.Fx
 		/// <summary>供 <see cref="ShockwaveDebugDraw"/> 调用的判定可视化。</summary>
 		public void DrawDamageDebug(CanvasItem canvas)
 		{
-			canvas.DrawArc(Vector2.Zero, MaxRadius, 0f, Mathf.Tau, 96,
-				new Color(1f, 1f, 1f, 0.15f), 1.5f, true);
+			if (!_planeSpaceReady) return;   // 无投影映射时画世界坐标会误导，直接不画
 
-			if (_radius <= 0.01f) return;
-			canvas.DrawArc(Vector2.Zero, _radius, 0f, Mathf.Tau, 96,
-				new Color(1f, 0.25f, 0.2f, 0.9f), 2.5f, true);
+			// 白色：最大可视半径（平面 dist = 1）
+			DrawPlaneRing(canvas, 1f, new Color(1f, 1f, 1f, 0.15f), 1.5f);
+
+			if (_planeRadius <= 0.0001f) return;
+			// 红色：逻辑波前（与视觉环同一个平面半径）
+			DrawPlaneRing(canvas, _planeRadius, new Color(1f, 0.25f, 0.2f, 0.9f), 2.5f);
 
 			float margin = Mathf.DegToRad(GapSafetyMarginDegrees);
 			var visualGapColor = new Color(0.2f, 1f, 0.35f, 0.9f);
@@ -140,25 +155,52 @@ namespace Kuros.Fx
 				float safe = half + _gapFeatherRad + margin;
 
 				// 绿色：缺口配置半宽（视觉核心断开区）
-				canvas.DrawArc(Vector2.Zero, _radius,
-					gap.CenterAngle - half, gap.CenterAngle + half,
-					24, visualGapColor, 4f, true);
+				DrawPlaneArc(canvas, _planeRadius,
+					gap.CenterAngle - half, gap.CenterAngle + half, visualGapColor, 4f);
 				// 黄色：实际安全角（半宽 + 羽化 + 安全边距）
-				canvas.DrawArc(Vector2.Zero, _radius,
-					gap.CenterAngle - safe, gap.CenterAngle + safe,
-					32, safeColor, 2f, true);
+				DrawPlaneArc(canvas, _planeRadius,
+					gap.CenterAngle - safe, gap.CenterAngle + safe, safeColor, 2f);
 
-				DrawBoundaryRay(canvas, gap.CenterAngle - half, visualGapColor);
-				DrawBoundaryRay(canvas, gap.CenterAngle + half, visualGapColor);
-				DrawBoundaryRay(canvas, gap.CenterAngle - safe, safeColor);
-				DrawBoundaryRay(canvas, gap.CenterAngle + safe, safeColor);
+				DrawPlaneRay(canvas, _planeRadius, gap.CenterAngle - half, visualGapColor);
+				DrawPlaneRay(canvas, _planeRadius, gap.CenterAngle + half, visualGapColor);
+				DrawPlaneRay(canvas, _planeRadius, gap.CenterAngle - safe, safeColor);
+				DrawPlaneRay(canvas, _planeRadius, gap.CenterAngle + safe, safeColor);
 			}
 		}
 
-		private void DrawBoundaryRay(CanvasItem canvas, float angle, Color color)
+		private Vector2 ProjectPlanePoint(CanvasItem canvas, float planeRadius, float angle)
 		{
-			Vector2 dir = new(Mathf.Cos(angle), Mathf.Sin(angle));
-			canvas.DrawLine(Vector2.Zero, dir * _radius, color, 1.5f, true);
+			Vector2 world = PlaneToWorld(planeRadius, angle);
+			return canvas is Node2D node2D ? node2D.ToLocal(world) : world - GlobalPosition;
+		}
+
+		private void DrawPlaneRing(CanvasItem canvas, float planeRadius, Color color, float width)
+		{
+			const int segments = 128;
+			var points = new Vector2[segments + 1];
+			for (int i = 0; i <= segments; i++)
+				points[i] = ProjectPlanePoint(canvas, planeRadius, Mathf.Tau * i / segments);
+			canvas.DrawPolyline(points, color, width, true);
+		}
+
+		private void DrawPlaneArc(CanvasItem canvas, float planeRadius,
+			float fromAngle, float toAngle, Color color, float width)
+		{
+			int segments = Mathf.Max(4, Mathf.CeilToInt(Mathf.Abs(toAngle - fromAngle) / (Mathf.Tau / 128f)));
+			var points = new Vector2[segments + 1];
+			for (int i = 0; i <= segments; i++)
+				points[i] = ProjectPlanePoint(canvas, planeRadius,
+					Mathf.Lerp(fromAngle, toAngle, (float)i / segments));
+			canvas.DrawPolyline(points, color, width, true);
+		}
+
+		private void DrawPlaneRay(CanvasItem canvas, float planeRadius, float angle, Color color)
+		{
+			const int segments = 24;
+			var points = new Vector2[segments + 1];
+			for (int i = 0; i <= segments; i++)
+				points[i] = ProjectPlanePoint(canvas, planeRadius * i / segments, angle);
+			canvas.DrawPolyline(points, color, 1.5f, true);
 		}
 
 		public override void _PhysicsProcess(double delta)
@@ -204,7 +246,10 @@ namespace Kuros.Fx
 			{
 				_previousRadius = _radius;
 				_radius = Mathf.Min(MaxRadius, _radius + Mathf.Max(ExpandSpeed, 0f) * (float)delta);
-				SetShaderParam("wave_radius", MaxRadius > 0f ? _radius / MaxRadius : 0f);
+				float radiusDenom = Mathf.Max(MaxRadius, 0.001f);
+				_previousPlaneRadius = _previousRadius / radiusDenom;
+				_planeRadius = _radius / radiusDenom;
+				SetShaderParam("wave_radius", _planeRadius);
 				ProcessTargets();
 
 				if (_radius >= MaxRadius - 0.001f)
@@ -259,6 +304,102 @@ namespace Kuros.Fx
 
 			// QuadMesh 尺寸 2 → 缩放 MaxRadius 后覆盖 2×MaxRadius
 			_visual.Scale = new Vector2(MaxRadius, MaxRadius);
+		}
+
+		/// <summary>
+		/// 读取材质的伪 3D 参数并缓存投影常量（材质是唯一参数源，改 fov/rot 不需要同步导出）。
+		/// 公式与 ring_shockwave.gdshader 的 vertex/fragment 逐项对应；shader 改了这里必须同步。
+		/// </summary>
+		private void SetupProjection()
+		{
+			if (_visual == null || _material == null || _visual is not MeshInstance2D)
+			{
+				_planeSpaceReady = false;
+				GD.PushWarning($"[{nameof(ShockwaveController)}] 缺少 MeshInstance2D/材质：命中判定回退世界坐标");
+				return;
+			}
+
+			float fov = Mathf.Clamp(GetShaderFloat("fov", 60f), 1f, 179f);
+			float rotYDeg = GetShaderFloat("rot_y_deg", 0f);
+			float rotXDeg = GetShaderFloat("rot_x_deg", 25f);
+			float inset = Mathf.Clamp(GetShaderFloat("inset", 0f), 0f, 1f);
+			float quadSize = Mathf.Max(GetShaderFloat("quad_size", 2f), 0.001f);
+
+			float rotY = Mathf.DegToRad(rotYDeg);
+			float rotX = Mathf.DegToRad(rotXDeg);
+			_ps = Mathf.Tan(Mathf.DegToRad(fov) * 0.5f);
+			_sx = Mathf.Sin(rotX); _cx = Mathf.Cos(rotX);
+			_sy = Mathf.Sin(rotY); _cy = Mathf.Cos(rotY);
+			_S = 0.5f / Mathf.Max(_ps, 1e-4f);
+			_ds = _S + 0.5f;
+
+			// QuadMesh 的 V 轴与世界 Y 相反：UV 顶点位移在 Y 上表现为收缩（shader 里 (UV-0.5) 的符号）
+			float shift = quadSize * _ps * (1f - inset);
+			_kx = 2f + shift;
+			_ky = 2f - shift;
+			_projScale = _ds * _cy * _cx;
+
+			_planeSpaceReady = Mathf.Abs(_kx) > 1e-6f
+				&& Mathf.Abs(_ky) > 1e-6f
+				&& Mathf.Abs(_projScale) > 1e-6f;
+			if (!_planeSpaceReady)
+				GD.PushWarning($"[{nameof(ShockwaveController)}] 投影参数退化（kx/ky/scale≈0）：命中判定回退世界坐标");
+		}
+
+		private float GetShaderFloat(string parameter, float fallback)
+		{
+			if (_material == null) return fallback;
+			Variant value = _material.GetShaderParameter(parameter);
+			return value.VariantType == Variant.Type.Nil ? fallback : value.AsSingle();
+		}
+
+		/// <summary>世界坐标 → shader 平面空间（归一化半径 + 角）。公式与 shader 的 vertex/fragment 对称。</summary>
+		private bool WorldToPlane(Vector2 worldPos, out float dist, out float angle)
+		{
+			dist = 0f;
+			angle = 0f;
+			if (!_planeSpaceReady || _visual == null || !GodotObject.IsInstanceValid(_visual))
+				return false;
+
+			Vector2 local = _visual.ToLocal(worldPos);
+			float qx = local.X / _kx;          // u - 0.5
+			float qy = -local.Y / _ky;         // v - 0.5（QuadMesh V 轴翻转补偿）
+
+			float wx = _cy * qx + _sy * _sx * qy + _sy * _cx * _S;
+			float wy = _cx * qy - _sx * _S;
+			float wz = -_sy * qx + _cy * _sx * qy + _cy * _cx * _S;
+			if (Mathf.Abs(wz) < 1e-6f) return false;
+
+			float pu = wx * _projScale / wz - _ds * _sy * _cx + 0.5f;
+			float pv = 0.5f - wy * _projScale / wz - _ds * _sx;
+
+			Vector2 p = new(pu - 0.5f, pv - 0.5f);
+			dist = p.Length() * 2f;
+			angle = p.Angle();
+			return true;
+		}
+
+		/// <summary>平面空间 → 世界坐标（调试绘制用）。逆投影：解 3×3 线性方程组求 (qx, qy, wz)。</summary>
+		private Vector2 PlaneToWorld(float dist, float angle)
+		{
+			float pu = 0.5f + Mathf.Cos(angle) * dist * 0.5f;
+			float pv = 0.5f + Mathf.Sin(angle) * dist * 0.5f;
+
+			float a = (pu - 0.5f + _ds * _sy * _cx) / _projScale;
+			float b = (-_ds * _sx - (pv - 0.5f)) / _projScale;
+
+			float r00 = _cy, r01 = _sy * _sx, r02 = _sy * _cx;
+			float r10 = 0f, r11 = _cx, r12 = -_sx;
+			float r20 = -_sy, r21 = _cy * _sx, r22 = _cy * _cx;
+
+			float e1 = r00 - a * r20, f1 = r01 - a * r21, g1 = _S * (a * r22 - r02);
+			float e2 = r10 - b * r20, f2 = r11 - b * r21, g2 = _S * (b * r22 - r12);
+			float det = e1 * f2 - f1 * e2;
+			if (Mathf.Abs(det) < 1e-8f || _visual == null) return GlobalPosition;
+
+			float qx = (g1 * f2 - f1 * g2) / det;
+			float qy = (e1 * g2 - g1 * e2) / det;
+			return _visual.ToGlobal(new Vector2(_kx * qx, -_ky * qy));
 		}
 
 		private void ApplyStaticShaderParams()
@@ -320,24 +461,61 @@ namespace Kuros.Fx
 			_material.SetShaderParameter("gap_count", _gaps.Count);
 		}
 
-		private bool IsAngleInGap(float angle, float distance)
+		private bool IsAngleInGap(float angle, float angularHalfWidth)
 		{
 			float margin = Mathf.DegToRad(GapSafetyMarginDegrees);
 			// 视觉上"安全"= 整个身体都在缺口扇区内。只要身体有一部分落进实心环，
 			// 视觉上就是环已经压到身上——此时必须判定为命中，才能与视觉一致。
-			// 反例（之前）：把角半径加到安全角外面，会让身体边缘已经在实心环里、却仍然免伤。
-			float targetAngularRadius = Mathf.Atan2(TargetHitRadius, Mathf.Max(distance, 1f));
-
+			// angularHalfWidth 由 GetTargetExtent 在平面空间采样得到（含 QuadMesh V 翻转与透视畸变）。
 			foreach (Gap gap in _gaps)
 			{
 				// 环绕角差：正确处理 ±PI 两侧
 				float delta = Mathf.Atan2(
 					Mathf.Sin(angle - gap.CenterAngle),
 					Mathf.Cos(angle - gap.CenterAngle));
-				if (Mathf.Abs(delta) + targetAngularRadius <= gap.HalfWidth + _gapFeatherRad + margin)
+				if (Mathf.Abs(delta) + angularHalfWidth <= gap.HalfWidth + _gapFeatherRad + margin)
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// 目标身体的平面空间包络：8 点采样身体圆周（世界半径 = TargetHitRadius），
+		/// 得到径向 min/max（与 wave_radius 同量纲）和相对中心角的角半径。
+		/// 投影不可用时回退世界坐标正圆（径向往平面量纲换算）。
+		/// </summary>
+		private void GetTargetExtent(Vector2 worldPos,
+			out float minRadius, out float maxRadius, out float angle, out float angularHalfWidth)
+		{
+			if (!_planeSpaceReady || !WorldToPlane(worldPos, out float centerDist, out float centerAngle))
+			{
+				Vector2 offset = worldPos - _origin;
+				float distance = offset.Length();
+				float denom = Mathf.Max(MaxRadius, 0.001f);
+				minRadius = Mathf.Max(0f, distance - TargetHitRadius) / denom;
+				maxRadius = (distance + TargetHitRadius) / denom;
+				angle = offset.Angle();
+				angularHalfWidth = Mathf.Atan2(TargetHitRadius, Mathf.Max(distance, 1f));
+				return;
+			}
+
+			minRadius = centerDist;
+			maxRadius = centerDist;
+			angle = centerAngle;
+			angularHalfWidth = 0f;
+
+			for (int i = 0; i < TargetExtentSamples; i++)
+			{
+				float sampleAngle = Mathf.Tau * i / TargetExtentSamples;
+				Vector2 sample = worldPos
+					+ new Vector2(Mathf.Cos(sampleAngle), Mathf.Sin(sampleAngle)) * TargetHitRadius;
+				if (!WorldToPlane(sample, out float d, out float a)) continue;
+
+				minRadius = Mathf.Min(minRadius, d);
+				maxRadius = Mathf.Max(maxRadius, d);
+				float delta = Mathf.Wrap(a - centerAngle, -Mathf.Pi, Mathf.Pi);
+				angularHalfWidth = Mathf.Max(angularHalfWidth, Mathf.Abs(delta));
+			}
 		}
 
 		// ── 命中 ──────────────────────────────────────────────────
@@ -375,8 +553,11 @@ namespace Kuros.Fx
 				if (collider == null) continue;
 				if (!AllowSelfDamage && DamageDispatcher.BelongsToActor(collider, Attacker)) continue;
 
+				// 接收点可以是 GameActor（玩家/敌人），也可以是非 GameActor 的 world item
+				// （WorldItem / 可破坏物走 TakeDamage(float)；目标面板的 WorldItem 分支即可命中）
 				Node? receiver = DamageDispatcher.ResolveDamageReceiver(collider, TargetableFactions);
-				if (receiver is not GameActor target || target.IsDeadOrDying) continue;
+				if (receiver is not Node2D target) continue;
+				if (target is GameActor actor && actor.IsDeadOrDying) continue;
 				if (!AllowSelfDamage && target == Attacker) continue;
 
 				ulong id = target.GetInstanceId();
@@ -387,20 +568,21 @@ namespace Kuros.Fx
 			}
 		}
 
-		private void TryHit(GameActor target, ulong id)
+		private void TryHit(Node2D target, ulong id)
 		{
 			Vector2 offset = target.GlobalPosition - _origin;
-			float distance = offset.Length();
 
-			// 波前是否在这一帧经过目标：d + r ≥ previous 且 d - r ≤ current
-			if (distance + TargetHitRadius < _previousRadius) return;
-			if (distance - TargetHitRadius > _radius) return;
+			// 平面空间的波前是否在这一帧扫过目标：min..max 是身体圆周投影后的径向包络
+			GetTargetExtent(target.GlobalPosition,
+				out float minRadius, out float maxRadius, out float angle, out float angularHalfWidth);
+
+			if (maxRadius < _previousPlaneRadius) return;
+			if (minRadius > _planeRadius) return;
 
 			// 缺口内也标记已处理：同一道波对同一目标只判定一次
 			_processedTargets.Add(id);
 
-			float angle = Mathf.Atan2(offset.Y, offset.X);
-			if (IsAngleInGap(angle, distance)) return;
+			if (IsAngleInGap(angle, angularHalfWidth)) return;
 
 			Vector2 direction = offset.LengthSquared() > 0.0001f
 				? offset.Normalized()
@@ -413,9 +595,10 @@ namespace Kuros.Fx
 				if (!dealt) return;
 			}
 
-			if (KnockbackDistance > 0f)
+			// 击退只适用于 GameActor；world item 没有位移接口，只结算伤害
+			if (KnockbackDistance > 0f && target is GameActor actor)
 			{
-				target.ApplyKnockbackDisplacement(direction, KnockbackDistance,
+				actor.ApplyKnockbackDisplacement(direction, KnockbackDistance,
 					Mathf.Max(KnockbackDuration, 0.01f));
 			}
 		}

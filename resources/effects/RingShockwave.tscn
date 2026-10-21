@@ -51,8 +51,6 @@ KnockbackDuration = 0.5
 TargetableFactions = 5
 RingThickness = 60.0
 EdgeSoftness = 30.0
-ShowDamageDebug = true
-DebugLogSpawn = true
 
 [node name="ShockwaveSprite" type="MeshInstance2D" parent="."]
 material = SubResource("ShaderMaterial_wave")

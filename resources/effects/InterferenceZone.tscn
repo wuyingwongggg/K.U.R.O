@@ -1,0 +1,104 @@
+[gd_scene load_steps=8 format=3 uid="uid://c7y40fi765a3a"]
+
+[ext_resource type="Script" uid="uid://cfha2qo740vxf" path="res://scripts/effects/InterferenceZone.cs" id="1_zone"]
+[ext_resource type="Shader" uid="uid://ip5fvifw6kq" path="res://shaders/fx/interference_zone.gdshader" id="2_shader"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
+size = Vector2(300, 216)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_zone_a"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 10.0
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/rot_x_deg = 25.0
+shader_parameter/inset = 0.0
+shader_parameter/quad_size = 2.0
+shader_parameter/strength = 0.0
+shader_parameter/seed = 1.0
+shader_parameter/glitch_frequency = 8.0
+shader_parameter/block_density = 0.4
+shader_parameter/block_size = 0.16
+shader_parameter/distort_distance = 0.04
+shader_parameter/rgb_shift = 0.002
+shader_parameter/green_mix = 0.45
+shader_parameter/edge_segments = 26.0
+shader_parameter/edge_wobble = 0.11
+shader_parameter/green_tint = Color(0.23137255, 0.8392157, 0, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_zone"]
+size = Vector2(2, 2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_zone_b"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 10.0000004275
+shader_parameter/rot_y_deg = 1.7099999979564018e-05
+shader_parameter/rot_x_deg = 25.000018287499984
+shader_parameter/inset = 0.0
+shader_parameter/quad_size = 2.0
+shader_parameter/strength = 0.0
+shader_parameter/seed = 2.0
+shader_parameter/glitch_frequency = 11.0
+shader_parameter/block_density = 0.5
+shader_parameter/block_size = 0.12
+shader_parameter/distort_distance = 0.05
+shader_parameter/rgb_shift = 0.003
+shader_parameter/green_mix = 0.5
+shader_parameter/edge_segments = 32.0
+shader_parameter/edge_wobble = 0.13
+shader_parameter/green_tint = Color(0.08, 1, 0.26, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_zone_c"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/cull_backface = true
+shader_parameter/fov = 10.0000004275
+shader_parameter/rot_y_deg = 0.0
+shader_parameter/rot_x_deg = 25.000018287499984
+shader_parameter/inset = 0.0
+shader_parameter/quad_size = 2.0
+shader_parameter/strength = 0.0
+shader_parameter/seed = 3.0
+shader_parameter/glitch_frequency = 6.5
+shader_parameter/block_density = 0.35
+shader_parameter/block_size = 0.2
+shader_parameter/distort_distance = 0.03
+shader_parameter/rgb_shift = 0.0015
+shader_parameter/green_mix = 0.4
+shader_parameter/edge_segments = 20.0
+shader_parameter/edge_wobble = 0.15
+shader_parameter/green_tint = Color(0.20784314, 1, 0.40392157, 1)
+
+[node name="InterferenceZone" type="Node2D"]
+z_as_relative = false
+script = ExtResource("1_zone")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_zone")
+
+[node name="Visuals" type="Node2D" parent="."]
+z_index = 1
+
+[node name="LayerA" type="MeshInstance2D" parent="Visuals"]
+material = SubResource("ShaderMaterial_zone_a")
+mesh = SubResource("QuadMesh_zone")
+
+[node name="LayerB" type="MeshInstance2D" parent="Visuals"]
+material = SubResource("ShaderMaterial_zone_b")
+position = Vector2(-23.999998, 75)
+scale = Vector2(1.5, 1.5)
+mesh = SubResource("QuadMesh_zone")
+
+[node name="LayerC" type="MeshInstance2D" parent="Visuals"]
+material = SubResource("ShaderMaterial_zone_c")
+position = Vector2(48.000004, -28.000004)
+scale = Vector2(0.5, 0.5)
+mesh = SubResource("QuadMesh_zone")

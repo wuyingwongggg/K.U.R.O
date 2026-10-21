@@ -35,6 +35,9 @@ namespace Kuros.Actors.Enemies
 		/// <summary>down 阶段护甲（rogueAI_bumper）：场景里用导出引用指定，可随骨骼挂点重排重新绑定；
 		/// 为空 = 视为已破（down 直接可伤）并警告。</summary>
 		[Export] public RogueAIBumper? Armor { get; private set; }
+		/// <summary>护甲被击破后，本体进入的**无敌时长（秒）**：覆盖同一次攻击跨帧的多段结算
+		/// （护甲的死亡是同步的，同帧会把本体伤害门打开），也充当破甲演出的保护窗。0 = 不保护。</summary>
+		[Export(PropertyHint.Range, "0,3,0.05")] public float ArmorBreakInvincibility { get; set; } = 0.3f;
 
 		[ExportCategory("Form up/down 形态")]
 		/// <summary>down 形态血量阈值：血量 ≤ 本值时**先进入 DownTransition 过渡**（播 up_to_down、
@@ -62,6 +65,8 @@ namespace Kuros.Actors.Enemies
 
 		private EnemyF1RogueAISpineAnimationController? _animController;
 		private CollisionShape2D? _bodyShape;
+		/// <summary>up 形态的本体碰撞 mask（场景值，down 前恢复/守恒用）。</summary>
+		private uint _bodyBaseCollisionMask;
 		/// <summary>运行期间强制**关闭**本体碰撞的攻击（Overload / OverloadPro / DownSlam / DownSlamPro）：
 		/// 这些招式会带动本体位移/下砸，碰撞开着会把玩家顶开或卡住；结束后按形态恢复
 		/// （down = 开启、up = 关闭）。见 <see cref="IsBodyCollisionSuppressed"/>。</summary>
@@ -69,6 +74,12 @@ namespace Kuros.Actors.Enemies
 		private RogueAIBumper? _armor;
 		/// <summary>护甲已破（或场景没配护甲 = 直接放行），down 阶段唯一的可伤条件。</summary>
 		private bool _armorBroken;
+		/// <summary>破甲无敌剩余时间（秒）：&gt;0 时本体拒绝一切直接伤害。
+		/// 护甲的死亡是同步结算的（DestructibleStageController 无 StateMachine → DeathFinalized
+		/// 在致死伤害里立即触发），而一次挥击会在同一帧依次结算所有重叠目标——没有这段窗口，
+		/// 护甲先被处理时本体会在同一击里立刻转为可伤，可能被同一个 50 伤害同时打死。
+		/// 计时器还覆盖跨帧多段攻击（激光/持续判定）的后续段。</summary>
+		private float _armorBreakInvincibilityRemaining;
 
 		public override void _Ready()
 		{
@@ -82,14 +93,17 @@ namespace Kuros.Actors.Enemies
 			_bodyShape = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			if (_bodyShape != null)
 				_bodyShape.Disabled = true;
+			_bodyBaseCollisionMask = CollisionMask;
 			CacheCollisionSuppressAttacks();
 
-			// 护甲：场景里通过导出引用绑定（不写死路径）；up 阶段隐藏+不可命中。
+			// 护甲：场景里通过导出引用绑定（不写死路径）。视觉与命中解耦——
+			// **全程显示**（up 阶段也看得见），但只有 down 切换时才打开命中/伤害门。
 			// 场景没配 = 视为已破，避免 down 无法击杀的软锁；同时明确警告。
 			_armor = Armor;
 			_armorBroken = _armor == null;
 			if (_armor == null)
 				GD.PushWarning($"[{Name}] 未绑定护甲引用（Armor）：down 阶段将直接可伤");
+			_armor?.SetArmorVisible(true);
 			_armor?.SetArmorActive(false);
 
 			GameActor.DeathFinalized += OnPartDeathFinalized;
@@ -116,6 +130,9 @@ namespace Kuros.Actors.Enemies
 		{
 			base._PhysicsProcess(delta);
 
+			if (_armorBreakInvincibilityRemaining > 0f)
+				_armorBreakInvincibilityRemaining = Mathf.Max(0f, _armorBreakInvincibilityRemaining - (float)delta);
+
 			if (DebugLogSlamPosition)
 				LogSlamPosition();
 
@@ -129,13 +146,19 @@ namespace Kuros.Actors.Enemies
 					_bodyShape.SetDeferred(CollisionShape2D.PropertyName.Disabled, wantDisabled);
 			}
 
+			// down 阶段本体只当**他人的静态障碍**：自身 mask 归零，避免被环境空气墙等静态体
+			// 推挤/抖动（floating 模式无重力，不需要撞地形）。玩家仍能被 layer 挡住（对方 mask）。
+			uint wantMask = _formPhase == FormPhase.Down ? 0u : _bodyBaseCollisionMask;
+			if (CollisionMask != wantMask)
+				SetDeferred(CollisionObject2D.PropertyName.CollisionMask, wantMask);
+
 			// up → down 单向：跌破阈值先进过渡状态（up_to_down + 锁移动/出招），
 			// 过渡结束由状态回调 EnterDownForm；期间仍免伤，部件联动链照常生效。
 			if (_formPhase != FormPhase.Up || IsDeadOrDying) return;
 			if (DownHealthThreshold <= 0 || CurrentHealth > DownHealthThreshold) return;
 
 			_formPhase = FormPhase.Transitioning;
-			// up_to_down 触发即启用护甲：过渡 0.8s 里就能开始拆甲（本体此时仍免伤）
+			// up_to_down 触发即打开护甲命中门（视觉本来就一直显示）：过渡 0.8s 里就能开始拆甲（本体此时仍免伤）
 			if (!_armorBroken && _armor != null && GodotObject.IsInstanceValid(_armor))
 				_armor.SetArmorActive(true);
 
@@ -209,15 +232,21 @@ namespace Kuros.Actors.Enemies
 			if (DownZIndexDecrease != 0)
 				ZIndex -= DownZIndexDecrease;
 
-			// 倒地后开启本体碰撞（物理回调中改形状状态需要 deferred）
+			// 倒地后开启本体碰撞（物理回调中改形状状态需要 deferred）；
+			// 同时把自身 mask 归零——只当他人障碍，不被空气墙等静态体推挤（见 _PhysicsProcess 守恒）
 			if (_bodyShape != null && GodotObject.IsInstanceValid(_bodyShape))
 				_bodyShape.SetDeferred(CollisionShape2D.PropertyName.Disabled, false);
+			SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0u);
 		}
 
-		/// <summary>只有 down 形态**且护甲已破**才放行直接伤害（仍不吃 ActorEffect）；up / 过渡 /
-		/// 护甲未破期间一律免疫。部件联动链（<see cref="OnPartDeathFinalized"/> 直扣血量）不走这道门。</summary>
+		/// <summary>只有 down 形态**且护甲已破、破甲无敌窗已过**才放行直接伤害（仍不吃 ActorEffect）；
+		/// up / 过渡 / 护甲未破 / 破甲后的无敌时长内一律免疫——防止同一击的多目标结算把护甲和本体一起打死。
+		/// 部件联动链（<see cref="OnPartDeathFinalized"/> 直扣血量）不走这道门。</summary>
 		public override bool CanBeAffected(ActorEffect? effect)
-			=> effect == null && _formPhase == FormPhase.Down && _armorBroken;
+			=> effect == null
+				&& _formPhase == FormPhase.Down
+				&& _armorBroken
+				&& _armorBreakInvincibilityRemaining <= 0f;
 
 		/// <summary>调试排查键：按一次直扣 <see cref="DebugDamagePerPress"/>（绕过免伤门；忽略长按重复）。</summary>
 		public override void _UnhandledKeyInput(InputEvent @event)
@@ -243,6 +272,7 @@ namespace Kuros.Actors.Enemies
 			if (_armor != null && IsInstanceValid(_armor) && actor == _armor)
 			{
 				_armorBroken = true;
+				_armorBreakInvincibilityRemaining = Mathf.Max(0f, ArmorBreakInvincibility);
 				return;
 			}
 
