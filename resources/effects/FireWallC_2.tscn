@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://bij50y06bc3ox"]
 
-[ext_resource type="Script" uid="uid://dxqwo2iruswpp" path="res://scripts/fx/MeetingBarrier.cs" id="1_18vko"]
+[ext_resource type="Script" uid="uid://bpckujny6kucd" path="res://scripts/fx/ContactDamageBarrier.cs" id="1_18vko"]
 [ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="2_oet32"]
 [ext_resource type="Texture2D" uid="uid://8psjnpsfr0kw" path="res://assets/effect/WallEffect/lightwall_4_middle.png" id="3_18vko"]
 [ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="4_8lgsd"]
@@ -56,6 +56,7 @@ y_sort_enabled = true
 scale = Vector2(2, 2)
 script = ExtResource("1_18vko")
 MaxHP = 80.0
+ContactDamage = 20
 CollisionEnableDelay = 0.4
 HitFlashSpritePath = NodePath("CoreWall")
 HitShakeIntensity = 20.0

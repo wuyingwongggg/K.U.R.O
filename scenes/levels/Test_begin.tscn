@@ -115,6 +115,7 @@ collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_7ummj")
 ZoneName = "Room_Zone_Test_begin"
+ZoomLevel = 0.2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -402,7 +403,7 @@ position = Vector2(793, -689)
 position = Vector2(-730, 746)
 
 [node name="SlideRail" parent="." instance=ExtResource("42_hxrfn")]
-position = Vector2(0, 453)
+position = Vector2(0, 552)
 CarriagePrefab = ExtResource("43_mfk2f")
 CarriageSpawn = 2
 

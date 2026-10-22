@@ -1,8 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://13dlp2v8e313"]
+[gd_scene load_steps=4 format=3 uid="uid://13dlp2v8e313"]
 
+[ext_resource type="Shader" uid="uid://d2c632nuvcnve" path="res://shaders/fx/screen_fault.gdshader" id="1_v1u3e"]
 [ext_resource type="Texture2D" uid="uid://vtyxgh8jhdyx" path="res://assets/furnitures/home_scene1/BedA.png" id="1_xm5k1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s0l26"]
+shader = ExtResource("1_v1u3e")
+shader_parameter/iTime = 0.0
+shader_parameter/iResolution = Color(0, 0, 0, 1)
 
 [node name="Node2D" type="Node2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_s0l26")
 texture = ExtResource("1_xm5k1")

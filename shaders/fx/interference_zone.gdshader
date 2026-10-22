@@ -19,6 +19,9 @@ uniform float quad_size = 2.0;
 
 // ── 干扰方块 ────────────────────────────────────────────────
 uniform float strength : hint_range(0.0, 1.0) = 1.0;
+// 由 C# 按受 time_scale/暂停影响的 delta 累加（不能用内置 TIME：
+// TIME 不随 Engine.time_scale 缩放、暂停时也继续走）
+uniform float effect_time = 0.0;
 uniform float seed = 1.0;
 uniform float glitch_frequency : hint_range(1.0, 20.0) = 8.0;
 uniform float block_density : hint_range(0.0, 1.0) = 0.4;
@@ -28,6 +31,11 @@ uniform float rect_margin : hint_range(0.0, 0.3) = 0.04;
 // 方块内屏幕采样偏移（屏幕 UV 比例）
 uniform float distort_distance : hint_range(0.0, 0.2) = 0.04;
 uniform float rgb_shift : hint_range(0.0, 0.02) = 0.002;
+// 每个方块内部的彩虹渐变
+uniform float rainbow_mix : hint_range(0.0, 1.0) = 0.55;
+uniform float rainbow_saturation : hint_range(0.0, 1.0) = 0.25;
+uniform float rainbow_hue_span : hint_range(0.0, 2.0) = 0.5;
+// 最后蒙上的绿色滤镜
 uniform float green_mix : hint_range(0.0, 1.0) = 0.45;
 uniform vec4 green_tint : source_color = vec4(0.05, 1.0, 0.3, 1.0);
 
@@ -40,10 +48,18 @@ float hash12(vec2 p) {
 	return fract((p3.x + p3.y) * p3.z);
 }
 
-vec2 hash22(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.xx + p3.yz) * p3.zy);
+// 3D hash：时间片作为独立第三维。关键——不能用 hash12(cell + (0, tcell))：
+// 那只是把整张 2D 噪声图平移，每过一个时间片所有方块会整体向上/下滑动。
+float hash13(vec3 p3) {
+	p3 = fract(p3 * 0.1031);
+	p3 += dot(p3, p3.zyx + 31.32);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+vec3 hsv2rgb(vec3 c) {
+	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
 void vertex() {
@@ -86,15 +102,19 @@ void fragment() {
 		|| plane_uv.y < rect_margin || plane_uv.y > 1.0 - rect_margin)
 		discard;
 
-	float tcell = floor(TIME * glitch_frequency);
+	float tcell = floor(effect_time * glitch_frequency);
 
 	// 小方块：按时间片随机激活（离散跳变，不逐帧闪烁）
+	// 时间片进第三维 → 每个时间片原地重随机，不会整片平移
 	vec2 cell = floor(plane_uv / block_size);
-	float active = step(1.0 - block_density * strength, hash12(cell + vec2(seed * 31.0, tcell)));
+	float activeRand = hash13(vec3(cell, tcell) + vec3(seed * 31.0, seed * 17.0, seed * 7.0));
+	float active = step(1.0 - block_density * strength, activeRand);
 	if (active < 0.5) discard;
 
 	// 每个方块独立扭曲：偏移采样屏幕 → 方块范围内的画面错位
-	vec2 rnd = hash22(cell + vec2(seed * 13.0, tcell * 1.7));
+	vec2 rnd = vec2(
+		hash13(vec3(cell, tcell) + vec3(seed * 13.0, seed * 19.0, seed * 23.0)),
+		hash13(vec3(cell, tcell) + vec3(seed * 29.0, seed * 3.0, seed * 5.0)));
 	vec2 distort = (rnd - 0.5) * 2.0 * distort_distance * strength;
 	vec2 sample_uv = SCREEN_UV + distort;
 
@@ -102,13 +122,22 @@ void fragment() {
 	col.r = texture(screen_texture, sample_uv + vec2(rgb_shift * strength, 0.0)).r;
 	col.b = texture(screen_texture, sample_uv - vec2(rgb_shift * strength, 0.0)).b;
 
-	// 数字绿色化：按亮度归一化混合，不做 ×>1 的乘法——
-	// 与 RingShockwave 的教训一致：HDR 2D / Glow 下超过 1 的颜色会实际比材质预览亮很多。
+	// 每个方块：独立起始色相 + 块内水平彩虹渐变（HSV → RGB）
+	vec2 cell_local = fract(plane_uv / block_size);
+	float blockHue = hash13(vec3(cell, tcell) + vec3(seed * 41.0, seed * 7.0, seed * 3.0));
+	float hue = fract(blockHue + cell_local.x * rainbow_hue_span);
+	vec3 rainbow = hsv2rgb(vec3(hue, clamp(rainbow_saturation, 0.0, 1.0), 1.0));
+	// 用采样画面的亮度调制彩虹，暗部也保留一点颜色，避免整块纯色板
+	float baseLuma = dot(col, vec3(0.299, 0.587, 0.114));
+	col = mix(col, rainbow * (0.25 + 0.75 * baseLuma),
+		clamp(rainbow_mix, 0.0, 1.0) * strength);
+
+	// 再在整体上蒙一层绿色滤镜：按亮度归一化混合，不做 ×>1 的乘法
+	//（与 RingShockwave 的教训一致：HDR 2D 下 >1 颜色会比材质预览亮很多）
 	float luma = dot(col, vec3(0.299, 0.587, 0.114));
 	col = mix(col, green_tint.rgb * luma, green_mix * strength);
 
 	// 方块硬边：同样保持 ≤1 的混合
-	vec2 cell_local = fract(plane_uv / block_size);
 	float border = min(min(cell_local.x, 1.0 - cell_local.x), min(cell_local.y, 1.0 - cell_local.y));
 	float edge = 1.0 - smoothstep(0.0, 0.035, border);
 	col = mix(col, green_tint.rgb, edge * 0.45 * strength);

@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://cbyomxyfgrnft"]
 
-[ext_resource type="Script" uid="uid://dxqwo2iruswpp" path="res://scripts/fx/MeetingBarrier.cs" id="1_tk1uy"]
+[ext_resource type="Script" uid="uid://bpckujny6kucd" path="res://scripts/fx/ContactDamageBarrier.cs" id="1_tk1uy"]
 [ext_resource type="Shader" uid="uid://dlcwv014ja75" path="res://shaders/materials/meeting_barrier_core.gdshader" id="2_kmric"]
 [ext_resource type="Texture2D" uid="uid://0hsekby18rbw" path="res://assets/effect/WallEffect/lightwall_4_left.png" id="3_1t5pk"]
 [ext_resource type="Shader" uid="uid://11qcgk6hj7lt" path="res://shaders/materials/meeting_barrier_build.gdshader" id="4_vbepf"]
@@ -55,6 +55,10 @@ z_as_relative = false
 y_sort_enabled = true
 scale = Vector2(2, 2)
 script = ExtResource("1_tk1uy")
+ContactDamage = 20
+ContactTargetableFactions = 5
+ContactKnockbackDistance = 1000.0
+ContactKnockbackDuration = 0.5
 MaxHP = 80.0
 CollisionEnableDelay = 0.4
 HitFlashSpritePath = NodePath("CoreWall")

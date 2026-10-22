@@ -41,7 +41,7 @@ namespace Kuros.Actors.Enemies.Animation
 		/// <see cref="AttackAnimation"/>。</summary>
 		[Export] public string DownAttackAnimation { get; set; } = "attack_down";
 
-		[ExportCategory("Near Melee 近身下砸")]
+		[ExportCategory("Near Melee")]
 		/// <summary>Warmup 段（整个预热）循环动画，up 形态。</summary>
 		[Export] public string ProximityWarmupAnimation { get; set; } = "attack_warming_up";
 		/// <summary>Warmup 段循环动画，down 形态（空 = 回退 up 版）。</summary>
@@ -49,7 +49,7 @@ namespace Kuros.Actors.Enemies.Animation
 		/// <summary>进入 Active 时播一次的落地动画（不循环，保持末帧）。</summary>
 		[Export] public string ProximityStrikeAnimation { get; set; } = "up_to_down";
 
-		[ExportCategory("Ultimate 大招循环")]
+		[ExportCategory("Ultimate")]
 		/// <summary>大招攻击名（与 AttackController 上的一致）。</summary>
 		[Export] public string UltimateAttackName { get; set; } = "RogueAIOverload";
 		/// <summary>强化版大招攻击名（进度升级后取代上面那个）：解析"正在跑的是哪一支"时两者都试。</summary>
@@ -201,7 +201,7 @@ namespace Kuros.Actors.Enemies.Animation
 					DriveHitPhaseAnimation(HitAnimation, HitMixDuration);
 					break;
 				case "Dying":
-					PlayOnceIfNeeded("Die", DieAnimation, DieMixDuration);
+					PlayLoopIfNeeded("Die", DieAnimation, DieMixDuration);
 					break;
 				case "Dead":
 					PlayEmptyIfNeeded();

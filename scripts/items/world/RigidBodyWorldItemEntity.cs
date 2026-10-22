@@ -168,6 +168,9 @@ namespace Kuros.Items.World
 		private double _refreezeTimer = 0.0;
 		private const double RefreezeTimeThreshold = 0.25; // seconds below speed threshold to refreeze
 		private const float RefreezeSpeedThreshold = 8.0f; // speed below which we consider the body at rest
+		/// <summary>WorldItem 物理层（layer 4）：伤害效果把 TargetCollisionMask 配成该层即可
+		/// 通过物理查询发现家具的可破坏 StaticBody2D；Environment 位保留，移动碰撞不变。</summary>
+		private const uint WorldItemDamageLayer = 1u << 3;
 		private float _initialGravityScale = 0.0f;
 		private bool _inFlight = false;
 		private double _flightTimer = 0.0;
@@ -1236,7 +1239,10 @@ namespace Kuros.Items.World
 			else
 			{
 				try { _initialGravityScale = _rigidBody.GravityScale; } catch { _initialGravityScale = 0.0f; }
-				
+
+				if (_rigidBody.GetNodeOrNull<StaticBody2D>("StaticBody2D") is StaticBody2D staticBody)
+					staticBody.CollisionLayer |= WorldItemDamageLayer;
+
 				// 保存 RigidBody2D 的原始碰撞设置
 				try
 				{

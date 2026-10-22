@@ -1934,6 +1934,7 @@ region_enabled = true
 region_rect = Rect2(0, 0, 278, 1219.5)
 
 [node name="Wall" type="Sprite2D" parent="Environments/FloorTop"]
+z_index = 1
 material = SubResource("ShaderMaterial_kge03")
 position = Vector2(0, -1990)
 texture = ExtResource("25_rqd1e")
