@@ -22,7 +22,9 @@ namespace Kuros.Environments
         [Export] public string BreakAnimation { get; set; } = "";
 
         /// <summary>累计伤害阈值：**从满血起累计** ≥ 本值时离开本段（进入下一段 / 最后一段则进终态）。
-        /// 跨段那一击的溢出伤害作废（累计钳到本值）——单次受击最多推进一段，任何单次伤害都不可能跳过中间动画。</summary>
+        /// 跨段那一击的溢出伤害作废（累计钳到本值）——单次受击最多推进一段，任何单次伤害都不可能跳过中间动画。
+        /// **&lt;= 0 = 免命中自动推进**：进入本段立即播 <see cref="BreakAnimation"/> 并前进到下一段（无需受击）；
+        /// 最后一段 &lt;= 0 视为进入即达死亡线（直接终态）。</summary>
         [Export(PropertyHint.Range, "0,10000,1")] public float Threshold { get; set; } = 100f;
     }
 }

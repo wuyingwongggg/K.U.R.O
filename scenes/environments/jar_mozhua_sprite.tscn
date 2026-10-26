@@ -1,31 +1,124 @@
-[gd_scene load_steps=6 format=3 uid="uid://dqgd0gotcsogg"]
+[gd_scene load_steps=25 format=3 uid="uid://dqgd0gotcsogg"]
 
-[ext_resource type="Texture2D" uid="uid://bhfnauk0uxby6" path="res://assets/environments/scene_6_hotel/mozhua/绿色液体.png" id="4_ycdhl"]
-[ext_resource type="Texture2D" uid="uid://bryyyy46yyd2u" path="res://assets/environments/scene_6_hotel/mozhua/魔爪下盖子.png" id="5_yvcg8"]
-[ext_resource type="Texture2D" uid="uid://bo0mr46basxny" path="res://assets/environments/scene_6_hotel/mozhua/魔爪顶部光.png" id="6_hue1f"]
-[ext_resource type="Texture2D" uid="uid://cmodhdqcj0boo" path="res://assets/environments/scene_6_hotel/mozhua/左外壳.png" id="9_pc3es"]
-[ext_resource type="Texture2D" uid="uid://lulfba8n5pqw" path="res://assets/environments/scene_6_hotel/mozhua/右外壳.png" id="10_1bnbn"]
+[ext_resource type="Texture2D" uid="uid://gl0oqbrmxxai" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0000.png" id="1_004et"]
+[ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="1_ycdhl"]
+[ext_resource type="Texture2D" uid="uid://cxw8fk06y24b4" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0001.png" id="2_q1ksc"]
+[ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="2_yvcg8"]
+[ext_resource type="Texture2D" uid="uid://cwj6jichh4rwv" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0002.png" id="3_ycdhl"]
+[ext_resource type="Texture2D" uid="uid://dtcio3vwq88t1" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0003.png" id="4_yvcg8"]
+[ext_resource type="Texture2D" uid="uid://p8l7b2hkdd7b" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0004.png" id="5_hue1f"]
+[ext_resource type="Texture2D" uid="uid://cmmwmhyluvwq5" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0005.png" id="6_w72iw"]
+[ext_resource type="Texture2D" uid="uid://m1hsjhvgs8nf" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0006.png" id="7_svb20"]
+[ext_resource type="Texture2D" uid="uid://doqnwxmglheqk" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0007.png" id="8_pc3es"]
+[ext_resource type="Texture2D" uid="uid://n3ge416ymscl" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0008.png" id="9_1bnbn"]
+[ext_resource type="Texture2D" uid="uid://bof1a3d4b8bd4" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0009.png" id="10_8u31k"]
+[ext_resource type="Texture2D" uid="uid://dcu0pxxu326m7" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0010.png" id="11_h46ew"]
+[ext_resource type="Texture2D" uid="uid://difqvogu67xv" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0011.png" id="12_2mtud"]
+[ext_resource type="Texture2D" uid="uid://bcu5s5ycxwgmn" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0012.png" id="13_nyesu"]
+[ext_resource type="Texture2D" uid="uid://x4os84pcjq5n" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0013.png" id="14_yu3t8"]
+[ext_resource type="Texture2D" uid="uid://c0boukark11hs" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0014.png" id="15_85ahe"]
+[ext_resource type="Texture2D" uid="uid://bbeot1x25u4kr" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0015.png" id="16_wsfet"]
+[ext_resource type="Texture2D" uid="uid://cjjyu6qtdxcdr" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0016.png" id="17_j5gvj"]
+[ext_resource type="Texture2D" uid="uid://clcdwn7jhm4h5" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0017.png" id="18_paa7c"]
+[ext_resource type="Texture2D" uid="uid://b1nuj8q5kwdyh" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0018.png" id="19_yfhhq"]
+[ext_resource type="Texture2D" uid="uid://b7d4bhhg52x41" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0019.png" id="20_kytv0"]
+[ext_resource type="Texture2D" uid="uid://4h78od54w5p" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0020.png" id="21_2cy3t"]
 
-[node name="Jar_mozhua_sprite" type="Node2D"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_ycdhl"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_004et")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_q1ksc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ycdhl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_yvcg8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_hue1f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_w72iw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_svb20")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_pc3es")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_1bnbn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_8u31k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_h46ew")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_2mtud")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_nyesu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_yu3t8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_85ahe")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_wsfet")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_j5gvj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_paa7c")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_yfhhq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_kytv0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_2cy3t")
+}],
+"loop": false,
+"name": &"default",
+"speed": 25.0
+}]
+
+[node name="Jar_mozhua_sprite" type="AnimatedSprite2D"]
 z_index = 2
 scale = Vector2(0.6, 0.6)
-
-[node name="middle_normal" type="Sprite2D" parent="."]
-position = Vector2(4, -255)
-texture = ExtResource("4_ycdhl")
-
-[node name="bottom" type="Sprite2D" parent="."]
-position = Vector2(13, -2)
-texture = ExtResource("5_yvcg8")
-
-[node name="top" type="Sprite2D" parent="."]
-position = Vector2(0, -765.00006)
-texture = ExtResource("6_hue1f")
-
-[node name="left_front" type="Sprite2D" parent="."]
-position = Vector2(-169, -281)
-texture = ExtResource("9_pc3es")
-
-[node name="right_front" type="Sprite2D" parent="."]
-position = Vector2(169, -268)
-texture = ExtResource("10_1bnbn")
+sprite_frames = SubResource("SpriteFrames_ycdhl")
+autoplay = "default"
+frame = 25
+frame_progress = 0.793392
+offset = Vector2(0, -382)
+script = ExtResource("1_ycdhl")
+SpawnOnDestroyScenes = [ExtResource("2_yvcg8")]
+SpawnDelay = 1.0
+DestroyDelay = 1.05

@@ -32,6 +32,8 @@ namespace Kuros.Environments
     ///   · 累计伤害 ≥ 本段阈值 → 播本段破壳动画（**破壳动画播放期间 = 免伤窗口**）→ 进入下一段常态；
     ///     **单次受击最多推进一段、溢出伤害作废**（钳制保证累计恰好落在阈值）——任何单次伤害都不可能
     ///     跳过中间段/动画，击杀所需累计恒等于最后一段阈值（即配置的"总血量"口径）；
+    ///   · **阈值 &lt;= 0 = 免命中自动推进**：进入本段（_Ready 首段 / 上一段动画结束）立即播本段
+    ///     BreakAnimation 并前进到下一段；末段 &lt;= 0 进入即走终态（Die → 播末段 BreakAnimation）；
     ///   · 达到最后一段阈值 → base 血量归零走 Die（IsDeadOrDying 全部生死门语义正常）→
     ///     <see cref="OnDeathFinalized"/> 覆写接管：播**最后一段的 <see cref="DestructibleStage.BreakAnimation"/>**
     ///     （终态动画 = 最后一段的 break，不再有独立字段）、**关闭命中判定**（HitArea 全禁）、
@@ -93,7 +95,7 @@ namespace Kuros.Environments
             }
 
             _animPlayer.AnimationFinished += OnAnimationFinished;
-            PlayAnim(Stages[0].IdleAnimation);
+            EnterCurrentStage();
         }
 
         public override void _ExitTree()
@@ -152,7 +154,7 @@ namespace Kuros.Environments
                 if (PlayAnim(breakAnim))
                     _oneShot = OneShotKind.Break;
                 else
-                    PlayAnim(Stages[_stageIndex].IdleAnimation);   // 破壳动画缺省：直接落新段常态
+                    EnterCurrentStage();   // 破壳动画缺省：进入新段（Threshold<=0 会继续自动推进）
                 return true;
             }
 
@@ -197,6 +199,38 @@ namespace Kuros.Environments
 
         // ── 动画 ──────────────────────────────────────────────────
 
+        /// <summary>进入当前段的常态：Threshold &gt; 0 → 播本段 idle；
+        /// Threshold &lt;= 0 → **无需命中自动推进**——非末段播本段 BreakAnimation 并前进一段
+        /// （动画结束后由 <see cref="OnAnimationFinished"/> 继续处理下一段；下一段若也是 0 会继续链式推进），
+        /// 末段则视为进入即达死亡线，直接走终态（Die → <see cref="OnDeathFinalized"/> 播末段 BreakAnimation）。</summary>
+        private void EnterCurrentStage()
+        {
+            if (_dead || Stages == null || Stages.Count == 0) return;
+
+            int last = Stages.Count - 1;
+            if (Stages[_stageIndex].Threshold > 0f)
+            {
+                PlayAnim(Stages[_stageIndex].IdleAnimation);
+                return;
+            }
+
+            if (_stageIndex >= last)
+            {
+                GD.PushWarning($"[{nameof(DestructibleStageController)}] {Name}: 最后一段 Threshold<=0，进入即走终态");
+                Die();
+                return;
+            }
+
+            // 免命中自动破壳：播本段 BreakAnimation 并推进；缺省动画则直接落到下一段（可能连续推进）
+            string breakAnim = Stages[_stageIndex].BreakAnimation;
+            _stageIndex++;
+            _oneShot = OneShotKind.None;
+            if (PlayAnim(breakAnim))
+                _oneShot = OneShotKind.Break;
+            else
+                EnterCurrentStage();
+        }
+
         /// <summary>一次性动画播完：解锁并**自动回本段常态**（受击动画 → 本段 idle；破壳动画 → 新段 idle——
         /// 跨段时 _stageIndex 已先行推进）。idle 自身播完不处理。终态后不再路由（尸体停在终态动画末帧）。</summary>
         private void OnAnimationFinished(StringName animName)
@@ -204,7 +238,7 @@ namespace Kuros.Environments
             if (_dead || _oneShot == OneShotKind.None) return;
 
             _oneShot = OneShotKind.None;
-            PlayAnim(Stages[_stageIndex].IdleAnimation);
+            EnterCurrentStage();
         }
 
         /// <summary>终态：**不复用 base**（base 会立刻 QueueFree + 掉落 + 清效果）——播最后一段的

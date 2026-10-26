@@ -390,7 +390,7 @@ MeleeAttackNameSecond = "RogueAISlamB"
 MeleeAttackName = "RogueAISlamA"
 SkillAttackName = "RogueAISlamB"
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
-MinInterAttackDelay = 5.0
+MinInterAttackDelay = 10.0
 QueuedAttackTimeout = 3.0
 
 [node name="RogueAISlamA" type="Node" parent="StateMachine/Attack/AttackController"]
@@ -416,7 +416,7 @@ DamageMultiplier = 0.0
 AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea2")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_interf")])
-metadata/attack_weight = 30.0
+metadata/attack_weight = 50.0
 
 [node name="RogueAIDownSlam" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("28_downslam")
@@ -438,7 +438,7 @@ metadata/attack_weight = 20.0
 
 [node name="RogueAIDownSlamPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("28_downslam")
-StrikeLoopCount = 5
+StrikeLoopCount = 3
 RequiresProUpgrade = true
 AttackName = "RogueAIDownSlamPro"
 WarmupDuration = 0.6
@@ -491,8 +491,9 @@ script = ExtResource("15_frozen")
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("16_dying")
-DeathDuration = 10.0
+DeathDuration = 0.0
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_gflp5")])
+MaxEffectTriggers = 1
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("17_dead")

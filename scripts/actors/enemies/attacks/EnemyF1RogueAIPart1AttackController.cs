@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace Kuros.Actors.Enemies.Attacks
@@ -16,7 +17,19 @@ namespace Kuros.Actors.Enemies.Attacks
 		/// <summary>进度 ≥ 此值时原版大招被 Pro 取代。</summary>
 		[Export(PropertyHint.Range, "0,1,0.01")] public float ProgressUpgradeThreshold { get; set; } = 0.75f;
 
+		/// <summary>第三个普攻名（RogueAISlamC）：与 MeleeAttackName / MeleeAttackNameSecond 同权重随机；
+		/// 大招武装时一起清零、结束后一起还原（基类 EnumerateMeleeNames 的 part1 专用扩展）。</summary>
+		[Export] public string MeleeAttackNameThird { get; set; } = "";
+
 		protected override float[] TriggerThresholds => ProgressThresholds;
 		protected override float UpgradeThreshold => ProgressUpgradeThreshold;
+
+		protected override IEnumerable<string> EnumerateMeleeNames()
+		{
+			foreach (string name in base.EnumerateMeleeNames())
+				yield return name;
+			if (!string.IsNullOrEmpty(MeleeAttackNameThird))
+				yield return MeleeAttackNameThird;
+		}
 	}
 }
