@@ -3,7 +3,6 @@
 [ext_resource type="Texture2D" uid="uid://gl0oqbrmxxai" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0000.png" id="1_004et"]
 [ext_resource type="Script" uid="uid://5tqak7y4n1s0" path="res://scripts/effects/EffectAutoDestroy.cs" id="1_ycdhl"]
 [ext_resource type="Texture2D" uid="uid://cxw8fk06y24b4" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0001.png" id="2_q1ksc"]
-[ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="2_yvcg8"]
 [ext_resource type="Texture2D" uid="uid://cwj6jichh4rwv" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0002.png" id="3_ycdhl"]
 [ext_resource type="Texture2D" uid="uid://dtcio3vwq88t1" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0003.png" id="4_yvcg8"]
 [ext_resource type="Texture2D" uid="uid://p8l7b2hkdd7b" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0004.png" id="5_hue1f"]
@@ -23,6 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://b1nuj8q5kwdyh" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0018.png" id="19_yfhhq"]
 [ext_resource type="Texture2D" uid="uid://b7d4bhhg52x41" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0019.png" id="20_kytv0"]
 [ext_resource type="Texture2D" uid="uid://4h78od54w5p" path="res://assets/environments/scene_6_hotel/mozhua/jar_sequence/时间轴 1_0020.png" id="21_2cy3t"]
+[ext_resource type="PackedScene" uid="uid://bwdwpiu2brmv6" path="res://scenes/environments/jar_mozhua_assist.tscn" id="23_ycdhl"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_ycdhl"]
 animations = [{
@@ -115,10 +115,8 @@ z_index = 2
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_ycdhl")
 autoplay = "default"
-frame = 25
-frame_progress = 0.793392
 offset = Vector2(0, -382)
 script = ExtResource("1_ycdhl")
-SpawnOnDestroyScenes = [ExtResource("2_yvcg8")]
+SpawnOnDestroyScenes = [ExtResource("23_ycdhl")]
 SpawnDelay = 1.0
 DestroyDelay = 1.05

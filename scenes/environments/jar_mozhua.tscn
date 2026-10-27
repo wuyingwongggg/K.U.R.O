@@ -1,4 +1,4 @@
-[gd_scene load_steps=64 format=3 uid="uid://d7oxw7fsq2i3"]
+[gd_scene load_steps=65 format=3 uid="uid://d7oxw7fsq2i3"]
 
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="2_bs38d"]
 [ext_resource type="Texture2D" uid="uid://bhfnauk0uxby6" path="res://assets/environments/scene_6_hotel/mozhua/绿色液体.png" id="3_5vk7y"]
@@ -31,14 +31,22 @@
 [sub_resource type="Resource" id="Resource_jar_stage2"]
 script = ExtResource("20_dstage")
 IdleAnimation = "normal_1"
+HitAnimation = "normal_hit_1"
+BreakAnimation = "shell_broken"
+
+[sub_resource type="Resource" id="Resource_btdun"]
+script = ExtResource("20_dstage")
+IdleAnimation = "normal_2"
+HitAnimation = "normal_hit_2"
 BreakAnimation = "shell_destroy"
-Threshold = 0.0
+Threshold = 200.0
+metadata/_custom_type_script = "uid://elxwhcec5gcr"
 
 [sub_resource type="Resource" id="Resource_jar_stage3"]
 script = ExtResource("20_dstage")
-IdleAnimation = "liquid_down"
+IdleAnimation = "normal_3"
 BreakAnimation = "jar_destroy"
-Threshold = 10.0
+Threshold = 210.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_w4fw6"]
 resource_local_to_scene = true
@@ -70,7 +78,14 @@ animations = [{
 "speed": 20.0
 }]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_c1mng"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_btdun"]
+shader = ExtResource("2_bs38d")
+shader_parameter/highlight_width = 0.08
+shader_parameter/highlight_speed = 2.0
+shader_parameter/highlight_intensity = 1.2
+shader_parameter/highlight_interval = 2.0
+shader_parameter/brightness = 1.0
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="Gradient" id="Gradient_od0np"]
 offsets = PackedFloat32Array(0, 0.2, 1)
@@ -2218,8 +2233,9 @@ scale = Vector2(0.6, 0.6)
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("19_stage")
-Stages = Array[ExtResource("20_dstage")]([SubResource("Resource_jar_stage2"), SubResource("Resource_jar_stage3")])
+Stages = Array[ExtResource("20_dstage")]([SubResource("Resource_jar_stage2"), SubResource("Resource_btdun"), SubResource("Resource_jar_stage3")])
 DeclaredFaction = 1
+MaxHealth = 210
 
 [node name="Jar" type="Node2D" parent="."]
 
@@ -2300,24 +2316,27 @@ texture = ExtResource("18_x0wnb")
 
 [node name="left_front" type="Sprite2D" parent="Shell"]
 z_index = 2
+material = SubResource("ShaderMaterial_btdun")
 position = Vector2(-169, -281)
 texture = ExtResource("5_01e4h")
 
 [node name="right_front" type="Sprite2D" parent="Shell"]
 z_index = 2
-material = SubResource("ShaderMaterial_c1mng")
+material = SubResource("ShaderMaterial_btdun")
 position = Vector2(169, -268)
 texture = ExtResource("6_bs38d")
 
 [node name="left_front_2" type="Sprite2D" parent="Shell"]
 visible = false
 z_index = 2
+material = SubResource("ShaderMaterial_btdun")
 position = Vector2(-175, -270)
 texture = ExtResource("11_g6qq7")
 
 [node name="right_front2" type="Sprite2D" parent="Shell"]
 visible = false
 z_index = 2
+material = SubResource("ShaderMaterial_btdun")
 position = Vector2(170, -270)
 texture = ExtResource("12_o0pir")
 

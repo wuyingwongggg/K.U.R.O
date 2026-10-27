@@ -41,7 +41,7 @@ radius = 20000.0
 radius = 10000.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(6000, 400)
+size = Vector2(6000, 2000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
 size = Vector2(500, 300)
@@ -348,8 +348,9 @@ AllowAttack = false
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("21_aemok")
-DeathDuration = 2.3
+DeathDuration = 0.0
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_str0p")])
+MaxEffectTriggers = 1
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("22_uapl1")
@@ -364,7 +365,7 @@ script = ExtResource("27_railchase")
 script = ExtResource("28_keepdist")
 Active = true
 KeepDistance = 1250.0
-Speed = 300.0
+Speed = 800.0
 Smoothing = 1.0
 
 [node name="FacingController" type="Node" parent="."]

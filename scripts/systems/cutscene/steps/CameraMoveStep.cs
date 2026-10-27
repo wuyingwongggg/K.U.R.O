@@ -52,7 +52,7 @@ namespace Kuros.Systems.Cutscene
         /// <summary>
         /// 跟随结束后摄像机的行为。
         /// true（默认）：保留在跟随结束瞬间目标所在的位置。
-        /// false：回到跟随开始前摄像机的原始位置。
+        /// false：立即回到跟随开始前摄像机的原始位置与 Zoom（当前 CameraZone 的缩放）。
         /// </summary>
         [Export] public bool StayAtTargetAfterFollow { get; set; } = true;
 
@@ -146,8 +146,10 @@ namespace Kuros.Systems.Cutscene
         /// </summary>
         private async Task RunFollowAsync(CutsceneContext ctx, Camera2D camera, Node2D targetNode)
         {
-            // 记录跟随开始前的摄像机位置，用于 StayAtTargetAfterFollow=false 时还原
+            // 记录跟随开始前的摄像机位置/缩放，用于 StayAtTargetAfterFollow=false 时还原。
+            // 缩放取当前 CameraZone 的实际值（不同房间 0.3 / 0.43 / 0.95 不等），不硬编码。
             var posBeforeFollow = camera.GlobalPosition;
+            var zoomBeforeFollow = camera.Zoom;
 
             // Phase 1: 初始 Tween 移动到目标当前位置
             if (Duration > 0f && !ctx.IsSkipping && !Instant)
@@ -165,6 +167,12 @@ namespace Kuros.Systems.Cutscene
                 if (ctx.IsSkipping)
                 {
                     tweenInit.Kill();
+                    // skip = 瞬时落终态：按跟随结束后的行为收尾
+                    if (!StayAtTargetAfterFollow)
+                    {
+                        camera.GlobalPosition = posBeforeFollow;
+                        camera.Zoom = zoomBeforeFollow;
+                    }
                     GD.Print("[Cutscene] CameraMoveStep 跟随模式 skip at 初始移动阶段");
                     return;
                 }
@@ -194,7 +202,8 @@ namespace Kuros.Systems.Cutscene
             if (!StayAtTargetAfterFollow)
             {
                 camera.GlobalPosition = posBeforeFollow;
-                GD.Print($"[Cutscene] CameraMoveStep 跟随结束，已还原至原始位置 {posBeforeFollow}");
+                camera.Zoom = zoomBeforeFollow;
+                GD.Print($"[Cutscene] CameraMoveStep 跟随结束，已还原位置 {posBeforeFollow} / Zoom {zoomBeforeFollow}");
             }
             else
             {

@@ -99,7 +99,7 @@ SpawnTiming = 1
 SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
-"Lifetime": 5.2
+"Lifetime": 10.4
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -119,7 +119,7 @@ EffectOffset = Vector2(nan, nan)
 SpawnTiming = 1
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
-"Duration": 5.0,
+"Duration": 10.0,
 "ShakeStrength": 10.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
@@ -144,10 +144,10 @@ SpawnTiming = 1
 SpawnMarkerPaths = [NodePath("../../../../VisualEffectPosition/Marker2D")]
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
-"BeamDuration": 9.6,
+"BeamDuration": 19.2,
 "GrowDuration": 0.25,
-"Lifetime": 10.2,
-"SpotlightDuration": 9.6
+"Lifetime": 20.4,
+"SpotlightDuration": 19.2
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
@@ -179,7 +179,7 @@ EffectOffset = Vector2(nan, nan)
 SpawnTiming = 1
 LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
-"Duration": 10.0,
+"Duration": 20.0,
 "ShakeStrength": 10.0
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
@@ -198,38 +198,30 @@ collision_layer = 2
 collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_rogue")
-DamagePerPart = 100
+PartGroup = "rogueai_part2"
+DamagePerPart = 10
 Armor = NodePath("SpineSprite/SpineBoneNode2/rogueAI_bumper")
 ArmorBreakInvincibility = 0.5
-DownHealthThreshold = 100
+DownHealthThreshold = 10
 DownZIndexDecrease = 1
-DebugDamagePerPress = 100
+DebugDamagePerPress = 10
 FreeOnFinishArrive = true
 IsBoss = true
 BossIcon = ExtResource("2_04486")
-EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 80
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
 ScoreValue = 0
-Speed = 400.0
+Speed = 600.0
 AttackDamage = 20.0
 AttackCooldown = 1.0
-MaxHealth = 401
+MaxHealth = 40
 AiDescription = "错乱AI核心本体：大型敌人的主体，造成一切的源头，挂在滑槽轨道上沿轨滑行追击玩家。"
 LockFacing = true
 StateMachine = NodePath("StateMachine")
 EffectController = NodePath("EffectController")
 DamageFlashColor = Color(18.892157, 18.892157, 18.892157, 1)
-
-[node name="Shadow" type="Sprite2D" parent="."]
-show_behind_parent = true
-material = SubResource("ShaderMaterial_shadow")
-scale = Vector2(12, 6)
-texture = ExtResource("5_shadowtex")
-script = ExtResource("6_follower")
-TargetBone = NodePath("../SpineSprite/SpineBoneNode2")
 
 [node name="OutlineLayer" type="Node2D" parent="."]
 show_behind_parent = true
@@ -284,9 +276,16 @@ position = Vector2(0, -1300)
 skeleton_data_res = ExtResource("6_aal8m")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
-preview_frame = false
+preview_frame = true
 preview_time = 0.4
 script = ExtResource("8_spinectrl")
+
+[node name="Shadow" type="Sprite2D" parent="SpineSprite"]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_shadow")
+position = Vector2(0, 1300)
+scale = Vector2(11.999999, 5.9999995)
+texture = ExtResource("5_shadowtex")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
 show_behind_parent = true
@@ -458,6 +457,7 @@ metadata/attack_weight = 20.0
 
 [node name="RogueAIOverload" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("23_ult")
+DashDuration = 10.0
 AttackName = "RogueAIOverload"
 DamageMultiplier = 0.0
 MaxAllowedAngleToPlayer = 180.0
@@ -468,7 +468,7 @@ metadata/attack_weight = 0.0
 
 [node name="RogueAIOverloadPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("23_ult")
-DashDuration = 10.0
+DashDuration = 20.0
 ReturnOnActive = true
 AttackName = "RogueAIOverloadPro"
 DamageMultiplier = 0.0

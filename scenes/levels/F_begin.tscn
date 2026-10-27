@@ -1,4 +1,4 @@
-[gd_scene load_steps=79 format=3 uid="uid://b534tt4n3wr42"]
+[gd_scene load_steps=78 format=3 uid="uid://b534tt4n3wr42"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_mbxjs"]
 [ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="1_xart7"]
@@ -6,7 +6,6 @@
 [ext_resource type="Script" uid="uid://vf5y6hhn28rq" path="res://scripts/environments/KillProgressPhase.cs" id="2_82263"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_neu0b"]
 [ext_resource type="Script" uid="uid://cnm33l1nmqohv" path="res://scripts/fx/DirectionalSceneEffect.cs" id="3_mbxjs"]
-[ext_resource type="Resource" uid="uid://xag881d6vxpv" path="res://resources/cutscene/F_begin_intro.tres" id="3_xart7"]
 [ext_resource type="PackedScene" uid="uid://cdrcs3qtqh8q4" path="res://scenes/actors/etc/HitA.tscn" id="4_mbxjs"]
 [ext_resource type="Resource" uid="uid://ttehlcct8cgr" path="res://resources/cutscene/F_begin_2_intro.tres" id="4_xart7"]
 [ext_resource type="Texture2D" uid="uid://roji77g8y3sp" path="res://assets/environments/scene_6_hotel/龙门吊左轮子.png" id="6_rqd1e"]
@@ -16,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://b6i0r8cjy5m58" path="res://assets/environments/scene_6_hotel/升降滑槽.png" id="11_7rmla"]
 [ext_resource type="Texture2D" uid="uid://cb4cka2jcljmq" path="res://assets/environments/scene_6_hotel/黑色遮蔽覆盖.png" id="11_86bts"]
 [ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="11_put05"]
+[ext_resource type="Resource" uid="uid://c2gqsuf7qen0f" path="res://resources/cutscene/F_begin_4_intro.tres" id="12_som2a"]
 [ext_resource type="PackedScene" uid="uid://bglx5f1707wuu" path="res://scenes/environments/elevatorGate_F_flip.tscn" id="12_x26y1"]
 [ext_resource type="Texture2D" uid="uid://b64luh0uw2mlb" path="res://assets/environments/scene_6_hotel/走廊.png" id="13_86bts"]
 [ext_resource type="Texture2D" uid="uid://5cvi3ej8m7r3" path="res://assets/effect/LightEffect/屏幕光晕.png" id="14_1d5w0"]
@@ -29,7 +29,6 @@
 [ext_resource type="Script" uid="uid://c0m3fgvcgwqj8" path="res://scripts/controllers/PlayerAxisRangeFollower.cs" id="24_signfollow"]
 [ext_resource type="Script" uid="uid://d1ji3o13n5eda" path="res://scripts/environments/KillProgressAscendController.cs" id="25_progress"]
 [ext_resource type="Texture2D" uid="uid://dbn8b1atk6ngd" path="res://assets/environments/scene_6_hotel/背景墙.png" id="25_rqd1e"]
-[ext_resource type="Resource" uid="uid://c7dnkxl20sbvy" path="res://resources/cutscene/F_begin_3_intro.tres" id="26_arrive"]
 [ext_resource type="Texture2D" uid="uid://b4poxbbpcwl0a" path="res://assets/environments/scene_6_hotel/龙门吊左滑槽.png" id="26_som2a"]
 [ext_resource type="Texture2D" uid="uid://cbwmqsqiivnqo" path="res://assets/environments/scene_6_hotel/左墙壁.png" id="27_npcwp"]
 [ext_resource type="Texture2D" uid="uid://dan0dd2p76nuk" path="res://assets/environments/scene_6_hotel/龙门吊右滑槽.png" id="28_pbecm"]
@@ -1549,10 +1548,10 @@ tracks/0/path = NodePath("SlideRailSpawnPoint/LeftRial:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [true]
+"values": [true, false]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -1561,10 +1560,10 @@ tracks/1/path = NodePath("SlideRailSpawnPoint2/RightRial:visible")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [true]
+"values": [true, false]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -1749,7 +1748,7 @@ z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_neu0b")
-Sequence = ExtResource("3_xart7")
+Sequence = ExtResource("12_som2a")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 position = Vector2(-2300, 763)
@@ -1775,7 +1774,7 @@ z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_neu0b")
-Sequence = ExtResource("26_arrive")
+Sequence = ExtResource("12_som2a")
 StartsDisarmed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger3"]
