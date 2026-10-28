@@ -180,6 +180,15 @@ namespace Kuros.Environments
         /// <summary>受损物不吃击退/位移（击退写入会被 base 的静默门拦下）。</summary>
         protected override bool AllowsKnockback() => false;
 
+        /// <summary>供 AnimationPlayer 方法轨道调用：直接销毁自身（不做终态动画/掉落/事件）。
+        /// 与 <see cref="KillForced"/> 不同，不经过 Die/FinalizeDeath；适合临时生成物“演完即退场”。</summary>
+        public void DestroySelf()
+        {
+            _dead = true;
+            DisableHitDetection();
+            QueueFree();
+        }
+
         /// <summary>强制击杀（控制台清场）：跳过防跳段钳制直接打满；已死亡则回收尸体
         /// （尸体保留策略下，这是唯一的内存回收通道）。</summary>
         public override void KillForced()

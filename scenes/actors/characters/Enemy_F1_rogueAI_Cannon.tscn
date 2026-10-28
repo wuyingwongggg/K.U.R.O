@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://duryvwia2gyyc"]
+[gd_scene load_steps=46 format=3 uid="uid://duryvwia2gyyc"]
 
 [ext_resource type="Script" uid="uid://ccqcbk4merfnt" path="res://scripts/actors/enemies/EnemyF1RogueAICannon.cs" id="1_3cfw7"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_3eyky"]
@@ -29,6 +29,9 @@
 [ext_resource type="Script" uid="uid://dk5j51adwch8j" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretMeleeAttack.cs" id="31_melee"]
 [ext_resource type="Script" uid="uid://c2kmtjqv6x2tv" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretAttackController.cs" id="32_turretctrl"]
 [ext_resource type="Script" uid="uid://e0dhrl0rnkhv" path="res://scripts/actors/enemies/EnemyWeakpointWindow.cs" id="33_weakpoint"]
+[ext_resource type="Script" uid="uid://b1sclw42kjvtq" path="res://scripts/actors/enemies/attacks/JarAssistAttack.cs" id="34_jarattack"]
+[ext_resource type="Script" uid="uid://dlhtrvdv6gwxn" path="res://scripts/actors/enemies/states/EnemyJarAssistStunState.cs" id="35_jarstun"]
+[ext_resource type="PackedScene" uid="uid://bwdwpiu2brmv6" path="res://scenes/environments/jar_mozhua_assist.tscn" id="36_jars"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_by072")
@@ -104,6 +107,15 @@ PropertyOverrides = Dictionary[String, Variant]({
 })
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
+[sub_resource type="Resource" id="Resource_jar_assist"]
+script = ExtResource("15_koqry")
+Scene = ExtResource("36_jars")
+EffectOffset = Vector2(nan, nan)
+SpawnTiming = 1
+SpawnMarkerPaths = [NodePath("../../../World/Test_begin/JarSpawnPoint1"), NodePath("../../../World/Test_begin/JarSpawnPoint2"), NodePath("../../../World/Test_begin/JarSpawnPoint3"), NodePath("../../../World/Test_begin/JarSpawnPoint4")]
+SpawnMarkerSelect = 1
+metadata/_custom_type_script = "uid://fd5076f50ca0"
+
 [sub_resource type="Resource" id="Resource_boom_dying"]
 script = ExtResource("15_koqry")
 Scene = ExtResource("22_r52tf")
@@ -121,10 +133,12 @@ collision_mask = 15
 motion_mode = 1
 script = ExtResource("1_3cfw7")
 BehaviorConfig = ExtResource("2_3eyky")
+EnableStateDebugOverlay = true
 DebugOverlayOffset = Vector2(-1500, 200)
 DebugOverlayFontSize = 128
 DetectionArea = NodePath("Sprite2D/ControllerDetectionArea")
 AttackArea = NodePath("Sprite2D/AttackArea")
+ScoreValue = 100
 Speed = 300.0
 AttackDamage = 10.0
 AttackCooldown = 1.0
@@ -197,7 +211,7 @@ skeleton_data_res = ExtResource("7_3cfw7")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.72
+preview_time = 0.45
 script = ExtResource("8_6o35y")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -239,6 +253,7 @@ position = Vector2(500, 0)
 position = Vector2(-300, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 
@@ -359,6 +374,17 @@ GrantedImmunities = 24
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_r52tf")])
 metadata/attack_weight = 100.0
 
+[node name="JarAssistAttack" type="Node" parent="StateMachine/Attack/AttackController"]
+script = ExtResource("34_jarattack")
+AttackName = "JarAssistAttack"
+WarmupDuration = 0.5
+ActiveDuration = 0.2
+RecoveryDuration = 0.3
+DamageMultiplier = 0.0
+MaxAllowedAngleToPlayer = 180.0
+Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_jar_assist")])
+metadata/attack_weight = 100.0
+
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("17_4c6ck")
 HitImpactDuration = 0.1
@@ -370,6 +396,9 @@ script = ExtResource("18_dvfub")
 [node name="CooldownFrozen" type="Node" parent="StateMachine"]
 script = ExtResource("19_80jd2")
 AllowAttack = false
+
+[node name="JarAssistStun" type="Node" parent="StateMachine"]
+script = ExtResource("35_jarstun")
 
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("21_dym3s")
@@ -389,8 +418,8 @@ script = ExtResource("27_railchase")
 [node name="RailKeepDistanceBehavior" type="Node" parent="."]
 script = ExtResource("28_keepdist")
 Active = true
-KeepDistance = 1500.0
-Speed = 800.0
+KeepDistance = 2000.0
+Speed = 600.0
 Smoothing = 1.0
 
 [node name="FacingController" type="Node" parent="."]

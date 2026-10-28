@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://baq1ujdk2e22i"]
+[gd_scene load_steps=20 format=3 uid="uid://baq1ujdk2e22i"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_h2apx"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_s4dnd"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dbn8b1atk6ngd" path="res://assets/environments/scene_6_hotel/背景墙.png" id="5_7qbdi"]
 [ext_resource type="Texture2D" uid="uid://dan0dd2p76nuk" path="res://assets/environments/scene_6_hotel/龙门吊右滑槽.png" id="6_h2apx"]
 [ext_resource type="Texture2D" uid="uid://dxrn8y2or0pgc" path="res://assets/environments/scene_6_hotel/右墙壁.png" id="7_h2apx"]
+[ext_resource type="PackedScene" uid="uid://da4f3288xy4h5" path="res://scenes/environments/Pipe180.tscn" id="9_8f36w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(7030, 4070)
@@ -39,8 +40,8 @@ size = Vector2(800, 500)
 size = Vector2(8000, 500)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(2021.7422, 1425.3125, 1296, 1428.1172, 1296, -1100, 2013.25, -1238.4922, -3664, 1447.3672, -4776.1875, 1451.6797, -4782.797, -1195.5, -3664, 910, 996, -1100, 996, -1105, -3664, -445, 636, -445, 636, 910, -3664, -1105)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7), PackedInt32Array(2, 8, 9, 3), PackedInt32Array(10, 11, 12, 7), PackedInt32Array(10, 7, 6), PackedInt32Array(13, 10, 6), PackedInt32Array(13, 6, 3, 9)])
+vertices = PackedVector2Array(-4776.461, 1350, -4781.508, -677, -3658.9219, -677, -3646.7031, -652, 1916, 1350, -3595.4375, -677, -3531, -677, 767.72656, -602.1797, 788.96094, -639, 1916, -639, -2980.3828, -977, 118.53906, -977, -3531, -708.4297)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5, 6, 7), PackedInt32Array(8, 9, 4, 7), PackedInt32Array(10, 11, 7, 6, 12)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-4863, -1275, 2093, -1319, 2102, 1505, -4856, 1532)])
 source_geometry_mode = 2
 agent_radius = 80.0
@@ -52,7 +53,7 @@ y_sort_enabled = true
 position = Vector2(0, 1060)
 
 [node name="SlideRailSpawnPoint" type="Node2D" parent="."]
-position = Vector2(3280, 1000)
+position = Vector2(3280, 100)
 
 [node name="JarSpawnPoint" type="Node2D" parent="."]
 position = Vector2(2850, 1000)
@@ -77,7 +78,7 @@ script = ExtResource("1_h2apx")
 ZoneName = "Room_Zone_F_c1"
 CameraLimitTop = -2250
 CameraLimitBottom = 2100
-ZoomLevel = 0.4
+ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -117,6 +118,10 @@ texture = ExtResource("6_h2apx")
 z_index = 1
 position = Vector2(3570, -790)
 texture = ExtResource("7_h2apx")
+
+[node name="Pipe180" parent="Environments/Floor" instance=ExtResource("9_8f36w")]
+position = Vector2(-530, 240)
+SpawnTag = "JarRight"
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 10

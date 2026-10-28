@@ -1,10 +1,12 @@
-[gd_scene load_steps=65 format=3 uid="uid://d7oxw7fsq2i3"]
+[gd_scene load_steps=68 format=3 uid="uid://d7oxw7fsq2i3"]
 
 [ext_resource type="Shader" uid="uid://caxdo713k5kug" path="res://shaders/materials/sparkling.gdshader" id="2_bs38d"]
 [ext_resource type="Texture2D" uid="uid://bhfnauk0uxby6" path="res://assets/environments/scene_6_hotel/mozhua/绿色液体.png" id="3_5vk7y"]
+[ext_resource type="Shader" uid="uid://cpuiqtlgf6b67" path="res://shaders/materials/shadow.gdshader" id="3_ktqhm"]
 [ext_resource type="Texture2D" uid="uid://bryyyy46yyd2u" path="res://assets/environments/scene_6_hotel/mozhua/魔爪下盖子.png" id="4_01e4h"]
 [ext_resource type="Texture2D" uid="uid://dmivha1ylcbw3" path="res://assets/environments/scene_6_hotel/mozhua/罐体.png" id="4_78x14"]
 [ext_resource type="Texture2D" uid="uid://cx7xqnynxg7rm" path="res://assets/environments/scene_6_hotel/mozhua/魔爪下盖子后.png" id="4_x0wnb"]
+[ext_resource type="Texture2D" uid="uid://wkm4jcgntidv" path="res://assets/environments/影子.png" id="4_y57o0"]
 [ext_resource type="Texture2D" uid="uid://cmodhdqcj0boo" path="res://assets/environments/scene_6_hotel/mozhua/左外壳.png" id="5_01e4h"]
 [ext_resource type="Texture2D" uid="uid://bo0mr46basxny" path="res://assets/environments/scene_6_hotel/mozhua/魔爪顶部光.png" id="5_bs38d"]
 [ext_resource type="Texture2D" uid="uid://dcpxo55qbqngy" path="res://assets/environments/scene_6_hotel/mozhua/魔爪底部.png" id="5_h8ke3"]
@@ -47,6 +49,11 @@ script = ExtResource("20_dstage")
 IdleAnimation = "normal_3"
 BreakAnimation = "jar_destroy"
 Threshold = 210.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oijea"]
+shader = ExtResource("3_ktqhm")
+shader_parameter/softness = 0.5
+shader_parameter/alpha = 0.4
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_w4fw6"]
 resource_local_to_scene = true
@@ -2236,6 +2243,13 @@ script = ExtResource("19_stage")
 Stages = Array[ExtResource("20_dstage")]([SubResource("Resource_jar_stage2"), SubResource("Resource_btdun"), SubResource("Resource_jar_stage3")])
 DeclaredFaction = 1
 MaxHealth = 210
+
+[node name="shadow" type="Sprite2D" parent="."]
+z_index = 1
+z_as_relative = false
+material = SubResource("ShaderMaterial_oijea")
+scale = Vector2(13, 12)
+texture = ExtResource("4_y57o0")
 
 [node name="Jar" type="Node2D" parent="."]
 

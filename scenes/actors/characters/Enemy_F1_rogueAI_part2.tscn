@@ -50,10 +50,10 @@ radius = 15000.0
 size = Vector2(200, 6000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bf1er"]
-size = Vector2(4000, 6000)
+size = Vector2(8000, 6000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
-size = Vector2(500, 300)
+size = Vector2(800, 600)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2csbb"]
 radius = 180.0
@@ -337,7 +337,6 @@ position = Vector2(0, 1500)
 shape = SubResource("RectangleShape2D_attack")
 
 [node name="AttackArea2" type="Area2D" parent="Sprite2D"]
-visible = false
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/AttackArea2"]

@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Enemies.States;
 using Kuros.Core.Effects;
 
 namespace Kuros.Actors.Enemies
@@ -118,6 +119,28 @@ namespace Kuros.Actors.Enemies
 			_railMount.SetTarget(_railMount.CurrentRailCoordinate);
 		}
 
+		/// <summary>罐子协助成功：留给后续强化内容的接口，当前只做确认日志。</summary>
+		public virtual void OnJarAssistCompleted()
+		{
+			GD.Print($"{Name}: 罐子协助完成（强化接口尚未实现）");
+		}
+
+		/// <summary>罐子协助失败：进入指定时长的 JarAssistStun 状态（动画映射为 preheat）。</summary>
+		public void EnterJarAssistStun(float seconds)
+		{
+			if (IsDeadOrDying) return;
+
+			var stun = StateMachine?.GetNodeOrNull<EnemyJarAssistStunState>("JarAssistStun");
+			if (stun == null)
+			{
+				GD.PushWarning($"{Name}: StateMachine 下缺少 JarAssistStun 状态，无法进入罐子眩晕");
+				return;
+			}
+
+			stun.Duration = Mathf.Max(0.1f, seconds);
+			StateMachine!.ChangeState("JarAssistStun");
+		}
+
 		/// <summary>转身期间不起新招（纵深防御；真正的主闸是"玩家不在前向矩形里"）。</summary>
 		public override bool CanStartAttack()
 			=> !(_facing?.IsTurning ?? false) && base.CanStartAttack();
@@ -135,9 +158,15 @@ namespace Kuros.Actors.Enemies
 		/// 被放行/被拒的副作用与其他同族一致：自动选目标（追踪弹幕/浮游炮/光束截断）会跳过免疫中的它；
 		/// 想让它挨打时不被硬直，给攻击配 GrantImmunities 霸体即可，那是招式的既有开关）。</summary>
 		public override bool CanBeAffected(ActorEffect? effect)
-			=> _weakpoint != null && GodotObject.IsInstanceValid(_weakpoint)
+		{
+			// 罐子眩晕期间是明确的输出窗口：允许纯伤害进入判定（效果仍按原弱点规则）。
+			if (effect == null && (StateMachine?.CurrentState?.Name ?? string.Empty) == "JarAssistStun")
+				return true;
+
+			return _weakpoint != null && GodotObject.IsInstanceValid(_weakpoint)
 				? _weakpoint.IsOpen
 				: (StateMachine?.CurrentState?.Name ?? string.Empty) == "Attack";
+		}
 
 		// ── 内部 ──────────────────────────────────────────────────────────
 
@@ -200,7 +229,7 @@ namespace Kuros.Actors.Enemies
 		private bool IsSpacingBlockedState()
 		{
 			string current = StateMachine?.CurrentState?.Name ?? string.Empty;
-			return current is "Hit" or "Frozen" or "CooldownFrozen" or "Dying" or "Dead";
+			return current is "Hit" or "Frozen" or "CooldownFrozen" or "JarAssistStun" or "Dying" or "Dead";
 		}
 	}
 }

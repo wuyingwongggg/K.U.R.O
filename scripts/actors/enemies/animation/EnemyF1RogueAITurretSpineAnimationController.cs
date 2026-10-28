@@ -16,7 +16,7 @@ namespace Kuros.Actors.Enemies.Animation
 	///
 	/// 状态映射（键取动画名本身，朝向变化会自然重播）：
 	///   Idle/Walk → idle；Hit → hit（走基类的双时间轴管线）；
-	///   Attack → 按攻击模板阶段 preheat/attack/recover（炮台族近战 = skill 整段）；
+	///   Attack → 按攻击模板阶段 preheat/attack/recover（炮台族近战 = skill 整段，罐子协助 = idle 整段）；
 	///   Dying → death（两骨架已有 death/d_death，镜像缺失回退基名）；Dead → 空动画；Frozen/CooldownFrozen → 保持当前姿势。
 	/// </summary>
 	public partial class EnemyF1RogueAITurretSpineAnimationController : EnemySpineAnimationController
@@ -32,6 +32,11 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string SkillAnimation { get; set; } = "skill";
 		/// <summary>阵亡片：Dying 状态播一次并保持末帧（两骨架已有 death/d_death；镜像缺失时回退基名）。</summary>
 		[Export] public string DieAnimation { get; set; } = "death";
+
+		[ExportCategory("Jar Assist Stun")]
+		/// <summary>罐子眩晕期间循环的 preheat 片段起点（秒）。暂无专用 stun 片，只截一小段做卡帧循环。</summary>
+		[Export(PropertyHint.Range, "0,5,0.01")] public float JarAssistStunLoopStart { get; set; } = 0.4f;
+		[Export(PropertyHint.Range, "0,5,0.01")] public float JarAssistStunLoopEnd { get; set; } = 0.45f;
 
 		/// <summary>朝向 → 动画名：朝左取 `d_` 前缀（这套骨架的 `d_*` 是手绘镜像，引擎不做缩放翻转）。</summary>
 		public static string ResolveName(bool facingRight, string baseName)
@@ -135,6 +140,7 @@ namespace Kuros.Actors.Enemies.Animation
 		{
 			base._Process(delta);
 			UpdateAnimation();
+			TickPartialLoop();   // PlayPartLoopIfNeeded 需要每帧回绕片段时间
 		}
 
 		private void UpdateAnimation()
@@ -175,6 +181,10 @@ namespace Kuros.Actors.Enemies.Animation
 				case "Attack":
 					PlayAttackPhaseAnimation(right);
 					break;
+				case "JarAssistStun":   // 暂无专用眩晕片：preheat 的 0.4~0.45s 片段循环
+					PlayPartLoopIfNeeded("JarAssistStunPreheat", ResolveName(right, PreHeatAnimation),
+						JarAssistStunLoopStart, JarAssistStunLoopEnd, AttackMixDuration);
+					break;
 				case "Frozen":
 				case "CooldownFrozen":  // 冻结/眩晕：保持当前姿势，不切换
 					break;
@@ -189,6 +199,14 @@ namespace Kuros.Actors.Enemies.Animation
 		{
 			var template = ResolveRunningTemplate();
 			if (template == null)
+			{
+				PlayIdleLoop();
+				return;
+			}
+
+			// 罐子协助：整招期间保持待机片（起手/出手/回收不做表演），朝左取 d_idle——
+			// 罐子生成后计数 7.5s 里的动作主体本来就是 idle，避免只在前 1s 闪 preheat/attack/recover。
+			if (template is JarAssistAttack)
 			{
 				PlayIdleLoop();
 				return;

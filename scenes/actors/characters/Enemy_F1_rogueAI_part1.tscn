@@ -363,12 +363,12 @@ script = ExtResource("12_attack")
 
 [node name="AttackController" type="Node" parent="StateMachine/Attack"]
 script = ExtResource("21_aiatk")
-ProgressUpgradeThreshold = 0.5
 ProgressThresholds = PackedFloat32Array(0.25, 0.5, 0.75)
+ProgressUpgradeThreshold = 0.5
+MeleeAttackNameThird = "RogueAISlamC"
 UltimateRetriggerDelay = 1.0
 MeleeAttackNameSecond = "RogueAISlamB"
 MeleeAttackName = "RogueAISlamA"
-MeleeAttackNameThird = "RogueAISlamC"
 SkillAttackName = "RogueAISlamB"
 PlayerDetectionAreaPath = NodePath("../../../Sprite2D/ControllerDetectionArea")
 MinInterAttackDelay = 10.0
@@ -385,7 +385,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_87lf6")])
-metadata/attack_weight = 100.0
+metadata/attack_weight = 25.0
 
 [node name="RogueAISlamB" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("26_slamb")
@@ -398,7 +398,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_dp8af"), SubResource("Resource_c2rbd"), SubResource("Resource_mxjbl")])
-metadata/attack_weight = 100.0
+metadata/attack_weight = 50.0
 
 [node name="RogueAISlamC" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("22_melee")
@@ -411,7 +411,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_87lf6")])
-metadata/attack_weight = 100.0
+metadata/attack_weight = 25.0
 
 [node name="RogueAIOverload" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("23_ult")

@@ -1,11 +1,13 @@
-[gd_scene load_steps=23 format=3 uid="uid://b4c4bopss6lxo"]
+[gd_scene load_steps=25 format=3 uid="uid://b4c4bopss6lxo"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_6wtu5"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_vwccj"]
 [ext_resource type="Resource" uid="uid://dxjeaphfp7yhi" path="res://resources/cutscene/F_b1_intro.tres" id="3_vwccj"]
 [ext_resource type="Texture2D" uid="uid://dhpemq2d2f7u2" path="res://assets/environments/scene_6_hotel/地板.png" id="6_wn4ca"]
+[ext_resource type="PackedScene" uid="uid://bqtr5w7g5wpmq" path="res://scenes/environments/PipeLeft.tscn" id="7_6wtu5"]
 [ext_resource type="Texture2D" uid="uid://vvb74vgvevxu" path="res://assets/environments/scene_6_hotel/地板厚度.png" id="7_vqtu6"]
 [ext_resource type="Texture2D" uid="uid://dbn8b1atk6ngd" path="res://assets/environments/scene_6_hotel/背景墙.png" id="8_6k5yh"]
+[ext_resource type="PackedScene" uid="uid://dt851ky7kfg2m" path="res://scenes/environments/PipeRight.tscn" id="8_vwccj"]
 [ext_resource type="PackedScene" uid="uid://dw1xkbpfrwstb" path="res://scenes/environments/lifting_platform.tscn" id="9_ej6he"]
 [ext_resource type="Texture2D" uid="uid://kohvycrlmg3h" path="res://assets/environments/scene_6_hotel/地板前面遮挡升降机.png" id="10_t4ekr"]
 [ext_resource type="PackedScene" uid="uid://c1acqfacsuky6" path="res://scenes/objects/Animation_rogueAI.tscn" id="11_rxyag"]
@@ -140,7 +142,7 @@ script = ExtResource("1_6wtu5")
 ZoneName = "Room_Zone_F_b1"
 CameraLimitTop = -2250
 CameraLimitBottom = 2100
-ZoomLevel = 0.09999999999999999
+ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -149,6 +151,7 @@ shape = SubResource("RectangleShape2D_5prnb")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
+visible = false
 z_index = 10
 position = Vector2(0, 850)
 collision_layer = 0
@@ -163,21 +166,30 @@ debug_color = Color(1, 0, 1, 0.41960785)
 [node name="Environments" type="Node2D" parent="."]
 position = Vector2(0, 1060)
 
+[node name="Wall" type="Sprite2D" parent="Environments"]
+z_index = 1
+position = Vector2(0, -2345)
+texture = ExtResource("8_6k5yh")
+offset = Vector2(23, 0)
+
 [node name="Floor" type="Sprite2D" parent="Environments"]
 position = Vector2(-75, -295)
 texture = ExtResource("6_wn4ca")
+offset = Vector2(32, 0)
+region_enabled = true
+region_rect = Rect2(68, 0, 6886, 2725)
 
 [node name="FloorScreen" type="Sprite2D" parent="Environments/Floor"]
 z_index = -1
 position = Vector2(81, -107)
 texture = ExtResource("7_vqtu6")
 
-[node name="Wall" type="Sprite2D" parent="Environments/Floor"]
-z_index = 1
-position = Vector2(0, -2051)
-texture = ExtResource("8_6k5yh")
+[node name="PipeLeft" parent="Environments" instance=ExtResource("7_6wtu5")]
+
+[node name="PipeRight" parent="Environments" instance=ExtResource("8_vwccj")]
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
+visible = false
 z_index = 10
 
 [node name="CollisionShape2D9" type="CollisionShape2D" parent="AirWall"]

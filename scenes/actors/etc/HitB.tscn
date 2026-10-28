@@ -1,26 +1,69 @@
-[gd_scene load_steps=5 format=3 uid="uid://d38pex7crmtju"]
+[gd_scene load_steps=12 format=3 uid="uid://d38pex7crmtju"]
 
-[ext_resource type="Texture2D" uid="uid://c1rc6olvwc8oe" path="res://assets/effect/AttackEffect/hit_b/HIT_B0001.png" id="1_vargc"]
-[ext_resource type="Texture2D" uid="uid://do2xbsgaa2kgb" path="res://assets/effect/AttackEffect/hit_b/HIT_B0002.png" id="2_ruyw6"]
-[ext_resource type="Texture2D" uid="uid://b1fw5vr3e18si" path="res://assets/effect/AttackEffect/hit_b/HIT_B0003.png" id="3_kcwv7"]
+[ext_resource type="Texture2D" uid="uid://jfv3loh1rqw8" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0000.png" id="1_a81kp"]
+[ext_resource type="Script" uid="uid://7ua5f3p2rfye" path="res://scripts/fx/FollowAndDestroy.cs" id="1_vu2c6"]
+[ext_resource type="Texture2D" uid="uid://dsw32stlt18cf" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0001.png" id="2_vu2c6"]
+[ext_resource type="Texture2D" uid="uid://bpmlxib4qhs35" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0002.png" id="3_nny1o"]
+[ext_resource type="Texture2D" uid="uid://doloapc01u0d" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0003.png" id="4_iqobw"]
+[ext_resource type="Texture2D" uid="uid://peh1vi0qh6ax" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0004.png" id="5_7henx"]
+[ext_resource type="Texture2D" uid="uid://dlsigx7ig1bij" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0005.png" id="6_ij3cv"]
+[ext_resource type="Texture2D" uid="uid://dt0lhul6qh4h3" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0006.png" id="7_m377h"]
+[ext_resource type="Texture2D" uid="uid://1elgvmhq6iwf" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0007.png" id="8_jd28v"]
+[ext_resource type="Texture2D" uid="uid://dfgap6674ndr0" path="res://assets/effect/AttackEffect/hit_b/HIT_B_0008.png" id="9_3phlw"]
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_to6ee"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_a81kp"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("1_vargc")
+"texture": ExtResource("1_a81kp")
 }, {
 "duration": 1.0,
-"texture": ExtResource("2_ruyw6")
+"texture": ExtResource("2_vu2c6")
 }, {
 "duration": 1.0,
-"texture": ExtResource("3_kcwv7")
+"texture": ExtResource("3_nny1o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_iqobw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_7henx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_ij3cv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_m377h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_jd28v")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_3phlw")
 }],
-"loop": false,
+"loop": true,
 "name": &"default",
 "speed": 30.0
 }]
 
-[node name="HitB" type="AnimatedSprite2D"]
-sprite_frames = SubResource("SpriteFrames_to6ee")
-flip_h = true
+[node name="HitB" type="Node2D"]
+script = ExtResource("1_vu2c6")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(0.39215687, 0.5882353, 0, 1)
+sprite_frames = SubResource("SpriteFrames_a81kp")
+autoplay = "default"
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(0.39215687, 0.78431374, 0, 1)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_a81kp")
+autoplay = "default"
+offset = Vector2(0, 70)
+
+[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(0.78431374, 0.98039216, 0, 1)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_a81kp")
+autoplay = "default"
+offset = Vector2(0, 180)
