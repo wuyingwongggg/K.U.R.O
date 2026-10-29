@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using Kuros.Actors.Enemies.Attacks;
+using Kuros.Actors.Enemies.States;
 
 namespace Kuros.Actors.Enemies.Animation
 {
@@ -34,9 +35,9 @@ namespace Kuros.Actors.Enemies.Animation
 		[Export] public string DieAnimation { get; set; } = "death";
 
 		[ExportCategory("Jar Assist Stun")]
-		/// <summary>罐子眩晕期间循环的 preheat 片段起点（秒）。暂无专用 stun 片，只截一小段做卡帧循环。</summary>
-		[Export(PropertyHint.Range, "0,5,0.01")] public float JarAssistStunLoopStart { get; set; } = 0.4f;
-		[Export(PropertyHint.Range, "0,5,0.01")] public float JarAssistStunLoopEnd { get; set; } = 0.45f;
+		[Export] public string StunDownAnimation { get; set; } = "stun_1";
+		[Export] public string StunLoopAnimation { get; set; } = "stun";
+		[Export] public string StunUpAnimation { get; set; } = "stun_2";
 
 		/// <summary>朝向 → 动画名：朝左取 `d_` 前缀（这套骨架的 `d_*` 是手绘镜像，引擎不做缩放翻转）。</summary>
 		public static string ResolveName(bool facingRight, string baseName)
@@ -170,7 +171,7 @@ namespace Kuros.Actors.Enemies.Animation
 					PlayIdleLoop();
 					break;
 				case "Hit":
-					DriveHitPhaseAnimation(ResolveName(right, HitAnimation), HitMixDuration);
+					PlayHitAnimation(right);
 					break;
 				case "Dying":           // 阵亡片播一次并保持末帧（death/d_death，按朝向取、镜像缺失回退基名）
 					PlayOnceIfNeeded("die", ResolveFacingName(right, DieAnimation), DieMixDuration);
@@ -181,9 +182,8 @@ namespace Kuros.Actors.Enemies.Animation
 				case "Attack":
 					PlayAttackPhaseAnimation(right);
 					break;
-				case "JarAssistStun":   // 暂无专用眩晕片：preheat 的 0.4~0.45s 片段循环
-					PlayPartLoopIfNeeded("JarAssistStunPreheat", ResolveName(right, PreHeatAnimation),
-						JarAssistStunLoopStart, JarAssistStunLoopEnd, AttackMixDuration);
+				case "JarAssistStun":
+					PlayJarAssistStunAnimation(right);
 					break;
 				case "Frozen":
 				case "CooldownFrozen":  // 冻结/眩晕：保持当前姿势，不切换
@@ -192,6 +192,38 @@ namespace Kuros.Actors.Enemies.Animation
 					PlayIdleLoop();
 					break;
 			}
+		}
+
+		private void PlayHitAnimation(bool right)
+		{
+			if (Enemy?.StateMachine?.CurrentState is EnemyF1RogueAITurretHitState hit
+				&& hit.UseStunRecovery && hit.CurrentPhase == EnemyHitState.HitPhase.Recover)
+			{
+				string animation = ResolveFacingName(right, StunUpAnimation);
+				PlayOnceIfNeeded($"TurretHitRecover:{hit.PhaseTick}:{animation}", animation, HitMixDuration);
+				return;
+			}
+			// 眩晕来源仍由原 Hit 双阶段管线驱动，播完按剩余时间恢复眩晕。
+			DriveHitPhaseAnimation(ResolveFacingName(right, HitAnimation), HitMixDuration);
+		}
+
+		private void PlayJarAssistStunAnimation(bool right)
+		{
+			if (Enemy?.StateMachine?.CurrentState is not EnemyJarAssistStunState stun) return;
+			string baseName = stun.CurrentPhase switch
+			{
+				EnemyJarAssistStunState.StunPhase.Down => StunDownAnimation,
+				EnemyJarAssistStunState.StunPhase.Up => StunUpAnimation,
+				_ => StunLoopAnimation
+			};
+			string animation = ResolveFacingName(right, baseName);
+			string key = $"JarAssistStun:{stun.CycleId}:{animation}";
+			if (stun.CurrentPhase == EnemyJarAssistStunState.StunPhase.Loop)
+				PlayLoopIfNeeded(key, animation, AttackMixDuration);
+			else
+				PlayOnceIfNeeded(key, animation, AttackMixDuration,
+					stun.CurrentPhase == EnemyJarAssistStunState.StunPhase.Down
+						? stun.DownTimeScale : stun.UpTimeScale);
 		}
 
 		/// <summary>攻击阶段 → 片子：warmup=preheat、active=attack、recovery=recover（阶段直接读模板的 CurrentPhase）。</summary>

@@ -86,7 +86,7 @@ shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 2.0
 shader_parameter/brightness = 1.0
-shader_parameter/alpha_factor = 0.0
+shader_parameter/alpha_factor = 1.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_y57o0"]
 animations = [{

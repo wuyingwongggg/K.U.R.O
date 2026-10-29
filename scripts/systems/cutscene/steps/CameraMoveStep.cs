@@ -56,6 +56,10 @@ namespace Kuros.Systems.Cutscene
         /// </summary>
         [Export] public bool StayAtTargetAfterFollow { get; set; } = true;
 
+        /// <summary>返回时恢复接管前正常区域的目标缩放。false 保留步骤快照，供多镜头衔接。
+        /// 仅 FollowDuration > 0 且 StayAtTargetAfterFollow=false 时生效。</summary>
+        [Export] public bool RestoreNormalZoomAfterFollow { get; set; } = false;
+
         public override async Task Execute(CutsceneContext ctx)
         {
             GD.Print($"[Cutscene] CameraMoveStep 开始，TargetPath={TargetPath}, TargetPosition={TargetPosition}, TargetZoom={TargetZoom}, Duration={Duration}, FollowDuration={FollowDuration}, WaitForCompletion={WaitForCompletion}");
@@ -147,9 +151,9 @@ namespace Kuros.Systems.Cutscene
         private async Task RunFollowAsync(CutsceneContext ctx, Camera2D camera, Node2D targetNode)
         {
             // 记录跟随开始前的摄像机位置/缩放，用于 StayAtTargetAfterFollow=false 时还原。
-            // 缩放取当前 CameraZone 的实际值（不同房间 0.3 / 0.43 / 0.95 不等），不硬编码。
+            // 可选恢复接管前的区域目标，避免把未完成缩放 Tween 的中间值存为正常视野。
             var posBeforeFollow = camera.GlobalPosition;
-            var zoomBeforeFollow = camera.Zoom;
+            var zoomBeforeFollow = RestoreNormalZoomAfterFollow ? ctx.Manager.NormalCameraZoom : camera.Zoom;
 
             // Phase 1: 初始 Tween 移动到目标当前位置
             if (Duration > 0f && !ctx.IsSkipping && !Instant)

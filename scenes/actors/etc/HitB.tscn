@@ -48,6 +48,7 @@ animations = [{
 
 [node name="HitB" type="Node2D"]
 script = ExtResource("1_vu2c6")
+Duration = 0.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 self_modulate = Color(0.39215687, 0.5882353, 0, 1)

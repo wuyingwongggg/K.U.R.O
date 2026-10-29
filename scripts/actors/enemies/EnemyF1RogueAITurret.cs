@@ -119,13 +119,13 @@ namespace Kuros.Actors.Enemies
 			_railMount.SetTarget(_railMount.CurrentRailCoordinate);
 		}
 
-		/// <summary>罐子协助成功：留给后续强化内容的接口，当前只做确认日志。</summary>
+		/// <summary>罐子协助成功：有强化组件时激活；未接入的炮位维持原行为。</summary>
 		public virtual void OnJarAssistCompleted()
 		{
-			GD.Print($"{Name}: 罐子协助完成（强化接口尚未实现）");
+			GetNodeOrNull<EnemyEmpowerController>("EmpowerController")?.Activate();
 		}
 
-		/// <summary>罐子协助失败：进入指定时长的 JarAssistStun 状态（动画映射为 preheat）。</summary>
+		/// <summary>罐子协助失败：进入指定总时长的 JarAssistStun（起步、循环、恢复）。</summary>
 		public void EnterJarAssistStun(float seconds)
 		{
 			if (IsDeadOrDying) return;
@@ -138,6 +138,8 @@ namespace Kuros.Actors.Enemies
 			}
 
 			stun.Duration = Mathf.Max(0.1f, seconds);
+			var empower = GetNodeOrNull<EnemyEmpowerController>("EmpowerController");
+			if (empower?.ClearOnJarAssistStun == true) empower.Clear();
 			StateMachine!.ChangeState("JarAssistStun");
 		}
 
@@ -160,13 +162,20 @@ namespace Kuros.Actors.Enemies
 		public override bool CanBeAffected(ActorEffect? effect)
 		{
 			// 罐子眩晕期间是明确的输出窗口：允许纯伤害进入判定（效果仍按原弱点规则）。
-			if (effect == null && (StateMachine?.CurrentState?.Name ?? string.Empty) == "JarAssistStun")
+			if (effect == null && StateMachine?.CurrentState?.Name == "JarAssistStun")
 				return true;
+			if (effect == null && StateMachine?.CurrentState?.Name == "Hit"
+				&& StateMachine.GetNodeOrNull<EnemyJarAssistStunState>("JarAssistStun")?.IsActive == true)
+				return IsHitWeakpointOpen();
 
 			return _weakpoint != null && GodotObject.IsInstanceValid(_weakpoint)
 				? _weakpoint.IsOpen
 				: (StateMachine?.CurrentState?.Name ?? string.Empty) == "Attack";
 		}
+
+		/// <summary>Hit 伤害统一由弱点组件判断，缺少组件时保持原有全程可受伤。</summary>
+		protected bool IsHitWeakpointOpen()
+			=> _weakpoint != null && GodotObject.IsInstanceValid(_weakpoint) ? _weakpoint.IsHitOpen : true;
 
 		// ── 内部 ──────────────────────────────────────────────────────────
 

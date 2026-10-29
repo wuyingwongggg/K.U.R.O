@@ -126,7 +126,7 @@ position = Vector2(-3512, -790)
 texture = ExtResource("9_ao0lv")
 
 [node name="Pipe180" parent="Environments/Floor" instance=ExtResource("9_ypy4e")]
-position = Vector2(0, 240)
+position = Vector2(0, 290)
 SpawnTag = "JarLeft"
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
