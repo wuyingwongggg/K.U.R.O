@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3 uid="uid://dstgcw0tto5oa"]
+[gd_scene load_steps=59 format=3 uid="uid://dstgcw0tto5oa"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_7ummj"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_o3k7i"]
@@ -42,9 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://brjaqxel52a2o" path="res://assets/BuildIcon/icon.svg" id="40_21m0k"]
 [ext_resource type="PackedScene" uid="uid://dugfq8qy1okf1" path="res://scenes/items/Furniture_A_chairOfficeB.tscn" id="41_y44s2"]
 [ext_resource type="PackedScene" uid="uid://be30f0gopxel3" path="res://scenes/actors/etc/SlideRail_wheel.tscn" id="42_mfk2f"]
-[ext_resource type="PackedScene" uid="uid://d7oxw7fsq2i3" path="res://scenes/environments/jar_mozhua.tscn" id="43_mfk2f"]
-[ext_resource type="PackedScene" uid="uid://duryvwia2gyyc" path="res://scenes/actors/characters/Enemy_F1_rogueAI_Cannon.tscn" id="43_oobfl"]
-[ext_resource type="PackedScene" uid="uid://bwdwpiu2brmv6" path="res://scenes/environments/jar_mozhua_assist.tscn" id="44_mfk2f"]
+[ext_resource type="PackedScene" uid="uid://cw42j1o501x83" path="res://scenes/actors/characters/Enemy_F1_rogueAI_MachineGun.tscn" id="43_hxrfn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(5800, 3050)
@@ -128,6 +126,7 @@ collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_7ummj")
 ZoneName = "Room_Zone_Test_begin"
+ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -418,10 +417,4 @@ position = Vector2(1605, 326)
 
 [node name="SlideRail_wheel" parent="." instance=ExtResource("42_mfk2f")]
 position = Vector2(-1804, 367)
-CarriagePrefab = ExtResource("43_oobfl")
-
-[node name="Jar_mozhua" parent="." instance=ExtResource("43_mfk2f")]
-position = Vector2(-1400, -281)
-
-[node name="Jar_mozhua_assist" parent="." instance=ExtResource("44_mfk2f")]
-position = Vector2(-698, -255)
+CarriagePrefab = ExtResource("43_hxrfn")

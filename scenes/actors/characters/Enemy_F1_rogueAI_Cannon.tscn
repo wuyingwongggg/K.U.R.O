@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://duryvwia2gyyc"]
+[gd_scene load_steps=49 format=3 uid="uid://duryvwia2gyyc"]
 
 [ext_resource type="Script" uid="uid://ccqcbk4merfnt" path="res://scripts/actors/enemies/EnemyF1RogueAICannon.cs" id="1_3cfw7"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_3eyky"]
@@ -34,6 +34,7 @@
 [ext_resource type="Script" uid="uid://dlhtrvdv6gwxn" path="res://scripts/actors/enemies/states/EnemyJarAssistStunState.cs" id="35_jarstun"]
 [ext_resource type="PackedScene" uid="uid://bwdwpiu2brmv6" path="res://scenes/environments/jar_mozhua_assist.tscn" id="36_jars"]
 [ext_resource type="Script" uid="uid://baq6luqv2ijwk" path="res://scripts/actors/enemies/EnemyEmpowerController.cs" id="37_empower"]
+[ext_resource type="Script" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretSimpleMeleeAttack.cs" id="38_turretsimple"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_by072")
@@ -219,7 +220,7 @@ skeleton_data_res = ExtResource("7_3cfw7")
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = true
-preview_time = 0.99
+preview_time = 0.75
 script = ExtResource("8_6o35y")
 
 [node name="SpineBoneNode" type="SpineBoneNode" parent="SpineSprite"]
@@ -263,6 +264,7 @@ position = Vector2(500, 0)
 position = Vector2(-300, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 modulate = Color(0.8, 0.6, 0.5, 1)
 z_index = 10
 
@@ -309,14 +311,14 @@ monitorable = false
 [node name="MeleeDetectionShape" type="CollisionShape2D" parent="Sprite2D/MeleeAttackArea"]
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_3eyky")
-debug_color = Color(0.6545704, 0.517486, 0.0379819, 0.41960785)
+debug_color = Color(1, 1, 0, 0.41960785)
 
 [node name="MeleeDmgArea" type="Area2D" parent="Sprite2D"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/MeleeDmgArea"]
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_3cfw7")
-debug_color = Color(0.9713332, 0, 0.45190394, 0.41960785)
+debug_color = Color(0.972549, 0, 0, 0.41960785)
 
 [node name="VisualEffectPosition" type="Node2D" parent="."]
 script = ExtResource("6_hyfyo")
@@ -354,7 +356,7 @@ MinInterAttackDelay = 2.0
 QueuedAttackTimeout = 2.0
 
 [node name="SimpleMeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
-script = ExtResource("14_0xw7a")
+script = ExtResource("38_turretsimple")
 AttackName = "SimpleMeleeAttack"
 WarmupDuration = 2.0
 ActiveDuration = 0.5
@@ -387,7 +389,7 @@ Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_r52tf")])
 metadata/attack_weight = 50.0
 
 [node name="SimpleMeleeAttackPro" type="Node" parent="StateMachine/Attack/AttackController"]
-script = ExtResource("14_0xw7a")
+script = ExtResource("38_turretsimple")
 AttackName = "SimpleMeleeAttackPro"
 WarmupDuration = 2.0
 ActiveDuration = 0.5
@@ -468,8 +470,8 @@ AttackIntervalMultiplier = 0.1
 MovementSpeedMultiplier = 2.0
 EffectScene = ExtResource("29_lu5qv")
 EffectAnchorPath = NodePath("VisualEffectPosition/VisualEffectMarker2D")
-EffectOffset = Vector2(0, -300)
-EffectScale = Vector2(2.5, 1.5)
+EffectOffset = Vector2(0, -100)
+EffectScale = Vector2(2, 2)
 
 [node name="RailChaseMovement" type="Node" parent="."]
 script = ExtResource("27_railchase")
