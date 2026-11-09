@@ -61,8 +61,8 @@ SpawnType = 2
 TargetNodePath = NodePath("../World/F_b1/Animation_rogueAI")
 SpawnDelay = 0.5
 PropertyOverrides = Dictionary[String, Variant]({
-"CarriageFarOffset": -8500.0,
-"CarriageNearOffset": 8500.0,
+"CarriageFarOffset": 9200.0,
+"CarriageNearOffset": -9200.0,
 "CarriagePrefab": ExtResource("11_qwnwx"),
 "CarriageSpawn": 2,
 "z_index": 3

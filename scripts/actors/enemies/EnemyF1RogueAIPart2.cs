@@ -151,6 +151,25 @@ namespace Kuros.Actors.Enemies
 			_armor?.SetArmorActive(false);
 
 			GameActor.DeathFinalized += OnPartDeathFinalized;
+			HealthChanged += OnEmpowerHealthChanged;
+			Callable.From(() =>
+			{
+				if (IsInsideTree()) OnEmpowerHealthChanged(CurrentHealth, MaxHealth);
+			}).CallDeferred();
+		}
+
+		private void OnEmpowerHealthChanged(int health, int maxHealth)
+		{
+			var empower = GetNodeOrNull<EnemyEmpowerController>("EmpowerController");
+			if (empower == null) return;
+			if (health <= 0)
+			{
+				empower.Clear();
+				return;
+			}
+			if (empower.IsEmpowered || maxHealth <= 0) return;
+			var attacks = GetNodeOrNull<EnemyF1RogueAIPart2AttackController>("StateMachine/Attack/AttackController");
+			if (attacks?.IsProUnlocked == true) empower.Activate();
 		}
 
 		/// <summary>血量豁免楼层难度缩放：本体的"血量"= 部件计数（每碎一件 -1），必须与部件数严格相等——
@@ -166,6 +185,7 @@ namespace Kuros.Actors.Enemies
 
 		public override void _ExitTree()
 		{
+			HealthChanged -= OnEmpowerHealthChanged;
 			GameActor.DeathFinalized -= OnPartDeathFinalized;
 			base._ExitTree();
 		}

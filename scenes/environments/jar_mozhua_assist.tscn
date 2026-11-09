@@ -2896,6 +2896,9 @@ script = ExtResource("1_81nyd")
 Stages = Array[ExtResource("2_7tgv8")]([SubResource("Resource_bio6l"), SubResource("Resource_jar_stage2"), SubResource("Resource_jar_stage3")])
 DeclaredFaction = 1
 
+[node name="IndicatorAnchor" type="Marker2D" parent="."]
+position = Vector2(0, -270)
+
 [node name="shadow" type="Sprite2D" parent="."]
 z_index = 1
 z_as_relative = false

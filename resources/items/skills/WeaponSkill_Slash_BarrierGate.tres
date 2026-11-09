@@ -10,16 +10,16 @@
 
 [sub_resource type="Resource" id="Resource_gprf2"]
 script = ExtResource("1_hrrjb")
+SpawnTiming = 2
 Scene = ExtResource("2_w1ai1")
 EffectOffset = Vector2(375, 0)
-SpawnTiming = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_bp688"]
 script = ExtResource("1_hrrjb")
+SpawnTiming = 2
 Scene = ExtResource("3_u4dse")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_w1ai1"]

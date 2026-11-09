@@ -338,7 +338,7 @@ namespace Kuros.Actors.Enemies.Attacks
 
         public bool TryStart()
         {
-            if (!CanStart()) return false;
+            if (!CanStart() || !TryPrepareStart()) return false;
 
             _animationHitReady = false;
             _pendingAnimationHitFromWarmup = false;
@@ -348,6 +348,9 @@ namespace Kuros.Actors.Enemies.Attacks
             SetPhase(AttackPhase.Warmup);
             return true;
         }
+
+        /// <summary>在起手前提交可失败的准备工作。失败时不进入 Warmup。</summary>
+        protected virtual bool TryPrepareStart() => true;
 
         public void Tick(double delta)
         {

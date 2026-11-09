@@ -1,4 +1,5 @@
 using Godot;
+using Kuros.Actors.Heroes;
 using Kuros.Utils;
 
 namespace Kuros.Managers
@@ -38,9 +39,11 @@ namespace Kuros.Managers
         private CameraZoneManager? _cameraZoneManager;
         private bool _playerInside = false;
         private bool _cleanupDone = false;
+        private bool _fallExitSettling;
 
         public override void _Ready()
         {
+            SetPhysicsProcess(false);
             AreaEntered += OnAreaEntered;
             AreaExited  += OnAreaExited;
             
@@ -103,11 +106,39 @@ namespace Kuros.Managers
 
             // 玩家真的离开了
             if (!_playerInside) return;
+            // 坠落临时关闭 HitArea 的碰撞层；此时重叠消失不代表离开房间。
+            if (IsPlayerFalling())
+            {
+                _fallExitSettling = false;
+                SetPhysicsProcess(true);
+                return;
+            }
             _playerInside = false;
             var mgr = GetOrFindManager();
             if (mgr == null) return;
             mgr.ExitZone(ZoneName);
         }
+
+        public override void _PhysicsProcess(double delta)
+        {
+            // 等回岸坐标和恢复后的 HitArea 进入下一次物理重叠更新。
+            if (IsPlayerFalling())
+            {
+                _fallExitSettling = false;
+                return;
+            }
+            if (!_fallExitSettling)
+            {
+                _fallExitSettling = true;
+                return;
+            }
+            SetPhysicsProcess(false);
+            CallDeferred(MethodName.DeferredExitCheck);
+        }
+
+        private bool IsPlayerFalling()
+            => GetTree().GetFirstNodeInGroup("player")?
+                .GetNodeOrNull<PlayerFallController>("FallController")?.IsFalling == true;
 
         // ─── 内部工具 ──────────────────────────────────────────────────────
 

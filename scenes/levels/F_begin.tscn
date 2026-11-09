@@ -1,4 +1,4 @@
-[gd_scene load_steps=71 format=3 uid="uid://b534tt4n3wr42"]
+[gd_scene load_steps=70 format=3 uid="uid://b534tt4n3wr42"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_mbxjs"]
 [ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="1_xart7"]
@@ -10,7 +10,6 @@
 [ext_resource type="Resource" uid="uid://ttehlcct8cgr" path="res://resources/cutscene/F_begin_2_intro.tres" id="4_xart7"]
 [ext_resource type="Texture2D" uid="uid://752sqoqmoavc" path="res://addons/dialogic/Modules/Signal/sign/exit_sign.png" id="9_anorx"]
 [ext_resource type="SpineSkeletonDataResource" uid="uid://cu7dh3atg6s4d" path="res://animations/spine/Enemy_F1_rogueAI.tres" id="10_1yie0"]
-[ext_resource type="Resource" uid="uid://xag881d6vxpv" path="res://resources/cutscene/F_begin_intro.tres" id="10_som2a"]
 [ext_resource type="Texture2D" uid="uid://t6lil4dopg4b" path="res://assets/environments/scene_6_hotel/升降机背景培养皿.png" id="10_x26y1"]
 [ext_resource type="Texture2D" uid="uid://b6i0r8cjy5m58" path="res://assets/environments/scene_6_hotel/升降滑槽.png" id="11_7rmla"]
 [ext_resource type="Texture2D" uid="uid://cb4cka2jcljmq" path="res://assets/environments/scene_6_hotel/黑色遮蔽覆盖.png" id="11_86bts"]
@@ -1524,6 +1523,7 @@ shape = SubResource("RectangleShape2D_1mlw7")
 debug_color = Color(0.6428762, 0.52304673, 0.06685588, 0.41960785)
 
 [node name="CameraZone" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_mbxjs")
@@ -1537,6 +1537,7 @@ shape = SubResource("RectangleShape2D_hoe1d")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CameraZone2" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_mbxjs")
@@ -1557,7 +1558,7 @@ z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_neu0b")
-Sequence = ExtResource("10_som2a")
+Sequence = ExtResource("12_som2a")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 position = Vector2(-2300, 763)

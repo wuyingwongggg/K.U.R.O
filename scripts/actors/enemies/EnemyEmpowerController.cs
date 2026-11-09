@@ -8,7 +8,8 @@ namespace Kuros.Actors.Enemies;
 [GlobalClass]
 public partial class EnemyEmpowerController : Node
 {
-    [Export(PropertyHint.Range, "0.1,120,0.1,or_greater")] public float Duration { get; set; } = 12f;
+    /// <summary>强化持续秒数。0 表示不自动到期，直到强化被清除。</summary>
+    [Export(PropertyHint.Range, "0,120,0.1,or_greater")] public float Duration { get; set; } = 12f;
     [Export] public bool RefreshOnReapply { get; set; } = true;
     [Export] public bool ClearOnJarAssistStun { get; set; } = true;
     /// <summary>强化期间攻击间隔倍率；0.5 表示间隔减半。</summary>
@@ -35,7 +36,7 @@ public partial class EnemyEmpowerController : Node
     private Node2D? _visual;
     private Node? _spineHelper;
     private double _repeatElapsed;
-    private EnemyF1RogueAITurretAttackController? _attackController;
+    private EnemyAttackController? _attackController;
     private RailKeepDistanceBehavior? _keepDistance;
     private float _originalAttackInterval;
     private float _originalSpeed;
@@ -62,16 +63,19 @@ public partial class EnemyEmpowerController : Node
         if (_enemy == null || _enemy.IsDeadOrDying || _enemy is EnemyF1RogueAITurret { IsAIShutdown: true }) return;
         if (IsEmpowered)
         {
-            if (RefreshOnReapply) RemainingSeconds = Mathf.Max(Duration, 0.1f);
+            if (RefreshOnReapply) ResetDuration();
             return;
         }
         IsEmpowered = true;
-        RemainingSeconds = Mathf.Max(Duration, 0.1f);
+        ResetDuration();
         _repeatElapsed = 0;
         ApplyModifiers();
         SpawnVisual();
         SetProcess(true);
     }
+
+    private void ResetDuration()
+        => RemainingSeconds = Duration == 0f ? double.PositiveInfinity : Mathf.Max(Duration, 0.1f);
 
     public void Clear()
     {
@@ -127,7 +131,7 @@ public partial class EnemyEmpowerController : Node
         _modifiersApplied = true;
         _originalSpeed = _enemy.Speed;
         _enemy.Speed = _originalSpeed * Mathf.Max(MovementSpeedMultiplier, 0.1f);
-        _attackController = _enemy.GetNodeOrNull<EnemyF1RogueAITurretAttackController>("StateMachine/Attack/AttackController");
+        _attackController = _enemy.GetNodeOrNull<EnemyAttackController>("StateMachine/Attack/AttackController");
         if (_attackController != null)
         {
             _originalAttackInterval = _attackController.MinInterAttackDelay;

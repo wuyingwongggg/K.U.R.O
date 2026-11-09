@@ -4,3 +4,4 @@
 
 [node name="CombatFocusEffect" type="Node2D"]
 script = ExtResource("1")
+SlowMoRecoveryDuration = 0.5

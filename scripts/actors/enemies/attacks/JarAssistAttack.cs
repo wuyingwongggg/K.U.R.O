@@ -2,6 +2,7 @@ using Godot;
 using Kuros.Actors.Enemies;
 using Kuros.Core;
 using Kuros.Environments;
+using Kuros.Fx;
 
 namespace Kuros.Actors.Enemies.Attacks
 {
@@ -20,10 +21,12 @@ namespace Kuros.Actors.Enemies.Attacks
 		/// <summary>罐子被击破后炮台的眩晕时长（秒）。</summary>
 		[Export(PropertyHint.Range, "0.5,20,0.1")] public float StunSeconds { get; set; } = 7.5f;
 		[Export] public bool EnableDebugLogs { get; set; } = false;
+		[Export] public Texture2D? IndicatorIcon { get; set; }
 		/// <summary>罐子根节点到地面点的世界偏移；采样验证地面点，生成原点为地面点减去此偏移。</summary>
 		[Export] public Vector2 SpawnGroundOffset { get; set; }
 
 		private DestructibleStageController? _activeJar;
+		private CanvasLayer? _jarIndicator;
 		private float _remaining;
 		private bool _tracking;
 		private bool _resolved;
@@ -134,6 +137,13 @@ namespace Kuros.Actors.Enemies.Attacks
 			_remaining = Mathf.Max(0.1f, AssistSeconds);
 			_tracking = true;
 			_resolved = false;
+			_jarIndicator = new CanvasLayer { Name = "JarAssistIndicatorLayer", Layer = 8 };
+			_jarIndicator.AddChild(new AssistJarIndicator
+			{
+				Target = jar.GetNodeOrNull<Marker2D>("IndicatorAnchor") ?? (Node2D)jar,
+				Icon = IndicatorIcon
+			});
+			AddChild(_jarIndicator);
 
 			if (!_deathSubscribed)
 			{
@@ -190,10 +200,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		private void ResolveSuccess()
 		{
 			if (!_tracking || _resolved) return;
-			_resolved = true;
-			_tracking = false;
-			UnsubscribeDeath();
-			_activeJar = null;
+			StopTracking();
 
 			EnsureCooldown(AssistSeconds);
 			if (Enemy is EnemyF1RogueAITurret host)
@@ -206,10 +213,7 @@ namespace Kuros.Actors.Enemies.Attacks
 		private void ResolveFailure()
 		{
 			if (!_tracking || _resolved) return;
-			_resolved = true;
-			_tracking = false;
-			UnsubscribeDeath();
-			_activeJar = null;
+			StopTracking();
 
 			EnsureCooldown(AssistSeconds);
 			if (Enemy is EnemyF1RogueAITurret host)
@@ -221,6 +225,12 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private void StopTracking()
 		{
+			if (_jarIndicator != null && IsInstanceValid(_jarIndicator))
+			{
+				_jarIndicator.Hide();
+				_jarIndicator.QueueFree();
+			}
+			_jarIndicator = null;
 			_tracking = false;
 			_resolved = true;
 			_activeJar = null;

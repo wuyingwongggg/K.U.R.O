@@ -5,10 +5,10 @@
 [ext_resource type="Script" uid="uid://dtlh7op6q4uex" path="res://scripts/environments/FallHazardArea.cs" id="3_xct6f"]
 
 [sub_resource type="RectangleShape2D" id="Yellow"]
-size = Vector2(5000, 1000)
+size = Vector2(6900, 1500)
 
 [sub_resource type="RectangleShape2D" id="Red"]
-size = Vector2(4000, 300)
+size = Vector2(6900, 500)
 
 [node name="FallRegion_F_a1" type="Node2D"]
 script = ExtResource("1_wey1b")
@@ -40,5 +40,5 @@ position = Vector2(-1000, 300)
 position = Vector2(1000, 300)
 
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
-vertices = PackedVector2Array(2000, 150, -2000, 150, -2000, -150, 2000, -150)
+vertices = PackedVector2Array(3450, 250, -3450, 250, -3450, -250, 3450, -250)
 affect_navigation_mesh = true

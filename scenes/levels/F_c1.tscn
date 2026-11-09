@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://baq1ujdk2e22i"]
+[gd_scene load_steps=29 format=3 uid="uid://baq1ujdk2e22i"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_h2apx"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_s4dnd"]
@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" uid="uid://da4f3288xy4h5" path="res://scenes/environments/Pipe180.tscn" id="9_8f36w"]
 [ext_resource type="Texture2D" uid="uid://dpcp3yjik2nx0" path="res://assets/environments/scene_6_hotel/右墙壁纯色.png" id="13_7xcxc"]
 [ext_resource type="PackedScene" uid="uid://v6k338a22m4w" path="res://scenes/environments/FallRegion_F_c1.tscn" id="13_t41q2"]
+[ext_resource type="PackedScene" uid="uid://bkhpog7n64g7e" path="res://scenes/environments/BattleExitGate.tscn" id="overload_gate"]
+[ext_resource type="Script" uid="uid://de45v6bgrx2yc" path="res://scripts/managers/OverloadRoom.cs" id="overload_room"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(7030, 4070)
@@ -94,6 +96,21 @@ z_index = 10
 position = Vector2(50, 100)
 shape = SubResource("RectangleShape2D_5prnb")
 debug_color = Color(0, 1, 0, 0.41960785)
+
+[node name="OverloadRoom" type="Node2D" parent="." groups=["overload_room"]]
+script = ExtResource("overload_room")
+
+[node name="SweepLeft" type="Marker2D" parent="OverloadRoom"]
+position = Vector2(-3000, 0)
+
+[node name="LeftGate" parent="OverloadRoom" instance=ExtResource("overload_gate")]
+position = Vector2(-3413, 100)
+
+[node name="SweepRight" type="Marker2D" parent="OverloadRoom"]
+position = Vector2(2900, 0)
+
+[node name="FallRegion_F_c1" parent="." instance=ExtResource("13_t41q2")]
+position = Vector2(-108, 975)
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
 z_index = 10
@@ -220,6 +237,3 @@ shape = SubResource("RectangleShape2D_ao0lv")
 visible = false
 position = Vector2(1334, 710)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
-
-[node name="FallRegion_F_c1" parent="." instance=ExtResource("13_t41q2")]
-position = Vector2(-108, 975)

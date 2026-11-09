@@ -10,23 +10,23 @@
 
 [sub_resource type="Resource" id="Resource_3a2co"]
 script = ExtResource("1_vhody")
+SpawnTiming = 2
 Scene = ExtResource("2_vhody")
 EffectOffset = Vector2(275, 0)
-SpawnTiming = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_hgras"]
 script = ExtResource("1_vhody")
+SpawnTiming = 2
 Scene = ExtResource("3_7ni5r")
 EffectOffset = Vector2(275, 0)
-SpawnTiming = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_p66tr"]
 script = ExtResource("1_vhody")
+SpawnTiming = 2
 Scene = ExtResource("4_3uwal")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "ShakeStrength": 10.0
 })

@@ -5,12 +5,12 @@
 [ext_resource type="Texture2D" uid="uid://cofcrcna6lhif" path="res://assets/environments/scene_6_hotel/移动平台地板.png" id="2_svn7p"]
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_svn7p"]
-points = PackedVector2Array(-515, -240, 515, -240, 625, -160, 625, 160, 515, 260, -525, 260, -625, 160, -627, -150)
+points = PackedVector2Array(-510, -255, 510, -255, 625, -170, 625, 165, 515, 260, -525, 260, -625, 165, -625, -170)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_svn7p"]
-vertices = PackedVector2Array(592.10156, -213.15625, 592.89844, 77.75, 500.17188, 165.88281, -505.1172, 162.11719, -587.25, 74.171875, -589.6719, -216.11719, -489.5078, -294.02344, 484.14063, -294.96875)
+vertices = PackedVector2Array(593.8906, -217.8125, 593.09375, 92.13281, 503.34375, 165.96875, -506.5703, 165.03125, -586.90625, 87.203125, -586.10156, -223.28125, -487.89063, -295, 485.4297, -295)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-517, -374, 511, -375, 672, -253, 673, 112, 532, 246, -540, 242, -667, 106, -670, -255)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-514, -375, 511, -375, 674, -259, 673, 130, 532, 246, -539, 245, -667, 121, -666, -264)])
 agent_radius = 80.0
 
 [node name="FallMovingPlatformA" type="Node2D"]

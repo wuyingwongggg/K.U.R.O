@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://duryvwia2gyyc"]
+[gd_scene load_steps=51 format=3 uid="uid://duryvwia2gyyc"]
 
 [ext_resource type="Script" uid="uid://ccqcbk4merfnt" path="res://scripts/actors/enemies/EnemyF1RogueAICannon.cs" id="1_3cfw7"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_3eyky"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://bg35anmrs8jy5" path="res://scenes/actors/etc/WarmingB.tscn" id="18_by072"]
 [ext_resource type="Script" uid="uid://cihawgv4js52w" path="res://scripts/actors/enemies/states/EnemyFrozenState.cs" id="18_dvfub"]
 [ext_resource type="Script" uid="uid://wdd3ghxdq7f6" path="res://scripts/actors/enemies/states/EnemyStationaryTurretState.cs" id="19_80jd2"]
+[ext_resource type="Texture2D" uid="uid://dp4w7kyipubes" path="res://assets/effect/WarmingA/warning_005.png" id="21_cad0h"]
 [ext_resource type="Script" uid="uid://cbmvuppulotha" path="res://scripts/actors/enemies/states/EnemyDyingState.cs" id="21_dym3s"]
 [ext_resource type="PackedScene" uid="uid://d0tu3fq7uceqx" path="res://scenes/actors/etc/BoomRogueAI.tscn" id="22_r52tf"]
 [ext_resource type="Script" uid="uid://bta6sixb7kee4" path="res://scripts/actors/enemies/states/EnemyDeadState.cs" id="22_vw8f5"]
@@ -34,9 +35,8 @@
 [ext_resource type="PackedScene" uid="uid://bwdwpiu2brmv6" path="res://scenes/environments/jar_mozhua_assist.tscn" id="36_jars"]
 [ext_resource type="Script" uid="uid://baq6luqv2ijwk" path="res://scripts/actors/enemies/EnemyEmpowerController.cs" id="37_empower"]
 [ext_resource type="Script" uid="uid://ul0132m6aehw" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretSimpleMeleeAttack.cs" id="38_turretsimple"]
+[ext_resource type="Script" uid="uid://dnnul48y41yl2" path="res://scripts/core/effects/StateEffectEntry.cs" id="99_state_fx"]
 [ext_resource type="Script" uid="uid://bp7k64w3rc75b" path="res://scripts/controllers/ShadowGroundController.cs" id="shadow_ground"]
-
-[ext_resource type="Script" path="res://scripts/core/effects/StateEffectEntry.cs" id="99_state_fx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
 shader = ExtResource("4_by072")
@@ -69,12 +69,12 @@ height = 300.0
 
 [sub_resource type="Resource" id="Resource_v1b7h"]
 script = ExtResource("15_koqry")
+SpawnTiming = 0
+LifecycleBinding = 1
 Scene = ExtResource("15_x1ryc")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 0
 SpawnMarkerPaths = [NodePath("../../../../SpineSprite/SpineBoneNode2/Marker2D")]
 OffsetFlip = 2
-LifecycleBinding = 1
 PropertyOverrides = Dictionary[String, Variant]({
 "BaseDirection": Vector2(1, 0),
 "Damage": 10,
@@ -93,20 +93,20 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_shot"]
 script = ExtResource("15_koqry")
+SpawnTiming = 1
 Scene = ExtResource("30_orbshot")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 1
 SpawnMarkerPaths = [NodePath("../../../../SpineSprite/SpineBoneNode2/Marker2D")]
 OffsetFlip = 2
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_r52tf"]
 script = ExtResource("15_koqry")
+SpawnTiming = 0
+LifecycleBinding = 2
 Scene = ExtResource("18_by072")
 EffectOffset = Vector2(nan, nan)
-SpawnTiming = 0
 SpawnMarkerPaths = [NodePath("../../../../SpineSprite/SpineBoneNode/Marker2D2")]
-LifecycleBinding = 2
 PropertyOverrides = Dictionary[String, Variant]({
 "Duration": 0.0,
 "z_as_relative": false,
@@ -116,13 +116,13 @@ metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_jar_assist"]
 script = ExtResource("15_koqry")
-Scene = ExtResource("36_jars")
 UniqueGroup = "Jar_mozhua_assist"
-EffectOffset = Vector2(nan, nan)
 SpawnTiming = 1
+BlockedByFxGroup = "Jar_mozhua_assist"
+Scene = ExtResource("36_jars")
+EffectOffset = Vector2(nan, nan)
 SpawnMarkerPaths = [NodePath("../../../World/Test_begin/JarSpawnPoint1"), NodePath("../../../World/Test_begin/JarSpawnPoint2"), NodePath("../../../World/Test_begin/JarSpawnPoint3"), NodePath("../../../World/Test_begin/JarSpawnPoint4")]
 SpawnMarkerSelect = 1
-BlockedByFxGroup = "Jar_mozhua_assist"
 metadata/_custom_type_script = "uid://fd5076f50ca0"
 
 [sub_resource type="Resource" id="Resource_boom_dying"]
@@ -428,6 +428,7 @@ metadata/attack_weight = 50.0
 [node name="JarAssistAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("34_jarattack")
 StunSeconds = 5.0
+IndicatorIcon = ExtResource("21_cad0h")
 AttackName = "JarAssistAttack"
 WarmupDuration = 0.5
 ActiveDuration = 0.2
