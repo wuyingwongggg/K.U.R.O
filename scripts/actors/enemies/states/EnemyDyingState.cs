@@ -1,5 +1,6 @@
 using Godot;
 using Kuros.Core.Effects;
+using Kuros.Systems.Cutscene;
 
 namespace Kuros.Actors.Enemies.States
 {
@@ -16,6 +17,9 @@ namespace Kuros.Actors.Enemies.States
         /// （RogueAI 控制器为循环播放，其余控制器播一次并保持末帧）。</summary>
         [Export(PropertyHint.Range, "0,10,0.01")] public float DeathDuration = 0.8f;
         [Export] public bool FreezeMotion = true;
+
+        /// <summary>进入 Dying 时启用同一世界中指定组的过场触发器。留空不启用。</summary>
+        [Export] public StringName CutsceneTriggerGroup { get; set; } = new();
 
         /// <summary>状态特效：每条独立选择进入状态立即生成，或 death 动画 effect 事件生成。
         /// 事件次数限制仅作用于动画事件条目；进入状态条目每次 Enter 生成一次。</summary>
@@ -55,6 +59,12 @@ namespace Kuros.Actors.Enemies.States
 
             if (Enemy.GetNodeOrNull<EnemyFallController>("FallController")?.HasCorpseFallen != true)
                 SpawnEffects(StateEffectTiming.OnStateEnter);
+
+            if (!CutsceneTriggerGroup.IsEmpty)
+                foreach (Node node in GetTree().GetNodesInGroup(CutsceneTriggerGroup))
+                    if (node is CutsceneTrigger trigger && !trigger.IsQueuedForDeletion()
+                        && trigger.GetWorld2D() == Enemy.GetWorld2D())
+                        trigger.Arm();
         }
 
         public override void Exit()

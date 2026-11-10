@@ -22,11 +22,16 @@ namespace Kuros.Actors.Enemies.Attacks
 		[Export(PropertyHint.Range, "0.5,20,0.1")] public float StunSeconds { get; set; } = 7.5f;
 		[Export] public bool EnableDebugLogs { get; set; } = false;
 		[Export] public Texture2D? IndicatorIcon { get; set; }
+		/// <summary>协助追踪期间播放的循环特效，由本攻击清除。</summary>
+		[Export] public PackedScene? AssistEffectScene { get; set; }
+		/// <summary>相对炮台根节点的挂点。留空时挂在炮台根节点。</summary>
+		[Export] public NodePath AssistEffectAnchorPath { get; set; } = new("");
 		/// <summary>罐子根节点到地面点的世界偏移；采样验证地面点，生成原点为地面点减去此偏移。</summary>
 		[Export] public Vector2 SpawnGroundOffset { get; set; }
 
 		private DestructibleStageController? _activeJar;
 		private CanvasLayer? _jarIndicator;
+		private Node2D? _assistEffect;
 		private float _remaining;
 		private bool _tracking;
 		private bool _resolved;
@@ -144,6 +149,7 @@ namespace Kuros.Actors.Enemies.Attacks
 				Icon = IndicatorIcon
 			});
 			AddChild(_jarIndicator);
+			SpawnAssistEffect();
 
 			if (!_deathSubscribed)
 			{
@@ -153,6 +159,30 @@ namespace Kuros.Actors.Enemies.Attacks
 
 			if (EnableDebugLogs)
 				GD.Print($"[{AttackName}] 罐子已生成，开始计数 {_remaining:F1}s");
+		}
+
+		private void SpawnAssistEffect()
+		{
+			if (AssistEffectScene == null || Enemy == null) return;
+			var anchor = AssistEffectAnchorPath.IsEmpty
+				? Enemy
+				: Enemy.GetNodeOrNull<Node2D>(AssistEffectAnchorPath);
+			if (anchor == null)
+			{
+				GD.PushWarning($"[{AttackName}] 协助特效挂点不存在：{AssistEffectAnchorPath}");
+				return;
+			}
+
+			var instance = AssistEffectScene.Instantiate();
+			if (instance is not Node2D visual)
+			{
+				instance.Free();
+				GD.PushWarning($"[{AttackName}] AssistEffectScene 的根节点必须是 Node2D");
+				return;
+			}
+
+			_assistEffect = visual;
+			anchor.AddChild(visual);
 		}
 
 		private void OnJarDeathFinalized(GameActor actor)
@@ -225,6 +255,12 @@ namespace Kuros.Actors.Enemies.Attacks
 
 		private void StopTracking()
 		{
+			if (_assistEffect != null && IsInstanceValid(_assistEffect))
+			{
+				_assistEffect.Hide();
+				_assistEffect.QueueFree();
+			}
+			_assistEffect = null;
 			if (_jarIndicator != null && IsInstanceValid(_jarIndicator))
 			{
 				_jarIndicator.Hide();

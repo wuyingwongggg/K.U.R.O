@@ -11,5 +11,4 @@ SpawnLength = 2000.0
 SpawnWidth = 4000.0
 MaxZoneRadius = 240.0
 ZoneScene = ExtResource("2_zone")
-ShowSpawnDebug = true
 SpawnDebugDuration = 3.0

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=3 format=3 uid="uid://byls0p6ccd0f8"]
+
+[ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_7jsum"]
+[ext_resource type="Script" uid="uid://cgnajq1ykl2mn" path="res://scripts/systems/cutscene/CutsceneSequence.cs" id="1_sequence"]
+
+[resource]
+script = ExtResource("1_sequence")
+SequenceId = "F_b1_2_intro"
+Steps = Array[ExtResource("1_7jsum")]([null])
+DisablePlayerInput = false
+HidePlayer = false

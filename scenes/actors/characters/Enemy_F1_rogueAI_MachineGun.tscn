@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://cw42j1o501x83"]
+[gd_scene load_steps=50 format=3 uid="uid://cw42j1o501x83"]
 
 [ext_resource type="Script" uid="uid://cw8xmc5jou66u" path="res://scripts/actors/enemies/EnemyF1RogueAIMachineGun.cs" id="1_1mbwy"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_vkvw7"]
@@ -35,6 +35,7 @@
 [ext_resource type="PackedScene" uid="uid://d38pex7crmtju" path="res://scenes/actors/etc/HitB.tscn" id="37_hitb"]
 [ext_resource type="Script" uid="uid://ul0132m6aehw" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretSimpleMeleeAttack.cs" id="38_turretsimple"]
 [ext_resource type="Script" uid="uid://dnnul48y41yl2" path="res://scripts/core/effects/StateEffectEntry.cs" id="99_state_fx"]
+[ext_resource type="PackedScene" uid="uid://dyk2ejmi1nfyh" path="res://resources/effects/JarAssistChargingHud.tscn" id="jar_assist_fx"]
 [ext_resource type="Script" uid="uid://bp7k64w3rc75b" path="res://scripts/controllers/ShadowGroundController.cs" id="shadow_ground"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
@@ -43,10 +44,10 @@ shader_parameter/softness = 0.5
 shader_parameter/alpha = 0.4
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_controller_detect"]
-radius = 6000.0
+radius = 10000.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_attack_detect"]
-radius = 6000.0
+radius = 10000.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
 size = Vector2(6000, 2000)
@@ -251,7 +252,6 @@ monitorable = false
 shape = SubResource("CircleShape2D_controller_detect")
 
 [node name="AttackDetectionArea" type="Area2D" parent="Sprite2D"]
-visible = false
 collision_layer = 0
 collision_mask = 4
 monitorable = false
@@ -340,7 +340,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 6
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_v1b7h")])
-metadata/attack_weight = 30.0
+metadata/attack_weight = 40.0
 
 [node name="MeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("29_melee")
@@ -359,7 +359,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 30
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_fda0u")])
-metadata/attack_weight = 50.0
+metadata/attack_weight = 55.0
 
 [node name="SimpleMeleeAttackPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("38_turretsimple")
@@ -375,7 +375,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 6
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_v1b7h")])
-metadata/attack_weight = 30.0
+metadata/attack_weight = 40.0
 
 [node name="MeleeAttackPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("29_melee")
@@ -395,12 +395,14 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 30
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_fda0u")])
-metadata/attack_weight = 50.0
+metadata/attack_weight = 55.0
 
 [node name="JarAssistAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("34_jarattack")
 StunSeconds = 5.0
 IndicatorIcon = ExtResource("20_rw6o8")
+AssistEffectScene = ExtResource("jar_assist_fx")
+AssistEffectAnchorPath = NodePath("VisualEffectPosition/VisualEffectMarker2D")
 AttackName = "JarAssistAttack"
 WarmupDuration = 0.5
 ActiveDuration = 0.2
@@ -410,7 +412,7 @@ DamageMultiplier = 0.0
 MaxAllowedAngleToPlayer = 180.0
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 Effects = Array[ExtResource("15_n2jad")]([SubResource("Resource_jar_assist")])
-metadata/attack_weight = 20.0
+metadata/attack_weight = 5.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("32_turret_hit")
@@ -454,7 +456,7 @@ script = ExtResource("27_railchase")
 [node name="RailKeepDistanceBehavior" type="Node" parent="."]
 script = ExtResource("28_keepdist")
 Active = true
-KeepDistance = 3000.0
+KeepDistance = 2000.0
 Smoothing = 1.0
 
 [node name="FacingController" type="Node" parent="."]

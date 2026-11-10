@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://duryvwia2gyyc"]
+[gd_scene load_steps=52 format=3 uid="uid://duryvwia2gyyc"]
 
 [ext_resource type="Script" uid="uid://ccqcbk4merfnt" path="res://scripts/actors/enemies/EnemyF1RogueAICannon.cs" id="1_3cfw7"]
 [ext_resource type="Resource" uid="uid://05yoqk7rf6ax" path="res://resources/behavior/EnemyBehaviorConfig.tres" id="2_3eyky"]
@@ -36,6 +36,7 @@
 [ext_resource type="Script" uid="uid://baq6luqv2ijwk" path="res://scripts/actors/enemies/EnemyEmpowerController.cs" id="37_empower"]
 [ext_resource type="Script" uid="uid://ul0132m6aehw" path="res://scripts/actors/enemies/attacks/EnemyF1RogueAITurretSimpleMeleeAttack.cs" id="38_turretsimple"]
 [ext_resource type="Script" uid="uid://dnnul48y41yl2" path="res://scripts/core/effects/StateEffectEntry.cs" id="99_state_fx"]
+[ext_resource type="PackedScene" uid="uid://dyk2ejmi1nfyh" path="res://resources/effects/JarAssistChargingHud.tscn" id="jar_assist_fx"]
 [ext_resource type="Script" uid="uid://bp7k64w3rc75b" path="res://scripts/controllers/ShadowGroundController.cs" id="shadow_ground"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_shadow"]
@@ -369,7 +370,7 @@ TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AllowMultipleAnimationHits = true
 GrantedImmunities = 6
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_v1b7h"), SubResource("Resource_shot")])
-metadata/attack_weight = 30.0
+metadata/attack_weight = 40.0
 
 [node name="MeleeAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("31_melee")
@@ -388,7 +389,7 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_r52tf")])
-metadata/attack_weight = 50.0
+metadata/attack_weight = 55.0
 
 [node name="SimpleMeleeAttackPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("38_turretsimple")
@@ -403,7 +404,7 @@ TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 AllowMultipleAnimationHits = true
 GrantedImmunities = 6
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_v1b7h"), SubResource("Resource_shot")])
-metadata/attack_weight = 30.0
+metadata/attack_weight = 40.0
 
 [node name="MeleeAttackPro" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("31_melee")
@@ -423,12 +424,14 @@ RequireAnimationHitTrigger = true
 AllowMultipleAnimationHits = true
 GrantedImmunities = 24
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_r52tf")])
-metadata/attack_weight = 50.0
+metadata/attack_weight = 55.0
 
 [node name="JarAssistAttack" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("34_jarattack")
 StunSeconds = 5.0
 IndicatorIcon = ExtResource("21_cad0h")
+AssistEffectScene = ExtResource("jar_assist_fx")
+AssistEffectAnchorPath = NodePath("VisualEffectPosition/VisualEffectMarker2D")
 AttackName = "JarAssistAttack"
 WarmupDuration = 0.5
 ActiveDuration = 0.2
@@ -438,7 +441,7 @@ DamageMultiplier = 0.0
 MaxAllowedAngleToPlayer = 180.0
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 Effects = Array[ExtResource("15_koqry")]([SubResource("Resource_jar_assist")])
-metadata/attack_weight = 20.0
+metadata/attack_weight = 5.0
 
 [node name="Hit" type="Node" parent="StateMachine"]
 script = ExtResource("17_4c6ck")

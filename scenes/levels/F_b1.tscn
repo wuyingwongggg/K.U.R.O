@@ -1,8 +1,9 @@
-[gd_scene load_steps=28 format=3 uid="uid://b4c4bopss6lxo"]
+[gd_scene load_steps=29 format=3 uid="uid://b4c4bopss6lxo"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_6wtu5"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_vwccj"]
 [ext_resource type="Resource" uid="uid://dxjeaphfp7yhi" path="res://resources/cutscene/F_b1_intro.tres" id="3_vwccj"]
+[ext_resource type="Resource" path="res://resources/cutscene/F_b1_2_intro.tres" id="4_part2_intro"]
 [ext_resource type="Texture2D" uid="uid://dhpemq2d2f7u2" path="res://assets/environments/scene_6_hotel/地板.png" id="6_wn4ca"]
 [ext_resource type="PackedScene" uid="uid://bqtr5w7g5wpmq" path="res://scenes/environments/PipeLeft.tscn" id="7_6wtu5"]
 [ext_resource type="Texture2D" uid="uid://vvb74vgvevxu" path="res://assets/environments/scene_6_hotel/地板厚度.png" id="7_vqtu6"]
@@ -19,7 +20,7 @@
 size = Vector2(6770, 4070)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5prnb"]
-size = Vector2(6770, 4070)
+size = Vector2(2000, 250)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1d5w0"]
 size = Vector2(5000, 2000)
@@ -173,6 +174,19 @@ Sequence = ExtResource("3_vwccj")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 shape = SubResource("RectangleShape2D_1d5w0")
+debug_color = Color(1, 0, 1, 0.41960785)
+
+[node name="CutsceneTrigger2" type="Area2D" parent="." groups=["f_b1_part2_defeated_cutscene"]]
+z_index = 10
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("2_vwccj")
+Sequence = ExtResource("4_part2_intro")
+StartsDisarmed = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger2"]
+position = Vector2(0, 850)
+shape = SubResource("RectangleShape2D_5prnb")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="Environments" type="Node2D" parent="."]

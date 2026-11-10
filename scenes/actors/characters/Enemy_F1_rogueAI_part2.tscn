@@ -545,6 +545,7 @@ script = ExtResource("15_frozen")
 [node name="Dying" type="Node" parent="StateMachine"]
 script = ExtResource("16_dying")
 DeathDuration = 0.0
+CutsceneTriggerGroup = &"f_b1_part2_defeated_cutscene"
 Effects = Array[ExtResource("99_state_fx")]([SubResource("Resource_gflp5")])
 MaxEffectTriggers = 1
 
