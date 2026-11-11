@@ -35,7 +35,7 @@ shader = ExtResource("7_6k5yh")
 shader_parameter/fade_left = 0.0
 shader_parameter/fade_right = 0.0
 shader_parameter/fade_top = 0.0
-shader_parameter/fade_bottom = 0.499999988824
+shader_parameter/fade_bottom = 0.2999999932944
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vwccj"]
 size = Vector2(4000, 500)
@@ -337,7 +337,7 @@ offset = Vector2(23, 0)
 z_index = 4
 material = SubResource("ShaderMaterial_ej6he")
 offset_left = -3988.0
-offset_top = -5500.0
+offset_top = -7500.0
 offset_right = 4012.0
 offset_bottom = -500.0
 color = Color(0, 0, 0, 1)

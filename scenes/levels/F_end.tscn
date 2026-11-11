@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://v7px27xvrgws" path="res://assets/environments/scene_6_hotel/走廊栏杆下.png" id="23_w6ld5"]
 [ext_resource type="PackedScene" uid="uid://c1acqfacsuky6" path="res://scenes/objects/Animation_rogueAI.tscn" id="29_cwvqo"]
 [ext_resource type="PackedScene" uid="uid://dw1xkbpfrwstb" path="res://scenes/environments/lifting_platform.tscn" id="30_oxbgf"]
-[ext_resource type="Resource" path="res://resources/cutscene/F_end_intro.tres" id="end_intro"]
+[ext_resource type="Resource" uid="uid://dxfvo573f68lx" path="res://resources/cutscene/F_end_intro.tres" id="end_intro"]
 
 [sub_resource type="Resource" id="Resource_rqd1e"]
 script = ExtResource("2_3qogf")
@@ -381,7 +381,7 @@ position = Vector2(1297, 31)
 navigation_polygon = SubResource("NavigationPolygon_ka7vx")
 
 [node name="Animation_rogueAI" parent="." instance=ExtResource("29_cwvqo")]
-position = Vector2(-700, -800)
+position = Vector2(-700, -950)
 
 [node name="LiftingPlatform" parent="." instance=ExtResource("30_oxbgf")]
 modulate = Color(0.78431374, 0.78431374, 0.78431374, 1)
