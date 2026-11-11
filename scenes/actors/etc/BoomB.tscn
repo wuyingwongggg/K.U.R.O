@@ -105,7 +105,6 @@ sprite_frames = SubResource("SpriteFrames_rnm45")
 autoplay = "default"
 script = ExtResource("21_4jlpf")
 SpawnOnDestroyEntries = Array[ExtResource("fx_config")]([SubResource("Resource_boom_traces")])
-ScaleSpawnWithSelf = true
 SpawnDelay = 0.2
 
 [node name="GroundObjectController" type="Node" parent="."]

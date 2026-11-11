@@ -89,7 +89,7 @@ shader_parameter/highlight_speed = 2.0
 shader_parameter/highlight_intensity = 1.2
 shader_parameter/highlight_interval = 2.0
 shader_parameter/brightness = 1.0
-shader_parameter/alpha_factor = 1.0
+shader_parameter/alpha_factor = 0.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_y57o0"]
 animations = [{
@@ -1041,9 +1041,34 @@ tracks/52/keys = {
 "update": 0,
 "values": [1.0]
 }
+tracks/53/type = "value"
+tracks/53/imported = false
+tracks/53/enabled = true
+tracks/53/path = NodePath(".:modulate")
+tracks/53/interp = 1
+tracks/53/loop_wrap = true
+tracks/53/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/54/type = "value"
+tracks/54/imported = false
+tracks/54/enabled = true
+tracks/54/path = NodePath("CollisionShape2D:disabled")
+tracks/54/interp = 1
+tracks/54/loop_wrap = true
+tracks/54/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 
 [sub_resource type="Animation" id="Animation_o0pir"]
 resource_name = "Jar_broken"
+length = 5.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -1491,6 +1516,30 @@ tracks/37/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
 "values": [10.0, 1.0]
+}
+tracks/38/type = "value"
+tracks/38/imported = false
+tracks/38/enabled = true
+tracks/38/path = NodePath(".:modulate")
+tracks/38/interp = 1
+tracks/38/loop_wrap = true
+tracks/38/keys = {
+"times": PackedFloat32Array(0, 3, 5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/39/type = "value"
+tracks/39/imported = false
+tracks/39/enabled = true
+tracks/39/path = NodePath("CollisionShape2D:disabled")
+tracks/39/interp = 1
+tracks/39/loop_wrap = true
+tracks/39/keys = {
+"times": PackedFloat32Array(0, 5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
 }
 
 [sub_resource type="Animation" id="Animation_tmki0"]
@@ -2511,7 +2560,6 @@ DeclaredFaction = 1
 MaxHealth = 210
 
 [node name="shadow" type="Sprite2D" parent="."]
-visible = false
 z_index = 1
 z_as_relative = false
 material = SubResource("ShaderMaterial_oijea")
@@ -2594,8 +2642,10 @@ position = Vector2(350, 200)
 texture = ExtResource("18_x0wnb")
 
 [node name="jar_spawn" type="AnimatedSprite2D" parent="."]
+visible = false
 z_index = 2
 sprite_frames = SubResource("SpriteFrames_81nyd")
+frame = 23
 offset = Vector2(0, -385)
 
 [node name="Shell" type="Node2D" parent="."]
@@ -2759,11 +2809,9 @@ visibility_rect = Rect2(-300, -300, 600, 600)
 process_material = SubResource("ParticleProcessMaterial_btdun")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 z_index = 3
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_btdun")
-disabled = true
 
 [node name="HitArea" type="Area2D" parent="."]
 visible = false

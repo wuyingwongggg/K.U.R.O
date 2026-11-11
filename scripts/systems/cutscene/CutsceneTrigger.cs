@@ -14,7 +14,7 @@ namespace Kuros.Systems.Cutscene
     {
         [Export] public CutsceneSequence? Sequence { get; set; }
         public enum ExecutionModeEnum { ExclusiveCutscene, BackgroundSteps }
-        /// <summary>后台仅执行生成/等待步骤，不接管相机、UI、输入或共享跳过状态。</summary>
+        /// <summary>后台步骤独立执行，不接管相机、UI 或输入。</summary>
         [Export] public ExecutionModeEnum ExecutionMode { get; set; } = ExecutionModeEnum.ExclusiveCutscene;
 
         /// <summary>只触发一次。</summary>
@@ -98,7 +98,8 @@ namespace Kuros.Systems.Cutscene
             if (ExecutionMode == ExecutionModeEnum.BackgroundSteps)
             {
                 foreach (var step in Sequence.Steps)
-                    if (step != null && step is not EffectGroupSpawnStep && step is not EffectSpawnStep && step is not WaitStep)
+                    if (step != null && step is not EffectGroupSpawnStep && step is not EffectSpawnStep
+                        && step is not WaitStep && step is not PlayAnimationStep)
                     {
                         GD.PushWarning($"[Cutscene] {Sequence.SequenceId}: 后台模式不支持 {step.GetType().Name}，未启动。");
                         return;

@@ -56,11 +56,13 @@ Difficulty = ExtResource("18_diff")
 y_sort_enabled = true
 
 [node name="MainCharacter" parent="World" instance=ExtResource("2_s0pgc")]
+AttackDamage = 1000.0
+MaxHealth = 12000
 
 [node name="Camera2D" type="Camera2D" parent="World" node_paths=PackedStringArray("Target")]
 scale = Vector2(0.32999998, 0.32999998)
 ignore_rotation = false
-zoom = Vector2(0.35, 0.35)
+zoom = Vector2(0.084, 0.084)
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
 drag_horizontal_enabled = true

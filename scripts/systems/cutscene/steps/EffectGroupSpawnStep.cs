@@ -151,6 +151,15 @@ namespace Kuros.Systems.Cutscene
                     return;
                 }
 
+                var parent = config.SpawnParentPath.IsEmpty
+                    ? ctx.Manager.GetParent() ?? ctx.Tree.Root
+                    : ctx.Manager.GetNodeOrNull<Node2D>(config.SpawnParentPath);
+                if (parent == null || parent.IsQueuedForDeletion())
+                {
+                    GD.PushWarning($"[Cutscene] EffectGroupSpawnStep: 生成父节点 '{config.SpawnParentPath}' 不可用");
+                    return;
+                }
+
                 var effect = config.EffectScene.Instantiate();
                 if (effect is not Node2D effectNode2D)
                 {
@@ -169,8 +178,6 @@ namespace Kuros.Systems.Cutscene
                 if (!string.IsNullOrEmpty(config.GroupToAdd))
                     effectNode2D.AddToGroup(config.GroupToAdd);
 
-                // 添加到场景树（基准 = 管理器所在节点的父级）
-                var parent = ctx.Manager.GetParent() ?? ctx.Tree.Root;
                 parent.AddChild(effectNode2D);
                 effectNode2D.GlobalPosition = spawnPos;
 

@@ -377,7 +377,6 @@ sprite_frames = SubResource("SpriteFrames_rnm45")
 autoplay = "default"
 script = ExtResource("21_uo0qt")
 SpawnOnDestroyEntries = Array[ExtResource("fx_config")]([SubResource("Resource_boom_traces")])
-ScaleSpawnWithSelf = true
 SpawnDelay = 0.1
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

@@ -1,15 +1,17 @@
-[gd_scene load_steps=29 format=3 uid="uid://b4c4bopss6lxo"]
+[gd_scene load_steps=34 format=3 uid="uid://b4c4bopss6lxo"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_6wtu5"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_vwccj"]
 [ext_resource type="Resource" uid="uid://dxjeaphfp7yhi" path="res://resources/cutscene/F_b1_intro.tres" id="3_vwccj"]
-[ext_resource type="Resource" path="res://resources/cutscene/F_b1_2_intro.tres" id="4_part2_intro"]
+[ext_resource type="Resource" uid="uid://byls0p6ccd0f8" path="res://resources/cutscene/F_b1_2_intro.tres" id="4_part2_intro"]
 [ext_resource type="Texture2D" uid="uid://dhpemq2d2f7u2" path="res://assets/environments/scene_6_hotel/地板.png" id="6_wn4ca"]
+[ext_resource type="Shader" uid="uid://sy1wcbveay3p" path="res://shaders/materials/rect_edge_fade.gdshader" id="7_6k5yh"]
 [ext_resource type="PackedScene" uid="uid://bqtr5w7g5wpmq" path="res://scenes/environments/PipeLeft.tscn" id="7_6wtu5"]
 [ext_resource type="Texture2D" uid="uid://vvb74vgvevxu" path="res://assets/environments/scene_6_hotel/地板厚度.png" id="7_vqtu6"]
 [ext_resource type="Texture2D" uid="uid://dbn8b1atk6ngd" path="res://assets/environments/scene_6_hotel/背景墙.png" id="8_6k5yh"]
 [ext_resource type="PackedScene" uid="uid://da4f3288xy4h5" path="res://scenes/environments/Pipe180.tscn" id="8_rw3xf"]
 [ext_resource type="PackedScene" uid="uid://dt851ky7kfg2m" path="res://scenes/environments/PipeRight.tscn" id="8_vwccj"]
+[ext_resource type="Texture2D" uid="uid://bf7su4wdm2f8b" path="res://assets/environments/scene_6_hotel/背景墙3.png" id="8_wn4ca"]
 [ext_resource type="PackedScene" uid="uid://dw1xkbpfrwstb" path="res://scenes/environments/lifting_platform.tscn" id="9_ej6he"]
 [ext_resource type="Texture2D" uid="uid://kohvycrlmg3h" path="res://assets/environments/scene_6_hotel/地板前面遮挡升降机.png" id="10_t4ekr"]
 [ext_resource type="PackedScene" uid="uid://c1acqfacsuky6" path="res://scenes/objects/Animation_rogueAI.tscn" id="11_rxyag"]
@@ -19,11 +21,21 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mlw7"]
 size = Vector2(6770, 4070)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5prnb"]
-size = Vector2(2000, 250)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6k5yh"]
+size = Vector2(6770, 4070)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1d5w0"]
 size = Vector2(5000, 2000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ej6he"]
+size = Vector2(2000, 500)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ej6he"]
+shader = ExtResource("7_6k5yh")
+shader_parameter/fade_left = 0.0
+shader_parameter/fade_right = 0.0
+shader_parameter/fade_top = 0.0
+shader_parameter/fade_bottom = 0.499999988824
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vwccj"]
 size = Vector2(4000, 500)
@@ -88,6 +100,106 @@ tracks/2/keys = {
 "update": 1,
 "values": [3]
 }
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Environments/Floor:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-75, -295)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Environments/Wall:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -2345)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Environments/Wall:z_index")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("FloorFont:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-40, 2335)]
+}
+
+[sub_resource type="Animation" id="Animation_vqtu6"]
+resource_name = "up"
+length = 4.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Environments/Floor:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5, 4.5),
+"transitions": PackedFloat32Array(2, 1, 1),
+"update": 0,
+"values": [Vector2(-75, -295), Vector2(-75, 455), Vector2(-75, 5705)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Environments/Wall:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.5, 4.5),
+"transitions": PackedFloat32Array(2, 1, 1),
+"update": 0,
+"values": [Vector2(0, -2345), Vector2(0, -1595), Vector2(0, 3655)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Environments/Wall:z_index")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.03333334),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [1, 0]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("FloorFont:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 1.5, 4.5),
+"transitions": PackedFloat32Array(2, 1, 1),
+"update": 0,
+"values": [Vector2(-40, 2335), Vector2(-40, 3085), Vector2(-40, 8335)]
+}
 
 [sub_resource type="Animation" id="Animation_vwccj"]
 resource_name = "up_to_top_event"
@@ -108,6 +220,7 @@ tracks/0/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_u3tfy"]
 _data = {
 &"RESET": SubResource("Animation_bdnyt"),
+&"up": SubResource("Animation_vqtu6"),
 &"up_to_top_event": SubResource("Animation_vwccj")
 }
 
@@ -124,9 +237,9 @@ position = Vector2(0, 1060)
 position = Vector2(0, 1900)
 
 [node name="AreaSize" type="Area2D" parent="."]
-visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AreaSize"]
+visible = false
 z_index = 10
 position = Vector2(-100, 100)
 shape = SubResource("RectangleShape2D_1mlw7")
@@ -145,7 +258,7 @@ ZoomLevel = 0.35000000000000003
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
 position = Vector2(-100, 100)
-shape = SubResource("RectangleShape2D_5prnb")
+shape = SubResource("RectangleShape2D_6k5yh")
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="OverloadRoom" type="Node2D" parent="." groups=["overload_room"]]
@@ -186,17 +299,11 @@ StartsDisarmed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger2"]
 position = Vector2(0, 850)
-shape = SubResource("RectangleShape2D_5prnb")
+shape = SubResource("RectangleShape2D_ej6he")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="Environments" type="Node2D" parent="."]
 position = Vector2(0, 1060)
-
-[node name="Wall" type="Sprite2D" parent="Environments"]
-z_index = 1
-position = Vector2(0, -2345)
-texture = ExtResource("8_6k5yh")
-offset = Vector2(23, 0)
 
 [node name="Floor" type="Sprite2D" parent="Environments"]
 position = Vector2(-75, -295)
@@ -209,6 +316,31 @@ region_rect = Rect2(68, 0, 6886, 2725)
 z_index = -1
 position = Vector2(81, -107)
 texture = ExtResource("7_vqtu6")
+
+[node name="Wall" type="Sprite2D" parent="Environments"]
+z_index = 1
+position = Vector2(0, -2345)
+texture = ExtResource("8_6k5yh")
+offset = Vector2(23, 0)
+
+[node name="Wall" type="Sprite2D" parent="Environments/Wall"]
+position = Vector2(0, -1740)
+texture = ExtResource("8_wn4ca")
+offset = Vector2(23, 0)
+
+[node name="Wall2" type="Sprite2D" parent="Environments/Wall"]
+position = Vector2(0, -3470)
+texture = ExtResource("8_wn4ca")
+offset = Vector2(23, 0)
+
+[node name="BG" type="ColorRect" parent="Environments/Wall"]
+z_index = 4
+material = SubResource("ShaderMaterial_ej6he")
+offset_left = -3988.0
+offset_top = -5500.0
+offset_right = 4012.0
+offset_bottom = -500.0
+color = Color(0, 0, 0, 1)
 
 [node name="PipeLeft" parent="Environments" instance=ExtResource("7_6wtu5")]
 

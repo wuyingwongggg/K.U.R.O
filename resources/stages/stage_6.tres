@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="StageConfig" load_steps=6 format=3 uid="uid://beoxjmbyvy6s0"]
+[gd_resource type="Resource" script_class="StageConfig" load_steps=7 format=3 uid="uid://beoxjmbyvy6s0"]
 
 [ext_resource type="PackedScene" uid="uid://b534tt4n3wr42" path="res://scenes/levels/F_begin.tscn" id="1_p3sbr"]
 [ext_resource type="PackedScene" uid="uid://b4c4bopss6lxo" path="res://scenes/levels/F_b1.tscn" id="2_3jfy6"]
 [ext_resource type="PackedScene" uid="uid://dolgkvguevepx" path="res://scenes/levels/F_a1.tscn" id="2_501rc"]
 [ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="2_tlmiy"]
 [ext_resource type="PackedScene" uid="uid://baq1ujdk2e22i" path="res://scenes/levels/F_c1.tscn" id="3_501rc"]
+[ext_resource type="PackedScene" uid="uid://cd61p1ee0o82s" path="res://scenes/levels/F_end.tscn" id="4_f_end"]
 
 [resource]
 script = ExtResource("2_tlmiy")
@@ -13,6 +14,7 @@ DisplayName = "AI工厂"
 LevelDescription = "酒店五层最终层"
 Floor = 4
 BeginPool = Array[PackedScene]([ExtResource("1_p3sbr")])
+EndPool = Array[PackedScene]([ExtResource("4_f_end")])
 EasyMiddlePool = Array[PackedScene]([ExtResource("2_501rc")])
 EasyRoomMin = 1
 EasyRoomMax = 1

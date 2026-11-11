@@ -13,11 +13,14 @@ namespace Kuros.Systems.Cutscene
         public CutsceneSequence Sequence { get; }
         public SceneTree Tree { get; }
         private readonly Node? _owner;
+        private readonly ulong _initialSkipRevision;
         private readonly List<Task> _backgroundTasks = new();
         public bool IsBackground => _owner != null;
         public bool IsCancelled => !GodotObject.IsInstanceValid(Manager) || !Manager.IsInsideTree()
             || IsBackground && (!GodotObject.IsInstanceValid(_owner) || !_owner!.IsInsideTree() || _owner.IsQueuedForDeletion());
-        public bool IsSkipping => !IsBackground && !IsCancelled && Manager.IsSkipRequested;
+        public bool IsSkipping => !IsCancelled && (IsBackground
+            ? Manager.SkipRevision != _initialSkipRevision
+            : Manager.IsSkipRequested);
 
         public CutsceneContext(CutsceneManager manager, CutsceneSequence sequence, Node? owner = null)
         {
@@ -25,6 +28,7 @@ namespace Kuros.Systems.Cutscene
             Sequence = sequence;
             Tree = manager.GetTree();
             _owner = owner;
+            _initialSkipRevision = manager.SkipRevision;
         }
 
         internal void TrackTask(Task task) { if (IsBackground) _backgroundTasks.Add(task); }

@@ -1,25 +1,26 @@
 [gd_scene load_steps=7 format=3 uid="uid://dv6nbmv1yc02i"]
 
-[ext_resource type="Shader" uid="uid://dwi65rioev5hr" path="res://shaders/materials/pseudo_3d_card.gdshader" id="1_456kx"]
+[ext_resource type="Shader" uid="uid://33ra4ty3whq3" path="res://shaders/materials/pseudo_3d_rotate.gdshader" id="1_456kx"]
 [ext_resource type="Texture2D" uid="uid://2y5phplst13w" path="res://assets/effect/AttackEffect/traces/boom_b_crater_top_1.png" id="2_c7upr"]
 [ext_resource type="Script" uid="uid://dysumllfdydys" path="res://scripts/environments/GroundObjectController.cs" id="3_c7upr"]
 [ext_resource type="Script" uid="uid://bwpdes5olkolw" path="res://scripts/effects/BoomInkTrace.cs" id="3_x8fl3"]
 [ext_resource type="Texture2D" uid="uid://dnoia5buue83v" path="res://assets/effect/AttackEffect/traces/boom_b_crater_top_2.png" id="4_mask"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ink"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0vsp2"]
 shader = ExtResource("1_456kx")
-shader_parameter/cull_backface = true
-shader_parameter/use_front = true
-shader_parameter/fov = 45.00000209
-shader_parameter/rot_y_deg = 0.0
-shader_parameter/rot_x_deg = 30.000018524999973
-shader_parameter/inset = 0.0
+shader_parameter/isInRadians = false
+shader_parameter/xDegrees = 30.000001425
+shader_parameter/yDegrees = 0.0
+shader_parameter/zDegrees = 0.0
+shader_parameter/xRadians = 0.0
+shader_parameter/yRadians = 0.0
+shader_parameter/zRadians = 0.0
 
 [node name="Traces" type="Sprite2D"]
 z_index = 1
 z_as_relative = false
 texture_filter = 2
-material = SubResource("ShaderMaterial_ink")
+material = SubResource("ShaderMaterial_0vsp2")
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_c7upr")
 script = ExtResource("3_x8fl3")
