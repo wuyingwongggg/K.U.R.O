@@ -108,22 +108,22 @@ shader_parameter/inset = 0.0
 size = Vector2(700, 3500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ainwx"]
-size = Vector2(850, 750)
+size = Vector2(580, 215)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4duw5"]
-size = Vector2(850, 750)
+size = Vector2(580, 215)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_put05"]
-size = Vector2(500, 700)
+size = Vector2(280, 805)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7rmla"]
-size = Vector2(500, 750)
+size = Vector2(260, 750)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s4rg7"]
-size = Vector2(1112, 750)
+size = Vector2(1000, 793)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xart7"]
-size = Vector2(1114, 750)
+size = Vector2(1000, 659)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_82263"]
 size = Vector2(500, 4000)
@@ -150,9 +150,9 @@ size = Vector2(500, 4000)
 size = Vector2(8000, 500)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
-vertices = PackedVector2Array(1928, -386, 1928, 969, -2167, 969, -2167, 478, -2177, -386, -2177, 298, -3202.8203, 298, -3287, 478, -3254.3438, 324.47656, -3287, 542.1328, -3553.6563, 1114, -3697, 1114, -3697, -276, -3560.289, -276, -3297, 298, -3267.8281, 298, -3297, 240.75, -3697, -1186, -3697, -1309.8906, 2432.0469, -1280.3828, -2972, -1186, 2432.2266, -1041, 2288, -1041, 2288, -1046, -2372, -1046, -2972, -612, -2372, -612)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5), PackedInt32Array(6, 5, 3, 7, 8), PackedInt32Array(7, 9, 10, 11, 12, 13, 14), PackedInt32Array(14, 15, 8, 7), PackedInt32Array(14, 13, 16), PackedInt32Array(17, 18, 19, 20), PackedInt32Array(19, 21, 22, 23), PackedInt32Array(20, 19, 23, 24), PackedInt32Array(25, 20, 24, 26)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-4133, -1392, 2512, -1360, 2514, 1449, -4132, 1428)])
+vertices = PackedVector2Array(-3202.9688, 298, -2672, 298, -2672, 478, -3287, 478, -3254.461, 324.2578, -3287, 542.1328, -3553.6563, 1114, -3697, 1114, -3697, -276, -3560.289, -276, -3287, 298, -3267.8438, 298, -3287, 260.39063, 1928, 969, -2012, 969, -2012, -386, 1928, -386, -2672, -612, -2972, -612, -2972, -942.1797, -2672, -943.27344)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(3, 5, 6, 7, 8, 9), PackedInt32Array(10, 11, 4, 3), PackedInt32Array(10, 3, 9), PackedInt32Array(9, 12, 10), PackedInt32Array(13, 14, 15, 16), PackedInt32Array(17, 18, 19, 20)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-4133, -1018, 2518, -1042, 2514, 1449, -4132, 1428)])
 source_geometry_mode = 2
 agent_radius = 80.0
 
@@ -1522,7 +1522,7 @@ visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AreaSize"]
 z_index = 10
-position = Vector2(1245, -50)
+position = Vector2(1245, 100)
 shape = SubResource("RectangleShape2D_1mlw7")
 debug_color = Color(0.6428762, 0.52304673, 0.06685588, 0.41960785)
 
@@ -1634,7 +1634,7 @@ position = Vector2(1245, -1000)
 [node name="exit_sign" type="Sprite2D" parent="Environments"]
 z_index = -1
 position = Vector2(-2000, -1000)
-scale = Vector2(0.6, 0.55)
+scale = Vector2(0.7, 0.7)
 texture = ExtResource("9_anorx")
 script = ExtResource("24_signfollow")
 FollowSpeed = 4.0
@@ -1643,7 +1643,7 @@ MarkerBPath = NodePath("../Marker2D2")
 
 [node name="Sprite2D2" type="Sprite2D" parent="Environments/exit_sign"]
 position = Vector2(30, 40)
-scale = Vector2(3, 3)
+scale = Vector2(3.5, 3.5)
 texture = ExtResource("14_1d5w0")
 
 [node name="Sprite2D" type="SpineSprite" parent="Environments/exit_sign"]
@@ -1704,34 +1704,35 @@ shape = SubResource("RectangleShape2D_qm83g")
 debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2180, -700)
+position = Vector2(-2315, -440)
 shape = SubResource("RectangleShape2D_ainwx")
 debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-2180, 1600)
+position = Vector2(-2285.5, 1335)
 shape = SubResource("RectangleShape2D_4duw5")
 debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-1830.9999, 1013)
-rotation = 0.43633232
+position = Vector2(-1955, 1015)
+rotation = 0.43633235
+scale = Vector2(0.99999994, 0.99999994)
 shape = SubResource("RectangleShape2D_put05")
 debug_color = Color(0.99607843, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D5" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-1870, -200)
+position = Vector2(-1975, -145)
 rotation = -0.4712389
 shape = SubResource("RectangleShape2D_7rmla")
 debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D6" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-1354, -126)
+position = Vector2(-1410, -146.5)
 shape = SubResource("RectangleShape2D_s4rg7")
 debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D7" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(-1353, 964)
+position = Vector2(-1410, 919.5)
 shape = SubResource("RectangleShape2D_xart7")
 debug_color = Color(1, 0, 0, 0.21568628)
 

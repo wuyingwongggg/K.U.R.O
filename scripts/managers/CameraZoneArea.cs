@@ -30,6 +30,9 @@ namespace Kuros.Managers
         /// <summary>相机下限（世界 Y 坐标）。</summary>
         [Export] public int CameraLimitBottom { get; set; } = 1500;
 
+        /// <summary>开启时，上下镜头边界以相机区域的 Y 坐标为原点。</summary>
+        [Export] public bool UseLocalVerticalLimits { get; set; }
+
         /// <summary>进入此区域时相机的目标 Zoom（X/Y 相同）。</summary>
         [Export(PropertyHint.Range, "0.01,2.0,0.01")] public float ZoomLevel { get; set; } = 0.43f;
 
@@ -173,6 +176,7 @@ namespace Kuros.Managers
         /// </summary>
         private Rect2 ComputeWorldBounds()
         {
+            float top = CameraLimitTop + (UseLocalVerticalLimits ? GlobalPosition.Y : 0f);
             var shape = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
             if (shape?.Shape is RectangleShape2D rect)
             {
@@ -180,14 +184,14 @@ namespace Kuros.Managers
                 var worldCenter = GlobalPosition + shape.Position;
                 return new Rect2(
                     worldCenter.X - rect.Size.X / 2f,
-                    CameraLimitTop,
+                    top,
                     rect.Size.X,
                     CameraLimitBottom - CameraLimitTop
                 );
             }
 
             GameLogger.Warn(nameof(CameraZoneArea), $"[{ZoneName}] 未找到 RectangleShape2D，使用默认宽度 5000。");
-            return new Rect2(GlobalPosition.X - 2500f, CameraLimitTop, 5000f, CameraLimitBottom - CameraLimitTop);
+            return new Rect2(GlobalPosition.X - 2500f, top, 5000f, CameraLimitBottom - CameraLimitTop);
         }
     }
 }

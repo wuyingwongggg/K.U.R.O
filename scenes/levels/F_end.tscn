@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://cd61p1ee0o82s"]
+[gd_scene load_steps=37 format=3 uid="uid://cd61p1ee0o82s"]
 
 [ext_resource type="Script" uid="uid://d1ji3o13n5eda" path="res://scripts/environments/KillProgressAscendController.cs" id="1_6jipc"]
 [ext_resource type="Script" uid="uid://vf5y6hhn28rq" path="res://scripts/environments/KillProgressPhase.cs" id="2_3qogf"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://t6lil4dopg4b" path="res://assets/environments/scene_6_hotel/升降机背景培养皿.png" id="13_5mgrr"]
 [ext_resource type="Script" uid="uid://dprlx2bg0y3k5" path="res://scripts/environments/ParallaxBackground2D.cs" id="14_cmjds"]
 [ext_resource type="Texture2D" uid="uid://b6i0r8cjy5m58" path="res://assets/environments/scene_6_hotel/升降滑槽.png" id="15_8wdpm"]
+[ext_resource type="Script" uid="uid://b2ljc7aqvo6al" path="res://scripts/environments/ElevatorSceneLoader.cs" id="16_bkqsy"]
 [ext_resource type="Texture2D" uid="uid://b64luh0uw2mlb" path="res://assets/environments/scene_6_hotel/走廊.png" id="21_l1k88"]
 [ext_resource type="Texture2D" uid="uid://cipblep2h0krc" path="res://assets/environments/scene_6_hotel/走廊栏杆上.png" id="22_ipj2p"]
 [ext_resource type="Texture2D" uid="uid://v7px27xvrgws" path="res://assets/environments/scene_6_hotel/走廊栏杆下.png" id="23_w6ld5"]
@@ -30,10 +31,7 @@ metadata/_custom_type_script = "uid://vf5y6hhn28rq"
 size = Vector2(8000, 3060)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hoe1d"]
-size = Vector2(8000, 3000)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_s66up"]
-size = Vector2(6900, 3000)
+size = Vector2(7900, 3000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1d5w0"]
 size = Vector2(4500, 1700)
@@ -56,11 +54,8 @@ shader_parameter/fade_bottom = 0.0
 shader = ExtResource("8_bkqsy")
 shader_parameter/fade_left = 0.0
 shader_parameter/fade_right = 0.0
-shader_parameter/fade_top = 0.3499999921768
+shader_parameter/fade_top = 0.5999999865888
 shader_parameter/fade_bottom = 0.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_qm83g"]
-size = Vector2(700, 3500)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ainwx"]
 size = Vector2(850, 750)
@@ -79,6 +74,15 @@ size = Vector2(1000, 750)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xart7"]
 size = Vector2(1000, 750)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_12h7y"]
+size = Vector2(700, 1500)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bkqsy"]
+size = Vector2(700, 700)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gahoi"]
+size = Vector2(375.95404, 239.12387)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ka7vx"]
 vertices = PackedVector2Array(1928, -386, 1928, 969, -2167, 969, -2167, 478, -2177, -386, -2177, 298, -3202.8203, 298, -3287, 478, -3254.3438, 324.47656, -3287, 542.1328, -3553.6563, 1114, -3697, 1114, -3697, -276, -3560.289, -276, -3297, 298, -3267.8281, 298, -3297, 240.75, -3697, -1186, -3697, -1309.8906, 2432.0469, -1280.3828, -2972, -1186, 2432.2266, -1041, 2288, -1041, 2288, -1046, -2372, -1046, -2972, -612, -2372, -612)
@@ -99,7 +103,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [-4750.0]
+"values": [-3750.0]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -137,10 +141,22 @@ tracks/3/keys = {
 "update": 1,
 "values": [-1905.0]
 }
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Environments/BG:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [110.0]
+}
 
 [sub_resource type="Animation" id="Animation_12h7y"]
 resource_name = "up"
-length = 4.5
+length = 6.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -148,10 +164,10 @@ tracks/0/path = NodePath("Environments/BlackRect3:position:y")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 2.5, 4.5),
-"transitions": PackedFloat32Array(1, 0.5, 1),
+"times": PackedFloat32Array(0, 6),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [-4750.0, -1357.142857, 0.0]
+"values": [-4000.0, 4000.0]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -160,10 +176,10 @@ tracks/1/path = NodePath("Environments/BG_frame:position:y")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 2.5, 4.5),
+"times": PackedFloat32Array(0, 4, 6),
 "transitions": PackedFloat32Array(1, 0.5, 1),
 "update": 0,
-"values": [-1785.0, -356.428571, 215.0]
+"values": [-2785.0, -385.0, 215.0]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -172,10 +188,10 @@ tracks/2/path = NodePath("Environments/ElevatorGateF:position:y")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 2.5, 4.5),
+"times": PackedFloat32Array(0, 4, 6),
 "transitions": PackedFloat32Array(1, 0.5, 1),
 "update": 0,
-"values": [-1750.0, -321.428571, 250.0]
+"values": [-2750.0, -350.0, 250.0]
 }
 tracks/3/type = "value"
 tracks/3/imported = false
@@ -184,10 +200,22 @@ tracks/3/path = NodePath("Environments/Floor:position:y")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0, 2.5, 4.5),
+"times": PackedFloat32Array(0, 4, 6),
 "transitions": PackedFloat32Array(1, 0.5, 1),
 "update": 0,
-"values": [-1905.0, -476.428571, 95.0]
+"values": [-2905.0, -505.0, 95.0]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Environments/BG:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 4, 6),
+"transitions": PackedFloat32Array(1, 0.5, 1),
+"update": 0,
+"values": [110.0, 830.0, 1010.0]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_bkqsy"]
@@ -221,24 +249,12 @@ ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
+position = Vector2(50, 0)
 shape = SubResource("RectangleShape2D_hoe1d")
 debug_color = Color(0, 1, 0, 0.11764706)
 
-[node name="CameraZone2" type="Area2D" parent="."]
-visible = false
-collision_layer = 0
-collision_mask = 4
-script = ExtResource("8_m3jss")
-ZoneName = "Room_Zone_F_End_2"
-CameraLimitTop = -1600
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone2"]
-z_index = 10
-shape = SubResource("RectangleShape2D_s66up")
-disabled = true
-debug_color = Color(0, 1, 0, 0.41960785)
-
 [node name="CutsceneTrigger" type="Area2D" parent="."]
+visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
@@ -307,9 +323,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -4000.0
-offset_top = -4750.0
+offset_top = -3750.0
 offset_right = 4000.0
-offset_bottom = 1250.0
+offset_bottom = 1250.002
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
@@ -337,11 +353,6 @@ flip_h = true
 
 [node name="AirWall" type="StaticBody2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 z_index = 10
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AirWall"]
-position = Vector2(3870, 0)
-shape = SubResource("RectangleShape2D_qm83g")
-debug_color = Color(1, 0, 0, 0.21568628)
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="AirWall"]
 position = Vector2(3300, -850)
@@ -375,6 +386,22 @@ position = Vector2(2430, 870)
 shape = SubResource("RectangleShape2D_xart7")
 debug_color = Color(1, 0, 0, 0.21568628)
 
+[node name="CollisionShape2D8" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(3869, -94)
+shape = SubResource("RectangleShape2D_12h7y")
+debug_color = Color(0, 0, 0, 0.19607843)
+
+[node name="CollisionShape2D9" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(3869, 1296)
+shape = SubResource("RectangleShape2D_bkqsy")
+debug_color = Color(0, 0, 0, 0.19607843)
+
+[node name="CollisionShape2D10" type="CollisionShape2D" parent="AirWall"]
+position = Vector2(3996.1685, 653.8858)
+rotation = 0.56548667
+shape = SubResource("RectangleShape2D_gahoi")
+debug_color = Color(0, 0, 0, 0.19607843)
+
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." groups=["navigation_polygon_source_geometry_group"]]
 visible = false
 position = Vector2(1297, 31)
@@ -385,7 +412,14 @@ position = Vector2(-700, -950)
 
 [node name="LiftingPlatform" parent="." instance=ExtResource("30_oxbgf")]
 modulate = Color(0.78431374, 0.78431374, 0.78431374, 1)
-position = Vector2(-240, 450)
+position = Vector2(-255, 450)
+
+[node name="LoadingElevator" type="Node2D" parent="."]
+position = Vector2(5144, 395)
+script = ExtResource("16_bkqsy")
+ElevatorScenePath = "uid://v3n56xk6n8ca"
+NextStagePath = "uid://dwk6x3qcbsmul"
+LoadDistance = 4000.0
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

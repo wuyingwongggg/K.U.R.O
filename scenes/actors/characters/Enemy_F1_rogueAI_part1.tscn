@@ -399,7 +399,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_87lf6")])
-metadata/attack_weight = 0.0
+metadata/attack_weight = 35.0
 
 [node name="RogueAISlamB" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("26_slamb")
@@ -412,7 +412,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_dp8af"), SubResource("Resource_c2rbd"), SubResource("Resource_mxjbl")])
-metadata/attack_weight = 0.0
+metadata/attack_weight = 35.0
 
 [node name="RogueAISlamC" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("22_melee")
@@ -425,7 +425,7 @@ AttackAreaPath = NodePath("../../../../Sprite2D/AttackArea")
 TriggerAreaPath = NodePath("../../../../Sprite2D/AttackDetectionArea")
 TargetableFactions = 1
 Effects = Array[ExtResource("24_fxentry")]([SubResource("Resource_hb2n0")])
-metadata/attack_weight = 20.0
+metadata/attack_weight = 30.0
 
 [node name="RogueAIOverload" type="Node" parent="StateMachine/Attack/AttackController"]
 script = ExtResource("23_ult")
