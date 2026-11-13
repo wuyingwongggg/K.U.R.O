@@ -1,3 +1,5 @@
+using Kuros.Systems.Stage;
+using System.Threading.Tasks;
 using Godot;
 using System.Collections.Generic;
 using Kuros.Core;
@@ -161,6 +163,10 @@ public partial class PlayerFallController : FallController
         if (!_player.StateMachine.ChangeState("Fall")) _pending = null;
     }
 
+    private StagePlan? _hiddenPlan;
+    private Task<System.Collections.Generic.IReadOnlyList<PackedScene>?>? _hiddenLoad;
+    private const float HiddenLoadGraceSeconds = 10f;
+
     public void BeginFall()
     {
         if (_pending == null) return;
@@ -173,6 +179,11 @@ public partial class PlayerFallController : FallController
         _player.ClearFallInputBuffers();
         CacheCollisions(_player);
         SpawnVisual();
+        if (_pending.HiddenFloorDestinations.Count > 0 && StageSession.Current is { } session)
+        {
+            _hiddenPlan = session.ChooseHiddenFloor(_pending.HiddenFloorDestinations);
+            if (_hiddenPlan != null) _hiddenLoad = session.LoadPlanAsync(_hiddenPlan);
+        }
     }
 
     private void CacheCollisions(Node node)
@@ -201,6 +212,20 @@ public partial class PlayerFallController : FallController
         {
             GD.PushWarning("[Fall] 来源区域已卸载，取消坠落并恢复控制。");
             Completing = true; _player.StateMachine.ChangeState("Idle"); return;
+        }
+        if (_hiddenPlan is { } plan && _hiddenLoad is { } load)
+        {
+            if (!load.IsCompleted && _remaining > -HiddenLoadGraceSeconds) return;
+            if (load.IsCompletedSuccessfully && load.Result is { } rooms
+                && StageSession.Current?.QueueTransition(plan, rooms,
+                    stillValid: () => IsInstanceValid(this) && IsFalling
+                        && ReferenceEquals(_hiddenLoad, load)) == true)
+            {
+                Completing = true;
+                return;
+            }
+            _hiddenPlan = null;
+            _hiddenLoad = null;
         }
         if (!ResolveReturn(_pending, out _returnPoint))
         {
@@ -231,6 +256,7 @@ public partial class PlayerFallController : FallController
             if (IsInstanceValid(entry.Node)) { entry.Node.CollisionLayer = entry.Layer; entry.Node.CollisionMask = entry.Mask; }
         _collisions.Clear();
         if (IsInstanceValid(_visual)) _visual!.QueueFree();
+        _hiddenPlan = null; _hiddenLoad = null;
         _visual = null; _pending = null; IsFalling = false; Completing = false;
         _settlingFallDamage = false;
         _player.ConsumePendingHitKnockback();

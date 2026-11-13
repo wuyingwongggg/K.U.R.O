@@ -1,9 +1,9 @@
-[gd_scene load_steps=34 format=3 uid="uid://b4c4bopss6lxo"]
+[gd_scene load_steps=34 format=3 uid="uid://dtdxvlu2jgtyq"]
 
 [ext_resource type="Script" uid="uid://cra7y7mt0x1j8" path="res://scripts/managers/CameraZoneArea.cs" id="1_6wtu5"]
 [ext_resource type="Script" uid="uid://cbui22isww64v" path="res://scripts/systems/cutscene/CutsceneTrigger.cs" id="2_vwccj"]
-[ext_resource type="Resource" uid="uid://dxjeaphfp7yhi" path="res://resources/cutscene/F_b1_intro.tres" id="3_vwccj"]
-[ext_resource type="Resource" uid="uid://byls0p6ccd0f8" path="res://resources/cutscene/F_b1_2_intro.tres" id="4_part2_intro"]
+[ext_resource type="Resource" uid="uid://bjxt0eh08slun" path="res://resources/cutscene/F_boss_core_intro.tres" id="5_s3a53"]
+[ext_resource type="Resource" uid="uid://bfvnxhygsyei" path="res://resources/cutscene/F_boss_core_2_intro.tres" id="6_umrw0"]
 [ext_resource type="Texture2D" uid="uid://dhpemq2d2f7u2" path="res://assets/environments/scene_6_hotel/地板.png" id="6_wn4ca"]
 [ext_resource type="Shader" uid="uid://sy1wcbveay3p" path="res://shaders/materials/rect_edge_fade.gdshader" id="7_6k5yh"]
 [ext_resource type="PackedScene" uid="uid://bqtr5w7g5wpmq" path="res://scenes/environments/PipeLeft.tscn" id="7_6wtu5"]
@@ -224,7 +224,7 @@ _data = {
 &"up_to_top_event": SubResource("Animation_vwccj")
 }
 
-[node name="F_b1" type="Node2D"]
+[node name="F_boss_core" type="Node2D"]
 y_sort_enabled = true
 
 [node name="TargetCameraPoint" type="Node2D" parent="."]
@@ -250,7 +250,7 @@ visible = false
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("1_6wtu5")
-ZoneName = "Room_Zone_F_b1"
+ZoneName = "Room_Zone_F_boss_core"
 CameraLimitTop = -2250
 CameraLimitBottom = 2130
 ZoomLevel = 0.35000000000000003
@@ -283,18 +283,19 @@ position = Vector2(0, 850)
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_vwccj")
-Sequence = ExtResource("3_vwccj")
+Sequence = ExtResource("5_s3a53")
+StartsDisarmed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 shape = SubResource("RectangleShape2D_1d5w0")
 debug_color = Color(1, 0, 1, 0.41960785)
 
-[node name="CutsceneTrigger2" type="Area2D" parent="." groups=["f_b1_part2_defeated_cutscene"]]
+[node name="CutsceneTrigger2" type="Area2D" parent="." groups=["f_boss_core_part2_defeated_cutscene"]]
 z_index = 10
 collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_vwccj")
-Sequence = ExtResource("4_part2_intro")
+Sequence = ExtResource("6_umrw0")
 StartsDisarmed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger2"]

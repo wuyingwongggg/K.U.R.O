@@ -5,12 +5,17 @@
 [ext_resource type="Script" uid="uid://b0qiaumw3ige7" path="res://scripts/systems/cutscene/CutsceneManager.cs" id="3_31t1p"]
 [ext_resource type="PackedScene" uid="uid://ufprfd4r8ijj" path="res://scenes/actors/characters/main_character.tscn" id="4_givaq"]
 [ext_resource type="Script" uid="uid://l1558pct4220" path="res://scripts/managers/StageGeneratorManager.cs" id="4_l5arx"]
-[ext_resource type="PackedScene" uid="uid://cel0dl6h07it8" path="res://scenes/levels/A_begin.tscn" id="5_1htdl"]
-[ext_resource type="PackedScene" uid="uid://byv7ty32mj11t" path="res://scenes/levels/A_end.tscn" id="6_tbvpk"]
-[ext_resource type="PackedScene" uid="uid://cl1ki1csawpip" path="res://scenes/levels/A1.tscn" id="7_31t1p"]
 [ext_resource type="PackedScene" uid="uid://bjwnor5ufbb8r" path="res://scenes/managers/BuildSelectionManager.tscn" id="8_r3qlf"]
 [ext_resource type="Script" uid="uid://del8hgcg3sr4i" path="res://scripts/managers/CameraFollow.cs" id="11_31t1p"]
 [ext_resource type="PackedScene" uid="uid://cgjrdwkemgrcy" path="res://scenes/actors/characters/P2.tscn" id="12_31t1p"]
+[ext_resource type="Resource" uid="uid://cfqfibxgsuw2y" path="res://resources/stages/hotel_room_catalog.tres" id="room_catalog"]
+[ext_resource type="Script" uid="uid://dim2ctx63qcxt" path="res://scripts/systems/stage/StageConfig.cs" id="stage_config"]
+
+[sub_resource type="Resource" id="initial_route"]
+script = ExtResource("stage_config")
+StageId = "stage_home"
+FloorTheme = "A"
+RoomSequence = Array[int]([0, 1, 6])
 
 [node name="BattleScene" type="Node2D" node_paths=PackedStringArray("Player")]
 y_sort_enabled = true
@@ -26,7 +31,6 @@ Player = NodePath("../World/MainCharacter")
 
 [node name="CutsceneManager" type="Node" parent="."]
 script = ExtResource("3_31t1p")
-SkipActionName = "cutscene_skip"
 CameraPath = NodePath("../World/Camera2D")
 TopBlackBarPath = NodePath("../CanvasLayer/ColorRectTop")
 BottomBlackBarPath = NodePath("../CanvasLayer/ColorRectBottom")
@@ -34,11 +38,8 @@ BattleSceneManagerPath = NodePath("..")
 
 [node name="StageGeneratorManager" type="Node" parent="."]
 script = ExtResource("4_l5arx")
-BeginPool = Array[PackedScene]([ExtResource("5_1htdl")])
-EndPool = Array[PackedScene]([ExtResource("6_tbvpk")])
-EasyMiddlePool = Array[PackedScene]([ExtResource("7_31t1p")])
-EasyRoomMin = 1
-EasyRoomMax = 1
+StandaloneStage = SubResource("initial_route")
+Catalog = ExtResource("room_catalog")
 
 [node name="BuildSelectionManager" parent="." instance=ExtResource("8_r3qlf")]
 
@@ -51,6 +52,7 @@ Speed = 600.0
 [node name="Camera2D" type="Camera2D" parent="World" node_paths=PackedStringArray("Target")]
 scale = Vector2(0.32999998, 0.32999998)
 ignore_rotation = false
+zoom = Vector2(0.43, 0.43)
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
 drag_horizontal_enabled = true

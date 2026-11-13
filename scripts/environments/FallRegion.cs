@@ -1,5 +1,6 @@
 using Godot;
 using Godot.Collections;
+using Kuros.Systems.Stage;
 
 namespace Kuros.Environments;
 
@@ -32,6 +33,9 @@ public partial class FallRegion : Node2D
     /// 开始前全部无效则拒绝启动坠落；坠落到期时全部失效则保持保护并重试。
     /// </summary>
     [Export] public Array<NodePath> FallbackMarkerPaths { get; set; } = new();
+
+    /// <summary>玩家完成坠落后可前往的隐藏楼层。为空时执行普通坠落。</summary>
+    [Export] public Array<StageConfig> HiddenFloorDestinations { get; set; } = new();
 
     /// <summary>从指定节点的父节点开始，返回最近的 FallRegion 祖先；黄区与红区通过此方法归属区域，绿色承托区不依赖此方法。</summary>
     public static FallRegion? FindRegion(Node node)

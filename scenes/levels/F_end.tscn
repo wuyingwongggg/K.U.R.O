@@ -418,7 +418,6 @@ position = Vector2(-255, 450)
 position = Vector2(5144, 395)
 script = ExtResource("16_bkqsy")
 ElevatorScenePath = "uid://v3n56xk6n8ca"
-NextStagePath = "uid://dwk6x3qcbsmul"
 LoadDistance = 4000.0
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

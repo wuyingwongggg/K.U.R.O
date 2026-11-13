@@ -1533,6 +1533,7 @@ collision_mask = 4
 script = ExtResource("1_mbxjs")
 ZoneName = "Room_Zone_F_Begin"
 CameraLimitTop = -1400
+ZoomLevel = 0.35000000000000003
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CameraZone"]
 z_index = 10
@@ -1557,7 +1558,6 @@ disabled = true
 debug_color = Color(0, 1, 0, 0.41960785)
 
 [node name="CutsceneTrigger" type="Area2D" parent="."]
-visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
@@ -1570,7 +1570,6 @@ shape = SubResource("RectangleShape2D_1d5w0")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="CutsceneTrigger2" type="Area2D" parent="."]
-visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
@@ -1583,7 +1582,6 @@ shape = SubResource("RectangleShape2D_mbxjs")
 debug_color = Color(1, 0, 1, 0.41960785)
 
 [node name="CutsceneTrigger3" type="Area2D" parent="."]
-visible = false
 z_index = 10
 collision_layer = 0
 collision_mask = 4
@@ -1601,7 +1599,8 @@ position = Vector2(0, 340)
 
 [node name="BG" type="Sprite2D" parent="Environments"]
 z_index = -10
-position = Vector2(380, -1000)
+position = Vector2(0, -1000)
+scale = Vector2(1.05, 1)
 texture = ExtResource("10_x26y1")
 offset = Vector2(0, -200)
 script = ExtResource("11_put05")

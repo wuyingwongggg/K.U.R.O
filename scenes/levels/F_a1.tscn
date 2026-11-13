@@ -162,13 +162,14 @@ collision_layer = 0
 collision_mask = 4
 script = ExtResource("2_bkvq7")
 Sequence = ExtResource("3_kj57q")
+StartsDisarmed = true
 ExecutionMode = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CutsceneTrigger"]
 shape = SubResource("RectangleShape2D_1d5w0")
 debug_color = Color(1, 0.6784314, 1, 0.41960785)
 
-[node name="CutsceneTrigger2" type="Area2D" parent="." groups=["f_b1_part2_defeated_cutscene"]]
+[node name="CutsceneTrigger2" type="Area2D" parent="." groups=["f_boss_core_part2_defeated_cutscene"]]
 z_index = 10
 position = Vector2(6790, 850)
 collision_layer = 0

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=20 format=3 uid="uid://dxjeaphfp7yhi"]
+[gd_resource type="Resource" script_class="CutsceneSequence" load_steps=20 format=3 uid="uid://bjxt0eh08slun"]
 
 [ext_resource type="Script" uid="uid://ctrko7add3r5h" path="res://scripts/systems/cutscene/CutsceneStep.cs" id="1_43t7u"]
 [ext_resource type="Script" uid="uid://cjl1hjmndwvcg" path="res://scripts/systems/cutscene/steps/FadeStep.cs" id="2_jlr1e"]
@@ -19,19 +19,19 @@ metadata/_custom_type_script = "uid://cjl1hjmndwvcg"
 
 [sub_resource type="Resource" id="Resource_1mfr6"]
 script = ExtResource("4_7e2ck")
-AnimationPlayerPath = NodePath("../World/F_b1/LiftingPlatform/AnimationPlayer")
+AnimationPlayerPath = NodePath("../World/F_boss_core/LiftingPlatform/AnimationPlayer")
 AnimationName = "close_leftside"
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 
 [sub_resource type="Resource" id="Resource_nnnpt"]
 script = ExtResource("4_7e2ck")
-AnimationPlayerPath = NodePath("../World/F_b1/Animation_rogueAI/AnimationPlayer")
+AnimationPlayerPath = NodePath("../World/F_boss_core/Animation_rogueAI/AnimationPlayer")
 AnimationName = "move_down"
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 
 [sub_resource type="Resource" id="Resource_33jn8"]
 script = ExtResource("3_jfs2o")
-TargetPath = NodePath("../World/F_b1/TargetCameraPoint")
+TargetPath = NodePath("../World/F_boss_core/TargetCameraPoint")
 TargetZoom = 0.6
 Instant = true
 WaitForCompletion = true
@@ -42,14 +42,14 @@ metadata/_custom_type_script = "uid://b4pd4ynf4k04p"
 
 [sub_resource type="Resource" id="Resource_m4q78"]
 script = ExtResource("4_7e2ck")
-AnimationPlayerPath = NodePath("../World/F_b1/LiftingPlatform/AnimationPlayer")
+AnimationPlayerPath = NodePath("../World/F_boss_core/LiftingPlatform/AnimationPlayer")
 AnimationName = "open"
 WaitForCompletion = true
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 
 [sub_resource type="Resource" id="Resource_kb5uy"]
 script = ExtResource("4_7e2ck")
-AnimationPlayerPath = NodePath("../World/F_b1/AnimationPlayer")
+AnimationPlayerPath = NodePath("../World/F_boss_core/AnimationPlayer")
 AnimationName = "up_to_top_event"
 WaitForCompletion = true
 metadata/_custom_type_script = "uid://5xu2sir0yhv1"
@@ -58,7 +58,7 @@ metadata/_custom_type_script = "uid://5xu2sir0yhv1"
 script = ExtResource("6_3ajls")
 EffectScene = ExtResource("10_g43g7")
 SpawnType = 2
-TargetNodePath = NodePath("../World/F_b1/Animation_rogueAI")
+TargetNodePath = NodePath("../World/F_boss_core/Animation_rogueAI")
 SpawnDelay = 0.5
 PropertyOverrides = Dictionary[String, Variant]({
 "CarriageFarOffset": 9200.0,
@@ -73,7 +73,7 @@ metadata/_custom_type_script = "uid://dhch281hkryms"
 script = ExtResource("6_3ajls")
 EffectScene = ExtResource("8_1mfr6")
 SpawnType = 2
-TargetNodePath = NodePath("../World/F_b1/JarSpawnPoint")
+TargetNodePath = NodePath("../World/F_boss_core/JarSpawnPoint")
 SpawnDelay = 0.5
 SpawnTag = "JarMiddle"
 GroupToAdd = "rogueai_part2"
@@ -86,7 +86,7 @@ metadata/_custom_type_script = "uid://bdni42t83syt8"
 
 [resource]
 script = ExtResource("5_5kb11")
-SequenceId = "F_b1_intro"
+SequenceId = "F_boss_core_intro"
 Steps = Array[ExtResource("1_43t7u")]([SubResource("Resource_43t7u"), SubResource("Resource_1mfr6"), SubResource("Resource_nnnpt"), SubResource("Resource_33jn8"), SubResource("Resource_m4q78"), SubResource("Resource_kb5uy"), SubResource("Resource_5kb11")])
 DisablePlayerInput = false
 HidePlayer = false
